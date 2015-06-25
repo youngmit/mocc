@@ -1,1 +1,9 @@
-SConscript('pugixml/src/SConscript')
+Import('env')
+
+lib_objs = []
+
+pugixml = env.Object('pugixml/src/pugixml.cpp')
+
+lib_objs.append(pugixml)
+
+Return('lib_objs')

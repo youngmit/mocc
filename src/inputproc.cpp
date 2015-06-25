@@ -27,6 +27,11 @@ InputProc::InputProc(const char* filename){
         m_pinMeshes.insert(std::pair<int, SP_PinMesh>(pm->id(), pm));
     }
     
+    // Parse Material Library
+    
+    
+    // Parse pins
+    
     LogFile << endl;
     return;
 }

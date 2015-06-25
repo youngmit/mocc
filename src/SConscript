@@ -17,13 +17,14 @@ pinmesh_cyl = env.Object('pinmesh_cyl.cpp')
 pinmesh_rect = env.Object('pinmesh_rect.cpp')
 pinmesh = env.Object('pinmesh.cpp')
 
-objs = objs + [
-       files,
-       inputproc, 
-       pinmesh_cyl,
-       pinmesh_rect, 
-       pinmesh]
-objs = objs + ['#lib/pugixml/src/pugixml.o']
+Import('lib_objs')
+
+objs = objs + [ files,
+                inputproc, 
+                pinmesh_cyl,
+                pinmesh_rect, 
+                pinmesh ] + lib_objs
+
 
 mocc = env.Program(target="mocc", source=["mocc.cpp"] + objs)
 
