@@ -1,0 +1,34 @@
+import os
+
+# Stuff for pulling in TPLs
+pugixml_include = Dir('#lib/pugixml/src')
+cwd = Dir('.')
+
+env = Environment(tools = ['mingw'], CCFLAGS="-std=c++11",
+                  CPPPATH=[cwd, pugixml_include])
+
+objs = []
+#objs += env.Object()
+
+
+files = env.Object('files.cpp')
+inputproc = env.Object('inputproc.cpp')
+pinmesh_cyl = env.Object('pinmesh_cyl.cpp')
+pinmesh_rect = env.Object('pinmesh_rect.cpp')
+pinmesh = env.Object('pinmesh.cpp')
+
+objs = objs + [
+       files,
+       inputproc, 
+       pinmesh_cyl,
+       pinmesh_rect, 
+       pinmesh]
+objs = objs + ['#lib/pugixml/src/pugixml.o']
+
+mocc = env.Program(target="mocc", source=["mocc.cpp"] + objs)
+
+Depends(mocc, [inputproc])
+
+Depends(inputproc, [])
+
+Default(mocc)
