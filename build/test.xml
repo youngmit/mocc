@@ -1,0 +1,21 @@
+<mesh id="1" type="cyl" pitch="1.26">
+    <radii>0.3 0.56</radii>
+    <sub_radii>6 3</sub_radii>
+    <sub_azi>8</sub_azi>
+</mesh>
+
+<mesh id="2" type="rect" pitch="1.26">
+    <sub_x>5</sub_x>
+    <sub_y>5</sub_y>
+</mesh>
+
+<material_lib path="c5g7.xsl"/>
+
+<material id="1" name="UO2-3.3" />
+<material id="2" name="MOX-4.3" />
+<material id="3" name="MOX-7.0" />
+<material id="4" name="MOX-8.7" />
+<material id="5" name="FissCham" />
+<material id="6" name="Moderator" />
+<material id="7" name="GuideTube" />
+<material id="8" name="CRod" />
