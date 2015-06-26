@@ -9,13 +9,13 @@
     <sub_y>5</sub_y>
 </mesh>
 
-<material_lib path="c5g7.xsl"/>
-
-<material id="1" name="UO2-3.3" />
-<material id="2" name="MOX-4.3" />
-<material id="3" name="MOX-7.0" />
-<material id="4" name="MOX-8.7" />
-<material id="5" name="FissCham" />
-<material id="6" name="Moderator" />
-<material id="7" name="GuideTube" />
-<material id="8" name="CRod" />
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-4.3" />
+    <material id="3" name="MOX-7.0" />
+    <material id="4" name="MOX-8.7" />
+    <material id="5" name="FissCham" />
+    <material id="6" name="Moderator" />
+    <material id="7" name="GuideTube" />
+    <material id="8" name="CRod" />
+</material_lib>

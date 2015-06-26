@@ -2,6 +2,8 @@
 #include "files.hpp"
 #include "pugixml.hpp"
 #include "pinmesh.hpp"
+#include "filescrubber.hpp"
+#include "materiallib.hpp"
 
 #include <memory>
 #include <string>
@@ -10,6 +12,8 @@
 using std::cout;
 using std::endl;
 using std::shared_ptr;
+
+namespace mocc{
 
 InputProc::InputProc(const char* filename){
     LogFile << "Processing input" << endl;
@@ -28,6 +32,11 @@ InputProc::InputProc(const char* filename){
     }
     
     // Parse Material Library
+    std::string matLibName = 
+        doc.child("material_lib").attribute("path").value();
+    cout << "Found material library specification: " << matLibName << endl;
+    FileScrubber matLibFile(matLibName.c_str(), "!");
+    MaterialLib matLib(matLibFile);
     
     
     // Parse pins
@@ -35,3 +44,6 @@ InputProc::InputProc(const char* filename){
     LogFile << endl;
     return;
 }
+
+
+};
