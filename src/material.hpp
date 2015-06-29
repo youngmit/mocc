@@ -1,6 +1,6 @@
 #pragma once
 
-#include "globalconfig.hpp"
+#include "global_config.hpp"
 #include <vector>
 
 namespace mocc{

@@ -8,6 +8,6 @@ namespace mocc {
 class MoCSweeper: public TransportSweeper{
 public:
     MoCSweeper(pugi::xml_node &input);
-    void sweep();
+    void sweep(int group);
 };
 }

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <exception>
-#include "globalconfig.hpp"
+#include "global_config.hpp"
 #include "files.hpp"
-#include "inputproc.hpp"
+#include "input_proc.hpp"
 #include "error.hpp"
 
 

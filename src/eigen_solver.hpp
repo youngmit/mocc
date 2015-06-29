@@ -2,7 +2,7 @@
 
 #include "solver.hpp"
 #include "pugixml.hpp"
-#include "fixedsrc_solver.hpp"
+#include "fixed_source_solver.hpp"
 
 namespace mocc{
 

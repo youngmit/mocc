@@ -1,8 +1,8 @@
 # MOCC root SConstruct
 pugixml_include = Dir('#lib/pugixml/src')
 
-env = Environment(CXX = 'clang++', CXXFLAGS="-std=c++11 -stdlib=libc++",
-                  LINKFLAGS = "-stdlib=libc++ -lc++abi",
+env = Environment(CXXFLAGS="-std=c++11",
+                  LINKFLAGS="-v",
                   CPPPATH=[pugixml_include])
 #env = Environment(CXXFLAGS="-std=c++11",
 #                  CPPPATH=[pugixml_include])
