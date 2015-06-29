@@ -12,6 +12,7 @@ typedef double float_t;
 
 // General purpose vector of floats
 typedef std::vector<float_t> VecF;
+typedef std::vector<int> VecI;
 };
 
 #define PROG_NAME "MOCC"

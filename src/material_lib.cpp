@@ -3,7 +3,7 @@
 #include "error.hpp"
 #include <string>
 #include <sstream>
-#include <boost/regex.hpp>
+#include "/usr/local/include/boost/regex.hpp"
 #include <iostream>
 #include <vector>
 
@@ -11,6 +11,11 @@ using std::stringstream;
 using std::string;
 
 namespace mocc{
+
+MaterialLib::MaterialLib(){
+    // do nothing
+    return;
+}
 
 MaterialLib::MaterialLib(FileScrubber &input){
 	string line;

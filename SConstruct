@@ -1,9 +1,10 @@
 # MOCC root SConstruct
 pugixml_include = Dir('#lib/pugixml/src')
+boost_include = Dir('/usr/local/include/')
 
 env = Environment(CXXFLAGS="-std=c++11",
-                  LINKFLAGS="-v",
-                  CPPPATH=[pugixml_include])
+                  LINKFLAGS="-L/usr/local/lib /usr/local/lib/libboost_regex.a",
+                  CPPPATH=[pugixml_include, boost_include])
 #env = Environment(CXXFLAGS="-std=c++11",
 #                  CPPPATH=[pugixml_include])
 Export('env')

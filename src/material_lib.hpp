@@ -8,7 +8,8 @@
 namespace mocc {
 class MaterialLib{
 public:
-
+	// Default constructor does nothing
+	MaterialLib();
 	MaterialLib(FileScrubber &input);
 	void assignID(int id, const char* name);
 	
