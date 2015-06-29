@@ -12,7 +12,12 @@ objs.append(env.Object('inputproc.cpp'))
 objs.append(env.Object('pinmesh_cyl.cpp'))
 objs.append(env.Object('pinmesh_rect.cpp'))
 objs.append(env.Object('pinmesh.cpp'))
+objs.append(env.Object('material.cpp'))
 objs.append(env.Object('materiallib.cpp'))
+objs.append(env.Object('fixedsrc_solver.cpp'))
+objs.append(env.Object('eigen_solver.cpp'))
+objs.append(env.Object('moc_sweeper.cpp'))
+objs.append(env.Object('transport_sweeper_factory.cpp'))
 
 Import('lib_objs')
 

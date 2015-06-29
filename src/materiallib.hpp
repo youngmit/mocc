@@ -10,10 +10,11 @@ class MaterialLib{
 public:
 
 	MaterialLib(FileScrubber &input);
-	void mapMaterial();
+	void assignID(int id, const char* name);
 	
 private:
 	std::map<const char*, Material> m_materials;
+    std::map<int, const char*> m_ids;
 	int m_nGrp;
 	int m_nMaterial;
 	VecF m_gBounds;

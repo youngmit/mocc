@@ -38,6 +38,14 @@ InputProc::InputProc(const char* filename){
     FileScrubber matLibFile(matLibName.c_str(), "!");
     MaterialLib matLib(matLibFile);
     
+    // Parse material IDs
+    for(pugi::xml_node mat = doc.child("material_lib").child("material"); 
+            mat; mat = mat.next_sibling("material")){
+        cout << mat.attribute("id").value() << " "
+             << mat.attribute("name").value() << endl;
+        matLib.assignID(mat.attribute("id").as_int(),
+                             mat.attribute("name").value());
+    }
     
     // Parse pins
     

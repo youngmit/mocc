@@ -19,3 +19,25 @@
     <material id="7" name="GuideTube" />
     <material id="8" name="CRod" />
 </material_lib>
+
+<pin id="1" mesh="1">
+    1 1 6
+</pin>
+<pin id="2" mesh="1">
+    2 2 6
+</pin>
+
+
+<lattice id="1" nx="3" ny="3">
+    1 1 1
+    1 2 1
+    1 1 1
+</lattice>
+
+<assembly id="1">
+    1 1 1 1 1 1
+</assembly>
+
+<core>
+    1
+</core>

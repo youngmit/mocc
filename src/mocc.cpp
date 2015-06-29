@@ -25,6 +25,10 @@ int main(int argc, char* argv[]){
 	StartLogFile(argv[1]);
 	
 	LogFile << "Welcome to " << PROG_NAME << "!" << std::endl << std::endl;
+
+    // For now, assume that we are doing an eigenvalue solve. Might support FSS
+    // later.
+
 	
 	// Parse the input file
 	InputProc inProc(argv[1]);

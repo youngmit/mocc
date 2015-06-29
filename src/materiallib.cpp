@@ -5,6 +5,7 @@
 #include <sstream>
 #include <regex>
 #include <iostream>
+#include <vector>
 
 using std::stringstream;
 using std::string;
@@ -46,51 +47,58 @@ MaterialLib::MaterialLib(FileScrubber &input){
 		// Get the name of the material
 		line = input.getline();
 		
-		std::cout << "0" << std::endl;
-		// std::regex headExp("^\\s*XSMACRO\\s+([^\\s]+)\\s+([0-9]+)\\s*$");
-		try{
-			std::regex headExp("\\s XSMACRO", std::regex_constants::extended);
-			std::cout << "a" << std::endl;
-			std::smatch results;
-			std::cout << "b" << std::endl;
-			regex_match(line, results, headExp);
-			std::cout << "c" << std::endl;
-			std::cout << results[1].str() << std::endl;
-		} catch(std::regex_error e) {
-			std::cout << "regex error code: ";
-			switch(e.code()){
-				case std::regex_constants::error_collate:
-					std::cout << "error_collate";
-					break;
-				case std::regex_constants::error_ctype:
-					std::cout << "error_ctype";
-					break;
-				case std::regex_constants::error_escape:
-					std::cout << "error_escape";
-					break;
-				case std::regex_constants::error_backref:
-					std::cout << "error_backref";
-					break;
-				case std::regex_constants::error_brack:
-					std::cout << "error_brack";
-					break;
-				case std::regex_constants::error_paren:
-					std::cout << "error_paren";
-					break;
-				case std::regex_constants::error_brace:
-					std::cout << "error_brace";
-					break;
-				case std::regex_constants::error_badbrace:
-					std::cout << "error_badbrace";
-					break;
-				default:
-					break;
-			}
-			std::cout << std::endl;
-		}
+	    std::regex headExp("^\\s*XSMACRO\\s+([^\\s]+)\\s+([0-9]+)\\s*$");
+		std::smatch results;
+		regex_match(line, results, headExp);
+        string materialName = results[1].str();
+		std::cout << materialName << std::endl;
+
+        // Read in the non-scattering stuff
+        VecF abs;
+        VecF nuFiss;
+        VecF fiss;
+        VecF chi;
+        for(int ig=0; ig<m_nGrp; ig++){
+            stringstream inBuf(input.getline());
+            double val;
+
+            inBuf >> val;
+            abs.push_back(val);
+            inBuf >> val;
+            nuFiss.push_back(val);
+            inBuf >> val;
+            fiss.push_back(val);
+            inBuf >> val;
+            chi.push_back(val);
+            if(inBuf.fail()){
+                Error("Trouble reading XS data from library!");
+            }
+        }
+
+        // Read in the scattering table
+        std::vector<VecF> scatTable;
+        for(int ig=0; ig<m_nGrp; ig++){
+            stringstream inBuf(input.getline());
+            VecF scatRow;
+            for(int igg=0; igg<m_nGrp; igg++){
+                double val;
+                inBuf >> val;
+                scatRow.push_back(val);
+            }
+            scatTable.push_back(scatRow);
+        }
 		
-		
+        // produce a Material object and add it to the library
+        m_materials.insert(std::pair<const char*, Material>(
+            materialName.c_str(), 
+            Material(abs, nuFiss, fiss, chi, scatTable)));
+
 	}
+}
+
+void MaterialLib::assignID(int id, const char* name){
+    m_ids.insert(std::pair<int, const char*>(id, name));
+    return;
 }
 
 };
