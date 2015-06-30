@@ -1,14 +1,36 @@
 #pragma once
 
+#include <iostream>
+
+#include "pugixml.hpp"
+
 #include "global_config.hpp"
 
-class PinMesh{
-public:
-	int id(){
-		return m_id;
-	}
-protected:
-	int m_id;
-	mocc::float_t m_pitchX;
-	mocc::float_t m_pitchY;
-};
+namespace mocc {
+    class PinMesh{
+    public:
+        PinMesh( const pugi::xml_node &input );
+
+        virtual ~PinMesh() {
+            std::cout << "Destroying PinMesh" << std::endl;
+        }
+    	
+        int id() const {
+    		return id_;
+    	}
+
+        int n_reg() const {
+            return n_reg_;
+        }
+
+        int n_xsreg() const {
+            return n_xsreg_;
+        }
+    protected:
+    	int id_;
+        int n_reg_;
+        int n_xsreg_;
+    	float_t pitch_x_;
+    	float_t pitch_y_;
+    };
+}

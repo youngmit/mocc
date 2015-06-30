@@ -1,11 +1,13 @@
 #include "material_lib.hpp"
-#include "material.hpp"
-#include "error.hpp"
+
 #include <string>
 #include <sstream>
-#include "/usr/local/include/boost/regex.hpp"
+#include <boost/regex.hpp>
 #include <iostream>
 #include <vector>
+
+#include "material.hpp"
+#include "error.hpp"
 
 using std::stringstream;
 using std::string;

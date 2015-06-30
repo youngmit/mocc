@@ -3,6 +3,7 @@
 #include "global_config.hpp"
 #include "files.hpp"
 #include "input_proc.hpp"
+#include "core_mesh.hpp"
 #include "error.hpp"
 
 
@@ -26,10 +27,8 @@ int main(int argc, char* argv[]){
 	
 	LogFile << "Welcome to " << PROG_NAME << "!" << std::endl << std::endl;
 
-    // For now, assume that we are doing an eigenvalue solve. Might support FSS
-    // later.
-
-	
 	// Parse the input file
 	InputProc inProc(argv[1]);
+
+    StopLogFile();
 }

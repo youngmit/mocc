@@ -26,4 +26,10 @@ void StartLogFile(const char* arg){
 	strcpy(&logname[pos], ".log");
 	std::cout << logname << std::endl;
 	LogFile.open(logname, std::fstream::out);
+
+    delete[] logname;
+}
+
+void StopLogFile(){
+    LogFile.close();
 }

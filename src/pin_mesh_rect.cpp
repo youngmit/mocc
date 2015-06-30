@@ -1,5 +1,12 @@
 #include "pin_mesh_rect.hpp"
 
-PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input){
-	return;
-};
+namespace mocc {
+    PinMesh_Rect::PinMesh_Rect( const pugi::xml_node &input ):
+        PinMesh( input ) {
+
+        n_xsreg_ = 1;
+        n_reg_   = 1;
+         
+    	return;
+    }
+}
