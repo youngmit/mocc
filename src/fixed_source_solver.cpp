@@ -3,8 +3,8 @@
 #include "transport_sweeper_factory.hpp"
 
 namespace mocc{
-FixedSourceSolver :: FixedSourceSolver(pugi::xml_node &input):
-    sweeper_(TransportSweeperFactory(input))
+FixedSourceSolver :: FixedSourceSolver( const pugi::xml_node &input ):
+    sweeper_(std::move(TransportSweeperFactory(input)))
 {
 
 }

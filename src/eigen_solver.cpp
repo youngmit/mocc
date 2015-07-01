@@ -2,7 +2,7 @@
 
 namespace mocc{
 
-    EigenSolver :: EigenSolver(pugi::xml_node input):
+    EigenSolver :: EigenSolver( const pugi::xml_node &input ):
         m_fss(input)
     {
     }

@@ -7,6 +7,7 @@ namespace mocc {
     template <class T> class Array2D {
     public:
         Array2D() {
+
             d1_ = 0;
             d2_ = 0;
         }
@@ -14,13 +15,17 @@ namespace mocc {
         Array2D( int d1, int d2 ):
             d1_(d1), d2_(d2)
         {
-            data_ = new T[d1_*d2_];
+            if (d1_*d2_ > 0) {
+                data_ = new T[d1_*d2_];
+            }
         }
 
         Array2D(const Array2D &x) {
             d1_ = x.d1();
             d2_ = x.d2();
-            data_ = new T[d1_*d2_];
+            if (d1_*d2_ > 0) {
+                data_ = new T[d1_*d2_];
+            }
             for (int i=0; i<d1_*d2_; i++) {
                 data_[i] = x(i);
             }
@@ -28,6 +33,7 @@ namespace mocc {
 
         ~Array2D() {
             if ( d1_ > 0 & d2_ > 0 ) {
+
                 delete[] data_;
             }
             d1_ = 0;
@@ -42,7 +48,8 @@ namespace mocc {
             return d2_;
         }
 
-        Array2D<T>& resize( int new_d1 , int new_d2 ) {
+        Array2D& resize( int new_d1 , int new_d2 ) {
+            assert( new_d1 > 0 & new_d2 > 0 );
             int n = new_d1*new_d2;
             if ( n != d1_*d2_ ) {
                 if ( d1_*d2_ > 0 ) {

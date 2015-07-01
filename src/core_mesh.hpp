@@ -9,6 +9,8 @@
 #include "pin.hpp"
 #include "material_lib.hpp"
 #include "lattice.hpp"
+#include "assembly.hpp"
+#include "core.hpp"
 
 namespace mocc {
 
@@ -44,6 +46,12 @@ namespace mocc {
 
         // Map of lattice objects
         std::map<int, Lattice> lattices_;
+
+        // Map of assembly objects
+        std::map<int, UP_Assembly_t> assemblies_;
+
+        // Core object (essentially a 2D array of Assemblies)
+        Core core_;
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

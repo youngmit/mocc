@@ -3,6 +3,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 #include "pin.hpp"
 #include "error.hpp"
@@ -15,9 +16,10 @@ using std::string;
 namespace mocc {
     Lattice::Lattice( const pugi::xml_node &input, 
             const std::map<int, UP_Pin_t> &pins ) {
+        std::cout << "Creating lattice" << std::endl;
         // Get lattice ID
-        int lat_id = input.attribute( "id" ).as_int( -1 );
-        if ( lat_id == -1 ) {
+        id_ = input.attribute( "id" ).as_int( -1 );
+        if ( id_ == -1 ) {
             Error( "Trouble reading lattice ID." );
         }
         

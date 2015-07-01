@@ -9,10 +9,10 @@ namespace mocc{
 
 class FixedSourceSolver: public Solver{
 private:
-    TransportSweeper* sweeper_;
+    UP_Sweeper_t sweeper_;
 public:
     // Initialize a FSS using the XML document
-    FixedSourceSolver(pugi::xml_node &input);
+    FixedSourceSolver( const pugi::xml_node &input );
     
     // Solve a fixed source problem subject to the configuration in the XML
     // input. This can either be to some sort of tolerance, or for a single

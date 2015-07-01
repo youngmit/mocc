@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <memory>
 
 #include "pugixml.hpp"
 
@@ -12,10 +14,18 @@ namespace mocc {
     public:
         Assembly( const pugi::xml_node &input, 
                   const std::map<int, Lattice> &lattices );
+
+        ~Assembly();
+
+        int id() const {
+            return id_;
+        }
     private:
         int id_;
         int nz_;
         VecF hz_;
-        std::map<int, Lattice*> lattices_;
+        std::vector<const Lattice*> lattices_;
     };
+
+    typedef std::unique_ptr<Assembly> UP_Assembly_t;
 }

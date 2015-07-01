@@ -8,7 +8,7 @@ namespace mocc {
         }
     }
     
-    MoCSweeper :: MoCSweeper(pugi::xml_node &input) {
+    MoCSweeper :: MoCSweeper( const pugi::xml_node &input ) {
 
         return;
     }

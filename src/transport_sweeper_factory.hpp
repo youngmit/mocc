@@ -7,5 +7,5 @@
 //#include "planar_synthesis_2d3d_sweeper.hpp"
 
 namespace mocc {
-    TransportSweeper* TransportSweeperFactory(pugi::xml_node &input);
+    TransportSweeper* TransportSweeperFactory( const pugi::xml_node &input );
 }

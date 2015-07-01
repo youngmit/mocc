@@ -7,7 +7,6 @@
 #include "files.hpp"
 #include "error.hpp"
 #include "string_utils.hpp"
-#include "assembly.hpp"
 
 
 using std::cout;
@@ -17,6 +16,7 @@ using std::stringstream;
 
 namespace mocc {
     CoreMesh::CoreMesh(pugi::xml_node &input) {
+std::cout << "creating core mesh" << std::endl;
         // Parse meshes
         for (pugi::xml_node mesh = input.child( "mesh" );
              mesh; 
@@ -90,17 +90,19 @@ namespace mocc {
         for ( pugi::xml_node lat = input.child( "lattice" ); lat;
                 lat = input.next_sibling( "lattice" )) {
             Lattice lattice( lat, pins_ );
-
             lattices_.emplace( lattice.id(), lattice );
         }
 
         // Parse assemblies
         for ( pugi::xml_node asy = input.child("assembly"); asy;
                 asy = input.next_sibling("assembly") ) {
-            Assembly assembly( asy, lattices_ );
+            int asy_id = asy.attribute("id").as_int();
+            UP_Assembly_t asy_p( new Assembly( asy, lattices_ ) );
+            assemblies_.emplace( asy_p->id(), std::move(asy_p) );
         }
 
         // Parse core
+        core_ = Core( input.child("core"), assemblies_ );
 
         return;
     }

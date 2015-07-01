@@ -8,7 +8,7 @@ namespace mocc{
 
 class EigenSolver: public Solver{
 public:
-    EigenSolver(pugi::xml_node input);
+    EigenSolver( const pugi::xml_node &input );
     void solve();
 
 private:

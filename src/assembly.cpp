@@ -1,6 +1,14 @@
 #include "assembly.hpp"
 
+#include <string>
+#include <sstream>
+#include <iostream>
+
 #include "error.hpp"
+#include "string_utils.hpp"
+
+using std::string;
+using std::stringstream;
 
 namespace mocc {
     Assembly::Assembly( const pugi::xml_node &input, 
@@ -10,6 +18,7 @@ namespace mocc {
         if (id_ == -1) {
             Error("Invalid assembly ID.");
         }
+std::cout << "Creating assembly with ID: " << id_ << std::endl;
         
         // Parse number of planes
         nz_ = input.attribute("np").as_int(-1);
@@ -35,8 +44,25 @@ namespace mocc {
         }
 
         // Parse lattice IDs
-
+        {
+            string lat_str = input.child("lattices").child_value();
+            stringstream inBuf( trim(lat_str) );
+            while (!inBuf.eof()) {
+                int lat_id;
+                inBuf >> lat_id;
+                if ( lattices.count(lat_id) > 0 ) {
+                    lattices_.push_back( &(lattices.at(lat_id)) );
+                } else {
+                    Error("Unrecognized lattice ID in assembly.");
+                }
+            }
+        }
         
+        return;
+    }
+
+    Assembly::~Assembly(){
+        std::cout << "Deleting assembly" << std::endl;
         return;
     }
 }
