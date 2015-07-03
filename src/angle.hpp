@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "global_config.hpp"
 
 namespace mocc {
@@ -15,4 +16,6 @@ namespace mocc {
         // quadrature weight
         float_t weight;
     };
+    
+    Angle ToOctant( Angle in, int octant );
 }

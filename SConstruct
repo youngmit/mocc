@@ -10,7 +10,7 @@ AddOption(
 
 pugixml_include = Dir('#lib/pugixml/src')
 
-cxx = 'clang++'
+cxx = 'g++'
 
 if GetOption('debug-build'):
     env = Environment(CXX=cxx,

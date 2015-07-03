@@ -20,10 +20,39 @@ namespace mocc {
         int id() const {
             return id_;
         }
+
+        int nx() const {
+            return lattices_[0]->nx();
+        }
+
+        int ny() const {
+            return lattices_[0]->ny();
+        }
+
+        int nz() const {
+            return nz_;
+        }
+
+        float_t hz( int iz ) const {
+            return hz_[iz];
+        }
+        
+        float_t hx() const {
+            return hx_;
+        }
+
+        float_t hy() const {
+            return hy_;
+        }
+
     private:
         int id_;
         int nz_;
         VecF hz_;
+
+        float_t hx_;
+        float_t hy_;
+
         std::vector<const Lattice*> lattices_;
     };
 

@@ -18,10 +18,8 @@ namespace mocc {
     	std::string type = input.attribute( "type" ).value();
     
     	if( type == "cyl" ){
-    		std::cout << "Found cyl mesh!" << std::endl;
     		pm = new PinMesh_Cyl( input );
     	} else if( type == "rect" ) {
-    		std::cout << "Found rect mesh!" << std::endl;
     		pm = new PinMesh_Rect( input );
     	} else {
     		// I don't recognize the mesh type, error out.

@@ -34,6 +34,18 @@ namespace mocc {
 
         ~CoreMesh();
 
+        float_t hx() const {
+            return hx_;
+        }
+
+        float_t hy() const {
+            return hy_;
+        }
+
+        float_t hz() const {
+            return hz_;
+        }
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
@@ -52,6 +64,21 @@ namespace mocc {
 
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
+
+        // Total core size in the x dimension
+        float_t hx_;
+
+        // Total core size in the y dimension
+        float_t hy_;
+
+        // Total core size in the z dimension
+        float_t hz_;
+
+        // Numbers of pins/planes in each dimension
+        int nx_;
+        int ny_;
+        int nz_;
+
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

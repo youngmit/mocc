@@ -12,7 +12,6 @@ namespace mocc {
         PinMesh( const pugi::xml_node &input );
 
         virtual ~PinMesh() {
-            std::cout << "Destroying PinMesh" << std::endl;
         }
     	
         int id() const {
@@ -25,6 +24,14 @@ namespace mocc {
 
         int n_xsreg() const {
             return n_xsreg_;
+        }
+
+        float_t pitch_x() const {
+            return pitch_x_;
+        }
+
+        float_t pitch_y() const {
+            return pitch_y_;
         }
     protected:
     	int id_;

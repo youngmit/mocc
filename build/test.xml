@@ -27,10 +27,9 @@
     6
 </pin>
 
-<lattice id="1" nx="3" ny="3">
+<lattice id="1" nx="3" ny="2">
     1 1 1
     1 2 1
-    1 1 1
 </lattice>
 
 <assembly id="1" np="6" hz="0.5">
@@ -44,6 +43,11 @@
 -->
 </assembly>
 
-<core nx="1" ny="1">
-    1
+<core nx="3" ny="2">
+    1 1 1 1 1 1
 </core>
+
+<sweeper type="moc">
+    <ang_quad type="ls" order="4" />
+    <rays spacing="0.001" />
+</sweeper>

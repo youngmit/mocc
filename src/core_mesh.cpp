@@ -16,7 +16,6 @@ using std::stringstream;
 
 namespace mocc {
     CoreMesh::CoreMesh(pugi::xml_node &input) {
-std::cout << "creating core mesh" << std::endl;
         // Parse meshes
         for (pugi::xml_node mesh = input.child( "mesh" );
              mesh; 
@@ -24,7 +23,6 @@ std::cout << "creating core mesh" << std::endl;
             LogFile << "Parsing new pin mesh: ID=" 
             << mesh.attribute( "id" ).value() << endl;
             UP_PinMesh_t pm( PinMeshFactory( mesh ) );
-            cout << "pin mesh id: " << pm->id() << endl;
             pin_meshes_.emplace(pm->id(), std::move( pm ) );
         }
         
@@ -104,11 +102,28 @@ std::cout << "creating core mesh" << std::endl;
         // Parse core
         core_ = Core( input.child("core"), assemblies_ );
 
+        nx_ = core_.nx();
+        ny_ = core_.ny();
+        nz_ = core_.nz();
+
+        // Calculate the total core dimensions
+        hx_ = 0.0;
+        for ( int ix=0; ix<core_.nx(); ix++ ) {
+            hx_ += core_.at(ix, 0)->hx();
+        }
+        hy_ = 0.0;
+        for ( int iy=0; iy<core_.ny(); iy++ ) {
+            hy_ += core_.at(iy, 0)->hy();
+        }
+
+        // Determine the set of geometricaly-unique axial planes
+        std::vector< std::vector<int> > unique;
+        for ( int iz=0; iz<nz_; iz++)
+
         return;
     }
 
     CoreMesh::~CoreMesh() {
-        std::cout << "Destroying CoreMesh" << std::endl;
         return;
     }
 }

@@ -123,6 +123,5 @@ namespace mocc {
     }
 
     PinMesh_Cyl::~PinMesh_Cyl() {
-        std::cout << "Destroying Cyl pin mesh" << std::endl;
     }
 }

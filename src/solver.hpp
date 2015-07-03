@@ -7,6 +7,7 @@ namespace mocc {
     // step() method. At the highest level of the heirarchy, the driver calls
     // solve() and that should invoke everything that is necessary.
     class Solver{
+        virtual ~Solver() { };
         virtual void solve()=0;
     };
 

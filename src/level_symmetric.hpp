@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <math.h>
 #include <iostream>
@@ -71,32 +73,33 @@ std::vector<mocc::Angle> GenSn( int order ){
 
     // Alias the w_unique array to get a slice for the order we are interested
     // in.
-    mocc::float_t* weights = &w_unique[w_offset[n-1]];
+//    mocc::float_t* weights = &w_unique[w_offset[n-1]];
     // Alias into the w_map to get our indices
-    int* map = &w_map[w_map_offset[n-1]];
+//    int* map = &w_map[w_map_offset[n-1]];
 
     // Apply the permutations of the base cosines to get actual angles. We will
     // do this once for the first octant, then reflect around.
+    std::vector<mocc::Angle> angles;
     int k=0;
     for(int i=0; i<n; i++) {
         for( int j=0; j<=i; j++) {
             mocc::Angle angle;
 
-            angle.ox = mu[i-j];
-            angle.oy = mu[j];
-            angle.oz = mu[n-i-1];
+            angle.ox =0.5;// mu[i-j];
+            angle.oy =0.5;// mu[j];
+            angle.oz =0.5;// mu[n-i-1];
             // Compute the azimuthal and polar angle components
-            angle.theta = acos(angle.oz);
-            angle.alpha = acos(angle.ox/sin(angle.theta));
+            angle.theta =0.5;// acos(angle.oz);
+            angle.alpha =0.5;// acos(angle.ox/sin(angle.theta));
             // Look up and apply the proper weight
 
-            angle.weight = weights[map[k]-1];
+            angle.weight =0.5;// weights[map[k]-1];
 
+            angles.push_back(angle);
             k++;
         }
     }
 
-    std::vector<mocc::Angle> angles;
     return angles;
 
 }

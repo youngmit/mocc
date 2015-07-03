@@ -15,6 +15,10 @@ namespace mocc {
         ~Pin(){
             return;
         }
+
+        PinMesh const * const mesh() const {
+            return pin_mesh_;
+        }
 	private:
         // Pin ID
         const int id_;

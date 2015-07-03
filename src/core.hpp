@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <cassert>
 
 #include "pugixml.hpp"
 
@@ -15,11 +17,34 @@ namespace mocc {
               const std::map<int, UP_Assembly_t> &assemblies);
         ~Core();
 
+        Assembly* at( int x, int y ) const {
+            assert( 0 <= x & x < nx_ );
+            assert( 0 <= y & y < ny_ );
+            return assemblies_[y*nx_ + x];
+        }
+
+        int nx() const {
+            return nx_;
+        }
+
+        int ny() const {
+            return ny_;
+        }
+
+        int nz() const {
+            return assemblies_[0]->nz();
+        }
+
     private:
-        // Core dimensions
+        // Core dimensions (in assemblies)
         int nx_;
         int ny_;
+        
+        // Core dimensions (in pins)
+        int npinx_;
+        int npiny_;
+
         // 2D array of assemblies
-        Array2D<Assembly*> assemblies_;
+        std::vector<Assembly*> assemblies_;
     };
 }

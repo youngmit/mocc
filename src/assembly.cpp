@@ -18,7 +18,6 @@ namespace mocc {
         if (id_ == -1) {
             Error("Invalid assembly ID.");
         }
-std::cout << "Creating assembly with ID: " << id_ << std::endl;
         
         // Parse number of planes
         nz_ = input.attribute("np").as_int(-1);
@@ -58,11 +57,14 @@ std::cout << "Creating assembly with ID: " << id_ << std::endl;
             }
         }
         
+        // Store lattice dimensions
+        hx_ = lattices_[0]->hx();
+        hy_ = lattices_[0]->hy();
+
         return;
     }
 
     Assembly::~Assembly(){
-        std::cout << "Deleting assembly" << std::endl;
         return;
     }
 }
