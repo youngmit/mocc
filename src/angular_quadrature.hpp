@@ -33,7 +33,6 @@ namespace mocc {
         }
 
         ~AngularQuadrature() {
-            std::cout << "Destroying angular quadrature" << std::endl;
         }
     private:
         // Enumerated quadrature type

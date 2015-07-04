@@ -14,8 +14,6 @@ namespace mocc {
     		stringstream inBuf(input.attribute( "id" ).value());
     		inBuf >> id_;
     
-            std::cout << "id_: " << id_ << std::endl;
-    
     		if(inBuf.fail()) {
     			Error( "Failed to read pin ID." );
     		}

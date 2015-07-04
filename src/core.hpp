@@ -17,6 +17,11 @@ namespace mocc {
               const std::map<int, UP_Assembly_t> &assemblies);
         ~Core();
 
+        Assembly* at( int i ) {
+            assert( 0 <= i & i < assemblies_.size() );
+            return assemblies_[i];
+        }
+
         Assembly* at( int x, int y ) const {
             assert( 0 <= x & x < nx_ );
             assert( 0 <= y & y < ny_ );

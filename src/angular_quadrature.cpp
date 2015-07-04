@@ -10,7 +10,6 @@
 
 namespace mocc {
     AngularQuadrature::AngularQuadrature( const pugi::xml_node &input ) {
-std::cout << "Generating an angular quadrature" << std::endl;
         // Make sure we got input
         if( input.empty() ) {
             Error("No input provided for angular quadrature.");
@@ -25,9 +24,7 @@ std::cout << "Generating an angular quadrature" << std::endl;
             int order = input.attribute("order").as_int(-1);
 
             // Generate angles for octant 1
-            std::vector<Angle> angles;// = GenSn( order );
-            angles.push_back(Angle());
-            angles_ = angles;
+            angles_ = GenSn( order );
         }
 
         // Store the number of angle per octant
@@ -36,8 +33,8 @@ std::cout << "Generating an angular quadrature" << std::endl;
         // Expand angles to other octants
         for ( int ioct = 2; ioct<=8; ioct++ ) {
             for ( int iang=0; iang < ndir_oct_; iang++ ) {
-                //Angle a = angles_[iang];
-                //angles_.push_back( ToOctant(a, ioct) );
+                Angle a = angles_[iang];
+                angles_.push_back( ToOctant(a, ioct) );
             }
         }
 

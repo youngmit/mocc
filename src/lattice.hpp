@@ -42,6 +42,16 @@ namespace mocc {
             assert( 0 <= y & y < ny_ );
             return pins_[y*nx_ + x];
         }
+
+        // Return an iterator to the first Pin* in the lattice
+        std::vector<Pin*>::const_iterator begin() const {
+            return pins_.cbegin();
+        }
+
+        // Return an iterator past the last Pin* in the lattice
+        std::vector<Pin*>::const_iterator end() const {
+            return pins_.cend();
+        }
     private:
         int id_;
         int nx_;

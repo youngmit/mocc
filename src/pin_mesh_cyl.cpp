@@ -51,6 +51,7 @@ namespace mocc {
     		}
     		
     		n_xsreg_ = xs_radii_.size() + 1;
+
     	}
     	
     	// Read in the azimuthal subdivisions

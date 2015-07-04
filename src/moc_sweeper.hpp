@@ -16,7 +16,6 @@ namespace mocc {
                     const CoreMesh &mesh );
         
         ~MoCSweeper() {
-            std::cout << "Destroying MoC Sweeper" << std::endl;
         }
         
         void sweep(int group);

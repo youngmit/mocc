@@ -37,8 +37,9 @@ cout << "Generating Ray Data" << endl;
         // Figure out modular angles and spacings
         float_t hx = mesh.hx();
         float_t hy = mesh.hy();
+
         for (auto ang_it = ang_quad_.octant(1); 
-                ang_it != ang_quad_.octant(2); ++ang_it) {
+                ang_it != ang_quad_.octant(3); ++ang_it) {
             Angle ang = *ang_it;
 
             

@@ -45,6 +45,10 @@ namespace mocc {
             return hy_;
         }
 
+        const Lattice& operator[](int iz) const {
+            return *lattices_[iz];
+        }
+
     private:
         int id_;
         int nz_;

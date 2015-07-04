@@ -79,6 +79,17 @@ namespace mocc {
         int ny_;
         int nz_;
 
+        // Number of assemblies
+        int nasy_;
+
+        // List of geometrically-unique planes. Each entry in the list
+        // corresponds to the lowest plane index that shares the indexed plane's
+        // geometry.
+        VecI unique_plane_;
+
+        // Plane index of the first occurance of each geometrically-unique plane
+        VecI first_unique_;
+
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

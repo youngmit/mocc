@@ -7,8 +7,10 @@ namespace mocc {
     // step() method. At the highest level of the heirarchy, the driver calls
     // solve() and that should invoke everything that is necessary.
     class Solver{
+    public:
         virtual ~Solver() { };
         virtual void solve()=0;
+    private:
     };
 
     typedef std::shared_ptr<Solver> SP_Solver_t;
