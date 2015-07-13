@@ -17,7 +17,7 @@ std::string FileScrubber::getline(){
 		std::string line;
 		std::getline(m_stream, line);
 		// Strip the comments
-		int commentPos = line.find(m_flag, 0);
+		unsigned int commentPos = line.find(m_flag, 0);
 		if(commentPos != std::string::npos){
 			line.erase(line.find(m_flag, 0), std::string::npos);
 		}

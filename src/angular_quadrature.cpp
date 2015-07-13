@@ -27,11 +27,11 @@ namespace mocc {
             angles_ = GenSn( order );
         }
 
-        // Store the number of angle per octant
+        // Store the number of angles per octant
         ndir_oct_ = angles_.size();
 
         // Expand angles to other octants
-        for ( int ioct = 2; ioct<=8; ioct++ ) {
+        for ( int ioct=2; ioct<=8; ioct++ ) {
             for ( int iang=0; iang < ndir_oct_; iang++ ) {
                 Angle a = angles_[iang];
                 angles_.push_back( ToOctant(a, ioct) );
@@ -40,4 +40,11 @@ namespace mocc {
 
         return;
     }
+
+    void AngularQuadrature::modify_angle(int iang, Angle ang ) {
+        for ( int ioct=0; ioct<8; ioct++ ){
+            angles_[iang + ioct*ndir_oct_] = ToOctant(ang, ioct+1);
+        }
+    }
+    
 }

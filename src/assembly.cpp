@@ -14,14 +14,14 @@ namespace mocc {
     Assembly::Assembly( const pugi::xml_node &input, 
                         const std::map<int, Lattice> &lattices ) {
         // Parse assembly ID
-        id_ = input.attribute("id").as_int(-1);
-        if (id_ == -1) {
+        id_ = input.attribute("id").as_int(0);
+        if (id_ == 0) {
             Error("Invalid assembly ID.");
         }
         
         // Parse number of planes
-        nz_ = input.attribute("np").as_int(-1);
-        if (nz_ == -1) {
+        nz_ = input.attribute("np").as_int(0);
+        if (nz_ == 0) {
             Error("Invalid number of planes (nz) when parsing assembly.");
         }
         
@@ -55,11 +55,22 @@ namespace mocc {
                     Error("Unrecognized lattice ID in assembly.");
                 }
             }
+            if( lattices_.size() != nz_ ) {
+                Error("Incorrect number of lattices specified for assembly.");
+            }
         }
         
         // Store lattice dimensions
         hx_ = lattices_[0]->hx();
         hy_ = lattices_[0]->hy();
+
+        // Store the total numver of FSRs and XS regions in the assembly
+        n_reg_   = 0;
+        n_xsreg_ = 0;
+        for( auto &l: lattices_ ) {
+            n_reg_ += l->n_reg();
+            n_xsreg_ += l->n_xsreg();
+        }
 
         return;
     }

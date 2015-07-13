@@ -11,6 +11,7 @@
 #include "lattice.hpp"
 #include "assembly.hpp"
 #include "core.hpp"
+#include "plane.hpp"
 
 namespace mocc {
 
@@ -42,10 +43,29 @@ namespace mocc {
             return hy_;
         }
 
-        float_t hz() const {
-            return hz_;
+        int n_unique_planes() const {
+            return first_unique_.size();
         }
 
+        float_t n_reg() const {
+            return n_reg_;
+        }
+        
+        // Given a vector containing two points (Which should be on the boundary
+        // of the core mesh), insert points corresponding to intersections of
+        // the line formed by those points. The points are added to the vector
+        // itself.
+        void trace( std::vector<Point2> &p ) const;           
+
+        // return a reference to the PinMesh that occupies the space at a point,
+        // within a given plane.
+        const PinMesh* get_pinmesh( Point2 &p, unsigned int iz, 
+                int &first_reg) const;
+
+        const Plane& plane( unsigned int iz ) const {
+            assert( (0 <= iz) & (iz < planes_.size()) );
+            return planes_[iz];
+        }
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
@@ -62,6 +82,10 @@ namespace mocc {
         // Map of assembly objects
         std::map<int, UP_Assembly_t> assemblies_;
 
+        // Vector of Plane instances. There should be one for each unique planar
+        // geometry
+        std::vector<Plane> planes_;
+
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
 
@@ -74,21 +98,43 @@ namespace mocc {
         // Total core size in the z dimension
         float_t hz_;
 
+        // List of pin boundaries in the x dimension
+        VecF x_vec_;
+
+        // List of pin boundaries in the y dimension
+        VecF y_vec_;
+
         // Numbers of pins/planes in each dimension
-        int nx_;
-        int ny_;
-        int nz_;
+        unsigned int nx_;
+        unsigned int ny_;
+        unsigned int nz_;
 
         // Number of assemblies
-        int nasy_;
+        unsigned int nasy_;
+
+        // Total number of FSRs in the entire geometry
+        unsigned int n_reg_;
+        // Total number of XS regions in the entire geometry
+        unsigned int n_xsreg_;
 
         // List of geometrically-unique planes. Each entry in the list
-        // corresponds to the lowest plane index that shares the indexed plane's
-        // geometry.
+        // corresponds to the unique plane index that is geometrically valid for
+        // the actual plane.
         VecI unique_plane_;
 
         // Plane index of the first occurance of each geometrically-unique plane
         VecI first_unique_;
+
+        // Index of the first flat source region on each plane
+        VecI first_reg_plane_;
+
+        // Index of the first flat source region on each pin within a unique
+        // plane.
+        std::vector<VecI> first_reg_pin_;
+
+        // Vector of Line objects, representing pin boundaries.  This greatly
+        // simplifies the ray trace.
+        std::vector<Line> lines_;
 
     };
 

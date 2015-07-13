@@ -14,16 +14,16 @@
 namespace mocc {
     Pin::Pin( const pugi::xml_node &input, 
             const std::map<int, UP_PinMesh_t> &meshes ):
-        id_( input.attribute("id").as_int() )
+        id_( input.attribute("id").as_int( 0 ) )
     { 
         // Check ID validity
-        if ( id_ == -1 ) {
+        if ( id_ == 0 ) {
             Error( "Failed to read pin ID." );
         }
 
         // Get pin mesh ID
-        mesh_id_ = input.attribute( "mesh" ).as_int( -1 );
-        if ( mesh_id_ == -1) {
+        mesh_id_ = input.attribute( "mesh" ).as_int( 0 );
+        if ( mesh_id_ == 0 ) {
             Error( "Failed to read pin mesh ID." );
         }
         if ( meshes.count( mesh_id_ ) == 0 ) {

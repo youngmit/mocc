@@ -21,6 +21,6 @@ public:
 	}
 	
 private:
-	std::string m_flag;
 	std::ifstream m_stream;
+	std::string m_flag;
 };

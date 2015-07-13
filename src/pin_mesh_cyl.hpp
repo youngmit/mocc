@@ -10,16 +10,26 @@ namespace mocc {
     	PinMesh_Cyl(const pugi::xml_node &input);
         ~PinMesh_Cyl();
 
+        int trace( Point2 p1, Point2 p2, int first_reg, VecF &s, 
+                VecI &reg ) const;
+
+        int find_reg( Point2 p ) const;
+
     private:
     	// Radii of material rings
-    	std::vector<mocc::float_t> xs_radii_;
+    	std::vector<float_t> xs_radii_;
     	// Number of mesh rings
-    	int m_nRing;
+    	unsigned int m_nRing;
     	// Radii of actual mesh rings
-    	std::vector<mocc::float_t> radii_;
+    	std::vector<float_t> radii_;
+        // Vector of circle objects.
+        std::vector<Circle> circles_;
+        // Vector of line objects
+        std::vector<Line> lines_;
     	// Number of azumuthal subdivisions (for now, for whole pin)
-    	std::vector<int> sub_azi_;
+    	VecI sub_azi_;
     	// Number of radial subdivisions for each material ring
-    	std::vector<int> sub_rad_;
+    	VecI sub_rad_;
+
     };
 }

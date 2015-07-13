@@ -57,8 +57,6 @@ std::vector<mocc::Angle> GenSn( int order ){
 
     // n is the number of base cosines to use
     const int n = order/2;
-    const int ndir = ((order+2) * order);
-    const int ndir_oct = ndir/8;
 
     // set up the list of base cosines
     mocc::VecF mu;
@@ -81,18 +79,17 @@ std::vector<mocc::Angle> GenSn( int order ){
     // do this once for the first octant, then reflect around.
     std::vector<mocc::Angle> angles;
     int k=0;
-    for(int i=0; i<n; i++) {
-        for( int j=0; j<=i; j++) {
-            mocc::Angle angle;
+    for( int i=0; i<n; i++ ) {
+        for( int j=0; j<=i; j++ ) {
 
-            angle.ox = mu[i-j];
-            angle.oy = mu[j];
-            angle.oz = mu[n-i-1];
-            // Compute the azimuthal and polar angle components
-            angle.theta = acos(angle.oz);
-            angle.alpha = acos(angle.ox/sin(angle.theta));
+            mocc::Angle angle( mu[i-j],   
+                               mu[j],
+                               mu[n-i-1] );
+
+
             // Look up and apply the proper weight
             angle.weight = weights[map[k]-1];
+std::cout << angle.weight << std::endl; 
 
             angles.push_back(angle);
             k++;

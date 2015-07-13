@@ -1,13 +1,17 @@
 <mesh id="1" type="cyl" pitch="1.26">
-    <radii>0.3 0.56</radii>
-    <sub_radii>6 3</sub_radii>
+    <radii>0.56</radii>
+    <sub_radii> 3</sub_radii>
     <sub_azi>8</sub_azi>
 </mesh>
-
 <mesh id="2" type="rect" pitch="1.26">
-    <sub_x>5</sub_x>
-    <sub_y>5</sub_y>
+    <sub_x>3</sub_x>
+    <sub_y>3</sub_y>
 </mesh>
+
+<sweeper type="moc">
+    <ang_quad type="ls" order="4" />
+    <rays spacing="0.001" />
+</sweeper>
 
 <material_lib path="c5g7.xsl">
     <material id="1" name="UO2-3.3" />
@@ -21,19 +25,17 @@
 </material_lib>
 
 <pin id="1" mesh="1">
-    1 1 6
+    1  6
 </pin>
 <pin id="2" mesh="2">
-    6 6 6 6 6
-    6 6 6 6 6
-    6 6 6 6 6
-    6 6 6 6 6
-    6 6 6 6 6
+    6 6 6
+    6 6 6
+    6 6 6 
 </pin>
 
 <lattice id="1" nx="3" ny="2">
-    1 1 1
-    1 2 1
+    2 2 2
+    2 2 2
 </lattice>
 
 <lattice id="2" nx="3" ny="2">
@@ -42,9 +44,9 @@
 </lattice>
 
 
-<assembly id="1" np="6" hz="0.5">
+<assembly id="1" np="1" hz="0.5">
     <lattices>
-        1 1 2 1 2 2
+        1
     </lattices>
 <!--
     <hz>
@@ -52,12 +54,15 @@
     </hz>
 -->
 </assembly>
+<assembly id="2" np="6" hz="0.5">
+    <lattices>
+        1 1 2 2 1 2
+    </lattices>
+</assembly>
 
 <core nx="3" ny="2">
-    1 1 1 1 1 1
+    1 1 1
+    1 1 1
 </core>
 
-<sweeper type="moc">
-    <ang_quad type="ls" order="4" />
-    <rays spacing="0.001" />
-</sweeper>
+

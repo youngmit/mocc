@@ -8,19 +8,31 @@ AddOption(
     help='build with debug symbols',
     default=False)
 
+AddOption(
+    '--profile-build',
+    dest='profile',
+    action='store_true',
+    help='build with profiling information',
+    default=False)
+
+
 pugixml_include = Dir('#lib/pugixml/src')
 
-cxx = 'g++'
+cxx = 'clang++'
+
+cxxflags = "-std=c++11 -Wall"
 
 if GetOption('debug-build'):
-    env = Environment(CXX=cxx,
-                  CXXFLAGS="-g -std=c++11",
+    cxxflags += " -g"
+if GetOption('profile'):
+    cxxflags += " -pg"
+    cxx = "g++"
+
+env = Environment(CXX=cxx,
+                  CXXFLAGS=cxxflags,
                   LINKFLAGS="-lboost_regex",
                   CPPPATH=[pugixml_include])
-else:
-    env = Environment(CXXFLAGS="-std=c++11",
-                  LINKFLAGS="-lboost_regex",
-                  CPPPATH=[pugixml_include])
+
 
 env['ENV']['TERM'] = os.environ['TERM']
 

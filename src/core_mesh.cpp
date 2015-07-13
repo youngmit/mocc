@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include "files.hpp"
 #include "error.hpp"
@@ -26,6 +27,7 @@ namespace mocc {
             int id = pm->id();
             pin_meshes_.emplace(id, std::move( pm ) );
         }
+ 
         
         // Parse Material Library
         std::string matLibName = 
@@ -62,7 +64,6 @@ namespace mocc {
         // Parse assemblies
         for ( pugi::xml_node asy = input.child("assembly"); asy;
                 asy = asy.next_sibling("assembly") ) {
-            int asy_id = asy.attribute("id").as_int();
             UP_Assembly_t asy_p( new Assembly( asy, lattices_ ) );
             assemblies_.emplace( asy_p->id(), std::move(asy_p) );
         }
@@ -78,20 +79,20 @@ namespace mocc {
         // Calculate the total core dimensions
         hx_ = 0.0;
         for ( int ix=0; ix<core_.nx(); ix++ ) {
-            hx_ += core_.at(ix, 0)->hx();
+            hx_ += core_.at(ix, 0).hx();
         }
         hy_ = 0.0;
         for ( int iy=0; iy<core_.ny(); iy++ ) {
-            hy_ += core_.at(iy, 0)->hy();
+            hy_ += core_.at(iy, 0).hy();
         }
 
         // Determine the set of geometricaly-unique axial planes
         std::vector< VecI > unique;
         VecI plane_pins;
-        for ( int iz=0; iz<nz_; iz++) {
+        for ( unsigned int iz=0; iz<nz_; iz++) {
             // Form a list of all pin meshes in the core plane iz
-            for ( int iasy=0; iasy<nasy_; iasy++ ) {
-                Assembly* asy = core_.at(iasy);
+            for ( unsigned int iasy=0; iasy<nasy_; iasy++ ) {
+                const Assembly* asy = &(core_.at(iasy));
                 for ( auto pin=(*asy)[iz].begin(); 
                     pin     !=(*asy)[iz].end(); ++pin ) {
                     plane_pins.push_back((*pin)->mesh_id());
@@ -99,8 +100,8 @@ namespace mocc {
             }
             // Check against current list of unique planes
             int match_plane = -1;
-            for( int iiz=0; iiz<unique.size(); iiz++ ) {
-                for( int ip=0; ip<plane_pins.size(); ip++ ) {
+            for( unsigned int iiz=0; iiz<unique.size(); iiz++ ) {
+                for( unsigned int ip=0; ip<plane_pins.size(); ip++ ) {
                     if( plane_pins[ip] != unique[iiz][ip] ) {
                         // we dont have a match
                         break;
@@ -117,18 +118,89 @@ namespace mocc {
             if ( match_plane == -1 ) {
                 // This plane is thus far unique.
                 unique.push_back( plane_pins );
-                unique_plane_.push_back( iz );
+                // Create a Plane instance for this collection of Lattices
+                std::vector<const Lattice*> lattices;
+                for (int ilat=0; ilat<core_.nx()*core_.ny(); ilat++) {
+                    const Lattice* lat = &core_.at(ilat)[iz];
+                    lattices.push_back(lat);
+                }
+                planes_.emplace_back(lattices, core_.nx(), core_.ny());
+                unique_plane_.push_back( planes_.size() - 1 );
                 first_unique_.push_back( iz );
             } else {
                 // We did find a match to a previous plane. Push that ID
-                unique_plane_.push_back( first_unique_[match_plane] );
+                unique_plane_.push_back( match_plane );
             }
             plane_pins.clear();
         } // Unique plane search
+
+        // Put together the list of pin boundaries. For now we are treating them
+        // as independent of axial plane
+        x_vec_.push_back(0.0);
+        float_t h_prev = 0.0;
+        for( int ilatx=0; ilatx < core_.nx(); ilatx++ ) {
+            const Assembly* asy = &core_.at(ilatx, 0);
+            const Lattice* lat = &((*asy)[0]);
+            for( auto &h: lat->hx_vec() ) {
+                x_vec_.push_back(h + h_prev);
+                lines_.push_back( Line( Point2(h+h_prev, 0.0), 
+                                        Point2(h+h_prev, hy_) ) );
+                h_prev += h;
+            }
+        }
+        y_vec_.push_back(0.0);
+        h_prev = 0.0;
+        for( int ilaty=0; ilaty < core_.ny(); ilaty++ ) {
+            const Assembly* asy = &core_.at(0, ilaty);
+            const Lattice* lat = &((*asy)[0]);
+            for( auto &h: lat->hy_vec() ) {
+                y_vec_.push_back(h + h_prev);
+                lines_.push_back( Line( Point2(0.0, h+h_prev), 
+                                        Point2(hx_, h+h_prev) ) );
+                h_prev += h;
+            }
+        }
+
+        // Add up the number of regions and XS regions in the entire problem
+        // geometry
+        n_reg_   = 0;
+        n_xsreg_ = 0;
+        for ( auto &a: core_.assemblies() ) {
+            n_reg_ += a->n_reg();
+            n_xsreg_ += a->n_xsreg();
+        }
+
         return;
-    }
+    } // constructor
 
     CoreMesh::~CoreMesh() {
         return;
+    }
+
+    void CoreMesh::trace( std::vector<Point2> &ps ) const {
+        assert(ps.size() == 2);
+        Point2 p1 = ps[0];
+        Point2 p2 = ps[1];
+
+        Line l(p1, p2);
+
+        for( auto &li: lines_ ) {
+            Point2 intersection;
+            if( Intersect(li, l, intersection) == 1 ) {
+                ps.push_back( intersection );
+            }
+        }
+
+        // Sort the points and remove duplicates
+        std::sort(ps.begin(), ps.end());
+        ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
+
+        return;
+    }
+
+    const PinMesh* CoreMesh::get_pinmesh( Point2 &p, unsigned int iz, 
+            int &first_reg ) const {
+        assert( (iz >= 0) & (iz<planes_.size()) );
+        return planes_[iz].get_pinmesh(p, first_reg);
     }
 }

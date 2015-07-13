@@ -1,15 +1,22 @@
 #include "pin_mesh_cyl.hpp"
-#include "files.hpp"
-#include "global_config.hpp"
-#include "error.hpp"
-#include "constants.hpp"
+
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <math.h>
+#include <algorithm>
+#include <cassert>
+
+#include "files.hpp"
+#include "global_config.hpp"
+#include "error.hpp"
+#include "constants.hpp"
 
 using std::string;
 using std::stringstream;
+
+using std::cout;
+using std::endl;
 
 namespace mocc {
     PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input):
@@ -35,7 +42,7 @@ namespace mocc {
     			    << id_;
     		}
     		// Make sure the radii are ordered
-    		for (int i=0; i<xs_radii_.size()-1; i++){
+    		for (unsigned int i=0; i<xs_radii_.size()-1; i++){
     			if (xs_radii_[i] > xs_radii_[i+1]) {
     				// The radii are not ordered. Pitch a fit
     				stringstream msg;
@@ -46,7 +53,7 @@ namespace mocc {
     		}
     		
     		// Make sure the last radius is smaller than a half-pitch
-    		if(*(xs_radii_.end()-1) > pitch_x_*0.5){
+    		if(xs_radii_[xs_radii_.size()-1] > pitch_x_*0.5){
     			Error("Largest radius is too big!");
     		}
     		
@@ -56,7 +63,7 @@ namespace mocc {
     	
     	// Read in the azimuthal subdivisions
     	{
-            sub_azi_ = std::vector<int>();
+            sub_azi_ = VecI();
     		stringstream inBuf(input.child("sub_azi").child_value());
     		int azi;
     		inBuf >> azi;
@@ -69,6 +76,13 @@ namespace mocc {
     		if(sub_azi_.size() > 1){
     			Error("Only supporting on azi type for now.");
     		}
+
+            // Make sure that the azimuthal division is even and <=8. One of
+            // these days, ill solve the more general problem of any number of
+            // azis.
+            if( (sub_azi_[0]%2 != 0) | (sub_azi_[0] > 8) ) {
+                Error("Only supporting even azimuthal subdivisions <=8.");
+            }
     	}
     
     	// Read in the radial subdivisions
@@ -106,23 +120,143 @@ namespace mocc {
     	// XS ring.
     	double rxsi = 0.0;
     	double ri = 0.0;
-    	for(int ixs=0; ixs<n_xsreg_ - 1; ixs++){
+    	for(unsigned int ixs=0; ixs<n_xsreg_ - 1; ixs++){
     		double vn = (xs_radii_[ixs]*xs_radii_[ixs] - rxsi*rxsi) / 
     		            sub_rad_[ixs];
     		
-    		for(int ir=0; ir<sub_rad_[ixs]; ir++){
+    		for(unsigned int ir=0; ir<sub_rad_[ixs]; ir++){
     			double r = sqrt(vn + ri*ri);
     			radii_.push_back(r);
+cout << r << " ";
     			ri = r;
     		}
     		rxsi = xs_radii_[ixs];
     	}
-    	
-    	n_reg_= radii_.size() * sub_azi_[0];
+cout << radii_.size() << endl;
 
+        // Construct Circle objects corresponding to each mesh ring
+        Point2 origin(0.0, 0.0);
+        for( auto ri=radii_.begin(); ri!=radii_.end(); ++ri ) {
+            circles_.push_back(Circle(origin, *ri));
+        }
+
+        // Construct Line objects corresponding to each azimuthal subdivision
+        float_t h_pitch_x = 0.5*pitch_x_;
+        float_t h_pitch_y = 0.5*pitch_y_;
+        int n_azi = sub_azi_[0];
+        Box pin_box( Point2(-h_pitch_x, -h_pitch_y), 
+                     Point2( h_pitch_x,  h_pitch_y) );
+        float_t ang_sep = TWOPI/n_azi;
+        for( int iazi=0; iazi<n_azi; iazi++ ) {
+            Angle ang(iazi*ang_sep, HPI, 0.0);
+            // Point at which the azimuthal subdivision intersects the bounding
+            // box of the pin.
+            Point2 p = pin_box.intersect(origin, ang);
+            lines_.push_back( Line(origin, p) );
+        }
+    	
+    	n_reg_ = (radii_.size()+1) * sub_azi_[0];
+
+
+        // Determine FSR volumes
+        float_t prev_r = 0.0;
+        for( auto &ri: radii_) {
+            float_t voli = PI*(ri*ri - prev_r*prev_r)/n_azi;
+            for( int iazi=0; iazi<n_azi; iazi++ ) {
+                vol_.push_back(voli);
+            }
+            prev_r = ri;
+        }
+
+        // Add the volumes from the outer annular region
+        float_t large_r = radii_[radii_.size()-1];
+        float_t v_outer = (pitch_x_*pitch_y_ - PI*large_r*large_r)/n_azi;
+        for( int ia=0; ia<n_azi; ia++ ) {
+            vol_.push_back(v_outer);
+        }
+        assert( vol_.size() == n_reg_ );
     	return;
     }
 
     PinMesh_Cyl::~PinMesh_Cyl() {
+    }
+
+    int PinMesh_Cyl::trace( Point2 p1, Point2 p2, int first_reg, VecF &s, 
+            VecI &reg ) const {
+        Line l(p1, p2);
+
+        std::vector<Point2> ps;
+
+        // Add the pin entry and exit points to the vector
+        ps.push_back(p1);
+        ps.push_back(p2);
+
+        // Find intersections with the rings
+        for( auto ci=circles_.begin(); ci!=circles_.end(); ci++ ) {
+            Point2 p1;
+            Point2 p2;
+            int ret = Intersect( l, *ci, p1, p2 );
+            if( ret == 2 ) {
+                ps.push_back(p1);
+                ps.push_back(p2);
+            }
+        }
+
+        // Find intersections with the azimuthal subdivisions
+        for( auto &li: lines_ ) {
+            Point2 p;
+            int ret = Intersect( li, l, p );
+            if( ret == 1 ) {
+                ps.push_back(p);
+            }
+        }
+        
+        // Sort the intersection points
+        std::sort(ps.begin(), ps.end());
+
+        // Determine segment lengths and region indices
+        for( unsigned int ip=1; ip<ps.size(); ip++ ) {
+            s.push_back( ps[ip].distance(ps[ip-1]) );
+            unsigned int local_reg = 
+                this->find_reg( Midpoint(ps[ip], ps[ip-1]) );
+            reg.push_back( local_reg + first_reg );
+        }
+        return ps.size()-1;
+    }
+
+    // Find the pin-local region index corresponding to the point provided.
+    //
+    // For now, indexing in the cylindrical pins is goes from the inside radius
+    // out, and from the positive x axis around azimuthally counter-clockwise.
+    // At some point, I might look into other indexing schemes to try and
+    // achieve better locality and cache performance, but for now KISS.
+    int PinMesh_Cyl::find_reg( Point2 p ) const {
+        // Test that the point is inside the pin mesh
+        if( (fabs(p.x) > 0.5*pitch_x_) | (fabs(p.y) > 0.5*pitch_y_) ) {
+            return -1;
+        }
+
+        // Find the radial division of the point
+        float_t r = sqrt( p.x*p.x+p.y*p.y );
+        unsigned int ir = 0;
+        for( ir=0; ir<radii_.size(); ir++ ) {
+            if( r < radii_[ir]) {
+                break;
+            }
+        }
+
+        // This is only a little tricky; if the loop above runs through it means
+        // that the point is outside the largest ring, and therefore in the
+        // annular region outside the pin. Conveniently, ir will be the proper
+        // index corresponding to that region, so we can go ahead and use it.
+        
+        // Find the azimuthal subdivision that the point is in.
+        float_t azi = p.alpha();
+        unsigned int ia = azi/(TWOPI/sub_azi_[0]);
+        unsigned int ireg = ir*sub_azi_[0] + ia;
+
+        assert(ireg < n_reg_);
+
+        return ireg;
     }
 }

@@ -19,21 +19,29 @@ namespace mocc {
             return;
         }
 
-        PinMesh const * const mesh() const {
-            return pin_mesh_;
+        const PinMesh& mesh() const {
+            return *pin_mesh_;
         }
 
         int id() const {
             return id_;
         }
 
+        int n_reg() const {
+            return pin_mesh_->n_reg();
+        }
+
         int mesh_id() const {
             return pin_mesh_->id();
         }
+
+        const VecF& vol() const {
+            return pin_mesh_->vol();
+        }
 	private:
         // Pin ID
-        const int id_;
-        int mesh_id_;
+        const unsigned int id_;
+        unsigned int mesh_id_;
 		// Immutable reference to the pin mesh object (owned by CoreMesh)
 		PinMesh const * pin_mesh_;
 		// Material IDs to apply to each XS region of the pin mesh

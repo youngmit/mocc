@@ -9,67 +9,55 @@
 namespace mocc {
     // Return a new Angle, reflected into the requested octant
     Angle ToOctant( Angle in, int octant ) {
-        assert( 0 < octant & octant < 9 );
-        Angle out;
+        assert( (0 < octant) & (octant < 9) );
 
         switch( octant ) {
             case 1:
-                out.ox = fabs(in.ox);
-                out.oy = fabs(in.oy);
-                out.oz = fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = acos(out.ox/sin(out.theta));
-                break;
+                return Angle(  fabs(in.ox),
+                               fabs(in.oy),
+                               fabs(in.oz),
+                               in.weight );
             case 2:
-                out.ox = -fabs(in.ox);
-                out.oy = fabs(in.oy);
-                out.oz = fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = acos(out.ox/sin(out.theta));
-                break;
+                return Angle( -fabs(in.ox),
+                               fabs(in.oy),
+                               fabs(in.oz),
+                               in.weight );
             case 3:
-                out.ox = -fabs(in.ox);
-                out.oy = -fabs(in.oy);
-                out.oz = fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = TWOPI-acos(out.ox/sin(out.theta));
-                break;
+                return Angle( -fabs(in.ox),
+                              -fabs(in.oy),
+                               fabs(in.oz),
+                               in.weight );
             case 4:
-                out.ox = fabs(in.ox);
-                out.oy = -fabs(in.oy);
-                out.oz = fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = TWOPI-acos(out.ox/sin(out.theta));
-                break;
+                return Angle(  fabs(in.ox),
+                              -fabs(in.oy),
+                               fabs(in.oz),
+                               in.weight );
             case 5:
-                out.ox = fabs(in.ox);
-                out.oy = fabs(in.oy);
-                out.oz = -fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = acos(out.ox/sin(out.theta));
-                break;
+                return Angle(  fabs(in.ox),
+                               fabs(in.oy),
+                              -fabs(in.oz),
+                               in.weight );
             case 6:
-                out.ox = -fabs(in.ox);
-                out.oy = fabs(in.oy);
-                out.oz = -fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = acos(out.ox/sin(out.theta));
-                break;
+                return Angle( -fabs(in.ox),
+                               fabs(in.oy),
+                              -fabs(in.oz),
+                               in.weight );
             case 7:
-                out.ox = -fabs(in.ox);
-                out.oy = -fabs(in.oy);
-                out.oz = -fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = TWOPI-acos(out.ox/sin(out.theta));
-                break;
+                return Angle( -fabs(in.ox),
+                              -fabs(in.oy),
+                              -fabs(in.oz),
+                               in.weight );
             case 8:
-                out.ox = fabs(in.ox);
-                out.oy = -fabs(in.oy);
-                out.oz = -fabs(in.oz);
-                out.theta = acos(out.oz);
-                out.alpha = TWOPI-acos(out.ox/sin(out.theta));
-                break;
+                return Angle(  fabs(in.ox),
+                              -fabs(in.oy),
+                              -fabs(in.oz),
+                               in.weight );
         }
-        return out;
+        return Angle(0.0, 0.0, 0.0);
+    }
+
+    // Change alpha and update ox and oy accordingly
+    Angle ModifyAlpha(Angle in, float_t new_alpha) {
+        return Angle(new_alpha, in.theta, in.weight);
     }
 }

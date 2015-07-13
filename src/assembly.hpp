@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <cassert>
 
 #include "pugixml.hpp"
 
@@ -17,45 +18,65 @@ namespace mocc {
 
         ~Assembly();
 
-        int id() const {
+        unsigned int id() const {
             return id_;
         }
 
-        int nx() const {
+        // Return the number of pins along the x dimension
+        unsigned int nx() const {
             return lattices_[0]->nx();
         }
 
-        int ny() const {
+        // Return the number of pins along the y dimension
+        unsigned int ny() const {
             return lattices_[0]->ny();
         }
 
-        int nz() const {
+        // Return the number of planes
+        unsigned int nz() const {
             return nz_;
         }
 
-        float_t hz( int iz ) const {
+        // Return the total height of the assembly
+        float_t hz( unsigned int iz ) const {
             return hz_[iz];
         }
         
+        // Return the total size of the assembly in the x dimension
         float_t hx() const {
             return hx_;
         }
 
+        // Return the total size of the assembly in the y dimension
         float_t hy() const {
             return hy_;
         }
 
-        const Lattice& operator[](int iz) const {
+        // Return the total number of FSRs in the assembly
+        unsigned int n_reg() const {
+            return n_reg_;
+        }
+
+        // Retutn the total number of XS regions in the assembly
+        unsigned int n_xsreg() const {
+            return n_xsreg_;
+        }
+
+        const Lattice& operator[](unsigned int iz) const {
+            assert( (iz >= 0) & (iz < lattices_.size()) );
             return *lattices_[iz];
         }
 
     private:
-        int id_;
-        int nz_;
+        unsigned int id_;
+        unsigned int nz_;
         VecF hz_;
 
         float_t hx_;
         float_t hy_;
+
+        unsigned int n_reg_;
+        unsigned int n_xsreg_;
 
         std::vector<const Lattice*> lattices_;
     };
