@@ -10,10 +10,40 @@
 #include "angle.hpp"
 #include "geom.hpp"
 
+// Here are provided a couple of classes that facilitate ray tracing for MoC.
+// There is a Ray class, which contains vectors of ray segment lengths and the
+// FSR index corresponding to each segment, as well as the boundary condition
+// index corresponding the start and end points of the ray.
+//
+// The RayData class is a collection of rays, organized by plane, then by angle.
+// Rays are traced only for the set of geometrically-unique planes as determined
+// by the CoreMesh object used to construct a RayData object. Since the rays are
+// only intended for use in a 2-D MoC sweeper, only the first two octants are
+// treated, with octants 3 and 4 being treated by sweeping the rays backwards.
+//
+// Boundary condition indexing is somewhat arbitrary, so here's how it goes:
+//
+// +-17--18--19--20--21--22--23--24-+
+// |                                |
+// 4                                16
+// |                                |
+// 3                                15
+// |                                |
+// 2                                14
+// |                                |
+// 1                                13
+// |                                |
+// +- 5-- 6-- 7-- 8-- 9--10--11--12-+
+//
+// There are technically 4 angles that share a set of boundary conditions: an
+// angle in quadrant 1, its reflected angle in quadrant 2, and the two angles
+// pointing opposite those angles.
+
 namespace mocc {
     class Ray {
     public:
-        Ray( Point2 p1, Point2 p2, int iz, const CoreMesh &mesh );
+        Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
+                const CoreMesh &mesh );
 
         unsigned int nseg() const {
             return nseg_;
@@ -44,6 +74,8 @@ namespace mocc {
         VecI seg_index_;
         // Number of segments in the ray
         unsigned int nseg_;
+        // Boundary condition index for the forward and backward directions
+        unsigned int bc_[2];
     };
 
 

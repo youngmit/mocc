@@ -11,6 +11,8 @@
 
 using std::stringstream;
 using std::string;
+using std::cout;
+using std::cin;
 
 namespace mocc{
 
@@ -23,9 +25,10 @@ MaterialLib::MaterialLib(FileScrubber &input){
 	string line;
 	// Read the first three lines to extract the library header
 	// Description
-	m_description = input.getline();
 	// Number of groups and number of materials
 	{
+        // skip the first line
+        input.getline();
 		stringstream inBuf(input.getline());
 		inBuf >> m_nGrp;
 		if(inBuf.fail()){
@@ -36,6 +39,7 @@ MaterialLib::MaterialLib(FileScrubber &input){
 			Error("Failed to read number of materials!");
 		}
 	}
+
 	// Group boundaries
 	{
 		stringstream inBuf(input.getline());
@@ -55,10 +59,10 @@ MaterialLib::MaterialLib(FileScrubber &input){
 		line = input.getline();
 		
 	    boost::regex headExp("^\\s*XSMACRO\\s+([^\\s]+)\\s+([0-9]+)\\s*$");
-		//boost::smatch results;
-		//regex_match(line, results, headExp);
-        string materialName = "gaafaf";// results[1].str();
-		//std::cout << materialName << std::endl;
+		boost::smatch results;
+		regex_match(line, results, headExp);
+        string materialName = results[1].str();
+		std::cout << materialName << std::endl;
 
         // Read in the non-scattering stuff
         VecF abs;

@@ -17,9 +17,9 @@ std::string FileScrubber::getline(){
 		std::string line;
 		std::getline(m_stream, line);
 		// Strip the comments
-		unsigned int commentPos = line.find(m_flag, 0);
+		int commentPos = line.find(m_flag, 0);
 		if(commentPos != std::string::npos){
-			line.erase(line.find(m_flag, 0), std::string::npos);
+			line.erase(commentPos, std::string::npos);
 		}
 		// Remove whitespace
 		line = trim(line);

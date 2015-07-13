@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "error.hpp"
+#include "constants.hpp"
 
 using std::cout;
 using std::endl;
@@ -12,7 +13,8 @@ using std::endl;
 namespace mocc {
 
     // Construct a ray from a starting point and angle
-    Ray::Ray( Point2 p1, Point2 p2, int iz, const CoreMesh &mesh ) {
+    Ray::Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
+            const CoreMesh &mesh ) {
         std::vector<Point2> ps;
 
         ps.push_back(p1);
@@ -34,6 +36,9 @@ namespace mocc {
         }
 
         nseg_ = seg_len_.size();
+
+        bc_[0] = bc1;
+        bc_[1] = bc2;
 
         return;
     }
@@ -110,31 +115,65 @@ cout << ang_quad_ << endl;
                 // to cast it into the first octant.
                 int Nx = Nx_[iang%ang_quad_.ndir_oct()];
                 int Ny = Ny_[iang%ang_quad_.ndir_oct()];
+                int Nxy = Nx+Ny;
+                int bc1 = 0;
+                int bc2 = 0;
                 float_t space = spacing_[iang%ang_quad_.ndir_oct()];
                 float_t space_x = fabs( space/sin(ang->alpha) );
                 float_t space_y = fabs( space/cos(ang->alpha) );
 
                 std::vector<Ray> rays;
-                // Handle rays entering on the x-normal face
+                // Handle rays entering on the x-normal faces
                 for ( int iray=0; iray<Ny; iray++ ) {
                     Point2 p1;
                     if( ang->ox > 0.0 ) {
                         // We are in octant 1, enter from the left/west
                         p1.x = 0.0;
+                        bc1 = iray;
                     } else {
                         // We are in octant 2, enter from the right/east
+                        bc1 = iray+Nxy;
                         p1.x = hx;
                     }
                     p1.y = (0.5 + iray)*space_y;
                     Point2 p2 = core_box.intersect(p1, *ang);
-                    rays.emplace_back(Ray(p1, p2, iplane, mesh));
+                    if( fp_equiv_abs(p2.x, hx) ) {
+                        // BC is on the right/east boundary of the core
+                        bc2 = p2.y/space_y + Nx+Ny;
+                    } else if ( fp_equiv_abs(p2.y, hy) ) {
+                        // BC is on the top/north boundary of the core
+                        bc2 = p2.x/space_x + Nxy+Ny;
+                    } else if ( fp_equiv_abs(p2.x, 0.0) ) {
+                        // BC is on the left/west boundary of the core
+                        bc2 = p2.y/space_y;
+                    } else {
+                        Error("Something has gone horribly wrong in the ray "
+                              "trace.");
+                    }
+                    rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
                 }
+
+                // Handle rays entering on the y-normal face
                 for ( int iray=0; iray<Nx; iray++ ) { 
                     Point2 p1;
                     p1.x = (0.5 + iray)*space_x;
                     p1.y = 0.0;
                     Point2 p2 = core_box.intersect(p1, *ang);
-                    rays.emplace_back(Ray(p1, p2, iplane, mesh));
+                    bc1 = iray+Ny;
+                    if( fp_equiv_abs(p2.x, hx) ) {
+                        // BC is on the right/east boundary of the core
+                        bc2 = p2.y/space_y + Nx+Ny;
+                    } else if( fp_equiv_abs(p2.y, hy) ) {
+                        // BC is on the top/north boundary of the core
+                        bc2 = p2.x/space_x + Nxy+Ny;
+                    } else if( fp_equiv_abs(p2.x, 0.0) ) {
+                        // BC is on the left/west boundary of the core
+                        bc2 = p2.y/space_y;
+                    } else {
+                        Error("Something has gone horribly wrong in the ray "
+                              "trace.");
+                    }
+                    rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
                 }
 
                 // Count number of ray crossings in each FSR

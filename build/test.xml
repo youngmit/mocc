@@ -10,7 +10,7 @@
 
 <sweeper type="moc">
     <ang_quad type="ls" order="4" />
-    <rays spacing="0.001" />
+    <rays spacing="0.1" />
 </sweeper>
 
 <material_lib path="c5g7.xsl">

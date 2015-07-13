@@ -35,6 +35,7 @@ namespace mocc {
         cout << "Found material library specification: " << matLibName << endl;
         FileScrubber matLibFile( matLibName.c_str(), "!" );
         mat_lib_ = MaterialLib( matLibFile );
+cout << "Done with material library" << endl;
         
         // Parse material IDs
         for (pugi::xml_node mat = input.child( "material_lib" ).child( "material" ); 
@@ -44,6 +45,7 @@ namespace mocc {
             mat_lib_.assignID( mat.attribute( "id" ).as_int(),
                                mat.attribute( "name" ).value() );
         }
+cout << "Done with materials" << endl;
         
         // Parse pins
         for ( pugi::xml_node pin = input.child( "pin" ); pin; 

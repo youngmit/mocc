@@ -48,7 +48,7 @@ namespace mocc {
         // Overload the < operator. A point is considered "less than" another
         // point if it has a smaller x-coordinate
         bool operator<(const Point2 &other) const {
-            return x < other.x;
+            return y < other.y;
         }
 
         // Point equivalence is based upon approximate floating point
@@ -108,8 +108,8 @@ namespace mocc {
             x = p1_.x;
             d = ( p1_.x - p.x ) / ox;
             y = p.y+oy*d;
-            if ( (d > GEOM_EPS) & (d < d_min) & (y > p1_.y) & (y < p2_.y )) {
-                d_min = d;
+            if ( (fabs(d) > GEOM_EPS) & (fabs(d) < d_min) & (y > p1_.y) & (y < p2_.y )) {
+                d_min = fabs(d);
                 p_out.x = x;
                 p_out.y = y;
                 p_out.ok = true;
@@ -118,8 +118,8 @@ namespace mocc {
             x = p2_.x;
             d = ( p2_.x - p.x ) / ox;
             y = p.y+oy*d;
-            if ( (d > GEOM_EPS) & (d < d_min) & (y > p1_.y) & (y < p2_.y) ) {
-                d_min = d;
+            if ( (fabs(d) > GEOM_EPS) & (fabs(d) < d_min) & (y > p1_.y) & (y < p2_.y) ) {
+                d_min = fabs(d);
                 p_out.x = x;
                 p_out.y = y;
                 p_out.ok = true;
@@ -129,8 +129,8 @@ namespace mocc {
             y = p1_.y;
             d = ( p1_.y - p.y ) / oy;
             x = p.x+ox*d;
-            if ( (d > GEOM_EPS) & (d < d_min) & (x > p1_.x) & (x < p2_.x) ) {
-                d_min = d;
+            if ( (fabs(d) > GEOM_EPS) & (fabs(d) < d_min) & (x > p1_.x) & (x < p2_.x) ) {
+                d_min = fabs(d);
                 p_out.x = x;
                 p_out.y = y;
                 p_out.ok = true;
@@ -139,8 +139,8 @@ namespace mocc {
             y = p2_.y;
             d = ( p2_.y - p.y ) / oy;
             x = p.x+ox*d;
-            if ( (d > GEOM_EPS) & (d < d_min) & (x > p1_.x) & (x < p2_.x) ) {
-                d_min = d;
+            if ( (fabs(d) > GEOM_EPS) & (fabs(d) < d_min) & (x > p1_.x) & (x < p2_.x) ) {
+                d_min = fabs(d);
                 p_out.x = x;
                 p_out.y = y;
                 p_out.ok = true;
