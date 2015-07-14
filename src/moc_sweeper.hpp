@@ -8,6 +8,7 @@
 #include "ray_data.hpp"
 #include "core_mesh.hpp"
 #include "angular_quadrature.hpp"
+#include "xs_mesh.hpp"
 
 namespace mocc {
     class MoCSweeper: public TransportSweeper{
@@ -23,5 +24,7 @@ namespace mocc {
     private:
         AngularQuadrature ang_quad_;
         RayData rays_;
+
+        void sweep1g( int group );
     };
 }

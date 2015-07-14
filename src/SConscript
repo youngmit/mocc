@@ -28,6 +28,8 @@ objs.append(env.Object('plane.cpp'))
 objs.append(env.Object('assembly.cpp'))
 objs.append(env.Object('core.cpp'))
 objs.append(env.Object('core_mesh.cpp'))
+objs.append(env.Object('xs_mesh.cpp'))
+objs.append(env.Object('source.cpp'))
 objs.append(env.Object('transport_sweeper_factory.cpp'))
 
 Import('lib_objs')

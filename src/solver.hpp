@@ -9,7 +9,16 @@ namespace mocc {
     class Solver{
     public:
         virtual ~Solver() { };
+
+        // Perform a full solution to the class of problem that the most-derived
+        // solver type is designed to solve. This is usually called upon the
+        // top-level solver by the driver.
         virtual void solve()=0;
+        // Perfom some sort of intermediate step in solving the problem of
+        // interest, typically as part of another solver. What specifically is
+        // done is quite solver specific, so check the derived class to see what
+        // it does for a specific case.
+        virtual void step()=0;
     private:
     };
 

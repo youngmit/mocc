@@ -21,16 +21,18 @@ pugixml_include = Dir('#lib/pugixml/src')
 cxx = 'clang++'
 
 cxxflags = "-std=c++11 -Wall"
+linkflags = "-lboost_regex"
 
 if GetOption('debug-build'):
     cxxflags += " -g"
 if GetOption('profile'):
     cxxflags += " -pg"
+    linkflags += " -pg"
     cxx = "g++"
 
 env = Environment(CXX=cxx,
                   CXXFLAGS=cxxflags,
-                  LINKFLAGS="-lboost_regex",
+                  LINKFLAGS=linkflags,
                   CPPPATH=[pugixml_include])
 
 

@@ -12,6 +12,7 @@ namespace mocc{
     public:
         EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
         void solve();
+        void step();
     
     private:
         FixedSourceSolver m_fss;

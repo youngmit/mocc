@@ -58,6 +58,10 @@ namespace mocc {
         // in which the point resides
         virtual int find_reg( Point2 p ) const =0;
 
+        // Return the number of flat source regions corresponding to an XS
+        // region.
+        virtual int n_fsrs( unsigned int xsreg ) const =0;
+
     protected:
     	unsigned int id_;
         unsigned int n_reg_;

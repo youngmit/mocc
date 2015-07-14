@@ -30,11 +30,11 @@ MaterialLib::MaterialLib(FileScrubber &input){
         // skip the first line
         input.getline();
 		stringstream inBuf(input.getline());
-		inBuf >> m_nGrp;
+		inBuf >> n_grp_;
 		if(inBuf.fail()){
 			Error("Failed to read number of groups!");
 		}
-		inBuf >> m_nMaterial;
+		inBuf >> n_material_;
 		if(inBuf.fail()){
 			Error("Failed to read number of materials!");
 		}
@@ -43,18 +43,18 @@ MaterialLib::MaterialLib(FileScrubber &input){
 	// Group boundaries
 	{
 		stringstream inBuf(input.getline());
-		for (int i=0; i<m_nGrp; i++){
+		for( unsigned int i=0; i<n_grp_; i++ ) {
 			double bound;
 			inBuf >> bound;
-			m_gBounds.push_back(bound);
-			if(inBuf.fail()){
+			g_bounds_.push_back(bound);
+			if( inBuf.fail() ) {
 				Error("Trouble reading group bounds!");
 			}
 		}
 	}
 	
 	// Read in material data
-	for (int i=0; i<m_nMaterial; i++){
+	for (unsigned int i=0; i<n_material_; i++){
 		// Get the name of the material
 		line = input.getline();
 		
@@ -69,7 +69,7 @@ MaterialLib::MaterialLib(FileScrubber &input){
         VecF nuFiss;
         VecF fiss;
         VecF chi;
-        for(int ig=0; ig<m_nGrp; ig++){
+        for(unsigned int ig=0; ig<n_grp_; ig++){
             stringstream inBuf(input.getline());
             double val;
 
@@ -88,10 +88,10 @@ MaterialLib::MaterialLib(FileScrubber &input){
 
         // Read in the scattering table
         std::vector<VecF> scatTable;
-        for(int ig=0; ig<m_nGrp; ig++){
+        for(unsigned int ig=0; ig<n_grp_; ig++){
             stringstream inBuf(input.getline());
             VecF scatRow;
-            for(int igg=0; igg<m_nGrp; igg++){
+            for(unsigned int igg=0; igg<n_grp_; igg++){
                 double val;
                 inBuf >> val;
                 scatRow.push_back(val);
@@ -100,15 +100,16 @@ MaterialLib::MaterialLib(FileScrubber &input){
         }
 		
         // produce a Material object and add it to the library
-        m_materials.insert(std::pair<const char*, Material>(
+        lib_materials_.insert(std::pair<std::string, Material>(
             materialName.c_str(), 
             Material(abs, nuFiss, fiss, chi, scatTable)));
 
 	}
 }
 
-void MaterialLib::assignID(int id, const char* name){
-    m_ids.insert(std::pair<int, const char*>(id, name));
+void MaterialLib::assignID(int id, std::string name){
+    const Material* mat_p = &lib_materials_.at(name);
+    materials_.insert( std::pair<int, const Material*>( id, mat_p) );
     return;
 }
 

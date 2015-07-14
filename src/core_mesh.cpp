@@ -35,7 +35,6 @@ namespace mocc {
         cout << "Found material library specification: " << matLibName << endl;
         FileScrubber matLibFile( matLibName.c_str(), "!" );
         mat_lib_ = MaterialLib( matLibFile );
-cout << "Done with material library" << endl;
         
         // Parse material IDs
         for (pugi::xml_node mat = input.child( "material_lib" ).child( "material" ); 
@@ -45,7 +44,6 @@ cout << "Done with material library" << endl;
             mat_lib_.assignID( mat.attribute( "id" ).as_int(),
                                mat.attribute( "name" ).value() );
         }
-cout << "Done with materials" << endl;
         
         // Parse pins
         for ( pugi::xml_node pin = input.child( "pin" ); pin; 
@@ -94,10 +92,10 @@ cout << "Done with materials" << endl;
         for ( unsigned int iz=0; iz<nz_; iz++) {
             // Form a list of all pin meshes in the core plane iz
             for ( unsigned int iasy=0; iasy<nasy_; iasy++ ) {
-                const Assembly* asy = &(core_.at(iasy));
-                for ( auto pin=(*asy)[iz].begin(); 
-                    pin     !=(*asy)[iz].end(); ++pin ) {
-                    plane_pins.push_back((*pin)->mesh_id());
+                const Assembly& asy = core_.at(iasy);
+                for ( auto &pin: asy[iz] ) {
+                    plane_pins.push_back(pin->mesh_id());
+                    core_pins_.push_back(pin);
                 }
             }
             // Check against current list of unique planes

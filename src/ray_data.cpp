@@ -189,6 +189,9 @@ cout << ang_quad_ << endl;
                         [](int i){return i==0;}) ) {
                     Warn("No rays passed through at least one FSR. Try finer "
                             "ray spacing or larger regions.");
+                    for( unsigned int ifsr=0; ifsr<nrayfsr.size(); ifsr++) {
+                        cout << ifsr << " " << nrayfsr[ifsr] << endl;
+                    }
                 }
 
                 // Move the stack of rays into the vector of angular ray sets.

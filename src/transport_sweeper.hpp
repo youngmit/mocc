@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "global_config.hpp"
+#include "xs_mesh.hpp"
+#include "source.hpp"
 
 namespace mocc{
     class TransportSweeper{
@@ -11,12 +13,24 @@ namespace mocc{
         virtual ~TransportSweeper(){ }
         virtual void sweep(int group) =0;
         
-        int n_reg(){
+        unsigned int n_reg() const {
             return n_reg_;
         }
+
+        // Return a reference to the sweeper's XSMesh
+        const XSMesh& xs_mesh() const {
+            return xs_mesh_;
+        }
+
+        // Assign a source object to the sweeper.
+
     protected:
-        int n_reg_;
-        int ng_;
+        unsigned int n_reg_;
+        unsigned int ng_;
+
+        XSMesh xs_mesh_;
+
+        const Source* source_;
 
         VecF phis_;
     };

@@ -1,6 +1,6 @@
 <mesh id="1" type="cyl" pitch="1.26">
     <radii>0.56</radii>
-    <sub_radii> 3</sub_radii>
+    <sub_radii> 4</sub_radii>
     <sub_azi>8</sub_azi>
 </mesh>
 <mesh id="2" type="rect" pitch="1.26">
@@ -10,7 +10,7 @@
 
 <sweeper type="moc">
     <ang_quad type="ls" order="4" />
-    <rays spacing="0.1" />
+    <rays spacing="0.05" />
 </sweeper>
 
 <material_lib path="c5g7.xsl">
@@ -34,7 +34,7 @@
 </pin>
 
 <lattice id="1" nx="3" ny="2">
-    2 2 2
+    1 1 2
     2 2 2
 </lattice>
 
@@ -60,9 +60,8 @@
     </lattices>
 </assembly>
 
-<core nx="3" ny="2">
-    1 1 1
-    1 1 1
+<core nx="1" ny="1">
+    1
 </core>
 
 

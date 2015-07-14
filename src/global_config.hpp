@@ -9,7 +9,7 @@ typedef float float_t;
 #define FLOAT_EPS 1e-5
 #else
 typedef double float_t;
-#define FLOAT_EPS 1e-14
+#define FLOAT_EPS 1e-12
 #endif
 
 // General purpose vector of floats

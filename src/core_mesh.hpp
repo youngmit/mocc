@@ -66,6 +66,20 @@ namespace mocc {
             assert( (0 <= iz) & (iz < planes_.size()) );
             return planes_[iz];
         }
+
+        std::vector<const Pin*>::const_iterator begin_pin() const {
+            return core_pins_.cbegin();
+        }
+
+        std::vector<const Pin*>::const_iterator end_pin() const {
+            return core_pins_.cend();
+        }
+        
+        // Return a reference to the material library
+        const MaterialLib& mat_lib() const {
+            return mat_lib_;
+        }
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
@@ -85,6 +99,12 @@ namespace mocc {
         // Vector of Plane instances. There should be one for each unique planar
         // geometry
         std::vector<Plane> planes_;
+
+        // Vector of references to all pins in the core. This facilitates
+        // iteration through the entire problem geometry in a linear fashion.
+        // The pins are ordered in the same order that flat source regions are
+        // indexed.
+        std::vector<const Pin*> core_pins_;
 
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
@@ -132,7 +152,7 @@ namespace mocc {
         // plane.
         std::vector<VecI> first_reg_pin_;
 
-        // Vector of Line objects, representing pin boundaries.  This greatly
+        // Vector of Line objects, representing pin boundaries. This greatly
         // simplifies the ray trace.
         std::vector<Line> lines_;
 

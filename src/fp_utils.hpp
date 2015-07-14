@@ -14,11 +14,11 @@ namespace mocc {
             i2 = 0x80000000 - i2;
         }
 
-        return abs(i1 - i2) < 200; 
+        return abs(i1 - i2) < 100; 
     }
 
     inline bool fp_equiv_rel(float_t v1, float_t v2) {
-        return fabs(v1-v2)/v1 < FLOAT_EPS;
+        return fabs(v1-v2)/fabs(v1) < FLOAT_EPS;
     }
     inline bool fp_equiv_abs(float_t v1, float_t v2) {
         return fabs(v1-v2) < FLOAT_EPS;

@@ -12,7 +12,7 @@ namespace mocc {
     // Determine which type of pin to create from an XML object, produce a mesh
     // of the appropriate type and return a shared pointer to the object.
     PinMesh* PinMeshFactory( const pugi::xml_node &input ) {
-    	PinMesh* pm;
+    	PinMesh* pm=nullptr;
     	
     	// Extract the type of mesh to make
     	std::string type = input.attribute( "type" ).value();

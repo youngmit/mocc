@@ -15,11 +15,18 @@ namespace mocc {
 
         int find_reg( Point2 p ) const;
 
+        // If i ever get more general with the azimuthal subdivision, i will
+        // have to generalize this as well. make sure not to forget.
+        int n_fsrs( unsigned int xsreg ) const {
+            if( xsreg<xs_radii_.size() ) {
+                return sub_rad_[xsreg]*sub_azi_[0];
+            }
+            return sub_azi_[0];
+        }
+
     private:
     	// Radii of material rings
     	std::vector<float_t> xs_radii_;
-    	// Number of mesh rings
-    	unsigned int m_nRing;
     	// Radii of actual mesh rings
     	std::vector<float_t> radii_;
         // Vector of circle objects.
@@ -30,6 +37,5 @@ namespace mocc {
     	VecI sub_azi_;
     	// Number of radial subdivisions for each material ring
     	VecI sub_rad_;
-
     };
 }

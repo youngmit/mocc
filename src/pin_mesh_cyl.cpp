@@ -152,6 +152,7 @@ cout << radii_.size() << endl;
             // Point at which the azimuthal subdivision intersects the bounding
             // box of the pin.
             Point2 p = pin_box.intersect(origin, ang);
+cout << "azi point: " << iazi*ang_sep << " " << p << endl;
             lines_.push_back( Line(origin, p) );
         }
     	
@@ -175,6 +176,7 @@ cout << radii_.size() << endl;
             vol_.push_back(v_outer);
         }
         assert( vol_.size() == n_reg_ );
+
     	return;
     }
 
@@ -211,9 +213,10 @@ cout << radii_.size() << endl;
             }
         }
         
-        // Sort the intersection points
+        // Sort the intersection points and remove duplicates
         std::sort(ps.begin(), ps.end());
-
+        ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
+        
         // Determine segment lengths and region indices
         for( unsigned int ip=1; ip<ps.size(); ip++ ) {
             s.push_back( ps[ip].distance(ps[ip-1]) );
@@ -226,7 +229,7 @@ cout << radii_.size() << endl;
 
     // Find the pin-local region index corresponding to the point provided.
     //
-    // For now, indexing in the cylindrical pins is goes from the inside radius
+    // For now, indexing in the cylindrical pins goes from the inside radius
     // out, and from the positive x axis around azimuthally counter-clockwise.
     // At some point, I might look into other indexing schemes to try and
     // achieve better locality and cache performance, but for now KISS.
@@ -255,7 +258,7 @@ cout << radii_.size() << endl;
         unsigned int ia = azi/(TWOPI/sub_azi_[0]);
         unsigned int ireg = ir*sub_azi_[0] + ia;
 
-        assert(ireg < n_reg_);
+        assert( (0 <= ireg) & (ireg < n_reg_ ) );
 
         return ireg;
     }

@@ -38,6 +38,10 @@ namespace mocc {
         const VecF& vol() const {
             return pin_mesh_->vol();
         }
+
+        const VecI& mat_ids() const {
+            return mat_IDs_;
+        }
 	private:
         // Pin ID
         const unsigned int id_;

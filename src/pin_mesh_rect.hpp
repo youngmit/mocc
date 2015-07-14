@@ -17,6 +17,10 @@ namespace mocc {
                 VecI &reg ) const;
 
         int find_reg( Point2 p ) const;
+
+        int n_fsrs( unsigned int xsreg ) const {
+            return n_reg_;
+        }
     private:
         VecF hx_;
         VecF hy_;
