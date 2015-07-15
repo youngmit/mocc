@@ -16,7 +16,7 @@ typedef double float_t;
 typedef std::vector<float_t> VecF;
 typedef std::vector<unsigned int> VecI;
 typedef std::vector<int> VecSI;
-};
+}
 
 #define PROG_NAME "MOCC"
 

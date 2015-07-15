@@ -1,5 +1,7 @@
 #pragma once
 
+#include "eigen_interface.hpp"
+
 #include "xs_mesh.hpp"
 
 namespace mocc {
@@ -10,7 +12,7 @@ namespace mocc {
 
         // Initialize the source with the external source, if it exists, then
         // add the groups contribution from the multi-group fission source
-        void fission( VecF fs, int ig );
+        void fission( const MatrixX& fs, int ig );
 
         // Add the contribution from in-scattering from other groups. At some
         // point, ill play with upscattering iterations, but for now KISS.
@@ -28,7 +30,7 @@ namespace mocc {
         bool has_external_;
 
         // Single-group source
-        VecF source_1g_;
+        MatrixX source_1g_;
     };
 
     typedef std::shared_ptr<Source> SP_Source_t;

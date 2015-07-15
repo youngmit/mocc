@@ -16,7 +16,9 @@ AddOption(
     default=False)
 
 
-pugixml_include = Dir('#lib/pugixml/src')
+include_path = []
+include_path.append(Dir('#lib/pugixml/src'))
+include_path.append(Dir('#lib/eigen'))
 
 cxx = 'clang++'
 
@@ -30,10 +32,10 @@ if GetOption('profile'):
     linkflags += " -pg"
     cxx = "g++"
 
-env = Environment(CXX=cxx,
-                  CXXFLAGS=cxxflags,
-                  LINKFLAGS=linkflags,
-                  CPPPATH=[pugixml_include])
+env = Environment( CXX=cxx,
+                   CXXFLAGS=cxxflags,
+                   LINKFLAGS=linkflags,
+                   CPPPATH=include_path )
 
 
 env['ENV']['TERM'] = os.environ['TERM']
