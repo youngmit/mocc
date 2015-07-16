@@ -20,13 +20,19 @@ namespace mocc{
     class ScatMat{
     public:
         ScatMat(std::vector<VecF> scat);
-        const ScatRow& from(int ig) const;
+        const ScatRow& from(int ig) const {
+            return rows_[ig];
+        }
+
         // Return the total out-scattering cross section for group ig
-        float_t out(int ig) const;
+        float_t out( unsigned int ig ) const {
+            return out_[ig]; 
+        };
     private:
         unsigned int ng_;
         VecF scat_;
         std::vector<ScatRow> rows_;
+        VecF out_;
     };
     
     

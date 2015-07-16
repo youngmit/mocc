@@ -6,8 +6,9 @@
 namespace mocc {
     FixedSourceSolver::FixedSourceSolver( const pugi::xml_node &input, 
             const CoreMesh &mesh ):
-        sweeper_( UP_Sweeper_t(TransportSweeperFactory(input, mesh)) ),
-        source_( mesh.n_reg(), sweeper_->xs_mesh() )
+        sweeper_( UP_Sweeper_t( TransportSweeperFactory(input, mesh) ) ),
+        source_( mesh.n_reg(), sweeper_->xs_mesh() ),
+        fs_(nullptr)
     {
         
     }
@@ -20,10 +21,12 @@ namespace mocc {
 
     // Perform a single group sweep
     void FixedSourceSolver::step() {
-        for( int ig=0; ig<ng_; ig++ ) {
+        for( unsigned int ig=0; ig<ng_; ig++ ) {
+            // Set up the source
+            source_.fission( *fs_, ig );
+            source_.in_scatter( ig );
+
             sweeper_->sweep(ig);
         }
     }
 }
-
-

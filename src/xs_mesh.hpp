@@ -22,7 +22,16 @@ namespace mocc {
 
     // For now im using the lazy implementation of the xsmesh region class.
     class XSMeshRegion {
+    friend class XSMesh;
     public:
+        XSMeshRegion( unsigned int ng, const VecI& fsrs ) {
+            xsmactr_ = VecF(ng);
+            xsmacnf_ = VecF(ng);
+            xsmackf_ = VecF(ng);
+            xsmacch_ = VecF(ng);
+            reg_ = fsrs;
+        }
+
         const float_t* xsmactr() const {
             return xsmactr_.data();
         }
@@ -39,12 +48,19 @@ namespace mocc {
             return xsmacch_.data();
         }
 
+        const VecI& reg() const {
+            return reg_;
+        }
+
     private:
+        // List of FSR indices that use this XS mesh region
+        VecI reg_;
+
+        // Actual group constants for this XS mesh region
         VecF xsmactr_;
         VecF xsmacnf_;
         VecF xsmackf_;
         VecF xsmacch_;
-
     };
 
     class XSMesh {
@@ -61,14 +77,20 @@ namespace mocc {
             return ng_;
         }
         
+        // Iterators to the underlying vector
+        const std::vector<XSMeshRegion>::const_iterator begin() const {
+            return regions_.cbegin();
+        }
+
+        const std::vector<XSMeshRegion>::const_iterator end() const {
+            return regions_.cend(); 
+        }
 
     private:
         // list of mesh regions corresponding to each XSMesh region
-        std::vector<VecI> reg_;
-        VecF xsmactr_;
-        VecF xsmacnf_;
-        VecF xsmackf_;
-        VecF xsmacch_;
         unsigned int ng_;
+
+        // Vector of xs mesh regions
+        std::vector<XSMeshRegion> regions_;
     };
 }

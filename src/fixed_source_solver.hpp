@@ -25,7 +25,9 @@ namespace mocc{
         
         // Set the group-independent fission source. The group-dependent fission
         // source is calculated internally
-        void set_FissionSource();
+        void set_fission_source( const MatrixX* fs) {
+            fs_ = fs;
+        }
     
         // return the number of flat source regions
         unsigned int n_reg() {
@@ -35,6 +37,9 @@ namespace mocc{
     private:
         unsigned int ng_;
         UP_Sweeper_t sweeper_;
-        Source source_; 
+        Source source_;
+        // Pointer to the group-independent fission source. Usually comes from
+        // an eigenvalue solver, if present
+        const MatrixX* fs_;
     };
 }

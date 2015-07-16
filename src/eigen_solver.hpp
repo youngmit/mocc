@@ -2,6 +2,7 @@
 
 #include "pugixml.hpp"
 
+#include "eigen_interface.hpp"
 #include "solver.hpp"
 #include "core_mesh.hpp"
 #include "fixed_source_solver.hpp"
@@ -15,6 +16,9 @@ namespace mocc{
         void step();
     
     private:
-        FixedSourceSolver m_fss;
+        FixedSourceSolver fss_;
+        
+        // Fission source
+        MatrixX fission_source_;
     };
 }

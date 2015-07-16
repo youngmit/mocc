@@ -7,7 +7,6 @@
 namespace mocc {
     class Source {
     public:
-        Source();
         Source( int nreg, const XSMesh& xs_mesh );
 
         // Initialize the source with the external source, if it exists, then
@@ -16,14 +15,14 @@ namespace mocc {
 
         // Add the contribution from in-scattering from other groups. At some
         // point, ill play with upscattering iterations, but for now KISS.
-        void in_scatter( int ig );
+        void in_scatter( unsigned int ig );
 
         // Return a pointer to the source
         const float_t* get() const {
             return source_1g_.data();
         }
     private:
-        const XSMesh* xs_mesh_;
+        const XSMesh& xs_mesh_;
         unsigned int ng_;
         // This is true if an external source has been specified. For now it's
         // initialized false.

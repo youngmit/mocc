@@ -2,36 +2,45 @@
 
 #include <iostream>
 
+using std::cout;
+using std::endl;
+using std::cin;
+
+
 namespace mocc{
 
     // Method definitions for scattering matrix type
     // Accepts a matrix of scattering cross sections in [][]
     ScatMat::ScatMat(std::vector<VecF> scat){
+
         // Imply ng_ from the size of the passed-in vectors
-        int ng_ = scat.size();
+        ng_ = scat.size();
+        out_ = VecF(ng_, 0.0);
+
         int minG = 0;
         int maxG = 0;
         for(int to=0; to<ng_; to++){
             for(int from=0; from<ng_; from++){
-                if(scat[to][from] > 0.0){
-                    scat_.push_back(scat[to][from]);
+                if(scat[from][to] > 0.0){
+                    scat_.push_back(scat[from][to]);
                 }
+                out_[from] += scat[to][from];
             }
         }
-    
+
         int pos = 0;
         int prevPos = 0;
         for(int to=0; to<ng_; to++){
             bool found_min = false;
             for(int from=0; from<ng_; from++){
-                if(scat[to][from] > 0.0){
+                if(scat[from][to] > 0.0){
                     if(!found_min){
                         found_min = true;
                         minG = from;
                     }
                     pos++;
                 }
-                if(scat[to][from] == 0.0 && found_min){
+                if(scat[from][to] == 0.0 && found_min){
                     maxG = from-1;
                     break;
                 }
@@ -41,21 +50,6 @@ namespace mocc{
         }
     
     }
-    
-    const ScatRow& ScatMat::from( int ig ) const {
-        return rows_[ig];
-    }
-    
-    float_t ScatMat::out( int ig ) const {
-        float_t v = 0.0;
-        for( int to=0; to<ng_; to++ ) {
-            if( (rows_[to].minG <= ig) & (rows_[to].maxG <= ig) ) {
-                v += rows_[to].from[ig];
-            }
-        }
-        return v;
-    }
-    
     
     Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch, 
                        std::vector<VecF> scat): xssc_(scat){
