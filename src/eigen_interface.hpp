@@ -9,9 +9,9 @@
 
 namespace mocc {
 #ifdef FORCE_SINGLE
-typedef Eigen::MatrixXf MatrixX;
+typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixX;
 #else
-typedef Eigen::MatrixXd MatrixX;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixX;
 #endif
 
 }
