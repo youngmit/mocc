@@ -24,12 +24,15 @@ namespace mocc {
     class XSMeshRegion {
     friend class XSMesh;
     public:
-        XSMeshRegion( unsigned int ng, const VecI& fsrs ) {
-            xsmactr_ = VecF(ng);
-            xsmacnf_ = VecF(ng);
-            xsmackf_ = VecF(ng);
-            xsmacch_ = VecF(ng);
-            reg_ = fsrs;
+        XSMeshRegion( const VecI& fsrs, const VecF& xstr, const VecF& xsnf,
+                const VecF& xsch, const VecF& xsf, const ScatMat& xssc ):
+            reg_(fsrs),
+            xsmactr_(xstr),
+            xsmacnf_(xsnf),
+            xsmackf_(xsf),
+            xsmacsc_(xssc)
+        {
+            return;
         }
 
         const float_t* xsmactr() const {
@@ -48,6 +51,10 @@ namespace mocc {
             return xsmacch_.data();
         }
 
+        const ScatMat& xsmacsc() const {
+            return xsmacsc_;
+        }
+
         const VecI& reg() const {
             return reg_;
         }
@@ -61,6 +68,9 @@ namespace mocc {
         VecF xsmacnf_;
         VecF xsmackf_;
         VecF xsmacch_;
+
+        // Scattering matrix
+        ScatMat xsmacsc_; 
     };
 
     class XSMesh {

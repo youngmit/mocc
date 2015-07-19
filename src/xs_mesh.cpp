@@ -46,26 +46,32 @@ namespace mocc {
         }
 
         // lets see how we did
-        for( auto &row: fsrs ) {
-            cout << "xs mesh region fsrs: ";
-            for( auto &i: row ) {
-                cout << i << " ";
-            }
-            cout << endl;
-        }
+        //for( auto &row: fsrs ) {
+        //    cout << "xs mesh region fsrs: ";
+        //    for( auto &i: row ) {
+        //        cout << i << " ";
+        //    }
+        //    cout << endl;
+        //}
 
         // Calculate the necessary cross sections and store them in the
         // XSMesh-local arrays
         for( unsigned int imat=0; imat<mat_lib.n_materials(); imat++ ) {
             unsigned int lib_key = matv[imat];
             const Material& mati = *mat_lib.materials().at(lib_key);
-            regions_.emplace_back( ng_, fsrs[imat] );
+            // This is a bit of a hack until i use Eigen vectors or something
+            // homebrew for storing these cross sections. need to add total
+            // scattering to absorption to get xstr
+            VecF tmp_tr(ng_, 0.0);
             for( unsigned int ig=0; ig<ng_; ig++ ) {
-                regions_.back().xsmacnf_[ig] = mati.xsnf()[ig];
-                regions_.back().xsmactr_[ig] = mati.xsab()[ig]+mati.xssc().out(ig);
-                regions_.back().xsmacch_[ig] = mati.xsch()[ig];
-                regions_.back().xsmackf_[ig] = mati.xsf()[ig];
+                tmp_tr[ig] = mati.xsab()[ig]+mati.xssc().out(ig);
             }
+            regions_.emplace_back( fsrs[imat], 
+                    tmp_tr,
+                    mati.xsnf(), 
+                    mati.xsch(), 
+                    mati.xsf(), 
+                    mati.xssc() );
         }
 
         // Again, lets see how we did

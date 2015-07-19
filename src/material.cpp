@@ -17,8 +17,8 @@ namespace mocc{
         ng_ = scat.size();
         out_ = VecF(ng_, 0.0);
 
-        int minG = 0;
-        int maxG = 0;
+        int min_g = 0;
+        int max_g = 0;
         for(int to=0; to<ng_; to++){
             for(int from=0; from<ng_; from++){
                 if(scat[from][to] > 0.0){
@@ -36,16 +36,16 @@ namespace mocc{
                 if(scat[from][to] > 0.0){
                     if(!found_min){
                         found_min = true;
-                        minG = from;
+                        min_g = from;
                     }
                     pos++;
                 }
                 if(scat[from][to] == 0.0 && found_min){
-                    maxG = from-1;
+                    max_g = from-1;
                     break;
                 }
             }
-            rows_.push_back(ScatRow(minG, maxG, &scat_[prevPos]));
+            rows_.push_back(ScatRow(min_g, max_g, &scat_[prevPos]));
             prevPos = pos;
         }
     

@@ -8,19 +8,19 @@ namespace mocc{
     // Scattering matrix row
     struct ScatRow{
     public:
-        const int minG;
-        const int maxG;
+        const int min_g;
+        const int max_g;
         float_t const * const from;
     
         ScatRow(int min, int max, float_t const * const from):
-            minG(min), maxG(max), from(from){}
+            min_g(min), max_g(max), from(from){}
     };
     
     // Scattering matrix structure
     class ScatMat{
     public:
         ScatMat(std::vector<VecF> scat);
-        const ScatRow& from(int ig) const {
+        const ScatRow& to(int ig) const {
             return rows_[ig];
         }
 
