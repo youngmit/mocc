@@ -2,7 +2,7 @@ project(MOCC)
 cmake_minimum_required(VERSION 3.2)
 
 message("Compiler ID: '${CMAKE_CXX_COMPILER_ID}'")
-if ("${CMAKE_CXX_COMIPLER_ID}" STREQUAL "GNU")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message("Using GNU")
     set(warnings "-Wall")
     set(options "-std=c++11")
