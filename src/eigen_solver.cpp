@@ -1,5 +1,7 @@
 #include "eigen_solver.hpp"
 
+#include "error.hpp"
+
 namespace mocc{
     EigenSolver::EigenSolver( const pugi::xml_node &input, 
             const CoreMesh &mesh ):
@@ -7,7 +9,34 @@ namespace mocc{
         fission_source_( fss_.n_reg(), 1 ),
         fission_source_prev_( fss_.n_reg(), 1 )
     {
-        
+        if( input.empty() ) {
+            Error("No input specified for the eigenvalue solver.");
+        }
+
+        // grab the convergence constraints from the XML
+        int in_int = 0;
+        float_t in_float = 0.0;
+
+        // K tolerance
+        in_float = input.attribute("k_tol").as_float(-1.0);
+        if( in_float <= 0.0 ) {
+            Error("Invalid k tolerance.");
+        }
+        tolerance_k_ = in_float;
+
+        // Psi tolerance
+        in_float = input.attribute("psi_tol").as_float(-1.0);
+        if( in_float <= 0.0 ) {
+            Error("Invalid psi tolerance.");
+        }
+        tolerance_psi_ = in_float;
+
+        // Max iterations
+        in_int = input.attribute("max_iter").as_int(-1);
+        if( in_int < 0 ) {
+            Error("Invalid number of maximum iterations.");
+        }
+        max_iterations_ = in_int;
     }
 
     // Perform a full-blown eigenvalue solve. Start with a guess for the
@@ -30,9 +59,14 @@ namespace mocc{
         float_t error_k = 1.0; // K residual
         float_t error_psi = 1.0; // L-2 norm of the fission source residual
 
-        do {
+        unsigned int n_iterations = 0;
 
-        } while( (error_k > tolerance_k_) & (error_psi > tolerance_psi_) );
+        bool done = false;
+        while( !done ) {
+            
+            done = (error_k < tolerance_k_) & (error_psi < tolerance_psi_) & 
+                (n_iterations >= max_iterations_ );
+        }
 
     }
 

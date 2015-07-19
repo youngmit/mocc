@@ -33,5 +33,8 @@ namespace mocc{
 
         // Convergence criterion for the fission source distribution (L-2 norm)
         float_t tolerance_psi_;
+
+        // Maximum allowable outer iterations
+        unsigned int max_iterations_;
     };
 }

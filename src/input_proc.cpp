@@ -34,7 +34,8 @@ namespace mocc{
         core_mesh_ = std::make_shared<CoreMesh>( doc );
 
         // Generate a top-level solver
-        solver_ = SolverFactory( doc, *core_mesh_.get() );
+
+        solver_ = SolverFactory( doc.child("solver"), *core_mesh_.get() );
 
         LogFile << endl;
         return;
