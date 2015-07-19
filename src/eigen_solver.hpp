@@ -23,10 +23,10 @@ namespace mocc{
         MatrixX fission_source_prev_;
 
         // Current guess for k
-        float_t keff;
+        float_t keff_;
 
         // Previous guess for k
-        float_t keff_prev;
+        float_t keff_prev_;
 
         // Convergence criterion for the system eigenvalue
         float_t tolerance_k_;
