@@ -18,7 +18,20 @@ namespace mocc{
     private:
         FixedSourceSolver fss_;
         
-        // Fission source
+        // Fission source, and previous iterate
         MatrixX fission_source_;
+        MatrixX fission_source_prev_;
+
+        // Current guess for k
+        float_t keff;
+
+        // Previous guess for k
+        float_t keff_prev;
+
+        // Convergence criterion for the system eigenvalue
+        float_t tolerance_k_;
+
+        // Convergence criterion for the fission source distribution (L-2 norm)
+        float_t tolerance_psi_;
     };
 }

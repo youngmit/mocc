@@ -22,6 +22,14 @@ namespace mocc{
         void solve();
 
         void step();
+
+        // Initialize the state of the FSS to start a new problem. For now this
+        // just calls the same routine on the TransporSweeper, which in turn
+        // initializes the scalar flux, boundary conditions, etc to some sort of
+        // halfway-reasonable starting values.
+        void initialize() {
+            sweeper_->initialize();
+        }
         
         // Set the group-independent fission source. The group-dependent fission
         // source is calculated internally
@@ -32,6 +40,11 @@ namespace mocc{
         // return the number of flat source regions
         unsigned int n_reg() {
             return sweeper_->n_reg();
+        }
+
+        // Return a constant reference to the transport sweeper
+        const TransportSweeper* sweeper() const {
+            return sweeper_.get();
         }
     
     private:

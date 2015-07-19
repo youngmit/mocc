@@ -4,6 +4,7 @@
 
 #include "pugixml.hpp"
 
+#include "eigen_interface.hpp"
 #include "transport_sweeper.hpp"
 #include "ray_data.hpp"
 #include "core_mesh.hpp"
@@ -20,6 +21,10 @@ namespace mocc {
         }
         
         void sweep(int group);
+
+        void initialize();
+
+        void calc_fission_source( float_t k,  MatrixX& fission_source) const;
         
     private:
         AngularQuadrature ang_quad_;

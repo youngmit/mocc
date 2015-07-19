@@ -3,11 +3,12 @@
 #include "error.hpp"
 
 namespace mocc {
-    Source::Source( int nreg, const XSMesh& xs_mesh ):
+    Source::Source( int nreg, const XSMesh& xs_mesh, const MatrixX& flux ):
         xs_mesh_(xs_mesh),
         ng_(xs_mesh.n_grp()),
         has_external_(false),
-        source_1g_(nreg, 1)
+        source_1g_(nreg, 1),
+        flux_(flux)
     {
         return;
     }
@@ -34,6 +35,38 @@ namespace mocc {
     // Compute the contribution to the source from inscattering from other
     // groups
     void Source::in_scatter( unsigned int ig ) {
+        for( auto &xsr: xs_mesh_ ) {
+            const ScatRow& scat_row = xsr.xsmacsc().to(ig);
+            unsigned int min_g = scat_row.min_g;
+            unsigned int max_g = scat_row.max_g;
+            for( unsigned int igg=min_g; igg<max_g; igg++ ) {
+                // Dont add a contribution for self-scatter. TODO: it might be a
+                // good idea to remove self-scatter from the scattering matrix
+                // and store it separately. May also benefit the self-scatter
+                // routine to have less indirection.
+                if( igg != ig ) {
+                    for( auto &ireg: xsr.reg() ) {
+                        source_1g_(ireg) += 
+                            flux_(igg, ireg)*scat_row.from[igg-min_g];
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    // This can get away with being const, since we are actually returning the
+    // source to the caller. Nothing should get touched internally
+    void Source::self_scatter( unsigned int ig, MatrixX& qbar ) const {
+        for( auto &xsr: xs_mesh_ ) {
+            const ScatRow& scat_row = xsr.xsmacsc().to(ig);
+            float_t xssc = scat_row.from[ig-scat_row.min_g];
+            float_t r_fpi_tr = RFPI/xsr.xsmactr()[ig];
+            for ( auto &ireg: xsr.reg() ) {
+                qbar(ireg) = ( source_1g_(ireg) + flux_(ig,ireg)*xssc ) * 
+                    r_fpi_tr;
+            }
+        }
         return;
     }
 }

@@ -7,10 +7,10 @@ namespace mocc {
     FixedSourceSolver::FixedSourceSolver( const pugi::xml_node &input, 
             const CoreMesh &mesh ):
         sweeper_( UP_Sweeper_t( TransportSweeperFactory(input, mesh) ) ),
-        source_( mesh.n_reg(), sweeper_->xs_mesh() ),
+        source_( mesh.n_reg(), sweeper_->xs_mesh(), sweeper_->cflux() ),
         fs_(nullptr)
     {
-        
+        return;
     }
 
     // Perform source iteration
