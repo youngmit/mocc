@@ -13,6 +13,11 @@
 
 namespace mocc {
     class MoCSweeper: public TransportSweeper{
+        struct BC {
+            float_t fw;
+            float_t bw;
+        };
+        typedef std::vector< std::vector< std::vector<BC> > > BCSet_t;
     public:
         MoCSweeper( const pugi::xml_node &input,
                     const CoreMesh &mesh );

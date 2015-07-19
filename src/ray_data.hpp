@@ -80,10 +80,21 @@ namespace mocc {
 
 
     class RayData {
+        typedef std::vector< std::vector <std::vector<Ray> > > RaySet_t;
     public:
         RayData( const pugi::xml_node &input, 
                  const AngularQuadrature &ang_quad,
                  const CoreMesh &mesh );
+
+        // Iterator to the begining of the ray data (by plane)
+        RaySet_t::const_iterator begin() const {
+            return rays_.cbegin();
+        }
+
+        // Iterator to the end of the ray data (by plane)
+        RaySet_t::const_iterator end() const {
+            return rays_.cend();
+        }
     private:
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
@@ -92,7 +103,7 @@ namespace mocc {
         // geometrically-unique planes, the second index addresses the
         // individual angles, which span octants 1 and 2, and the last index
         // treats all of the rays for the given plane and angle.
-        std::vector< std::vector< std::vector<Ray> > > rays_;
+        RaySet_t rays_;
 
         // Ray spacings for each angle. These vary from those specified due to
         // modularization

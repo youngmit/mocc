@@ -43,7 +43,6 @@ namespace mocc {
         return;
     }
 
-
     RayData::RayData( const pugi::xml_node &input, 
             const AngularQuadrature &ang_quad,
             const CoreMesh &mesh ):

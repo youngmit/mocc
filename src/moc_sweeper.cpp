@@ -19,6 +19,19 @@ namespace mocc {
     }
 
     void MoCSweeper::sweep( int group ) {
+        for( auto &plane_rays: rays_ ) {
+            int iang = 0;
+            for( auto &ang_rays: plane_rays ) {
+                for( auto &ray: ang_rays ) {
+                    // Initialize from bc
+                    
+                    // Propagate through core geometry
+                    
+                    // Store boundary condition
+                } // Rays
+                iang++;
+            } // angles
+        } // planes
         return;
     }
 
