@@ -43,6 +43,18 @@ namespace mocc {
             return hy_;
         }
 
+        unsigned int nx() const {
+            return nx_;
+        }
+
+        unsigned int ny() const {
+            return ny_;
+        }
+
+        unsigned int nz() const {
+            return nz_;
+        }
+
         int n_unique_planes() const {
             return first_unique_.size();
         }

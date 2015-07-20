@@ -19,7 +19,7 @@ namespace mocc {
         int find_reg( Point2 p ) const;
 
         int n_fsrs( unsigned int xsreg ) const {
-            return n_reg_;
+            return 1;
         }
     private:
         VecF hx_;

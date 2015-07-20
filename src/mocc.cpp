@@ -30,5 +30,9 @@ int main(int argc, char* argv[]){
 	// Parse the input file
 	InputProc inProc(argv[1]);
 
+    // Pull a shared pointer to the top-level solver and make it go
+    SP_Solver_t solver = inProc.solver();
+    solver->solve();
+
     StopLogFile();
 }

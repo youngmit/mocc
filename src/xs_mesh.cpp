@@ -36,23 +36,24 @@ namespace mocc {
         for( auto pini=mesh.begin_pin(); pini!=mesh.end_pin(); ++pini ) {
             const PinMesh& pm = (*pini)->mesh();
             const VecI& mat_ids = (*pini)->mat_ids();
-            int ixsreg = 0;
-            for( auto &mat: mat_ids ) {
+            ixsreg = 0;
+            for( auto &mat_id: mat_ids ) {
                 // post-increment pushes value, then increments
                 for( int reg=0; reg<pm.n_fsrs(ixsreg); reg++) {
-                    fsrs[mat].push_back(ireg++);
+                    fsrs[mat_id].push_back(ireg++);
                 }
+                ixsreg++;
             }
         }
 
         // lets see how we did
-        //for( auto &row: fsrs ) {
-        //    cout << "xs mesh region fsrs: ";
-        //    for( auto &i: row ) {
-        //        cout << i << " ";
-        //    }
-        //    cout << endl;
-        //}
+        for( auto &row: fsrs ) {
+            cout << "xs mesh region fsrs: ";
+            for( auto &i: row ) {
+                cout << i << " ";
+            }
+            cout << endl;
+        }
 
         // Calculate the necessary cross sections and store them in the
         // XSMesh-local arrays

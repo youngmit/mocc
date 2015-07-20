@@ -41,8 +41,9 @@ namespace mocc {
             unsigned int row = ny_ - iy - 1;
             for ( unsigned int ix=0; ix<nx_; ix++ ) {
                 unsigned int col = ix;
+                int asy_id = asy_vec[(ny_-iy-1)*nx_+ix];
                 Assembly* asy_p = 
-                    assemblies.at( asy_vec[(ny_-iy-1)*nx_+ix] ).get();
+                    assemblies.at( asy_id ).get();
                 assemblies_[row*nx_ + col] = asy_p;
             }
         }

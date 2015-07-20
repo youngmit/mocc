@@ -12,6 +12,7 @@ namespace mocc{
     class TransportSweeper{
     public:
         TransportSweeper( const CoreMesh& mesh ):
+            mesh_( mesh ),
             xs_mesh_( mesh ),
             n_reg_( mesh.n_reg() ),
             ng_( xs_mesh_.n_grp() ),
@@ -47,6 +48,11 @@ namespace mocc{
             return flux_(ig, ireg);
         }
 
+        // Return the number of energy groups
+        unsigned int n_grp() const {
+            return ng_;
+        }
+
         // Return a const reference to the MG flux. This is the same as the
         // above for now, since im not sure if i want to expose a non-const
         // reference. Probably will at some point, we will see. It'll be less
@@ -56,6 +62,7 @@ namespace mocc{
             return flux_;
         }
     protected:
+        const CoreMesh& mesh_;
         XSMesh xs_mesh_;
 
         unsigned int n_reg_;

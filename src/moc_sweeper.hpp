@@ -17,7 +17,7 @@ namespace mocc {
             float_t fw;
             float_t bw;
         };
-        typedef std::vector< std::vector< std::vector<BC> > > BCSet_t;
+        typedef std::vector< std::vector< std::vector< std::vector<BC> > > > BCSet_t;
     public:
         MoCSweeper( const pugi::xml_node &input,
                     const CoreMesh &mesh );
@@ -34,6 +34,9 @@ namespace mocc {
     private:
         AngularQuadrature ang_quad_;
         RayData rays_;
+        
+        // Boundary condition. ordered by energy, plane, angle, ray
+        BCSet_t boundary_;
 
         void sweep1g( int group );
     };

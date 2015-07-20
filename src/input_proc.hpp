@@ -14,6 +14,10 @@ namespace mocc{
             return core_mesh_;
         }
 
+        SP_Solver_t solver() {
+            return solver_;
+        }
+
     private:
         // Master core mesh object. Can be passed back to the driver or wherever
         SP_CoreMesh_t core_mesh_;

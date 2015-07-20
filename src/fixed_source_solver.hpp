@@ -34,6 +34,7 @@ namespace mocc{
         // Set the group-independent fission source. The group-dependent fission
         // source is calculated internally
         void set_fission_source( const MatrixX* fs) {
+std::cout << "Assigning fission source." << std::endl;
             fs_ = fs;
         }
     
@@ -48,11 +49,11 @@ namespace mocc{
         }
     
     private:
-        unsigned int ng_;
         UP_Sweeper_t sweeper_;
         Source source_;
         // Pointer to the group-independent fission source. Usually comes from
         // an eigenvalue solver, if present
         const MatrixX* fs_;
+        unsigned int ng_;
     };
 }

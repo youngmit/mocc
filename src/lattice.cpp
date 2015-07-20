@@ -110,9 +110,9 @@ namespace mocc {
             // Store the number of FSRs and XS regions
             n_reg_    = 0;
             n_xsreg_  = 0;
-            for ( auto pi=pins_.begin(); pi!=pins_.end(); ++pi ) {
-                n_reg_   += (*pi)->mesh().n_reg();
-                n_xsreg_ += (*pi)->mesh().n_xsreg();
+            for ( auto &pi: pins_ ) {
+                n_reg_   += pi->mesh().n_reg();
+                n_xsreg_ += pi->mesh().n_xsreg();
             }
 
             unsigned int prev = 0;

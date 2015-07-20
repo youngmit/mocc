@@ -82,6 +82,7 @@ cout << ang_quad_ << endl;
 
             Nx_.push_back(Nx);
             Ny_.push_back(Ny);
+            Nrays_.push_back(Nx+Ny);
 
             float_t new_alpha = atan( hy*Nx/(hx*Ny) );
             ang = ModifyAlpha( ang, new_alpha );
@@ -92,6 +93,15 @@ cout << "spacing: " << space << endl;
             spacing_.push_back( space );
 
             iang++;
+        }
+        
+        // push more Nx, Ny, N, space onto their respective vectors, so we dont
+        // have to wory about %'ing by ndir_oct
+        for( iang=0; iang<ang_quad_.ndir_oct(); iang++ ) {
+            Nx_.push_back(Nx_[iang]);
+            Ny_.push_back(Ny_[iang]);
+            Nrays_.push_back(Nrays_[iang]);
+            spacing_.push_back(spacing_[iang]);
         }
 
 cout << "Modularized Angular quadrature " << endl;

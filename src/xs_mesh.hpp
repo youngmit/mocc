@@ -30,6 +30,7 @@ namespace mocc {
             xsmactr_(xstr),
             xsmacnf_(xsnf),
             xsmackf_(xsf),
+            xsmacch_(xsch),
             xsmacsc_(xssc)
         {
             return;
@@ -94,6 +95,10 @@ namespace mocc {
 
         const std::vector<XSMeshRegion>::const_iterator end() const {
             return regions_.cend(); 
+        }
+
+        unsigned int size() const {
+            return regions_.size();
         }
 
     private:

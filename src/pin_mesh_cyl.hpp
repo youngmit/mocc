@@ -18,10 +18,13 @@ namespace mocc {
         // If i ever get more general with the azimuthal subdivision, i will
         // have to generalize this as well. make sure not to forget.
         int n_fsrs( unsigned int xsreg ) const {
+            int n = 0;
             if( xsreg<xs_radii_.size() ) {
-                return sub_rad_[xsreg]*sub_azi_[0];
+                n = sub_rad_[xsreg]*sub_azi_[0];
+            } else {
+                n = sub_azi_[0];
             }
-            return sub_azi_[0];
+            return n;
         }
 
     private:

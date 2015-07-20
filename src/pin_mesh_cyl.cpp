@@ -53,7 +53,7 @@ namespace mocc {
     		}
     		
     		// Make sure the last radius is smaller than a half-pitch
-    		if(xs_radii_[xs_radii_.size()-1] > pitch_x_*0.5){
+    		if(xs_radii_.back() > pitch_x_*0.5){
     			Error("Largest radius is too big!");
     		}
     		

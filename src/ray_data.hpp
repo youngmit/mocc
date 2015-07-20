@@ -95,6 +95,11 @@ namespace mocc {
         RaySet_t::const_iterator end() const {
             return rays_.cend();
         }
+
+        // Return the number of rays for the given angle index
+        unsigned int n_rays( unsigned int iang ) const {
+            return Nrays_[iang];
+        }
     private:
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
@@ -113,6 +118,8 @@ namespace mocc {
         VecI Nx_;
         // Number of rays lying on the x-normal face of the core for each angle
         VecI Ny_;
+        // Total number of rays for a given angle
+        VecI Nrays_;
 
         // Number of planes that we have ray data for. This is copied from
         // n_unique_planes() on the CoreMesh used to initialize the ray data.

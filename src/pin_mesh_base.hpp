@@ -59,7 +59,7 @@ namespace mocc {
         virtual int find_reg( Point2 p ) const =0;
 
         // Return the number of flat source regions corresponding to an XS
-        // region.
+        // region (indexed pin-locally).
         virtual int n_fsrs( unsigned int xsreg ) const =0;
 
     protected:
