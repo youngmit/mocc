@@ -10,8 +10,10 @@
 namespace mocc {
 #ifdef FORCE_SINGLE
 typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixX;
+typedef Eigen::Array<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> ArrayX;
 #else
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixX;
+typedef Eigen::Array<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> ArrayX;
 #endif
 
 }

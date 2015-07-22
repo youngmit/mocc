@@ -33,7 +33,7 @@ namespace mocc{
         
         // Set the group-independent fission source. The group-dependent fission
         // source is calculated internally
-        void set_fission_source( const MatrixX* fs) {
+        void set_fission_source( const ArrayX* fs) {
 std::cout << "Assigning fission source." << std::endl;
             fs_ = fs;
         }
@@ -53,7 +53,7 @@ std::cout << "Assigning fission source." << std::endl;
         Source source_;
         // Pointer to the group-independent fission source. Usually comes from
         // an eigenvalue solver, if present
-        const MatrixX* fs_;
+        const ArrayX* fs_;
         unsigned int ng_;
     };
 }

@@ -76,7 +76,7 @@ namespace mocc{
             // and old, since we will be filling it with new in the next
             // iteration anyways.
             fission_source_prev_ = fission_source_-fission_source_prev_;
-            error_psi = fission_source_prev_.norm();
+            error_psi = fission_source_prev_.matrix().norm();
             done = (error_k < tolerance_k_) & (error_psi < tolerance_psi_) & 
                 (n_iterations >= max_iterations_ );
         }

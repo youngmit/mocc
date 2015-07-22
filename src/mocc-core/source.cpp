@@ -3,7 +3,7 @@
 #include "error.hpp"
 
 namespace mocc {
-    Source::Source( int nreg, const XSMesh& xs_mesh, const MatrixX& flux ):
+    Source::Source( int nreg, const XSMesh& xs_mesh, const ArrayX& flux ):
         xs_mesh_(xs_mesh),
         ng_(xs_mesh.n_grp()),
         has_external_(false),
@@ -16,7 +16,7 @@ namespace mocc {
     // Multiply the group-independent fission source by chi[ig] to get the
     // fission source into the current group. If an external source is defines,
     // start with that.
-    void Source::fission( const MatrixX& fs, int ig ) {       
+    void Source::fission( const ArrayX& fs, int ig ) {       
         if( has_external_ ) {
             Error( "No support for external sources yet." );
         } else {
@@ -57,7 +57,7 @@ namespace mocc {
 
     // This can get away with being const, since we are actually returning the
     // source to the caller. Nothing should get touched internally
-    void Source::self_scatter( unsigned int ig, MatrixX& qbar ) const {
+    void Source::self_scatter( unsigned int ig, ArrayX& qbar ) const {
         for( auto &xsr: xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
             float_t xssc = scat_row.from[ig-scat_row.min_g];

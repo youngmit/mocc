@@ -17,7 +17,10 @@ namespace mocc {
             float_t fw;
             float_t bw;
         };
-        typedef std::vector< std::vector< std::vector< std::vector<BC> > > > BCSet_t;
+        typedef std::vector< 
+                std::vector<
+                std::vector<
+                std::vector< BC > > > > BCSet_t;
     public:
         MoCSweeper( const pugi::xml_node &input,
                     const CoreMesh &mesh );
@@ -29,7 +32,7 @@ namespace mocc {
 
         void initialize();
 
-        void calc_fission_source( float_t k,  MatrixX& fission_source) const;
+        void calc_fission_source( float_t k,  ArrayX& fission_source) const;
         
     private:
         AngularQuadrature ang_quad_;

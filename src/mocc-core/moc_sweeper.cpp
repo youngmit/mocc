@@ -23,10 +23,12 @@ namespace mocc {
         for( auto &group_rays: boundary_ ) {
             group_rays.resize( mesh_.nz() );
             for( auto &angle_rays: group_rays ) {
-                angle_rays.resize( ang_quad_.ndir_oct()*2 );
+                // We actually allocate BCs for all 4 octants to make things a
+                // little simpler.
+                angle_rays.resize( ang_quad_.ndir_oct()*4 );
                 int iang = 0;
                 for( auto ang_it=ang_quad_.octant(1); 
-                        ang_it!=ang_quad_.octant(3); ang_it++ ) {
+                        ang_it!=ang_quad_.octant(5); ang_it++ ) {
                     angle_rays[iang].resize(rays_.n_rays(iang));
                     iang++;
                 }
@@ -88,7 +90,7 @@ namespace mocc {
     }
 
     void MoCSweeper::calc_fission_source( float_t k, 
-            MatrixX& fission_source ) const {
+            ArrayX& fission_source ) const {
 
         float_t rkeff = 1.0/k;
         fission_source.fill(0.0);

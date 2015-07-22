@@ -27,7 +27,7 @@ namespace mocc{
         // Given the current estimate of a system eigenvalue, calculate the
         // group-independent fission source and store in the passed array
         virtual void calc_fission_source( float_t k, 
-                MatrixX& fission_source) const = 0;
+                ArrayX& fission_source) const = 0;
         
         unsigned int n_reg() const {
             return n_reg_;
@@ -39,7 +39,7 @@ namespace mocc{
         }
 
         // Return a reference to the MG flux
-        const MatrixX& flux() const {
+        const ArrayX& flux() const {
             return flux_;
         }
 
@@ -58,7 +58,7 @@ namespace mocc{
         // reference. Probably will at some point, we will see. It'll be less
         // refactoring if I start with an explicit const version and use it
         // wherever I know I won't need mutability.
-        const MatrixX& cflux() const {
+        const ArrayX& cflux() const {
             return flux_;
         }
     protected:
@@ -71,7 +71,7 @@ namespace mocc{
         const Source* source_;
 
         // Multi-group scalar flux
-        MatrixX flux_;
+        ArrayX flux_;
     };
 
     typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;

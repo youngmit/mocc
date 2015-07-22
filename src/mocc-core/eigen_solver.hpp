@@ -19,8 +19,8 @@ namespace mocc{
         FixedSourceSolver fss_;
         
         // Fission source, and previous iterate
-        MatrixX fission_source_;
-        MatrixX fission_source_prev_;
+        ArrayX fission_source_;
+        ArrayX fission_source_prev_;
 
         // Current guess for k
         float_t keff_;
