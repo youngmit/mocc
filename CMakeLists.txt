@@ -1,5 +1,6 @@
 project(MOCC)
 cmake_minimum_required(VERSION 3.2)
+enable_testing()
 
 message("Compiler ID: '${CMAKE_CXX_COMPILER_ID}'")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

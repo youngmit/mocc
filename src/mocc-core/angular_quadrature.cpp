@@ -25,6 +25,9 @@ namespace mocc {
 
             // Generate angles for octant 1
             angles_ = GenSn( order );
+        } else {
+            std::cout << input.attribute("type").value() << std::endl;
+            Error("Unrecognized angular quadrature type specified.");
         }
 
         // Store the number of angles per octant

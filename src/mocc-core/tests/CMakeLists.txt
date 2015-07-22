@@ -1,0 +1,4 @@
+add_executable(testAngularQuadrature test_angular_quadrature.cpp)
+target_link_libraries(testAngularQuadrature pugixml)
+target_link_libraries(testAngularQuadrature mocc-core)
+add_test(testAngularQuadratrue testAngularQuadrature)
