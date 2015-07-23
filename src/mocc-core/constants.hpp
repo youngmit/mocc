@@ -19,6 +19,14 @@ enum Surface {
     TOP
 };
 
+// Boundary condition enumeration
+enum Boundary {
+    VACUUM,
+    REFLECT,
+    PARALLEL,
+    PERIODIC
+};
+
 enum TraceDir {
     FW,
     BW
