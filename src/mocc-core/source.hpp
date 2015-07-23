@@ -22,7 +22,8 @@ namespace mocc {
         // sweeper in its "inner" iterations, and therefore does not mutate the
         // interal representation of the source, but instead returns the result
         // to the caller through the qbar argument.
-        void self_scatter( unsigned int ig, ArrayX& qbar ) const;
+        void self_scatter( unsigned int ig, ArrayX& flux_1g, 
+                ArrayX& qbar ) const;
 
         // Return a pointer to the source
         const float_t* get() const {

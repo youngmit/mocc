@@ -34,7 +34,6 @@ namespace mocc{
         // Set the group-independent fission source. The group-dependent fission
         // source is calculated internally
         void set_fission_source( const ArrayX* fs) {
-std::cout << "Assigning fission source." << std::endl;
             fs_ = fs;
         }
     

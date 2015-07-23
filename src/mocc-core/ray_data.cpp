@@ -110,6 +110,7 @@ cout << ang_quad_ << endl;
 
         // Trace rays
         Box core_box = Box(Point2(0.0, 0.0), Point2(hx, hy));
+        max_seg_ = 0;
         // loop over the planes of unique geometry
         for ( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
             // generate rays for each angle in octants 1 and 2
@@ -122,12 +123,12 @@ cout << ang_quad_ << endl;
                 // We only define Nx, Ny and spacing above for the first octant,
                 // so mod the angle index with the number of angles per octant
                 // to cast it into the first octant.
-                int Nx = Nx_[iang%ang_quad_.ndir_oct()];
-                int Ny = Ny_[iang%ang_quad_.ndir_oct()];
+                int Nx = Nx_[iang];
+                int Ny = Ny_[iang];
                 int Nxy = Nx+Ny;
                 int bc1 = 0;
                 int bc2 = 0;
-                float_t space = spacing_[iang%ang_quad_.ndir_oct()];
+                float_t space = spacing_[iang];
                 float_t space_x = fabs( space/sin(ang->alpha) );
                 float_t space_y = fabs( space/cos(ang->alpha) );
 
@@ -160,6 +161,7 @@ cout << ang_quad_ << endl;
                               "trace.");
                     }
                     rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
+                    max_seg_ = std::max( rays.back().nseg(), max_seg_ );
                 }
 
                 // Handle rays entering on the y-normal face
@@ -183,6 +185,7 @@ cout << ang_quad_ << endl;
                               "trace.");
                     }
                     rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
+                    max_seg_ = std::max( rays.back().nseg(), max_seg_ );
                 }
 
                 // Count number of ray crossings in each FSR
@@ -221,7 +224,7 @@ cout << ang_quad_ << endl;
                  ang!=ang_quad_.octant(3);
                  ++ang ) {
                 std::vector<Ray>& rays = rays_[iplane][iang];
-                float_t space = spacing_[iang%ang_quad_.ndir_oct()];
+                float_t space = spacing_[iang];
                 float_t wgt = ang->weight*0.5;
 
                 for( auto &ray: rays ) {

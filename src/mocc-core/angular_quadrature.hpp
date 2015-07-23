@@ -23,16 +23,27 @@ namespace mocc {
         ~AngularQuadrature() {
         }
 
+        // Return an iterator to the first angle in the quadrature
         std::vector<Angle>::const_iterator begin() const {
             return angles_.cbegin();
         }
 
+        // Return an iterator past the last angle in the quadrature
         std::vector<Angle>:: const_iterator end() const {
             return angles_.cend();
         }
 
+        // Return an iterator to the first angle in the given octant. Octants
+        // are indexed from 1, following mathematical convention. Also,
+        // following convention for container classes, specifying octant 9, is
+        // tantamount to end().
         std::vector<Angle>::const_iterator octant( int octant ) const {
             return angles_.cbegin() + (octant-1)*ndir_oct_;
+        }
+
+        // Return a const reference to the angle indexed
+        const Angle& operator[]( int iang ) {
+            return angles_[iang];
         }
 
         // Return the number of angles in each octant

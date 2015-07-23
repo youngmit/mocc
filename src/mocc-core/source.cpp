@@ -1,5 +1,5 @@
 #include "source.hpp"
-
+#include "source.hpp"
 #include "error.hpp"
 
 namespace mocc {
@@ -47,7 +47,7 @@ namespace mocc {
                 if( igg != ig ) {
                     for( auto &ireg: xsr.reg() ) {
                         source_1g_(ireg) += 
-                            flux_(igg, ireg)*scat_row.from[igg-min_g];
+                            flux_(ireg, igg)*scat_row.from[igg-min_g];
                     }
                 }
             }
@@ -57,13 +57,14 @@ namespace mocc {
 
     // This can get away with being const, since we are actually returning the
     // source to the caller. Nothing should get touched internally
-    void Source::self_scatter( unsigned int ig, ArrayX& qbar ) const {
+    void Source::self_scatter( unsigned int ig, ArrayX& flux_1g, 
+            ArrayX& qbar ) const {
         for( auto &xsr: xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
             float_t xssc = scat_row.from[ig-scat_row.min_g];
             float_t r_fpi_tr = RFPI/xsr.xsmactr()[ig];
             for ( auto &ireg: xsr.reg() ) {
-                qbar(ireg) = ( source_1g_(ireg) + flux_(ig,ireg)*xssc ) * 
+                qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
                     r_fpi_tr;
             }
         }

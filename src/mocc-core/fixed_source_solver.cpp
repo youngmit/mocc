@@ -11,6 +11,7 @@ namespace mocc {
         fs_( nullptr ),
         ng_( sweeper_->n_grp() )
     {
+        sweeper_->assign_source( &source_ );
         return;
     }
 

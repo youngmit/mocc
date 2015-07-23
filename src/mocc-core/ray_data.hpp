@@ -53,8 +53,14 @@ namespace mocc {
         const VecF& seg_len() const {
             return seg_len_;
         }
+
         // Only return a reference to a single segment length
         float_t& seg_len( int iseg ) {
+            return seg_len_[iseg];
+        }
+
+        // Return a const segment length
+        float_t seg_len( int iseg ) const {
             return seg_len_[iseg];
         }
 
@@ -100,6 +106,11 @@ namespace mocc {
         unsigned int n_rays( unsigned int iang ) const {
             return Nrays_[iang];
         }
+
+        // Return the ray spacing for the given angle
+        float_t spacing( int iang ) {
+            return spacing_[iang];
+        }
     private:
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
@@ -118,12 +129,16 @@ namespace mocc {
         VecI Nx_;
         // Number of rays lying on the x-normal face of the core for each angle
         VecI Ny_;
+
         // Total number of rays for a given angle
         VecI Nrays_;
 
         // Number of planes that we have ray data for. This is copied from
         // n_unique_planes() on the CoreMesh used to initialize the ray data.
         unsigned int n_planes_;
+
+        // Maximum number of ray segments in a single ray
+        unsigned int max_seg_;
     };
 
     typedef std::shared_ptr<RayData> SP_RayData_t;

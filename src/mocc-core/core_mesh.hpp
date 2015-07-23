@@ -92,6 +92,12 @@ namespace mocc {
             return mat_lib_;
         }
 
+        // Return the first FSR index for a given plane
+        unsigned int first_reg_plane( unsigned int iz ) const {
+            assert( (0 <= iz ) & (iz<nz_));
+            return first_reg_plane_[iz];
+        }
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
@@ -160,13 +166,13 @@ namespace mocc {
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
 
-        // Index of the first flat source region on each pin within a unique
-        // plane.
-        std::vector<VecI> first_reg_pin_;
-
         // Vector of Line objects, representing pin boundaries. This greatly
         // simplifies the ray trace.
         std::vector<Line> lines_;
+
+        // Vector containing the flat source region index of the first region in
+        // each plane.
+
 
     };
 

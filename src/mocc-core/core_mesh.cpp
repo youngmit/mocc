@@ -37,7 +37,8 @@ namespace mocc {
         mat_lib_ = MaterialLib( matLibFile );
         
         // Parse material IDs
-        for (pugi::xml_node mat = input.child( "material_lib" ).child( "material" ); 
+        for (pugi::xml_node mat = input.child( "material_lib" ).
+                child( "material" ); 
                 mat; mat = mat.next_sibling( "material" )){
             cout << mat.attribute( "id" ).value() << " "
                  << mat.attribute( "name" ).value() << endl;
@@ -89,13 +90,16 @@ namespace mocc {
         // Determine the set of geometricaly-unique axial planes
         std::vector< VecI > unique;
         VecI plane_pins;
+        int plane_reg = 0;
         for ( unsigned int iz=0; iz<nz_; iz++) {
+            first_reg_plane_.push_back(plane_reg);
             // Form a list of all pin meshes in the core plane iz
             for ( unsigned int iasy=0; iasy<nasy_; iasy++ ) {
                 const Assembly& asy = core_.at(iasy);
                 for ( auto &pin: asy[iz] ) {
                     plane_pins.push_back(pin->mesh_id());
                     core_pins_.push_back(pin);
+                    plane_reg += pin->n_reg();
                 }
             }
             // Check against current list of unique planes

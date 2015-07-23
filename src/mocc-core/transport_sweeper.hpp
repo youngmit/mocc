@@ -16,7 +16,8 @@ namespace mocc{
             xs_mesh_( mesh ),
             n_reg_( mesh.n_reg() ),
             ng_( xs_mesh_.n_grp() ),
-            flux_( ng_, n_reg_ )
+            flux_( n_reg_, ng_ ),
+            vol_( n_reg_, 1 )
         {
             return;
         }
@@ -45,7 +46,7 @@ namespace mocc{
 
         // Subscript and return a specific flux value
         const float_t flux( unsigned int ig, unsigned int ireg ) const {
-            return flux_(ig, ireg);
+            return flux_( ireg, ig );
         }
 
         // Return the number of energy groups
@@ -61,6 +62,13 @@ namespace mocc{
         const ArrayX& cflux() const {
             return flux_;
         }
+
+        // Associate the sweeper with a source. This is usually done by
+        // something like the FixedSourceSolver.
+        void assign_source( Source* source) {
+            assert( source != nullptr );
+            source_ = source;
+        }
     protected:
         const CoreMesh& mesh_;
         XSMesh xs_mesh_;
@@ -72,6 +80,10 @@ namespace mocc{
 
         // Multi-group scalar flux
         ArrayX flux_;
+
+        // Region volumes. In a 3-D sweeper this is the true volume, while in a
+        // 2-D sweeper, this is actually surface area.
+        ArrayX vol_;
     };
 
     typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;
