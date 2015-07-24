@@ -8,19 +8,46 @@
 #include "string_utils.hpp"
 
 namespace mocc {
+    Boundary bc_parse( const pugi::xml_node& input, const char* surf ) {
+        std::string in = input.attribute(surf).value();
+        if ( in == "vacuum" ) {
+            return VACUUM;
+        } else if ( in == "reflect" ) {
+            return REFLECT;
+        } else {
+            return INVALID;
+        }
+    }
+
     Core::Core() {
         nx_ = 0;
         ny_ = 0;
     }
+
     Core::Core( const pugi::xml_node &input, 
                 const std::map<int, UP_Assembly_t> &assemblies):
         nx_( input.attribute("nx").as_int(0) ),
-        ny_( input.attribute("ny").as_int(0) )
+        ny_( input.attribute("ny").as_int(0) ),
+        bc_(6, INVALID)
     {
         // Make sure that we read the a proper ID
-        if ( (nx_ < 1) | (ny_ < 1) ) {
+        if( (nx_ < 1) | (ny_ < 1) ) {
             Error("Invalid core dimensions.");
         }
+
+        // Read in the boundary conditions
+        bc_[Surface::NORTH]  = bc_parse( input, "north" );
+        bc_[Surface::SOUTH]  = bc_parse( input, "south" );
+        bc_[Surface::EAST]   = bc_parse( input, "east" );
+        bc_[Surface::WEST]   = bc_parse( input, "west" );
+        bc_[Surface::TOP]    = bc_parse( input, "top" );
+        bc_[Surface::BOTTOM] = bc_parse( input, "bottom" );
+        for( int i=0; i<6; i++ ) {
+            if( bc_[i] == INVALID ) {
+                Error("Not all boundary conditions properly specified.");
+            }
+        }
+        
 
         // Read in the assembly IDs
         std::string asy_str = input.child_value();
@@ -54,8 +81,8 @@ namespace mocc {
         unsigned int nz = (*assemblies_.begin())->nz();
         for (auto asy = assemblies_.begin(); asy != assemblies_.end(); ++asy) {
             if ( (*asy)->nz() != nz ) {
-                Error("Assemblies in the core have incompatible numbers of planes.");
-            }
+                Error("Assemblies in the core have incompatible numbers of "
+                        "planes."); }
         }
 
         for( unsigned int i=0; i<nz; i++ ) {
@@ -63,7 +90,8 @@ namespace mocc {
             for( auto asy = assemblies_.begin(); 
                  asy != assemblies_.end(); ++asy ) {
                 if ((*asy)->hz(i) != hz) {
-                    Error("Assemblies have incompatible plane heights in core.");
+                    Error("Assemblies have incompatible plane heights in "
+                            "core.");
                 }
             }
         }

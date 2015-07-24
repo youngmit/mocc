@@ -24,7 +24,8 @@ enum Boundary {
     VACUUM,
     REFLECT,
     PARALLEL,
-    PERIODIC
+    PERIODIC,
+    INVALID
 };
 
 enum TraceDir {

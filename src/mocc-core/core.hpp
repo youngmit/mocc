@@ -9,6 +9,7 @@
 #include "arrays.hpp"
 #include "assembly.hpp"
 #include "geom.hpp"
+#include "constants.hpp"
 
 namespace mocc {
     class Core {
@@ -48,6 +49,11 @@ namespace mocc {
             return assemblies_[0]->nz();
         }
 
+        // Return the boundary condition array
+        std::vector<Boundary> boundary() const {
+            return bc_;
+        }
+
     private:
         // Core dimensions (in assemblies)
         unsigned int nx_;
@@ -64,5 +70,8 @@ namespace mocc {
 
         // 2D array of assemblies
         std::vector<Assembly*> assemblies_;
+
+        // boundary conditions
+        std::vector<Boundary> bc_;
     };
 }

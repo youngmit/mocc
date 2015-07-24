@@ -98,6 +98,11 @@ namespace mocc {
             return first_reg_plane_[iz];
         }
 
+        // Return the core boundary conditions
+        std::vector<Boundary> boundary() const {
+            return core_.boundary();
+        }
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
