@@ -50,10 +50,8 @@ namespace mocc{
         // fission source
         fss_.initialize();
         
-        // Fill the fission source with zeros. when its copied into the old
-        // fission source on the first iteration, we should end up with a pretty
-        // large difference, which ought not to satisfy our convergence criteria
-        fission_source_.fill(0.0);
+        fss_.sweeper()->calc_fission_source(keff_, fission_source_);
+        fission_source_prev_ = fission_source_;
 
         // Hand a reference to the fission source to the fixed source solver
         fss_.set_fission_source(&fission_source_);
@@ -96,6 +94,10 @@ namespace mocc{
         // update estimate for k
         keff_prev_ = keff_;
         keff_ = keff_ * fission_source_.sum()/fission_source_prev_.sum();
+
+        cout << "K: " << keff_ << endl;
+        char a;
+        std::cin >> a;
         
     }
     

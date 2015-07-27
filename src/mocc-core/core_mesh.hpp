@@ -94,7 +94,7 @@ namespace mocc {
 
         // Return the first FSR index for a given plane
         unsigned int first_reg_plane( unsigned int iz ) const {
-            assert( (0 <= iz ) & (iz<nz_));
+            assert( (0 <= iz ) & ( iz<nz_ ) );
             return first_reg_plane_[iz];
         }
 

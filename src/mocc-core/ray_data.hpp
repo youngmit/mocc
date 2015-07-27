@@ -23,23 +23,28 @@
 //
 // Boundary condition indexing is somewhat arbitrary, so here's how it goes:
 //
-// +-17--18--19--20--21--22--23--24-+
+// +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
 // |                                |
-// 4                                16
+// 3                                3
 // |                                |
-// 3                                15
+// 2                                2
 // |                                |
-// 2                                14
+// 1                                1
 // |                                |
-// 1                                13
+// 0                                0
 // |                                |
-// +- 5-- 6-- 7-- 8-- 9--10--11--12-+
+// +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
 //
 // There are technically 4 angles that share a set of boundary conditions: an
 // angle in quadrant 1, its reflected angle in quadrant 2, and the two angles
 // pointing opposite those angles.
 
 namespace mocc {
+    enum VolumeCorrection {
+        FLAT,
+        ANGLE
+    };
+
     class Ray {
     public:
         Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
@@ -72,6 +77,13 @@ namespace mocc {
         unsigned int seg_index( int iseg ) const {
             return seg_index_[iseg];
         }
+
+        // Return the bc index for the start/stop of the ray
+        unsigned int bc( int dir ) const {
+            return bc_[dir];
+        }
+
+        
 
     private:
         // Length of ray segments
@@ -107,10 +119,27 @@ namespace mocc {
             return Nrays_[iang];
         }
 
+        // Return the number of rays impingent on the y-normal faces of the
+        // domain for the given angle
+        unsigned int nx( unsigned int iang ) const {
+            return Nx_[iang];
+        }
+
+        // Return the number of rays impingent on the x-normal faces of the
+        // domain for the given angle
+        unsigned int ny( unsigned int iang ) const {
+            return Ny_[iang];
+        }
+
         // Return the ray spacing for the given angle
         float_t spacing( int iang ) {
             return spacing_[iang];
         }
+
+        unsigned int max_segments() const {
+            return max_seg_;
+        }
+    
     private:
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
@@ -139,6 +168,15 @@ namespace mocc {
 
         // Maximum number of ray segments in a single ray
         unsigned int max_seg_;
+        
+        // Perform a volume-correction of the ray segment lengths. This can be
+        // done in two ways: using an angular integral of the ray volumes, or
+        // using an angle-wice correction, which ensures that for each angle,
+        // the ray segment volumes reproduce the region volumes. The first way
+        // is technically more correct, however the latter is useful for
+        // debugging purposes sometimes.
+        void correct_volume( const CoreMesh& mesh, VolumeCorrection type );
+
     };
 
     typedef std::shared_ptr<RayData> SP_RayData_t;

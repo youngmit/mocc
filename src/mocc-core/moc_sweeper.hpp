@@ -14,35 +14,35 @@
 namespace mocc {
     class MoCSweeper: public TransportSweeper{
         struct BC {
-            float_t fw_start;
-            float_t bw_start;
-            float_t fw_end;
-            float_t bw_end;
+            float_t fw;
+            float_t bw;
         };
-        typedef std::vector< 
-                std::vector<
-                std::vector<
-                std::vector< BC > > > > BCSet_t;
-        typedef std::vector< std::vector< BC > > BCRays_t;
+        typedef std::vector< // group
+                std::vector< // plane
+                std::vector< // angle
+                std::vector< float_t > > > > BCSet_t;   // BCs
+        typedef std::vector< // plane
+                std::vector< // angle
+                std::vector< float_t > > > BCSet_Out_t; // BCs
     public:
         MoCSweeper( const pugi::xml_node &input,
                     const CoreMesh &mesh );
         
-        ~MoCSweeper() {
-        }
+        ~MoCSweeper() { }
         
         void sweep(int group);
 
         void initialize();
 
         void calc_fission_source( float_t k,  ArrayX& fission_source) const;
-        
+
     private:
         AngularQuadrature ang_quad_;
         RayData rays_;
         
         // Boundary condition. ordered by energy, plane, angle, ray
         BCSet_t boundary_;
+        BCSet_Out_t boundary_out_;
 
         void sweep1g( int group );
 
@@ -57,5 +57,14 @@ namespace mocc {
 
         // Number of inner iterations per group sweep
         unsigned int n_inner_;
+
+        // Boundary condition enumeration
+        std::vector<Boundary> bc_type_;
+
+
+
+
+        // Update the boundary conditions
+        void update_boundary( int group );
     };
 }

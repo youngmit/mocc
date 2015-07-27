@@ -30,6 +30,9 @@ namespace mocc {
  
         
         // Parse Material Library
+        if( input.child( "material_lib" ).empty() ) {
+            Error("No material library specified.");
+        }
         std::string matLibName = 
             input.child( "material_lib" ).attribute( "path" ).value();
         cout << "Found material library specification: " << matLibName << endl;
@@ -84,7 +87,7 @@ namespace mocc {
         }
         hy_ = 0.0;
         for ( int iy=0; iy<core_.ny(); iy++ ) {
-            hy_ += core_.at(iy, 0).hy();
+            hy_ += core_.at(0, iy).hy();
         }
 
         // Determine the set of geometricaly-unique axial planes

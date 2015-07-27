@@ -14,7 +14,8 @@ namespace mocc {
         rays_( input.child("rays"), ang_quad_, mesh ),
         xstr_( n_reg_, 1 ),
         flux_1g_( n_reg_, 1 ),
-        qbar_( n_reg_, 1 )
+        qbar_( n_reg_, 1 ),
+        bc_type_( mesh_.boundary() )
     {   
 
         // Make sure we have input from the XML
@@ -42,17 +43,30 @@ namespace mocc {
         // allocate space to store the boundary conditions
         boundary_.resize( ng_ );
         for( auto &group_rays: boundary_ ) {
+cout << " group " << endl;
             group_rays.resize( mesh_.nz() );
             for( auto &angle_rays: group_rays ) {
                 // We actually allocate BCs for all 4 octants to make things a
                 // little simpler.
-                angle_rays.resize( ang_quad_.ndir_oct()*2 );
+                angle_rays.resize( ang_quad_.ndir_oct()*4 );
                 int iang = 0;
                 for( auto ang_it=ang_quad_.octant(1); 
-                        ang_it!=ang_quad_.octant(3); ang_it++ ) {
+                        ang_it!=ang_quad_.octant(5); ang_it++ ) {
                     angle_rays[iang].resize(rays_.n_rays(iang));
                     iang++;
                 }
+            }
+        }
+        boundary_out_.resize( mesh_.nz() );
+        for( auto &angle_rays: boundary_out_ ) {
+            // We actually allocate BCs for all 4 octants to make things a
+            // little simpler.
+            angle_rays.resize( ang_quad_.ndir_oct()*4 );
+            int iang = 0;
+            for( auto ang_it=ang_quad_.octant(1); 
+                    ang_it!=ang_quad_.octant(5); ang_it++ ) {
+                angle_rays[iang].resize(rays_.n_rays(iang));
+                iang++;
             }
         }
 
@@ -76,6 +90,11 @@ namespace mocc {
             source_->self_scatter( group, flux_1g_, qbar_ );
             this->sweep1g( group );
         }
+cout.precision(10);
+cout << flux_1g_ << endl;
+char a;
+std::cin >> a;
+
         flux_.col( group ) = flux_1g_;
 
         return;
@@ -84,51 +103,65 @@ namespace mocc {
     void MoCSweeper::sweep1g( int group ) {
         flux_1g_.fill(0.0);
 
+cout << qbar_ << endl;
+
+        ArrayX e_tau(rays_.max_segments(), 1);
+
         int iplane = 0;
         for( auto &plane_rays: rays_ ) {
             int first_reg = mesh_.first_reg_plane(iplane);
             int iang = 0;
             for( auto &ang_rays: plane_rays ) {
+                int iang1 = iang;
+                int iang2 = ang_quad_.reverse(iang);
                 float_t stheta = sin(ang_quad_[iang].theta);
                 float_t rstheta = 1.0/stheta;
                 float_t wt_v_st = ang_quad_[iang].weight * rays_.spacing(iang) *
-                    stheta;
+                    stheta * PI;
+
                 int iray = 0;
                 for( auto &ray: ang_rays ) {
+                    int bc1 = ray.bc(0);
+                    int bc2 = ray.bc(1);
+
+                    // Compute exponentials
+                    for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                        int ireg = ray.seg_index(iseg) + first_reg;
+                        e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
+                                ray.seg_len(iseg) * rstheta );
+                    }
+
+
                     // Forward direction
                     {
                         // Initialize from bc
                         float_t psi = 
-                            boundary_[group][iplane][iang][iray].fw_start;
+                            boundary_[group][iplane][iang1][bc1];
                         // Propagate through core geometry
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
-                            int ireg = ray.seg_index(iseg) + first_reg;
-                            float_t e_tau = 1.0 - exp(-xstr_(ireg) * 
-                                    ray.seg_len(iseg) * rstheta);
-                            float_t psi_diff = (psi - qbar_(ireg)) * e_tau;
+                            int ireg = ray.seg_index(iseg);// + first_reg;
+                            float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                             psi -= psi_diff;
                             flux_1g_(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        //boundary_[group][iplane][iang][iray].fw_end = psi;
+                        boundary_out_[iplane][iang1][bc1] = psi;
                     }
                     
                     // Backward direction
                     {
                         // Initialize from bc
                         float_t psi =
-                            boundary_[group][iplane][iang][iray].bw_start;
+                            boundary_[group][iplane][iang2][bc2];
                         // Propagate through core geometry
                         for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            float_t e_tau = 1.0 - exp(-xstr_(ireg) * 
-                                    ray.seg_len(iseg) * rstheta);
-                            float_t psi_diff = (psi - qbar_(ireg)) * e_tau;
+                            float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                             psi -= psi_diff;
                             flux_1g_(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        //boundary_[group][iplane][iang][iray].bw_end = psi;
+                        boundary_out_[iplane][iang2][bc2] = psi;
                     }
                     iray++;
                 } // Rays
@@ -137,14 +170,72 @@ namespace mocc {
             iplane++;
 
             // Scale the scalar flux by the volume and add back the source
-            flux_1g_ = flux_1g_/(xstr_) + qbar_*FPI;
+            flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
         } // planes
 
-cout << flux_1g_ << endl;
-char a;
-std::cin >> a;
+
+        this->update_boundary( group );
 
         return;
+    }
+
+    void MoCSweeper::update_boundary( int group ) {
+        int iplane=0;
+        for( auto &plane_bcs: boundary_[group] ) {
+            for( unsigned int iang=0; iang<plane_bcs.size(); iang++ ) {
+                int nx = rays_.nx(iang);
+                int ny = rays_.ny(iang);
+                
+                if( bc_type_[Surface::WEST] == REFLECT ) {
+                    int ang_ref = ang_quad_.reflect(iang, WEST);
+                    for( int ibc=0; ibc<ny; ibc++ ) {
+                        plane_bcs[iang][ibc] =
+                            boundary_out_[iplane][ang_ref][ibc];
+                    }
+                } else {
+                    for( int ibc=0; ibc<ny; ibc++ ) {
+                        plane_bcs[iang][ibc] = 0.0;
+                    }
+                }
+                
+                if( bc_type_[Surface::SOUTH] == REFLECT ) {
+                    int ang_ref = ang_quad_.reflect(iang, SOUTH);
+                    for( int ibc=ny; ibc<(ny+nx); ibc++ ) {
+                        plane_bcs[iang][ibc] = 
+                            boundary_out_[iplane][ang_ref][ibc];
+                    }
+                } else {
+                    for( int ibc=ny; ibc<(ny+nx); ibc++ ) {
+                        plane_bcs[iang][ibc] = 0.0;
+                    }
+                }
+                
+                if( bc_type_[Surface::EAST] == REFLECT ) {
+                    int ang_ref = ang_quad_.reflect(iang, EAST);
+                    for( int ibc=0; ibc<ny; ibc++ ) {
+                       plane_bcs[iang][ibc] = 
+                            boundary_out_[iplane][ang_ref][ibc];
+                    }
+                } else {
+                    for( int ibc=0; ibc<ny; ibc++ ) {
+                        plane_bcs[iang][ibc] = 0.0;
+                    }
+                }
+
+                if( bc_type_[Surface::NORTH] == REFLECT ) {
+                    int ang_ref = ang_quad_.reflect(iang, NORTH);
+                    for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
+                        plane_bcs[iang][ibc] = 
+                            boundary_out_[iplane][ang_ref][ibc];
+                    }
+                } else {
+                    for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
+                        plane_bcs[iang][ibc] = 0.0;
+                    }
+                }
+            }
+            iplane++;
+        }
     }
 
     void MoCSweeper::initialize() {
@@ -157,10 +248,7 @@ std::cin >> a;
             for( auto &plane_rays: group_rays ) {
                 for( auto &angle_rays: plane_rays ) {
                     for( auto &ray: angle_rays ) {
-                        ray.fw_start = val;
-                        ray.bw_start = val;
-                        ray.fw_end = val;
-                        ray.bw_end = val;
+                        ray = val;
                     }
                 }
             }

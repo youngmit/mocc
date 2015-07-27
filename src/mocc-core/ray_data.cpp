@@ -97,7 +97,7 @@ cout << "spacing: " << space << endl;
         
         // push more Nx, Ny, N, space onto their respective vectors, so we dont
         // have to wory about %'ing by ndir_oct
-        for( iang=0; iang<ang_quad_.ndir_oct(); iang++ ) {
+        for( iang=0; iang<ang_quad_.ndir_oct()*3; iang++ ) {
             Nx_.push_back(Nx_[iang]);
             Ny_.push_back(Ny_[iang]);
             Nrays_.push_back(Nrays_[iang]);
@@ -106,7 +106,6 @@ cout << "spacing: " << space << endl;
 
 cout << "Modularized Angular quadrature " << endl;
 cout << ang_quad_ << endl;
-
 
         // Trace rays
         Box core_box = Box(Point2(0.0, 0.0), Point2(hx, hy));
@@ -136,23 +135,22 @@ cout << ang_quad_ << endl;
                 // Handle rays entering on the x-normal faces
                 for ( int iray=0; iray<Ny; iray++ ) {
                     Point2 p1;
+                    bc1 = iray;
                     if( ang->ox > 0.0 ) {
                         // We are in octant 1, enter from the left/west
                         p1.x = 0.0;
-                        bc1 = iray;
                     } else {
                         // We are in octant 2, enter from the right/east
-                        bc1 = iray+Nxy;
                         p1.x = hx;
                     }
                     p1.y = (0.5 + iray)*space_y;
                     Point2 p2 = core_box.intersect(p1, *ang);
                     if( fp_equiv_abs(p2.x, hx) ) {
                         // BC is on the right/east boundary of the core
-                        bc2 = p2.y/space_y + Nx+Ny;
+                        bc2 = p2.y/space_y;
                     } else if ( fp_equiv_abs(p2.y, hy) ) {
                         // BC is on the top/north boundary of the core
-                        bc2 = p2.x/space_x + Nxy+Ny;
+                        bc2 = p2.x/space_x + Ny;
                     } else if ( fp_equiv_abs(p2.x, 0.0) ) {
                         // BC is on the left/west boundary of the core
                         bc2 = p2.y/space_y;
@@ -173,10 +171,10 @@ cout << ang_quad_ << endl;
                     bc1 = iray+Ny;
                     if( fp_equiv_abs(p2.x, hx) ) {
                         // BC is on the right/east boundary of the core
-                        bc2 = p2.y/space_y + Nx+Ny;
+                        bc2 = p2.y/space_y;
                     } else if( fp_equiv_abs(p2.y, hy) ) {
                         // BC is on the top/north boundary of the core
-                        bc2 = p2.x/space_x + Nxy+Ny;
+                        bc2 = p2.x/space_x + Ny;
                     } else if( fp_equiv_abs(p2.x, 0.0) ) {
                         // BC is on the left/west boundary of the core
                         bc2 = p2.y/space_y;
@@ -216,46 +214,93 @@ cout << ang_quad_ << endl;
 
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
-        for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
-            const VecF& true_vol = mesh.plane(iplane).vol();
-            VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
-            int iang=0;
-            for( auto ang = ang_quad_.octant(1); 
-                 ang!=ang_quad_.octant(3);
-                 ++ang ) {
-                std::vector<Ray>& rays = rays_[iplane][iang];
-                float_t space = spacing_[iang];
-                float_t wgt = ang->weight*0.5;
-
-                for( auto &ray: rays ) {
-                    for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
-                        unsigned int ireg = ray.seg_index(iseg);
-                        fsr_vol[ireg] += ray.seg_len(iseg) * space * wgt ;
-                    }
-                }
-                ++iang;
-            }
-            // Convert fsr_vol into a correction factor
-            for( unsigned int ireg=0; ireg<mesh.plane(iplane).n_reg(); ireg++ ) {
-                fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
-            }
-            // Correct ray lengths to enforce proper FSR volumes
-            iang = 0;
-            for( auto ang = ang_quad_.octant(1); 
-                 ang!=ang_quad_.octant(3);
-                 ++ang ) {
-                std::vector<Ray>& rays = rays_[iplane][iang];
-                for( auto &ray: rays ){
-                    for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
-                        unsigned int ireg = ray.seg_index(iseg);
-                        ray.seg_len(iseg) = ray.seg_len(iseg)*fsr_vol[ireg];
-                    }
-                }
-                ++iang;
-            }
-        } // Volume correction
+        this->correct_volume( mesh, FLAT );
 
     }
 
+    void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type ) 
+    {
+        switch(type) {
+            case FLAT:
+                for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
+                    const VecF& true_vol = mesh.plane(iplane).vol();
+                    int iang=0;
+                    for ( auto ang = ang_quad_.octant(1); 
+                            ang!=ang_quad_.octant(3); ++ang ) 
+                    {
+                        VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
+                        std::vector<Ray>& rays = rays_[iplane][iang];
+                        float_t space = spacing_[iang];
+                        
+                        for( auto &ray: rays ) {
+                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            {
+                                unsigned int ireg = ray.seg_index(iseg);
+                                fsr_vol[ireg] += ray.seg_len(iseg) * space;
+                            }
+                        }
 
+                        // Correct
+                        for( auto &ray: rays ) {
+                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            {
+                                unsigned int ireg = ray.seg_index(iseg);
+                                ray.seg_len(iseg) = ray.seg_len(iseg) *
+                                    true_vol[ireg]/fsr_vol[ireg];
+                            }
+                        }
+                        iang++;
+                    }
+                }
+
+                break;
+            case ANGLE:
+                for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
+                    const VecF& true_vol = mesh.plane(iplane).vol();
+                    VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
+                    int iang=0;
+                    for( auto ang = ang_quad_.octant(1); 
+                         ang!=ang_quad_.octant(3); ++ang )
+                    {
+                        std::vector<Ray>& rays = rays_[iplane][iang];
+                        float_t space = spacing_[iang];
+                        float_t wgt = ang->weight*0.5;
+
+                        for( auto &ray: rays ) {
+                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            { 
+                                unsigned int ireg = ray.seg_index(iseg);
+                                fsr_vol[ireg] += ray.seg_len(iseg) * space * 
+                                    wgt;
+                            }
+                        }
+                        ++iang;
+                    }
+                    // Convert fsr_vol into a correction factor
+                    for( unsigned int ireg=0; ireg<mesh.plane(iplane).n_reg();
+                            ireg++ ) 
+                    {
+                        fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
+                    }
+                    // Correct ray lengths to enforce proper FSR volumes
+                    iang = 0;
+                    for( auto ang = ang_quad_.octant(1); 
+                         ang!=ang_quad_.octant(3);
+                         ++ang ) {
+                        std::vector<Ray>& rays = rays_[iplane][iang];
+                        for( auto &ray: rays ){
+                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            { 
+                                unsigned int ireg = ray.seg_index(iseg);
+                                ray.seg_len(iseg) = ray.seg_len(iseg) * 
+                                    fsr_vol[ireg];
+                            }
+                        }
+                        ++iang;
+                    }
+                } // Volume correction
+                break;
+        
+        }
+    }
 }
