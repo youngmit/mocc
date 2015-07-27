@@ -17,10 +17,10 @@ public:
 	std::string getline();
 	// Wrap the eof() function on the underlying ifstream object
 	bool eof(){
-		return m_stream.eof();
+		return stream_.eof();
 	}
 	
 private:
-	std::ifstream m_stream;
-	std::string m_flag;
+	std::ifstream stream_;
+	std::string flag_;
 };

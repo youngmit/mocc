@@ -1,23 +1,32 @@
 #include "file_scrubber.hpp"
-#include "string_utils.hpp"
+
 #include <stdio.h>
 #include <iostream>
+
+#include "string_utils.hpp"
+#include "error.hpp"
 
 using std::ifstream;
 
 
 FileScrubber::FileScrubber(const char* fName, const char* commentFlag):
-	m_stream(fName),
-	m_flag(commentFlag){}
+	stream_(fName),
+	flag_(commentFlag){
+   
+        if( !stream_.good() ) {
+            Error("Failed to open file.");
+        }
+    
+    }
 	
 FileScrubber::~FileScrubber(){}
 
 std::string FileScrubber::getline(){
-	while(!m_stream.eof()){
+	while(!stream_.eof()){
 		std::string line;
-		std::getline(m_stream, line);
+		std::getline(stream_, line);
 		// Strip the comments
-		int commentPos = line.find(m_flag, 0);
+		int commentPos = line.find(flag_, 0);
 		if(commentPos != std::string::npos){
 			line.erase(commentPos, std::string::npos);
 		}
