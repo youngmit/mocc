@@ -43,7 +43,6 @@ namespace mocc {
         // allocate space to store the boundary conditions
         boundary_.resize( ng_ );
         for( auto &group_rays: boundary_ ) {
-cout << " group " << endl;
             group_rays.resize( mesh_.nz() );
             for( auto &angle_rays: group_rays ) {
                 // We actually allocate BCs for all 4 octants to make things a
@@ -74,8 +73,6 @@ cout << " group " << endl;
     }
 
     void MoCSweeper::sweep( int group ) {
-        cout << "moc sweep: " << n_inner_ << endl;
-        
         // set up the xstr_ array
         for( auto &xsr: xs_mesh_ ) {
             float_t xstr = xsr.xsmactr()[group];
@@ -90,10 +87,6 @@ cout << " group " << endl;
             source_->self_scatter( group, flux_1g_, qbar_ );
             this->sweep1g( group );
         }
-cout.precision(10);
-cout << flux_1g_ << endl;
-char a;
-std::cin >> a;
 
         flux_.col( group ) = flux_1g_;
 
@@ -102,8 +95,6 @@ std::cin >> a;
 
     void MoCSweeper::sweep1g( int group ) {
         flux_1g_.fill(0.0);
-
-cout << qbar_ << endl;
 
         ArrayX e_tau(rays_.max_segments(), 1);
 
@@ -137,9 +128,10 @@ cout << qbar_ << endl;
                         // Initialize from bc
                         float_t psi = 
                             boundary_[group][iplane][iang1][bc1];
+
                         // Propagate through core geometry
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
-                            int ireg = ray.seg_index(iseg);// + first_reg;
+                            int ireg = ray.seg_index(iseg) + first_reg;
                             float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                             psi -= psi_diff;
                             flux_1g_(ireg) += psi_diff*wt_v_st;
@@ -153,6 +145,7 @@ cout << qbar_ << endl;
                         // Initialize from bc
                         float_t psi =
                             boundary_[group][iplane][iang2][bc2];
+
                         // Propagate through core geometry
                         for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
@@ -185,7 +178,7 @@ cout << qbar_ << endl;
             for( unsigned int iang=0; iang<plane_bcs.size(); iang++ ) {
                 int nx = rays_.nx(iang);
                 int ny = rays_.ny(iang);
-                
+
                 if( bc_type_[Surface::WEST] == REFLECT ) {
                     int ang_ref = ang_quad_.reflect(iang, WEST);
                     for( int ibc=0; ibc<ny; ibc++ ) {
@@ -233,9 +226,9 @@ cout << qbar_ << endl;
                         plane_bcs[iang][ibc] = 0.0;
                     }
                 }
-            }
+            } // angle loop
             iplane++;
-        }
+        } // plane loop
     }
 
     void MoCSweeper::initialize() {
