@@ -21,7 +21,9 @@ MaterialLib::MaterialLib(){
     return;
 }
 
-MaterialLib::MaterialLib(FileScrubber &input){
+MaterialLib::MaterialLib(FileScrubber &input):
+    n_material_(0)
+{
 	string line;
 	// Read the first three lines to extract the library header
 	// Description
@@ -34,7 +36,7 @@ MaterialLib::MaterialLib(FileScrubber &input){
 		if(inBuf.fail()){
 			Error("Failed to read number of groups!");
 		}
-		inBuf >> n_material_;
+		inBuf >> n_material_lib_;
 		if(inBuf.fail()){
 			Error("Failed to read number of materials!");
 		}
@@ -54,7 +56,7 @@ MaterialLib::MaterialLib(FileScrubber &input){
 	}
 	
 	// Read in material data
-	for (unsigned int i=0; i<n_material_; i++){
+	for (unsigned int i=0; i<n_material_lib_; i++){
 		// Get the name of the material
 		line = input.getline();
 		
@@ -62,7 +64,7 @@ MaterialLib::MaterialLib(FileScrubber &input){
 		boost::smatch results;
 		regex_match(line, results, headExp);
         string materialName = results[1].str();
-		std::cout << materialName << std::endl;
+        cout << "Found material with name: '" << materialName << "'" << endl;
 
         // Read in the non-scattering stuff
         VecF abs;
@@ -103,13 +105,19 @@ MaterialLib::MaterialLib(FileScrubber &input){
         lib_materials_.insert(std::pair<std::string, Material>(
             materialName.c_str(), 
             Material(abs, nuFiss, fiss, chi, scatTable)));
-
 	}
 }
 
 void MaterialLib::assignID(int id, std::string name){
-    const Material* mat_p = &lib_materials_.at(name);
-    materials_.insert( std::pair<int, const Material*>( id, mat_p) );
+    try {
+        cout << "Mapping material '" << name << "' to ID "  << id << endl;
+        const Material* mat_p = &lib_materials_.at(name);
+        materials_.insert( std::pair<int, const Material*>( id, mat_p) );
+    } catch(std::out_of_range) {
+        Error("Failed to map material to ID. Are you sure you spelled it "
+                "right?");
+    }
+    n_material_++;
     return;
 }
 

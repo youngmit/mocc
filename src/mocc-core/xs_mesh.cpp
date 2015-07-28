@@ -38,9 +38,10 @@ namespace mocc {
             const VecI& mat_ids = (*pini)->mat_ids();
             ixsreg = 0;
             for( auto &mat_id: mat_ids ) {
+                int mat_index = mat_map[mat_id];
                 // post-increment pushes value, then increments
                 for( int reg=0; reg<pm.n_fsrs(ixsreg); reg++) {
-                    fsrs[mat_id].push_back(ireg++);
+                    fsrs[mat_index].push_back(ireg++);
                 }
                 ixsreg++;
             }

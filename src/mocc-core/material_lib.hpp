@@ -33,11 +33,23 @@ namespace mocc {
         }
     	
     private:
+        // Collection of all of the materials specified by the library. Keyed on
+        // the string name of the matierial, specified in the first line of the
+        // material data blocks
     	std::map<std::string, Material> lib_materials_;
+        // Map containing all of the materials that are actually mapped to and
+        // ID using <material> tags
         MaterialMap materials_;
+        // Number of energy groups for which all materials in the library are
+        // defined
     	unsigned int n_grp_;
+        // Number of materials that have been mapped to an ID
     	unsigned int n_material_;
+        // Number of materials present in the library itself (>= n_material_)
+        unsigned int n_material_lib_;
+        // Upper bound for each of the energy groups
     	VecF g_bounds_;
+        // Descriptive string for the material library
     	std::string m_description;
     };
 }

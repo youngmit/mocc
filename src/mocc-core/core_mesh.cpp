@@ -43,8 +43,6 @@ namespace mocc {
         for (pugi::xml_node mat = input.child( "material_lib" ).
                 child( "material" ); 
                 mat; mat = mat.next_sibling( "material" )){
-            cout << mat.attribute( "id" ).value() << " "
-                 << mat.attribute( "name" ).value() << endl;
             mat_lib_.assignID( mat.attribute( "id" ).as_int(),
                                mat.attribute( "name" ).value() );
         }
