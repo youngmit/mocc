@@ -62,6 +62,9 @@ namespace mocc{
         unsigned int n_iterations = 0;
 
         bool done = false;
+
+        cout << "Iteration\tk         \tk error   \tpsi error" << endl;
+
         while( !done ) {
 
             this->step();
@@ -75,8 +78,13 @@ namespace mocc{
             // iteration anyways.
             fission_source_prev_ = fission_source_-fission_source_prev_;
             error_psi = fission_source_prev_.matrix().norm();
-            done = (error_k < tolerance_k_) & (error_psi < tolerance_psi_) & 
+
+
+            cout << n_iterations << "          \t" << keff_ << "\t" << error_k << "\t" 
+                 << error_psi << endl;
+            done = ((error_k < tolerance_k_) & (error_psi < tolerance_psi_)) |
                 (n_iterations >= max_iterations_ );
+            //std::cin.ignore();
         }
 
     }
@@ -95,9 +103,6 @@ namespace mocc{
         keff_prev_ = keff_;
         keff_ = keff_ * fission_source_.sum()/fission_source_prev_.sum();
 
-        cout << "K: " << keff_ << endl;
-        char a;
-        std::cin >> a;
         
     }
     
