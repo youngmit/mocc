@@ -103,6 +103,14 @@ namespace mocc {
             return core_.boundary();
         }
 
+        std::vector<const Pin*>::const_iterator begin() const {
+            return core_pins_.cbegin();
+        }
+
+        std::vector<const Pin*>::const_iterator end() const {
+            return core_pins_.cend();
+        }
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
