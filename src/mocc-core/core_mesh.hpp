@@ -59,7 +59,7 @@ namespace mocc {
             return first_unique_.size();
         }
 
-        float_t n_reg() const {
+        unsigned int n_reg() const {
             return n_reg_;
         }
         

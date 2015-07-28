@@ -107,7 +107,7 @@ namespace mocc {
         }
 
         // Store the x and y boundaries of the assemblies
-        float prev = 0.0;
+        float_t prev = 0.0;
         for( unsigned int ix=0; ix<nx_; ix++) {
             hx_vec_.push_back(prev+this->at(ix, 0).hx());
             prev = hx_vec_[ix];
