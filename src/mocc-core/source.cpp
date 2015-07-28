@@ -1,6 +1,7 @@
 #include "source.hpp"
-#include "source.hpp"
+
 #include "error.hpp"
+#include "constants.hpp"
 
 namespace mocc {
     Source::Source( int nreg, const XSMesh& xs_mesh, const ArrayX& flux ):
@@ -46,8 +47,8 @@ namespace mocc {
                 // routine to have less indirection.
                 if( igg != ig ) {
                     for( auto &ireg: xsr.reg() ) {
-                        source_1g_(ireg) += 
-                            flux_(ireg, igg)*scat_row.from[igg-min_g];
+                        float_t scat_src = flux_(ireg, igg)*scat_row.from[igg-min_g];
+                        source_1g_(ireg) += scat_src;
                     }
                 }
             }
@@ -68,7 +69,6 @@ namespace mocc {
                     r_fpi_tr;
             }
         }
-qbar.fill(1.0);
 
         return;
     }

@@ -21,8 +21,8 @@ namespace mocc{
         int max_g = 0;
         for(int to=0; to<ng_; to++){
             for(int from=0; from<ng_; from++){
-                if(scat[from][to] > 0.0){
-                    scat_.push_back(scat[from][to]);
+                if(scat[to][from] > 0.0){
+                    scat_.push_back(scat[to][from]);
                 }
                 out_[from] += scat[to][from];
             }
@@ -33,14 +33,14 @@ namespace mocc{
         for(int to=0; to<ng_; to++){
             bool found_min = false;
             for(int from=0; from<ng_; from++){
-                if(scat[from][to] > 0.0){
+                if(scat[to][from] > 0.0){
                     if(!found_min){
                         found_min = true;
                         min_g = from;
                     }
                     pos++;
                 }
-                if(scat[from][to] == 0.0 && found_min){
+                if(scat[to][from] == 0.0 && found_min){
                     max_g = from-1;
                     break;
                 }

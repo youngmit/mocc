@@ -20,7 +20,7 @@ namespace mocc{
     class ScatMat{
     public:
         ScatMat(std::vector<VecF> scat);
-        const ScatRow& to(int ig) const {
+        const ScatRow& to( int ig ) const {
             return rows_[ig];
         }
 
