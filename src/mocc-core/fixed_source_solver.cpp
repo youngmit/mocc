@@ -24,7 +24,6 @@ namespace mocc {
     // Perform a single group sweep
     void FixedSourceSolver::step() {
         for( unsigned int ig=0; ig<ng_; ig++ ) {
-std::cout << "sweeping group: " << ig << std::endl;
             // Set up the source
             if( fs_ == nullptr ) {
                 Error("No fission source associated!");

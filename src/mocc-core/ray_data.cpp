@@ -89,7 +89,6 @@ cout << ang_quad_ << endl;
 
             ang_quad_.modify_angle( iang, ang );
             float_t space = cos(ang_it->alpha) * hy/Ny;
-cout << "spacing: " << space << endl;
             spacing_.push_back( space );
 
             iang++;
@@ -207,7 +206,7 @@ cout << ang_quad_ << endl;
                 // Move the stack of rays into the vector of angular ray sets.
                 angle_rays.push_back(std::move(rays));
                 ++iang;
-            }
+            } // Angle loop
             // Move the angular ray set to the vector of planar ray sets.
             rays_.push_back(std::move(angle_rays));
         }
