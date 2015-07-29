@@ -16,6 +16,14 @@ typedef double float_t;
 typedef std::vector<float_t> VecF;
 typedef std::vector<unsigned int> VecI;
 typedef std::vector<int> VecSI;
+
+
+struct Position {
+    unsigned int x;
+    unsigned int y;
+    unsigned int z;
+};
+
 }
 
 #define PROG_NAME "MOCC"
