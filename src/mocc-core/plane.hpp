@@ -37,6 +37,39 @@ namespace mocc {
 
             return vol;
         }
+
+        Position pin_position( unsigned int ipin ) const {
+            int ilat = 0;
+            for( auto &lattice: lattices_ ) {
+                if( ipin < lattice->n_pin() ) {
+                    break;
+                }
+                ipin -= lattice->n_pin();
+                ilat++;
+            }
+            // ilat should be the index of the lattice in which the pin resides.
+            // ipin should be the lattice-local index of the pin
+            Position pos;
+            pos.x = 0;
+            pos.y = 0;
+            pos.z = 0;
+
+            int lat_x = ilat % nx_;
+            int lat_y = ilat / nx_;
+
+            for( int ix=0; ix<lat_x; ix++ ) {
+                pos.x += this->at(ix, 0).nx();
+            }
+            pos.x += ipin % this->at(lat_x, lat_y).nx();
+
+            for( int iy=0; iy<lat_y; iy++ ) {
+                pos.y += this->at(0, iy).ny();
+            }
+            pos.y += ipin / this->at(lat_x, lat_y).ny();
+
+            return pos;
+        }
+
     private:
         // Plane dimensions in lattices
         unsigned int nx_;

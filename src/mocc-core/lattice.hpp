@@ -28,9 +28,14 @@ namespace mocc {
             return nx_;
         }
         
-        // Number of pins ins the y direction
+        // Number of pins in the y direction
         unsigned int ny() const {
             return ny_;
+        }
+
+        // Total number of pins in the lattice
+        unsigned int n_pin() const {
+            return pins_.size();
         }
 
         // Return the size of the lattice along the x dimension
