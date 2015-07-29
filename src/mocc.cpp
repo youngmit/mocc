@@ -1,10 +1,13 @@
 #include <iostream>
 #include <exception>
+
 #include "global_config.hpp"
 #include "files.hpp"
 #include "input_proc.hpp"
 #include "core_mesh.hpp"
 #include "error.hpp"
+#include "h5file.hpp"
+#include "transport_sweeper.hpp"
 
 
 using std::cout;
@@ -33,6 +36,16 @@ int main(int argc, char* argv[]){
     // Pull a shared pointer to the top-level solver and make it go
     SP_Solver_t solver = inProc.solver();
     solver->solve();
+
+    // Output stuff
+    const TransportSweeper* sweeper_p = solver->sweeper();
+
+    VecF flux;
+    sweeper_p->get_pin_flux(0, flux);
+    
+    H5File outfile("out.h5");
+
+    outfile.write("foo", flux, VecI {6, 9});
 
     StopLogFile();
 }

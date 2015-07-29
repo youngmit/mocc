@@ -24,6 +24,7 @@ namespace mocc{
         virtual ~TransportSweeper(){ }
         virtual void sweep(int group) = 0;
         virtual void initialize() = 0;
+        virtual void get_pin_flux( int ig, VecF& flux ) const = 0;
 
         // Given the current estimate of a system eigenvalue, calculate the
         // group-independent fission source and store in the passed array
