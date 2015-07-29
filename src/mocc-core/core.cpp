@@ -42,6 +42,7 @@ namespace mocc {
         bc_[Surface::WEST]   = bc_parse( input, "west" );
         bc_[Surface::TOP]    = bc_parse( input, "top" );
         bc_[Surface::BOTTOM] = bc_parse( input, "bottom" );
+
         for( int i=0; i<6; i++ ) {
             if( bc_[i] == INVALID ) {
                 Error("Not all boundary conditions properly specified.");
