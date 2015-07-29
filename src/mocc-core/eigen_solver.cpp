@@ -1,5 +1,7 @@
 #include "eigen_solver.hpp"
 
+#include <iomanip>
+
 #include "error.hpp"
 
 namespace mocc{
@@ -63,7 +65,10 @@ namespace mocc{
 
         bool done = false;
 
-        cout << "Iteration\tk         \tk error   \tpsi error" << endl;
+        cout << std::setw(out_w_) << "Iter."
+             << std::setw(out_w_) << "k" 
+             << std::setw(out_w_) << "k error"
+             << std::setw(out_w_) << "psi error" << endl;
 
         while( !done ) {
 
@@ -79,12 +84,21 @@ namespace mocc{
             fission_source_prev_ = fission_source_-fission_source_prev_;
             error_psi = fission_source_prev_.matrix().norm();
 
+            std::ios::fmtflags flags = cout.flags();
 
-            cout << n_iterations << "          \t" << keff_ << "\t" << error_k << "\t" 
-                 << error_psi << endl;
+            cout << std::setw(out_w_) << n_iterations 
+                 << std::setw(out_w_) << std::fixed
+                     << std::setprecision(6) << keff_
+                 << std::setw(out_w_) << std::scientific
+                     << std::setprecision(6) << error_k 
+                 << std::setw(out_w_) << std::setiosflags(std::ios::scientific)
+                     << std::setprecision(6) << error_psi
+                 << endl;
             done = ((error_k < tolerance_k_) & (error_psi < tolerance_psi_)) |
                 (n_iterations >= max_iterations_ );
             //std::cin.ignore();
+
+            cout.flags(flags); 
         }
 
     }

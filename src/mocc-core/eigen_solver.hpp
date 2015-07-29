@@ -21,6 +21,7 @@ namespace mocc{
         }
     
     private:
+        const static int out_w_ = 14;
         FixedSourceSolver fss_;
         
         // Fission source, and previous iterate
