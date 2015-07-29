@@ -44,6 +44,21 @@ namespace mocc {
             return ny_;
         }
 
+        // Return the total number of assemblies in the core
+        int nasy() const {
+            return assemblies_.size();
+        }
+
+        // Return the number of pins along the X direction
+        int npin_x() const {
+            return npinx_;
+        }
+
+        // Return the number of pins along the Y direction
+        int npin_y() const {
+            return npiny_;
+        }
+
         // Return the number of planes in the core
         int nz() const {
             return assemblies_[0]->nz();
