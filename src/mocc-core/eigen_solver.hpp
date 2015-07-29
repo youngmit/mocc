@@ -6,6 +6,7 @@
 #include "solver.hpp"
 #include "core_mesh.hpp"
 #include "fixed_source_solver.hpp"
+#include "transport_sweeper.hpp"
 
 namespace mocc{
 
@@ -14,6 +15,10 @@ namespace mocc{
         EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
         void solve();
         void step();
+        
+        const TransportSweeper* sweeper() const {
+            return fss_.sweeper();
+        }
     
     private:
         FixedSourceSolver fss_;

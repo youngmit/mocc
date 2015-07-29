@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "transport_sweeper.hpp"
+
 namespace mocc {
     // This provides a virtual base type, which shall provide a solve() and
     // step() method. At the highest level of the heirarchy, the driver calls
@@ -19,6 +21,12 @@ namespace mocc {
         // done is quite solver specific, so check the derived class to see what
         // it does for a specific case.
         virtual void step()=0;
+
+        // Return a pointer to a transport sweeper object. If the solver does
+        // not actually have a sweeper, return nullptr
+        virtual const TransportSweeper* sweeper() const {
+            return nullptr;
+        }
     private:
     };
 
