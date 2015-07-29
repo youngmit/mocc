@@ -137,7 +137,7 @@ namespace mocc {
                             flux_1g_(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        boundary_out_[iplane][iang1][bc1] = psi;
+                        boundary_out_[iplane][iang1][bc2] = psi;
                     }
                     
                     // Backward direction
@@ -154,7 +154,7 @@ namespace mocc {
                             flux_1g_(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        boundary_out_[iplane][iang2][bc2] = psi;
+                        boundary_out_[iplane][iang2][bc1] = psi;
                     }
                     iray++;
                 } // Rays
@@ -179,8 +179,23 @@ namespace mocc {
                 int nx = rays_.nx(iang);
                 int ny = rays_.ny(iang);
 
-                if( bc_type_[Surface::WEST] == REFLECT ) {
-                    int ang_ref = ang_quad_.reflect(iang, WEST);
+                // Determine based on the angle quadrant which surfaces are
+                // upwind and need to be updated for the given angle
+                Surface upwind[2];
+                if(ang_quad_[iang].ox > 0.0) {
+                    upwind[0] = WEST;
+                } else {
+                    upwind[0] = EAST;
+                }
+                if(ang_quad_[iang].oy > 0.0) {
+                    upwind[1] = SOUTH;
+                } else {
+                    upwind[1] = NORTH;
+                }
+
+                // Treat the two surfaces that were determined above
+                if( bc_type_[upwind[0]] == REFLECT ) {
+                    int ang_ref = ang_quad_.reflect(iang, upwind[0]);
                     for( int ibc=0; ibc<ny; ibc++ ) {
                         plane_bcs[iang][ibc] =
                             boundary_out_[iplane][ang_ref][ibc];
@@ -191,34 +206,10 @@ namespace mocc {
                     }
                 }
                 
-                if( bc_type_[Surface::SOUTH] == REFLECT ) {
-                    int ang_ref = ang_quad_.reflect(iang, SOUTH);
-                    for( int ibc=ny; ibc<(ny+nx); ibc++ ) {
-                        plane_bcs[iang][ibc] = 
-                            boundary_out_[iplane][ang_ref][ibc];
-                    }
-                } else {
-                    for( int ibc=ny; ibc<(ny+nx); ibc++ ) {
-                        plane_bcs[iang][ibc] = 0.0;
-                    }
-                }
-                
-                if( bc_type_[Surface::EAST] == REFLECT ) {
-                    int ang_ref = ang_quad_.reflect(iang, EAST);
-                    for( int ibc=0; ibc<ny; ibc++ ) {
-                       plane_bcs[iang][ibc] = 
-                            boundary_out_[iplane][ang_ref][ibc];
-                    }
-                } else {
-                    for( int ibc=0; ibc<ny; ibc++ ) {
-                        plane_bcs[iang][ibc] = 0.0;
-                    }
-                }
-
-                if( bc_type_[Surface::NORTH] == REFLECT ) {
-                    int ang_ref = ang_quad_.reflect(iang, NORTH);
+                if( bc_type_[upwind[1]] == REFLECT ) {
+                    int ang_ref = ang_quad_.reflect(iang, upwind[1]);
                     for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
-                        plane_bcs[iang][ibc] = 
+                        plane_bcs[iang][ibc] =
                             boundary_out_[iplane][ang_ref][ibc];
                     }
                 } else {
@@ -265,4 +256,26 @@ namespace mocc {
         return;
     }
 
+    void MoCSweeper::get_pin_flux( int group, VecF& flux) const {
+        flux.resize( mesh_.nx()*mesh_.ny()*mesh_.nz() );
+        for( auto &f: flux ) {
+            f = 0.0;
+        }
+
+        int ireg = 0;
+        int ipin = 0;
+        for( auto &pin: mesh_ ) {
+            Position pos = mesh_.pin_position(ipin);
+            int i = mesh_.index_lex(pos);
+
+            for( int ir=0; ir<pin->n_reg(); ir++) {
+                flux[i] += flux_(ireg, group)*vol_(ireg);
+                ireg++;
+            }
+
+            ipin++;
+        }
+
+        return;
+    }
 }

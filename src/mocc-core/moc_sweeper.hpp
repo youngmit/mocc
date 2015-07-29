@@ -36,6 +36,8 @@ namespace mocc {
 
         void calc_fission_source( float_t k,  ArrayX& fission_source) const;
 
+        void get_pin_flux( int group, VecF& flux ) const;
+
     private:
         AngularQuadrature ang_quad_;
         RayData rays_;
@@ -60,9 +62,6 @@ namespace mocc {
 
         // Boundary condition enumeration
         std::vector<Boundary> bc_type_;
-
-
-
 
         // Update the boundary conditions
         void update_boundary( int group );
