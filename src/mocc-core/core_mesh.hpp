@@ -14,7 +14,6 @@
 #include "plane.hpp"
 
 namespace mocc {
-
     // The core mesh stores everything needed to represent the physical state
     // of the system. Pin meshes, material library, actual pin types, lattices
     // etc. The CoreMesh is then used to perform complex operations like ray
@@ -111,6 +110,15 @@ namespace mocc {
             return core_pins_.cend();
         }
 
+        // Return the 1-D index of a position in a lexicographic sense
+        unsigned int index_lex( Position pos ) const {
+            return pos.x + pos.y*nx_ + pos.z*nx_*ny_;
+        }
+        
+        // Return a Position, indicating the global position of a pin in the
+        // core geometry
+        Position pin_position( unsigned int ipin ) const;
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
@@ -182,11 +190,6 @@ namespace mocc {
         // Vector of Line objects, representing pin boundaries. This greatly
         // simplifies the ray trace.
         std::vector<Line> lines_;
-
-        // Vector containing the flat source region index of the first region in
-        // each plane.
-
-
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

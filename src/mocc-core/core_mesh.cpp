@@ -73,10 +73,10 @@ namespace mocc {
         // Parse core
         core_ = Core( input.child("core"), assemblies_ );
 
-        nx_ = core_.nx();
-        ny_ = core_.ny();
+        nx_ = core_.npin_x();
+        ny_ = core_.npin_y();
         nz_ = core_.nz();
-        nasy_ = nx_*ny_;
+        nasy_ = core_.nasy();
 
         // Calculate the total core dimensions
         hx_ = 0.0;
@@ -207,5 +207,11 @@ namespace mocc {
             int &first_reg ) const {
         assert( (iz >= 0) & (iz<planes_.size()) );
         return planes_[iz].get_pinmesh(p, first_reg);
+    }
+
+    Position CoreMesh::pin_position( unsigned int ipin ) const {
+        Position pos = planes_[0].pin_position( ipin );
+        pos.z = ipin/(nx_ * ny_);
+        return pos;
     }
 }
