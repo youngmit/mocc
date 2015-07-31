@@ -214,7 +214,6 @@ cout << ang_quad_ << endl;
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
         this->correct_volume( mesh, FLAT );
-
     }
 
     void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type ) 

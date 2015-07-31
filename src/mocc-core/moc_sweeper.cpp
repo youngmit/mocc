@@ -82,6 +82,8 @@ namespace mocc {
         }
 
         flux_1g_ = flux_.col( group );
+
+        // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
             source_->self_scatter( group, flux_1g_, qbar_ );
@@ -267,12 +269,10 @@ namespace mocc {
         for( auto &pin: mesh_ ) {
             Position pos = mesh_.pin_position(ipin);
             int i = mesh_.index_lex(pos);
-
             for( int ir=0; ir<pin->n_reg(); ir++) {
                 flux[i] += flux_(ireg, group)*vol_(ireg);
                 ireg++;
             }
-
             ipin++;
         }
 
