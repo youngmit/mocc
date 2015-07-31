@@ -49,7 +49,6 @@ namespace mocc {
             }
         }
         
-
         // Read in the assembly IDs
         std::string asy_str = input.child_value();
         std::stringstream inBuf( trim(asy_str) );
@@ -65,14 +64,19 @@ namespace mocc {
         // Store references to the assemblies in a 2D array. Make sure to flip
         // the y-index to get it into lower-left origin
         assemblies_.resize( nx_*ny_ );
+        int iasy=0;
         for ( unsigned int iy=0; iy<ny_; iy++ ) {
             unsigned int row = ny_ - iy - 1;
             for ( unsigned int ix=0; ix<nx_; ix++ ) {
                 unsigned int col = ix;
-                int asy_id = asy_vec[(ny_-iy-1)*nx_+ix];
-                Assembly* asy_p = 
-                    assemblies.at( asy_id ).get();
-                assemblies_[row*nx_ + col] = asy_p;
+                int asy_id = asy_vec[iasy++];
+                try {
+                    Assembly* asy_p = 
+                        assemblies.at( asy_id ).get();
+                    assemblies_[row*nx_ + col] = asy_p;
+                } catch(std::out_of_range) {
+                    Error("Failed to locate assembly in core specification.");
+                }
             }
         }
 
