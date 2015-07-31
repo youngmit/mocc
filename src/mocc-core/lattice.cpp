@@ -52,6 +52,7 @@ namespace mocc {
 
             // Make sure we have ther right number of pins
             if ( pin_vec.size() != nx_*ny_) {
+                cout << pin_vec.size() << " " << nx_ << " " << ny_ << endl;
                 Error( "Incorrect number of pin IDs specified for lattice." );
             }
 
