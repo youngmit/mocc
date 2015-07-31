@@ -1,5 +1,7 @@
 #include <iostream>
+#include <iomanip>
 #include <exception>
+#include <sstream>
 
 #include "global_config.hpp"
 #include "files.hpp"
@@ -16,10 +18,15 @@ using std::endl;
 
 using namespace mocc;
 
+// The global top-level solver
+SP_Solver_t solver;
+
+// Global core mesh
+SP_CoreMesh_t mesh;
+
+void output();
+
 int main(int argc, char* argv[]){
-	cout << "Ahoy!" << endl;
-	cout << "cmd: " << argv[0] << endl;
-	
 	// Make sure we have an input file
 	if(argc < 2){
 		Error("No input file specified!");
@@ -33,19 +40,52 @@ int main(int argc, char* argv[]){
 	// Parse the input file
 	InputProc inProc(argv[1]);
 
+    // Get an SP to the core mesh
+    mesh = inProc.core_mesh();
+
     // Pull a shared pointer to the top-level solver and make it go
-    SP_Solver_t solver = inProc.solver();
+    solver = inProc.solver();
     solver->solve();
 
     // Output stuff
-    const TransportSweeper* sweeper_p = solver->sweeper();
-
-    VecF flux;
-    sweeper_p->get_pin_flux(0, flux);
-    
-    H5File outfile("out.h5");
-
-    outfile.write("foo", flux, VecI {6, 9});
+    output();
 
     StopLogFile();
+}
+
+void output(){
+    const TransportSweeper* sweeper_p = solver->sweeper();
+
+    // Get core dimensions from the mesh
+    const int nx = mesh->nx();
+    const int ny = mesh->ny();
+    const int nz = mesh->nz();
+    VecI dims;
+    dims.push_back(nz);
+    dims.push_back(ny);
+    dims.push_back(nx);
+
+    H5File outfile("out.h5");
+
+
+
+    // Make a group in the file to store the flux
+    outfile.mkdir("/flux");
+
+    // Provide energy group upper bounds
+    VecF eubounds = sweeper_p->eubounds();
+    outfile.write("/eubounds", eubounds, VecI(1, eubounds.size()));
+    outfile.write("/ng", eubounds.size());
+
+    for( int ig=0; ig<sweeper_p->n_grp(); ig++ ) {
+        VecF flux;
+        sweeper_p->get_pin_flux(ig, flux);
+
+
+        std::stringstream setname;
+        setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
+
+        outfile.write(setname.str(), flux, dims);
+    }
+    
 }
