@@ -64,14 +64,34 @@ namespace mocc {
         }
 
         // Parse assemblies
-        for ( pugi::xml_node asy = input.child("assembly"); asy;
+        for( pugi::xml_node asy = input.child("assembly"); asy;
                 asy = asy.next_sibling("assembly") ) {
             UP_Assembly_t asy_p( new Assembly( asy, lattices_ ) );
             assemblies_.emplace( asy_p->id(), std::move(asy_p) );
         }
 
         // Parse core
-        core_ = Core( input.child("core"), assemblies_ );
+        int n_core_enabled = 0;
+        for( pugi::xml_node core_xml = input.child("core"); core_xml;
+                core_xml = core_xml.next_sibling("core") ) {
+            bool core_enabled = true;
+            if( !core_xml.attribute("enabled").empty() ) {
+                core_enabled = core_xml.attribute("enabled").as_bool();
+            }
+            if( core_enabled ) {
+                core_ = Core(core_xml, assemblies_);
+                n_core_enabled++;
+            }
+        }
+
+        if( n_core_enabled == 0 ) {
+            Error("No enabled core specifications.");
+        }
+
+        if( n_core_enabled > 1 ) {
+            Error("More than one enabled core specification found. Tell me "
+                    "which one to use");
+        }
 
         nx_ = core_.npin_x();
         ny_ = core_.npin_y();
