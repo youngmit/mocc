@@ -61,6 +61,7 @@ std::vector<mocc::Angle> GenSn( int order ){
     // set up the list of base cosines
     mocc::VecF mu;
     mu.push_back(mu_base[n-1]);
+    cout << mu[0] << " " << mu_base[0] << endl;
     if( order > 2) {
         const mocc::float_t delta_mu = 2.0 * ( 1.0 - 
                 3.0*(mu[0]*mu[0]) ) / (mocc::float_t)(order-2);
@@ -81,15 +82,13 @@ std::vector<mocc::Angle> GenSn( int order ){
     int k=0;
     for( int i=0; i<n; i++ ) {
         for( int j=0; j<=i; j++ ) {
-
             mocc::Angle angle( mu[i-j],   
                                mu[j],
-                               mu[n-i-1] );
-
+                               mu[n-i-1],
+                               weights[map[k]-1]);
 
             // Look up and apply the proper weight
-            angle.weight = weights[map[k]-1];
-std::cout << angle.weight << std::endl; 
+//            angle.weight = weights[map[k]-1];
 
             angles.push_back(angle);
             k++;
