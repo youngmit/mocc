@@ -15,6 +15,9 @@ namespace mocc {
         // Assume the same number of groups as the source material library
         ng_ = mat_lib.n_grp();
 
+        // Get energy group bounds
+        eubounds_ = mat_lib.g_bounds();
+
         // Make a list of the material ids, to get back into a dense index space
         VecI matv;
         for( auto &mi: mat_lib.materials()) {
@@ -45,15 +48,6 @@ namespace mocc {
                 }
                 ixsreg++;
             }
-        }
-
-        // lets see how we did
-        for( auto &row: fsrs ) {
-            cout << "xs mesh region fsrs: ";
-            for( auto &i: row ) {
-                cout << i << " ";
-            }
-            cout << endl;
         }
 
         // Calculate the necessary cross sections and store them in the

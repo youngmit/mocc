@@ -72,6 +72,7 @@ namespace mocc {
 
         // Scattering matrix
         ScatMat xsmacsc_; 
+
     };
 
     class XSMesh {
@@ -101,11 +102,18 @@ namespace mocc {
             return regions_.size();
         }
 
+        const VecF& eubounds() const {
+            return eubounds_;
+        }
+
     private:
         // list of mesh regions corresponding to each XSMesh region
         unsigned int ng_;
 
         // Vector of xs mesh regions
         std::vector<XSMeshRegion> regions_;
+
+        // Energy group upper bounds
+        VecF eubounds_;
     };
 }

@@ -31,6 +31,11 @@ namespace mocc {
         unsigned int n_grp() const {
             return n_grp_;
         }
+
+        // Return the group bounds
+        const VecF& g_bounds() const {
+            return g_bounds_;
+        }
     	
     private:
         // Collection of all of the materials specified by the library. Keyed on

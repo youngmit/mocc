@@ -70,6 +70,11 @@ namespace mocc{
             assert( source != nullptr );
             source_ = source;
         }
+
+        // Return the energy group bounds from the underlying xsmesh
+        const VecF& eubounds() const {
+            return xs_mesh_.eubounds();
+        }
     protected:
         const CoreMesh& mesh_;
         XSMesh xs_mesh_;
