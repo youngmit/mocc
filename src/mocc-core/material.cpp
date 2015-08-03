@@ -17,8 +17,7 @@ namespace mocc{
         ng_ = scat.size();
         out_ = VecF(ng_, 0.0);
 
-        int min_g = 0;
-        int max_g = 0;
+        // Densify the scattering matrix
         for(int to=0; to<ng_; to++){
             for(int from=0; from<ng_; from++){
                 if(scat[to][from] > 0.0){
@@ -28,10 +27,17 @@ namespace mocc{
             }
         }
 
+        // Determine group bounds for each row
+        // TODO: This is some nasty jazz, might have originally written this
+        // whilst under the influence of something... Come back and clean up
+        // later.
         int pos = 0;
         int prevPos = 0;
+        int min_g = 0;
+        int max_g = 0;
         for(int to=0; to<ng_; to++){
             bool found_min = false;
+            bool found_max = false;
             for(int from=0; from<ng_; from++){
                 if(scat[to][from] > 0.0){
                     if(!found_min){
@@ -41,9 +47,13 @@ namespace mocc{
                     pos++;
                 }
                 if(scat[to][from] == 0.0 && found_min){
+                    found_max = true;
                     max_g = from-1;
                     break;
                 }
+            }
+            if( !found_max ) {
+                max_g = ng_-1;
             }
             rows_.push_back(ScatRow(min_g, max_g, &scat_[prevPos]));
             prevPos = pos;
