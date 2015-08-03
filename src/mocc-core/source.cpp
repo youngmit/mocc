@@ -40,7 +40,7 @@ namespace mocc {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
             unsigned int min_g = scat_row.min_g;
             unsigned int max_g = scat_row.max_g;
-            for( unsigned int igg=min_g; igg<max_g; igg++ ) {
+            for( unsigned int igg=min_g; igg<=max_g; igg++ ) {
                 // Dont add a contribution for self-scatter. TODO: it might be a
                 // good idea to remove self-scatter from the scattering matrix
                 // and store it separately. May also benefit the self-scatter
