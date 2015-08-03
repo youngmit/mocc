@@ -251,7 +251,7 @@ namespace mocc {
             const auto& xsnf = xsr.xsmacnf();
             for(unsigned int ig=0; ig<xs_mesh_.n_grp(); ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
-                    fission_source(ireg) += rkeff*xsnf[ig]*flux_(ireg, ig);
+                    fission_source(ireg) += rkeff*xsnf[ig]*flux_(ireg, ig)*vol_(ireg);
                 }
             }
         }
