@@ -127,12 +127,10 @@ namespace mocc {
     		for(unsigned int ir=0; ir<sub_rad_[ixs]; ir++){
     			double r = sqrt(vn + ri*ri);
     			radii_.push_back(r);
-cout << r << " ";
     			ri = r;
     		}
     		rxsi = xs_radii_[ixs];
     	}
-cout << radii_.size() << endl;
 
         // Construct Circle objects corresponding to each mesh ring
         Point2 origin(0.0, 0.0);
@@ -152,7 +150,6 @@ cout << radii_.size() << endl;
             // Point at which the azimuthal subdivision intersects the bounding
             // box of the pin.
             Point2 p = pin_box.intersect(origin, ang);
-cout << "azi point: " << iazi*ang_sep << " " << p << endl;
             lines_.push_back( Line(origin, p) );
         }
     	
