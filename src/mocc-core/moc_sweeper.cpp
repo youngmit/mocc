@@ -250,7 +250,7 @@ namespace mocc {
         fission_source.fill(0.0);
         for( auto &xsr: xs_mesh_ ) {
             const auto& xsnf = xsr.xsmacnf();
-            for(unsigned int ig=0; ig<xs_mesh_.n_grp(); ig++ ) {
+            for( unsigned int ig=0; ig<xs_mesh_.n_grp(); ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
                     fission_source(ireg) += rkeff*xsnf[ig]*flux_(ireg, ig);
                 }
@@ -259,7 +259,7 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper::get_pin_flux( int group, VecF& flux) const {
+    void MoCSweeper::get_pin_flux( int group, VecF& flux ) const {
         flux.resize( mesh_.nx()*mesh_.ny()*mesh_.nz() );
         for( auto &f: flux ) {
             f = 0.0;

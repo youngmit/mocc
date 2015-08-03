@@ -104,13 +104,9 @@ namespace mocc{
         float_t tfis1 = fss_.sweeper()->total_fission(false);
         float_t tfis2 = fss_.sweeper()->total_fission(true);
 
-cout << tfis1 << " " << tfis2 << endl;
-
         // update estimate for k
         keff_prev_ = keff_;
         keff_ = keff_ * tfis1/tfis2;
-
-        
     }
 
     void EigenSolver::print( int iter, float_t error_k, float_t error_psi ) {
