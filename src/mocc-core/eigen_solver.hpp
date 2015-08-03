@@ -42,5 +42,8 @@ namespace mocc{
 
         // Maximum allowable outer iterations
         unsigned int max_iterations_;
+
+        // Print the current state of the eigenvalue solver
+        void print( int iter, float_t error_k, float_t error_psi );
     };
 }

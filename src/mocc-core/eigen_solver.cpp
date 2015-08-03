@@ -78,33 +78,21 @@ namespace mocc{
 
             // Check for convergence
             error_k = fabs(keff_-keff_prev_);
+
             // use the old fission source to store the difference between new
             // and old, since we will be filling it with new in the next
             // iteration anyways.
-            fission_source_prev_ = fission_source_-fission_source_prev_;
-            error_psi = fission_source_prev_.matrix().norm();
+            error_psi = (fission_source_-fission_source_prev_).matrix().norm();
 
-            std::ios::fmtflags flags = cout.flags();
-
-            cout << std::setw(out_w_) << n_iterations 
-                 << std::setw(out_w_) << std::fixed
-                     << std::setprecision(6) << keff_
-                 << std::setw(out_w_) << std::scientific
-                     << std::setprecision(6) << error_k 
-                 << std::setw(out_w_) << std::setiosflags(std::ios::scientific)
-                     << std::setprecision(6) << error_psi
-                 << endl;
+            this->print( n_iterations, error_k, error_psi );
+             
             done = ((error_k < tolerance_k_) & (error_psi < tolerance_psi_)) |
                 (n_iterations >= max_iterations_ );
-            //std::cin.ignore();
-
-            cout.flags(flags); 
         }
 
     }
 
     void EigenSolver::step() {
-
         // Store the old fission source
         fission_source_prev_ = fission_source_;
 
@@ -118,6 +106,23 @@ namespace mocc{
         keff_ = keff_ * fission_source_.sum()/fission_source_prev_.sum();
 
         
+    }
+
+    void EigenSolver::print( int iter, float_t error_k, float_t error_psi ) {
+            
+        std::ios::fmtflags flags = cout.flags();
+
+        cout << std::setw(out_w_) << iter 
+             << std::setw(out_w_) << std::fixed
+                 << std::setprecision(6) << keff_
+             << std::setw(out_w_) << std::scientific
+                 << std::setprecision(6) << error_k 
+             << std::setw(out_w_) << std::setiosflags(std::ios::scientific)
+                 << std::setprecision(6) << error_psi
+             << endl;
+
+        cout.flags(flags);
+        return;
     }
     
 };
