@@ -18,6 +18,7 @@ namespace mocc{
             n_reg_( mesh.n_reg() ),
             ng_( xs_mesh_.n_grp() ),
             flux_( n_reg_, ng_ ),
+            flux_old_( n_reg_, ng_ ),
             vol_( n_reg_, 1 )
         {
             return;
@@ -76,6 +77,12 @@ namespace mocc{
         const VecF& eubounds() const {
             return xs_mesh_.eubounds();
         }
+
+        // Store the current flux as the old flux
+        void store_old_flux() {
+            flux_old_ = flux_;
+            return;
+        }
     protected:
         const CoreMesh& mesh_;
         XSMesh xs_mesh_;
@@ -87,6 +94,9 @@ namespace mocc{
 
         // Multi-group scalar flux
         ArrayX flux_;
+
+        // Previous value of the MG scalar flux
+        ArrayX flux_old_;
 
         // Region volumes. In a 3-D sweeper this is the true volume, while in a
         // 2-D sweeper, this is actually surface area.
