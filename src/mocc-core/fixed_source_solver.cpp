@@ -23,6 +23,8 @@ namespace mocc {
 
     // Perform a single group sweep
     void FixedSourceSolver::step() {
+        // Tell the sweeper to stash its old flux
+        sweeper_->store_old_flux();
         for( unsigned int ig=0; ig<ng_; ig++ ) {
             // Set up the source
             if( fs_ == nullptr ) {

@@ -83,6 +83,10 @@ namespace mocc{
             flux_old_ = flux_;
             return;
         }
+
+        // Compute the total fission source based on the current state of the
+        // flux
+        float_t total_fission( bool old=false ) const;
     protected:
         const CoreMesh& mesh_;
         XSMesh xs_mesh_;

@@ -97,13 +97,18 @@ namespace mocc{
         fission_source_prev_ = fission_source_;
 
         // Perform a group sweep with the FSS
+        fss_.sweeper()->calc_fission_source(keff_, fission_source_);
         fss_.step();
         
-        fss_.sweeper()->calc_fission_source(keff_, fission_source_);
+        // Get the total fission sources
+        float_t tfis1 = fss_.sweeper()->total_fission(false);
+        float_t tfis2 = fss_.sweeper()->total_fission(true);
+
+cout << tfis1 << " " << tfis2 << endl;
 
         // update estimate for k
         keff_prev_ = keff_;
-        keff_ = keff_ * fission_source_.sum()/fission_source_prev_.sum();
+        keff_ = keff_ * tfis1/tfis2;
 
         
     }
