@@ -24,8 +24,6 @@ SP_Solver_t solver;
 // Global core mesh
 SP_CoreMesh_t mesh;
 
-void output();
-
 int main(int argc, char* argv[]){
 	// Make sure we have an input file
 	if(argc < 2){
@@ -48,44 +46,8 @@ int main(int argc, char* argv[]){
     solver->solve();
 
     // Output stuff
-    output();
+    H5File outfile("out.h5");
+    solver->output( outfile );
 
     StopLogFile();
-}
-
-void output(){
-    const TransportSweeper* sweeper_p = solver->sweeper();
-
-    // Get core dimensions from the mesh
-    const int nx = mesh->nx();
-    const int ny = mesh->ny();
-    const int nz = mesh->nz();
-    VecI dims;
-    dims.push_back(nz);
-    dims.push_back(ny);
-    dims.push_back(nx);
-
-    H5File outfile("out.h5");
-
-
-
-    // Make a group in the file to store the flux
-    outfile.mkdir("/flux");
-
-    // Provide energy group upper bounds
-    VecF eubounds = sweeper_p->eubounds();
-    outfile.write("/eubounds", eubounds, VecI(1, eubounds.size()));
-    outfile.write("/ng", eubounds.size());
-
-    for( int ig=0; ig<sweeper_p->n_grp(); ig++ ) {
-        VecF flux;
-        sweeper_p->get_pin_flux(ig, flux);
-
-
-        std::stringstream setname;
-        setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
-
-        outfile.write(setname.str(), flux, dims);
-    }
-    
 }

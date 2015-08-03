@@ -3,12 +3,13 @@
 #include <memory>
 
 #include "transport_sweeper.hpp"
+#include "output_interface.hpp"
 
 namespace mocc {
     // This provides a virtual base type, which shall provide a solve() and
     // step() method. At the highest level of the heirarchy, the driver calls
     // solve() and that should invoke everything that is necessary.
-    class Solver{
+    class Solver: public HasOutput {
     public:
         virtual ~Solver() { };
 

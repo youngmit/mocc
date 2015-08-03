@@ -12,7 +12,7 @@
 #include "xs_mesh.hpp"
 
 namespace mocc {
-    class MoCSweeper: public TransportSweeper{
+    class MoCSweeper: public TransportSweeper {
         struct BC {
             float_t fw;
             float_t bw;
@@ -37,6 +37,8 @@ namespace mocc {
         void calc_fission_source( float_t k,  ArrayX& fission_source) const;
 
         void get_pin_flux( int group, VecF& flux ) const;
+
+        void output( H5File& file ) const;
 
     private:
         AngularQuadrature ang_quad_;

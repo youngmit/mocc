@@ -7,9 +7,10 @@
 #include "global_config.hpp"
 #include "xs_mesh.hpp"
 #include "source.hpp"
+#include "output_interface.hpp"
 
 namespace mocc{
-    class TransportSweeper{
+    class TransportSweeper: public HasOutput {
     public:
         TransportSweeper( const CoreMesh& mesh ):
             mesh_( mesh ),

@@ -7,9 +7,10 @@
 #include "core_mesh.hpp"
 #include "fixed_source_solver.hpp"
 #include "transport_sweeper.hpp"
+#include "h5file.hpp"
 
 namespace mocc{
-
+    
     class EigenSolver: public Solver{
     public:
         EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
@@ -19,7 +20,13 @@ namespace mocc{
         const TransportSweeper* sweeper() const {
             return fss_.sweeper();
         }
-    
+        
+        // Implement the output interface
+        void output( H5File& file ) const {
+            fss_.output( file );
+        }
+
+
     private:
         const static int out_w_ = 14;
         FixedSourceSolver fss_;

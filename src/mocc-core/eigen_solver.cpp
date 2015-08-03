@@ -124,5 +124,4 @@ namespace mocc{
         cout.flags(flags);
         return;
     }
-    
 };

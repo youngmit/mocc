@@ -6,9 +6,10 @@
 #include "source.hpp"
 #include "core_mesh.hpp"
 #include "transport_sweeper.hpp"
+#include "h5file.hpp"
 
 namespace mocc{
-    class FixedSourceSolver: public Solver{
+    class FixedSourceSolver: public Solver {
     public:
         // Initialize a FSS using the XML document
         FixedSourceSolver( const pugi::xml_node &input, const CoreMesh &mesh );
@@ -45,6 +46,11 @@ namespace mocc{
         // Return a constant reference to the transport sweeper
         const TransportSweeper* sweeper() const {
             return sweeper_.get();
+        }
+
+        void output( H5File& file ) const {
+            sweeper_->output( file );
+            return;
         }
     
     private:

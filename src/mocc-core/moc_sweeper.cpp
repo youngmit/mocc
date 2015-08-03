@@ -1,5 +1,6 @@
 #include "moc_sweeper.hpp"
 
+#include <iomanip>
 #include "error.hpp"
 
 using std::endl;
@@ -278,4 +279,36 @@ namespace mocc {
 
         return;
     }
+
+    void MoCSweeper::output( H5File& file ) const {
+        // Get core dimensions from the mesh
+        const int nx = mesh_.nx();
+        const int ny = mesh_.ny();
+        const int nz = mesh_.nz();
+        VecI dims;
+        dims.push_back(nz);
+        dims.push_back(ny);
+        dims.push_back(nx);
+        
+        // Make a group in the file to store the flux
+        file.mkdir("/flux");
+        
+        // Provide energy group upper bounds
+        file.write("/eubounds", xs_mesh_.eubounds(), VecI(1, ng_));
+        file.write("/ng", ng_);
+        
+        for( int ig=0; ig<ng_; ig++ ) {
+            VecF flux;
+            this->get_pin_flux(ig, flux);
+        
+        
+            std::stringstream setname;
+            setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
+        
+            file.write(setname.str(), flux, dims);
+        }
+
+        return;
+    }
+
 }
