@@ -5,14 +5,18 @@
 
 namespace mocc {
     FixedSourceSolver::FixedSourceSolver( const pugi::xml_node &input, 
-            const CoreMesh &mesh ):
+            const CoreMesh &mesh ) try :
         sweeper_( UP_Sweeper_t( TransportSweeperFactory(input, mesh) ) ),
         source_( mesh.n_reg(), sweeper_->xs_mesh(), sweeper_->cflux() ),
         fs_( nullptr ),
         ng_( sweeper_->n_grp() )
     {
+        
         sweeper_->assign_source( &source_ );
         return;
+    }
+    catch (Exception e) {
+            Fail(e);
     }
 
     // Perform source iteration
