@@ -1,13 +1,24 @@
 #include "transport_sweeper_factory.hpp"
 
+#include <string>
+
+#include "error.hpp"
+#include "moc_sweeper.hpp"
+#include "sn_sweeper.hpp"
+
 namespace mocc {
-    TransportSweeper* TransportSweeperFactory( const pugi::xml_node &input,
+    UP_Sweeper_t TransportSweeperFactory( const pugi::xml_node &input,
             const CoreMesh &mesh ) {
-        // For now, just make an MoC sweeper. Eventually we will get to PS-style
-        // sweepers.
-
-        TransportSweeper* ts = new MoCSweeper( input.child("sweeper"), mesh );
-
-        return ts;
+        // Check the input XML for which type of sweeper to make
+        std::string type = input.child("sweeper").attribute("type").value();
+        if( type == "moc" ) {
+            UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh ) );
+            return ts;
+        } else if ( type == "sn" ) {
+            UP_Sweeper_t ts( new SnSweeper( input.child("sweeper"), mesh ) );
+            return ts;
+        } else {
+            throw EXCEPT("Failed to detect a valid sweeper type.");
+        }
     }
 }
