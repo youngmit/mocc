@@ -12,8 +12,9 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
+        TransportSweeper() { }
         TransportSweeper( const CoreMesh& mesh ):
-            mesh_( mesh ),
+            mesh_( &mesh ),
             xs_mesh_( mesh ),
             n_reg_( mesh.n_reg() ),
             ng_( xs_mesh_.n_grp() ),
@@ -23,6 +24,7 @@ namespace mocc{
         {
             return;
         }
+
         virtual ~TransportSweeper(){ }
         virtual void sweep(int group) = 0;
         virtual void initialize() = 0;
@@ -88,7 +90,7 @@ namespace mocc{
         // flux
         float_t total_fission( bool old=false ) const;
     protected:
-        const CoreMesh& mesh_;
+        const CoreMesh* mesh_;
         XSMesh xs_mesh_;
 
         unsigned int n_reg_;

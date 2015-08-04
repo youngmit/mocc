@@ -16,7 +16,7 @@ namespace mocc {
         xstr_( n_reg_, 1 ),
         flux_1g_( n_reg_, 1 ),
         qbar_( n_reg_, 1 ),
-        bc_type_( mesh_.boundary() )
+        bc_type_( mesh_->boundary() )
     {   
 
         // Make sure we have input from the XML
@@ -33,7 +33,7 @@ namespace mocc {
 
         // Set up the array of volumes (surface area)
         int ireg = 0;
-        for( auto pin=mesh_.begin_pin(); pin!=mesh_.end_pin(); ++pin ) {
+        for( auto pin=mesh_->begin_pin(); pin!=mesh_->end_pin(); ++pin ) {
             const VecF& pin_vol = (*pin)->vol();
             for( auto &v: pin_vol ) {
                 vol_(ireg) = v;
@@ -44,7 +44,7 @@ namespace mocc {
         // allocate space to store the boundary conditions
         boundary_.resize( ng_ );
         for( auto &group_rays: boundary_ ) {
-            group_rays.resize( mesh_.nz() );
+            group_rays.resize( mesh_->nz() );
             for( auto &angle_rays: group_rays ) {
                 // We actually allocate BCs for all 4 octants to make things a
                 // little simpler.
@@ -57,7 +57,7 @@ namespace mocc {
                 }
             }
         }
-        boundary_out_.resize( mesh_.nz() );
+        boundary_out_.resize( mesh_->nz() );
         for( auto &angle_rays: boundary_out_ ) {
             // We actually allocate BCs for all 4 octants to make things a
             // little simpler.
@@ -103,7 +103,7 @@ namespace mocc {
 
         int iplane = 0;
         for( auto &plane_rays: rays_ ) {
-            int first_reg = mesh_.first_reg_plane(iplane);
+            int first_reg = mesh_->first_reg_plane(iplane);
             int iang = 0;
             for( auto &ang_rays: plane_rays ) {
                 int iang1 = iang;
@@ -260,16 +260,16 @@ namespace mocc {
     }
 
     void MoCSweeper::get_pin_flux( int group, VecF& flux ) const {
-        flux.resize( mesh_.nx()*mesh_.ny()*mesh_.nz() );
+        flux.resize( mesh_->nx()*mesh_->ny()*mesh_->nz() );
         for( auto &f: flux ) {
             f = 0.0;
         }
 
         int ireg = 0;
         int ipin = 0;
-        for( auto &pin: mesh_ ) {
-            Position pos = mesh_.pin_position(ipin);
-            int i = mesh_.index_lex(pos);
+        for( auto &pin: *mesh_ ) {
+            Position pos = mesh_->pin_position(ipin);
+            int i = mesh_->index_lex(pos);
             for( int ir=0; ir<pin->n_reg(); ir++) {
                 flux[i] += flux_(ireg, group)*vol_(ireg);
                 ireg++;
@@ -282,9 +282,9 @@ namespace mocc {
 
     void MoCSweeper::output( H5File& file ) const {
         // Get core dimensions from the mesh
-        const int nx = mesh_.nx();
-        const int ny = mesh_.ny();
-        const int nz = mesh_.nz();
+        const int nx = mesh_->nx();
+        const int ny = mesh_->ny();
+        const int nz = mesh_->nz();
         VecI dims;
         dims.push_back(nz);
         dims.push_back(ny);
