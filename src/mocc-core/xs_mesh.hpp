@@ -106,7 +106,7 @@ namespace mocc {
             return eubounds_;
         }
 
-    private:
+    protected:
         // list of mesh regions corresponding to each XSMesh region
         unsigned int ng_;
 
