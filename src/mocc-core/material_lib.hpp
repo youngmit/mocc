@@ -12,10 +12,10 @@ namespace mocc {
 
     class MaterialLib{
     public:
-    	// Default constructor does nothing
-    	MaterialLib();
-    	MaterialLib(FileScrubber &input);
-    	void assignID(int id, std::string name);
+        // Default constructor does nothing
+        MaterialLib();
+        MaterialLib(FileScrubber &input);
+        void assignID(int id, std::string name);
 
         // Return the number of materials in the library
         unsigned int n_materials() const {
@@ -36,25 +36,25 @@ namespace mocc {
         const VecF& g_bounds() const {
             return g_bounds_;
         }
-    	
+        
     private:
         // Collection of all of the materials specified by the library. Keyed on
         // the string name of the matierial, specified in the first line of the
         // material data blocks
-    	std::map<std::string, Material> lib_materials_;
+        std::map<std::string, Material> lib_materials_;
         // Map containing all of the materials that are actually mapped to and
         // ID using <material> tags
         MaterialMap materials_;
         // Number of energy groups for which all materials in the library are
         // defined
-    	unsigned int n_grp_;
+        unsigned int n_grp_;
         // Number of materials that have been mapped to an ID
-    	unsigned int n_material_;
+        unsigned int n_material_;
         // Number of materials present in the library itself (>= n_material_)
         unsigned int n_material_lib_;
         // Upper bound for each of the energy groups
-    	VecF g_bounds_;
+        VecF g_bounds_;
         // Descriptive string for the material library
-    	std::string m_description;
+        std::string m_description;
     };
 }
