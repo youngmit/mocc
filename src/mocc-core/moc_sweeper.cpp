@@ -18,6 +18,7 @@ namespace mocc {
         qbar_( n_reg_, 1 ),
         bc_type_( mesh_->boundary() )
     {   
+        xs_mesh_ = XSMesh( *mesh_ );
 
         // Make sure we have input from the XML
         if( input.empty() ) {

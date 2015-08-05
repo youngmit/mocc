@@ -12,10 +12,9 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
-        TransportSweeper() { }
+        TransportSweeper( ) { }
         TransportSweeper( const CoreMesh& mesh ):
             mesh_( &mesh ),
-            xs_mesh_( mesh ),
             n_reg_( mesh.n_reg() ),
             ng_( xs_mesh_.n_grp() ),
             flux_( n_reg_, ng_ ),
