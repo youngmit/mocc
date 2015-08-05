@@ -70,21 +70,6 @@ namespace mocc {
                     mati.xssc() );
         }
 
-        // Again, lets see how we did
-        //
-        //for (auto &xsr: *this) {
-        //    cout << "xsmesh region" << endl;
-        //    cout << "ig      \t xstr    \t xsnf    \t xskf    \t xsch" << endl;
-        //    for( int ig=0; ig<ng_; ig++ ) {
-        //        cout << ig << "\t" 
-        //             << xsr.xsmactr()[ig] << "\t"
-        //             << xsr.xsmacnf()[ig] << "\t"
-        //             << xsr.xsmackf()[ig] << "\t"
-        //             << xsr.xsmacch()[ig] << "\t"
-        //             << endl;
-        //    }
-        //}
-
         return;
     }
 }
