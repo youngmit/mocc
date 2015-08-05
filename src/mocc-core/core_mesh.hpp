@@ -54,6 +54,10 @@ namespace mocc {
             return nz_;
         }
 
+        unsigned int n_pin() const {
+            return nx_*ny_*nz_;
+        }
+
         int n_unique_planes() const {
             return first_unique_.size();
         }
