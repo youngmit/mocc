@@ -3,6 +3,7 @@
 #include <string>
 
 #include "error.hpp"
+#include "mesh.hpp"
 #include "moc_sweeper.hpp"
 #include "sn_sweeper.hpp"
 
@@ -12,10 +13,14 @@ namespace mocc {
         // Check the input XML for which type of sweeper to make
         std::string type = input.child("sweeper").attribute("type").value();
         if( type == "moc" ) {
-            UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh ) );
+            SP_XSMesh_t xsm( new XSMesh(mesh) );
+            UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh, 
+                        xsm ) );
             return ts;
         } else if ( type == "sn" ) {
-            UP_Sweeper_t ts( new SnSweeper( input.child("sweeper"), mesh ) );
+            SP_XSMesh_t xsm( new XSMesh(mesh) );
+            UP_Sweeper_t ts( new SnSweeper( input.child("sweeper"), mesh, 
+                        xsm ) );
             return ts;
         } else {
             throw EXCEPT("Failed to detect a valid sweeper type.");

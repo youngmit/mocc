@@ -9,17 +9,16 @@ using std::cout;
 namespace mocc {
     
     MoCSweeper::MoCSweeper( const pugi::xml_node &input, 
-            const CoreMesh &mesh ):
-        TransportSweeper( mesh ),
+            const CoreMesh &mesh, SP_XSMesh_t xs_mesh ):
+        TransportSweeper( mesh, xs_mesh ),
+        core_mesh_( &mesh ),
         ang_quad_( input.child("ang_quad") ),
         rays_( input.child("rays"), ang_quad_, mesh ),
         xstr_( n_reg_, 1 ),
         flux_1g_( n_reg_, 1 ),
         qbar_( n_reg_, 1 ),
-        bc_type_( mesh_->boundary() )
+        bc_type_( core_mesh_->boundary() )
     {   
-        xs_mesh_ = XSMesh( *mesh_ );
-
         // Make sure we have input from the XML
         if( input.empty() ) {
             Error("No input specified to initialize MoC sweeper.");
@@ -34,8 +33,8 @@ namespace mocc {
 
         // Set up the array of volumes (surface area)
         int ireg = 0;
-        for( auto pin=mesh_->begin_pin(); pin!=mesh_->end_pin(); ++pin ) {
-            const VecF& pin_vol = (*pin)->vol();
+        for( auto &pin: *core_mesh_ ) {
+            const VecF& pin_vol = pin->vol();
             for( auto &v: pin_vol ) {
                 vol_(ireg) = v;
                 ireg++;
@@ -76,7 +75,7 @@ namespace mocc {
 
     void MoCSweeper::sweep( int group ) {
         // set up the xstr_ array
-        for( auto &xsr: xs_mesh_ ) {
+        for( auto &xsr: *xs_mesh_ ) {
             float_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
                 xstr_(ireg) = xstr;
@@ -104,7 +103,7 @@ namespace mocc {
 
         int iplane = 0;
         for( auto &plane_rays: rays_ ) {
-            int first_reg = mesh_->first_reg_plane(iplane);
+            int first_reg = core_mesh_->first_reg_plane(iplane);
             int iang = 0;
             for( auto &ang_rays: plane_rays ) {
                 int iang1 = iang;
@@ -249,9 +248,9 @@ namespace mocc {
 
         float_t rkeff = 1.0/k;
         fission_source.fill(0.0);
-        for( auto &xsr: xs_mesh_ ) {
+        for( auto &xsr: *xs_mesh_ ) {
             const auto& xsnf = xsr.xsmacnf();
-            for( unsigned int ig=0; ig<xs_mesh_.n_grp(); ig++ ) {
+            for( unsigned int ig=0; ig<xs_mesh_->n_grp(); ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
                     fission_source(ireg) += rkeff*xsnf[ig]*flux_(ireg, ig);
                 }
@@ -261,16 +260,16 @@ namespace mocc {
     }
 
     void MoCSweeper::get_pin_flux( int group, VecF& flux ) const {
-        flux.resize( mesh_->nx()*mesh_->ny()*mesh_->nz() );
+        flux.resize( mesh_->n_pin() );
         for( auto &f: flux ) {
             f = 0.0;
         }
 
         int ireg = 0;
         int ipin = 0;
-        for( auto &pin: *mesh_ ) {
-            Position pos = mesh_->pin_position(ipin);
-            int i = mesh_->index_lex(pos);
+        for( auto &pin: *core_mesh_ ) {
+            Position pos = core_mesh_->pin_position(ipin);
+            int i = core_mesh_->index_lex(pos);
             for( int ir=0; ir<pin->n_reg(); ir++) {
                 flux[i] += flux_(ireg, group)*vol_(ireg);
                 ireg++;
@@ -295,7 +294,7 @@ namespace mocc {
         file.mkdir("/flux");
         
         // Provide energy group upper bounds
-        file.write("/eubounds", xs_mesh_.eubounds(), VecI(1, ng_));
+        file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
         file.write("/ng", ng_);
         
         for( int ig=0; ig<ng_; ig++ ) {

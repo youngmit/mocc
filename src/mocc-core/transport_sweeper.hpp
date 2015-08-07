@@ -12,11 +12,11 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
-        TransportSweeper( ) { }
-        TransportSweeper( const CoreMesh& mesh ):
+        TransportSweeper( const Mesh& mesh, SP_XSMesh_t xs_mesh ):
             mesh_( &mesh ),
+            xs_mesh_( xs_mesh ),
             n_reg_( mesh.n_reg() ),
-            ng_( xs_mesh_.n_grp() ),
+            ng_( xs_mesh_->n_grp() ),
             flux_( n_reg_, ng_ ),
             flux_old_( n_reg_, ng_ ),
             vol_( n_reg_, 1 )
@@ -40,7 +40,7 @@ namespace mocc{
 
         // Return a reference to the sweeper's XSMesh
         const XSMesh& xs_mesh() const {
-            return xs_mesh_;
+            return *(xs_mesh_.get());
         }
 
         // Return a reference to the MG flux
@@ -76,7 +76,7 @@ namespace mocc{
 
         // Return the energy group bounds from the underlying xsmesh
         const VecF& eubounds() const {
-            return xs_mesh_.eubounds();
+            return xs_mesh_->eubounds();
         }
 
         // Store the current flux as the old flux
@@ -89,8 +89,8 @@ namespace mocc{
         // flux
         float_t total_fission( bool old=false ) const;
     protected:
-        const CoreMesh* mesh_;
-        XSMesh xs_mesh_;
+        const Mesh* mesh_;
+        SP_XSMesh_t xs_mesh_;
 
         unsigned int n_reg_;
         unsigned int ng_;
