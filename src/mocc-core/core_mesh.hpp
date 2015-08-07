@@ -5,6 +5,7 @@
 
 #include "pugixml.hpp"
 
+#include "mesh.hpp"
 #include "pin_mesh.hpp"
 #include "pin.hpp"
 #include "material_lib.hpp"
@@ -20,13 +21,8 @@ namespace mocc {
     // tracing, generation of coarse mesh, etc. A lot of the heavy lifting for
     // input processing happens in the constructor, and the CoreMesh assumes 
     // ownership of a lot of the structures used to represent the system.
-    class CoreMesh {
+    class CoreMesh: public Mesh {
     public:
-        CoreMesh() {
-            // do nothing
-            return;
-        }
-
         // Construct a CoreMesh from XML input. This routine is responsible for
         // parsing many of the tags in the XML document: <mesh>, <pin>,
         // <material_lib>, <lattice>, <core>
@@ -42,28 +38,8 @@ namespace mocc {
             return hy_;
         }
 
-        unsigned int nx() const {
-            return nx_;
-        }
-
-        unsigned int ny() const {
-            return ny_;
-        }
-
-        unsigned int nz() const {
-            return nz_;
-        }
-
-        unsigned int n_pin() const {
-            return nx_*ny_*nz_;
-        }
-
         int n_unique_planes() const {
             return first_unique_.size();
-        }
-
-        unsigned int n_reg() const {
-            return n_reg_;
         }
         
         // Given a vector containing two points (Which should be on the boundary
@@ -167,18 +143,8 @@ namespace mocc {
         // List of pin boundaries in the y dimension
         VecF y_vec_;
 
-        // Numbers of pins/planes in each dimension
-        unsigned int nx_;
-        unsigned int ny_;
-        unsigned int nz_;
-
         // Number of assemblies
         unsigned int nasy_;
-
-        // Total number of FSRs in the entire geometry
-        unsigned int n_reg_;
-        // Total number of XS regions in the entire geometry
-        unsigned int n_xsreg_;
 
         // List of geometrically-unique planes. Each entry in the list
         // corresponds to the unique plane index that is geometrically valid for
