@@ -44,6 +44,10 @@ namespace mocc{
             return xsab_;
         }
 
+        const VecF& xstr() const {
+            return xstr_;
+        }
+
         const VecF& xsnf() const {
             return xsnf_;
         }
@@ -62,6 +66,7 @@ namespace mocc{
 
     private:
     	VecF xsab_;
+    	VecF xstr_;
     	VecF xsnf_;
     	VecF xsf_;
     	VecF xsch_;

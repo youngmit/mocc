@@ -17,9 +17,9 @@ int main() {
 
     matlib.assignID( 1, "MOX-4.3");
 
-    const mocc::Material* mat = matlib.materials().at(1);
+    const mocc::Material& mat = matlib.get_material_by_id(1);
 
-    assert(mat->xsab().size() == 7);
+    assert(mat.xsab().size() == 7);
 
 
     mocc::VecF out_scat { 1.702972340405E-01,
@@ -34,11 +34,11 @@ int main() {
 
     cout << endl << endl;
     for( int ig=0; ig<7; ig++ ) {
-        assert(mocc::fp_equiv_ulp( mat->xssc().out(ig), out_scat[ig]) );
+        assert(mocc::fp_equiv_ulp( mat.xssc().out(ig), out_scat[ig]) );
 
 
         
-        const mocc::ScatRow& scat_row = mat->xssc().to(ig);
+        const mocc::ScatRow& scat_row = mat.xssc().to(ig);
         unsigned int min_g = scat_row.min_g;
         unsigned int max_g = scat_row.max_g;
         for( int igg=min_g; igg<=max_g; igg++ ) {
@@ -47,5 +47,5 @@ int main() {
 
         cout << endl;
     }
-    assert(mat->xssc().to(3).from[0] == 5.04050E-09);
+    assert(mat.xssc().to(3).from[0] == 5.04050E-09);
 }

@@ -2,12 +2,15 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <iostream>
+
 #include "material.hpp"
 #include "file_scrubber.hpp"
 #include "global_config.hpp"
 
 namespace mocc {
     typedef std::map<unsigned int, const Material*> MaterialMap;
+    typedef std::vector<Material> MaterialVec;
 
 
     class MaterialLib{
@@ -23,9 +26,19 @@ namespace mocc {
         }
 
         // Return the map of materials by ID
-        const MaterialMap& materials() const {
-            return materials_;
+        const MaterialVec& materials() const {
+            return lib_materials_;
         } 
+
+        // Return the index of the material given a material ID
+        unsigned int get_index_by_id( unsigned int id ) const {
+            return material_dense_index_.at(id);
+        }
+
+        // Return a const reference to a material by ID
+        const Material& get_material_by_id( unsigned int id ) const {
+            return lib_materials_[material_ids_.at(id)];
+        }
 
         // Return the number of groups spanned by the library
         unsigned int n_grp() const {
@@ -36,24 +49,47 @@ namespace mocc {
         const VecF& g_bounds() const {
             return g_bounds_;
         }
+
+        MaterialVec::const_iterator begin() const {
+            return assigned_materials_.cbegin();
+        }
+
+        MaterialVec::const_iterator end() const {
+            return assigned_materials_.cend();
+        }
         
     private:
-        // Collection of all of the materials specified by the library. Keyed on
-        // the string name of the matierial, specified in the first line of the
-        // material data blocks
-        std::map<std::string, Material> lib_materials_;
-        // Map containing all of the materials that are actually mapped to and
-        // ID using <material> tags
-        MaterialMap materials_;
+        // Vector storing all of the materials in the library.
+        MaterialVec lib_materials_;
+
+        // Vector of actual assigned materials. A shame to do a copy, but avoids
+        // having to do all sorts of iterator jiggery later
+        MaterialVec assigned_materials_;
+
+        // Map from a material name to its corresponding index in materials_
+        std::map<std::string, int> material_names_;
+
+        // Map from a material ID to the corresponding index in the vector of
+        // materials
+        std::map<int, int> material_ids_;
+
+        // Map from a material ID to a corresponding index in a dense index
+        // space ( 0, n_material() )
+        std::map<int, int> material_dense_index_;
+
         // Number of energy groups for which all materials in the library are
         // defined
         unsigned int n_grp_;
+
         // Number of materials that have been mapped to an ID
         unsigned int n_material_;
+
         // Number of materials present in the library itself (>= n_material_)
         unsigned int n_material_lib_;
+
         // Upper bound for each of the energy groups
         VecF g_bounds_;
+
         // Descriptive string for the material library
         std::string m_description;
     };

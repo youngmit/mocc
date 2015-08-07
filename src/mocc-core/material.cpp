@@ -62,11 +62,20 @@ namespace mocc{
     }
     
     Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch, 
-                       std::vector<VecF> scat): xssc_(scat){
+                       std::vector<VecF> scat): 
+        xssc_(scat) 
+    {
         xsab_ = xsab;
         xsnf_ = xsnf;
         xsf_  = xsf;
         xsch_ = xsch;
+
+        int ng = xsab_.size();
+        xstr_ = VecF( ng, 0.0 );
+        // Simple calculation of transport cross section
+        for( int ig=0; ig<ng; ig++ ) {
+            xstr_[ig] = xsab[ig] + xssc_.out(ig);
+        }
     }
 };
 

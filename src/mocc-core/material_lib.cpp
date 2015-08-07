@@ -56,7 +56,7 @@ namespace mocc{
         }
         
         // Read in material data
-        for (unsigned int i=0; i<n_material_lib_; i++){
+        for (unsigned int imat=0; imat<n_material_lib_; imat++){
             // Get the name of the material
             line = input.getline();
             
@@ -101,22 +101,28 @@ namespace mocc{
             }
             
             // produce a Material object and add it to the library
-            lib_materials_.insert(std::pair<std::string, Material>(
-                materialName.c_str(), 
-                Material(abs, nuFiss, fiss, chi, scatTable)));
+            lib_materials_.push_back( 
+                    Material(abs, nuFiss, fiss, chi, scatTable) );
+            try {
+                material_names_[materialName] = imat;
+            } catch(...) {
+                EXCEPT("Failed to add material from library. Duplicate name?");
+            }
         }
     }
     
     void MaterialLib::assignID(int id, std::string name){
         try {
             cout << "Mapping material '" << name << "' to ID "  << id << endl;
-            const Material* mat_p = &lib_materials_.at(name);
-            materials_.insert( std::pair<int, const Material*>( id, mat_p) );
+            int mat_index = material_names_.at(name);
+            assigned_materials_.push_back(lib_materials_[mat_index]);
+            material_dense_index_[id] = n_material_;
+            material_ids_[id] = mat_index;
+            n_material_++;
         } catch(std::out_of_range) {
             Error("Failed to map material to ID. Are you sure you spelled it "
                     "right?");
         }
-        n_material_++;
         return;
     }
 }

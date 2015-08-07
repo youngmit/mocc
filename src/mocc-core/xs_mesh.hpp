@@ -19,7 +19,6 @@
 
 
 namespace mocc {
-
     // For now im using the lazy implementation of the xsmesh region class.
     class XSMeshRegion {
     friend class XSMesh;
@@ -116,4 +115,6 @@ namespace mocc {
         // Energy group upper bounds
         VecF eubounds_;
     };
+
+    typedef std::shared_ptr<XSMesh> SP_XSMesh_t;
 }
