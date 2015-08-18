@@ -1,6 +1,7 @@
 #include "material.hpp"
 
 #include <iostream>
+#include <iomanip>
 
 using std::cout;
 using std::endl;
@@ -59,6 +60,29 @@ namespace mocc{
             prevPos = pos;
         }
     
+    }
+
+    std::ostream& operator<<( std::ostream& os, 
+            const ScatMat &scat_mat ) {
+        os << "Scattering matrix: " << std::endl;
+        for( auto &row: scat_mat.rows_ ) {
+            int gmin = row.min_g;
+            int gmax = row.max_g;
+            for( unsigned int ig=0; ig<gmin; ig++ ) {
+                os << std::setw(12) << 0.0;
+            }
+
+            for( auto &sc: row ) {
+                cout << std::setw(12) << sc;
+            }
+
+            for( unsigned int ig=gmax+1; ig<scat_mat.rows_.size(); ig++) {
+                os << std::setw(12) << 0.0;
+            }
+            os << std::endl;
+        }
+        return os;
+
     }
     
     Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch, 

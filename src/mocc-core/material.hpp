@@ -1,7 +1,8 @@
 #pragma once
+#include <iostream>
+#include <vector>
 
 #include "global_config.hpp"
-#include <vector>
 
 namespace mocc{
 
@@ -14,6 +15,14 @@ namespace mocc{
     
         ScatRow(int min, int max, float_t const * const from):
             min_g(min), max_g(max), from(from){}
+
+        float_t const * const begin() const {
+            return from;
+        }
+
+        float_t const * const end() const {
+            return from + max_g - min_g + 1;
+        }
     };
     
     // Scattering matrix structure
@@ -24,15 +33,48 @@ namespace mocc{
             return rows_[ig];
         }
 
+        // Copy constructor. Need this in order to produce valid raw pointers to
+        // the scattering rows.
+        ScatMat( const ScatMat &other ):
+            ng_( other.ng_ ),
+            scat_( other.scat_ ),
+            out_( other.out_ )
+        {
+            // Pretty much everything can copy strait over, but we need to reach
+            // into the scattering rows and update their pointers to the
+            // location of the new scat_ vector
+            int pos = 0;
+            for( auto &row: other ) {
+                rows_.push_back( ScatRow(row.min_g, row.max_g, &scat_[pos]) );
+                pos += row.max_g - row.min_g + 1;
+            }
+            return;
+        }
+
         // Return the total out-scattering cross section for group ig
         float_t out( unsigned int ig ) const {
             return out_[ig]; 
         };
+
+        // Iterators to begin and end
+        std::vector<ScatRow>::const_iterator begin() const {
+            return rows_.cbegin();
+        }
+
+        std::vector<ScatRow>::const_iterator end() const {
+            return rows_.cend();
+        }
+        
+        // Provide stream insertion support
+        friend std::ostream& operator<<(std::ostream& os, 
+                const ScatMat &scat_mat);
     private:
         unsigned int ng_;
         VecF scat_;
-        std::vector<ScatRow> rows_;
         VecF out_;
+        std::vector<ScatRow> rows_;
+
+        
     };
     
     
@@ -52,7 +94,7 @@ namespace mocc{
             return xsnf_;
         }
 
-        const VecF& xsf() const {
+        const VecF& xskf() const {
             return xsf_;
         }
 

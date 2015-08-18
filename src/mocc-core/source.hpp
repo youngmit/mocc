@@ -7,7 +7,7 @@
 namespace mocc {
     class Source {
     public:
-        Source( int nreg, const XSMesh& xs_mesh, const ArrayX& flux );
+        Source( int nreg, const XSMesh* xs_mesh, const ArrayX& flux );
 
         // Initialize the source with the external source, if it exists, then
         // add the groups contribution from the multi-group fission source
@@ -22,15 +22,15 @@ namespace mocc {
         // sweeper in its "inner" iterations, and therefore does not mutate the
         // interal representation of the source, but instead returns the result
         // to the caller through the qbar argument.
-        void self_scatter( unsigned int ig, ArrayX& flux_1g, 
+        virtual void self_scatter( unsigned int ig, ArrayX& flux_1g, 
                 ArrayX& qbar ) const;
 
         // Return a pointer to the source
         const float_t* get() const {
             return source_1g_.data();
         }
-    private:
-        const XSMesh& xs_mesh_;
+    protected:
+        const XSMesh *xs_mesh_;
         unsigned int ng_;
         // This is true if an external source has been specified. For now it's
         // initialized false.
@@ -45,4 +45,5 @@ namespace mocc {
     };
 
     typedef std::shared_ptr<Source> SP_Source_t;
+    typedef std::unique_ptr<Source> UP_Source_t;
 }

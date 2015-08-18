@@ -55,7 +55,7 @@ namespace mocc{
     
     private:
         UP_Sweeper_t sweeper_;
-        Source source_;
+        UP_Source_t source_;
         // Pointer to the group-independent fission source. Usually comes from
         // an eigenvalue solver, if present
         const ArrayX* fs_;

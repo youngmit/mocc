@@ -12,9 +12,12 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
-        TransportSweeper( const Mesh& mesh, SP_XSMesh_t xs_mesh ):
-            mesh_( &mesh ),
-            xs_mesh_( xs_mesh ),
+        TransportSweeper() {
+            return;
+        }
+
+        TransportSweeper( const CoreMesh& mesh ):
+            xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
             ng_( xs_mesh_->n_grp() ),
             flux_( n_reg_, ng_ ),
@@ -32,7 +35,15 @@ namespace mocc{
         // Given the current estimate of a system eigenvalue, calculate the
         // group-independent fission source and store in the passed array
         virtual void calc_fission_source( float_t k, 
-                ArrayX& fission_source) const = 0;
+                ArrayX& fission_source) const;
+
+        // Construct and return a source object which conforms to the sweeper.
+        // For now, default to the MoC Source type
+        virtual UP_Source_t create_source() {
+            UP_Source_t source( new Source( n_reg_, xs_mesh_.get(), 
+                        this->cflux()) );
+            return source;
+        }
         
         unsigned int n_reg() const {
             return n_reg_;
@@ -74,11 +85,6 @@ namespace mocc{
             source_ = source;
         }
 
-        // Return the energy group bounds from the underlying xsmesh
-        const VecF& eubounds() const {
-            return xs_mesh_->eubounds();
-        }
-
         // Store the current flux as the old flux
         void store_old_flux() {
             flux_old_ = flux_;
@@ -89,7 +95,6 @@ namespace mocc{
         // flux
         float_t total_fission( bool old=false ) const;
     protected:
-        const Mesh* mesh_;
         SP_XSMesh_t xs_mesh_;
 
         unsigned int n_reg_;
