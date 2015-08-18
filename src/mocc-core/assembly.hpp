@@ -41,6 +41,10 @@ namespace mocc {
         float_t hz( unsigned int iz ) const {
             return hz_[iz];
         }
+
+        const VecF& hz() const {
+            return hz_;
+        }
         
         // Return the total size of the assembly in the x dimension
         float_t hx() const {

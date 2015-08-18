@@ -186,6 +186,8 @@ namespace mocc {
             }
         }
 
+        hz_vec_ = assemblies_.begin()->second->hz();
+
         // Add up the number of regions and XS regions in the entire problem
         // geometry
         n_reg_   = 0;

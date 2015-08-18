@@ -30,12 +30,28 @@ namespace mocc {
 
         ~CoreMesh();
 
+        // Return the total core length along the x dimension
         float_t hx() const {
             return hx_;
         }
 
+        // Return the total core length along the y dimension
         float_t hy() const {
             return hy_;
+        }
+
+        // Return the pin boundary locations along the x dimension
+        const VecF& pin_hx() const {
+            return x_vec_;
+        }
+
+        // Return the pin boundary locations along the y dimension
+        const VecF& pin_hy() const {
+            return y_vec_;
+        }
+
+        const VecF& hz() const {
+            return hz_vec_;
         }
 
         int n_unique_planes() const {
@@ -142,6 +158,9 @@ namespace mocc {
 
         // List of pin boundaries in the y dimension
         VecF y_vec_;
+
+        // List of plane heights
+        VecF hz_vec_;
 
         // Number of assemblies
         unsigned int nasy_;
