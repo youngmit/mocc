@@ -10,7 +10,17 @@
 #include "h5file.hpp"
 
 namespace mocc{
-    
+    struct ConvergenceCriteria {
+        ConvergenceCriteria( float_t k, float_t error_k, float_t error_psi ):
+            k(k),
+            error_k(error_k),
+            error_psi(error_psi) { }
+        float_t k;
+        float_t error_k;
+        float_t error_psi;
+    };
+
+
     class EigenSolver: public Solver{
     public:
         EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
@@ -23,6 +33,22 @@ namespace mocc{
         
         // Implement the output interface
         void output( H5File& file ) const {
+            VecF k;
+            VecF error_k;
+            VecF error_psi;
+
+            for( auto &c: convergence_ ) {
+                k.push_back(c.k);
+                error_k.push_back(c.error_k);
+                error_psi.push_back(c.error_psi);
+            }
+
+            VecI dims(1, convergence_.size());
+
+            file.write("k", k, dims);
+            file.write("error_k", error_k, dims);
+            file.write("error_psi", error_psi, dims);
+
             fss_.output( file );
         }
 
@@ -51,6 +77,10 @@ namespace mocc{
         unsigned int max_iterations_;
 
         // Print the current state of the eigenvalue solver
-        void print( int iter, float_t error_k, float_t error_psi );
+        void print( int iter, ConvergenceCriteria conv );
+
+        // Vector of the convergence criteria. We will export these to the HDF5
+        // file at the end of the run for posterity
+        std::vector<ConvergenceCriteria> convergence_;
     };
 }

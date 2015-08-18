@@ -84,8 +84,11 @@ namespace mocc{
             // iteration anyways.
             error_psi = (fission_source_-fission_source_prev_).matrix().norm();
 
-            this->print( n_iterations, error_k, error_psi );
-             
+            convergence_.push_back(
+                    ConvergenceCriteria(keff_, error_k, error_psi) );
+            
+            this->print( n_iterations, convergence_.back() );
+
             done = ((error_k < tolerance_k_) & (error_psi < tolerance_psi_)) |
                 (n_iterations >= max_iterations_ );
         }
@@ -109,17 +112,17 @@ namespace mocc{
         keff_ = keff_ * tfis1/tfis2;
     }
 
-    void EigenSolver::print( int iter, float_t error_k, float_t error_psi ) {
+    void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
             
         std::ios::fmtflags flags = cout.flags();
 
         cout << std::setw(out_w_) << iter 
              << std::setw(out_w_) << std::fixed
-                 << std::setprecision(6) << keff_
+                 << std::setprecision(6) << conv.k
              << std::setw(out_w_) << std::scientific
-                 << std::setprecision(6) << error_k 
+                 << std::setprecision(6) << conv.error_k 
              << std::setw(out_w_) << std::setiosflags(std::ios::scientific)
-                 << std::setprecision(6) << error_psi
+                 << std::setprecision(6) << conv.error_psi
              << endl;
 
         cout.flags(flags);
