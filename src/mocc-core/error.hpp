@@ -34,7 +34,6 @@ namespace mocc {
             std::stringstream ret;
             ret << file_ << ":" << line_ << " in " << func_ << endl;
             ret << message_ << endl;
-            std::cout << ret.str();
             return ret.str().c_str();
         }
     private:
