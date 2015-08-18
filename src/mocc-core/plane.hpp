@@ -27,15 +27,15 @@ namespace mocc {
             return n_xsreg_;
         }
 
-        const VecF vol() const {
-            VecF vol;
+        const VecF vols() const {
+            VecF vols;
             for( auto &lat: lattices_ ) {
                 for( auto &pin: *lat ) {
-                    vol.insert(vol.end(), pin->vol().begin(), pin->vol().end());
+                    vols.insert(vols.end(), pin->vols().begin(), pin->vols().end());
                 }
             }
 
-            return vol;
+            return vols;
         }
 
         Position pin_position( unsigned int ipin ) const {
@@ -81,8 +81,10 @@ namespace mocc {
         // Locations of lattice interfaces
         VecF hx_;
         VecF hy_;
+
         // Local list of lattices
         std::vector<const Lattice*> lattices_;
+
         // List of the starting FSR index for each lattice in the plane
         VecI first_reg_lattice_;
     };

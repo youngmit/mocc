@@ -221,7 +221,7 @@ cout << ang_quad_ << endl;
         switch(type) {
             case FLAT:
                 for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
-                    const VecF& true_vol = mesh.plane(iplane).vol();
+                    const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
                     for ( auto ang = ang_quad_.octant(1); 
                             ang!=ang_quad_.octant(3); ++ang ) 
@@ -254,7 +254,7 @@ cout << ang_quad_ << endl;
                 break;
             case ANGLE:
                 for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
-                    const VecF& true_vol = mesh.plane(iplane).vol();
+                    const VecF& true_vol = mesh.plane(iplane).vols();
                     VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                     int iang=0;
                     for( auto ang = ang_quad_.octant(1); 

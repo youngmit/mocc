@@ -1,51 +1,259 @@
 #include "sn_sweeper.hpp"
 
+#include <iomanip>
+
 #include "error.hpp"
 
 using std::cout;
 using std::endl;
 
 namespace mocc {
-    SnSweeper::SnSweeper( const pugi::xml_node& input, const CoreMesh& mesh,
-            SP_XSMesh_t xs_mesh):
-        xs_mesh_hom_( mesh ),
-        mesh_hom_( mesh.n_pin(), 
-                   mesh.n_pin(), 
-                   mesh.nx(), 
-                   mesh.ny(), 
-                   mesh.nz() ),
-        TransportSweeper( mesh_hom_, xs_mesh_ ),
-        core_mesh_( &mesh ),
-        ang_quad_( input.child("ang_quad") )
+    SnSweeper::SnSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
+        core_mesh_( mesh ),
+        ang_quad_( input.child("ang_quad") ),
+        bc_type_( mesh.boundary() ),
+        xstr_( mesh.n_pin(), 1 ), 
+        q_( mesh.n_pin(), 1 )
     {
-        std::cout << "Generating Sn sweeper" << std::endl;
-        
+        // Set up all of the stuff that would normally be done by the
+        // TransportSweeper constructor. There is probably a better and more
+        // maintainable way to do this; will revisit.
+        xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
+        n_reg_ = mesh.n_pin();
+        ng_ = xs_mesh_->n_grp();
+        flux_.resize( n_reg_, ng_ );
+        flux_old_.resize( n_reg_, ng_ );
+        vol_.resize( n_reg_, 1 );
+
+        flux_1g_.resize( n_reg_, 1 );
+
+        // Set the mesh volumes. Same as the pin volumes
+        int ipin = 0;
+        for( auto &pin: core_mesh_ ) {
+            int i = core_mesh_.index_lex( core_mesh_.pin_position(ipin) );
+            vol_(i) = pin->vol();
+            ipin++;
+        }
+
         // Make sure we have input from the XML
         if( input.empty() ) {
-            EXCEPT("No input specified to initialize Sn sweeper.");
+            throw EXCEPT("No input specified to initialize Sn sweeper.");
         }
 
         // Parse the number of inner iterations
         int int_in = input.attribute("n_inner").as_int(-1);
-        if(int_in < 0) {
-            EXCEPT("Invalid number of inner iterations specified (n_inner).");
+        if( int_in < 0 ) {
+            throw EXCEPT("Invalid number of inner iterations specified (n_inner).");
         }
         n_inner_ = int_in;
+
+        // Set up the mesh dimensions
+        const VecF& core_x = core_mesh_.pin_hx();
+        for( int i=0; i<core_x.size()-1; i++ ) {
+            hx_.push_back(core_x[i+1]-core_x[i]);
+        }
+        const VecF& core_y = core_mesh_.pin_hy();
+        for( int i=0; i<core_y.size()-1; i++ ) {
+            hy_.push_back(core_y[i+1]-core_y[i]);
+        }
+        hz_ = core_mesh_.hz();
+
+        nx_ = hx_.size();
+        ny_ = hy_.size();
+        nz_ = hz_.size();
+
+        bc_in_ = SnSweeperBoundary( ng_, ang_quad_.ndir(), nx_, ny_, nz_ );
+        bc_out_ = SnSweeperBoundary( 1, ang_quad_.ndir(), nx_, ny_, nz_ );
 
         return;
     }
 
     void SnSweeper::sweep( int group ) {
-        cout << __func__ << endl;
+
+        // Store the transport cross section somewhere useful
+        for( auto &xsr: *xs_mesh_ ) {
+            float_t xstr = xsr.xsmactr()[group];
+            for( auto &ireg: xsr.reg() ) {
+                xstr_(ireg) = xstr;
+            }
+        }
+        
+        flux_1g_ = flux_.col( group );
+
+        // Perform inner iterations
+        for( int inner=0; inner<n_inner_; inner++ ) {
+            // Set the source (add upscatter and divide by 4PI)
+            source_->self_scatter( group, flux_1g_, q_ );
+            this->sweep_std( group );
+        }
+        flux_.col( group ) = flux_1g_;
+
         return;
     }
 
+    void SnSweeper::sweep_std( int group ) {
+        flux_1g_.fill(0.0);
+
+        float_t x_flux[ny_][nz_];
+        float_t y_flux[nx_][nz_];
+        float_t z_flux[nx_][ny_];
+
+        int iang = 0;
+        for( auto ang: ang_quad_ ) {
+            float_t wgt = ang.weight * HPI; 
+            float_t ox = ang.ox;
+            float_t oy = ang.oy;
+            float_t oz = ang.oz;
+
+            // Configure the loop direction. Could template this for speed at
+            // some point.
+            int sttx = 0;
+            int stpx = nx_;
+            int xdir = 1;
+            if( ox < 0.0 ) {
+                ox = -ox;
+                sttx = nx_-1;
+                stpx = -1;
+                xdir = -1;
+            }
+            
+            int stty = 0;
+            int stpy = ny_;
+            int ydir = 1;
+            if( oy < 0.0 ) {
+                oy = -oy;
+                stty = ny_-1;
+                stpy = -1;
+                ydir = -1;
+            }
+            
+            int sttz = 0;
+            int stpz = nz_;
+            int zdir = 1;
+            if( oz < 0.0 ) {
+                oz = -oz;
+                sttz = nz_-1;
+                stpz = -1;
+                zdir = -1;
+            }
+
+            // initialize upwind condition
+            bc_in_.get_face( group, iang, X_NORM, (float_t *)x_flux);
+            bc_in_.get_face( group, iang, Y_NORM, (float_t *)y_flux);
+            bc_in_.get_face( group, iang, Z_NORM, (float_t *)z_flux);
+
+            for( int iz=sttz; iz!=stpz; iz+=zdir ) {
+                float_t tz = 2.0*oz/hz_[iz];
+                for( int iy=stty; iy!=stpy; iy+=ydir ) {
+                    float_t ty = 2.0*oy/hy_[iy];
+                    for( int ix=sttx; ix!=stpx; ix+=xdir ) {
+                        // Gross. really need an Sn mesh abstraction
+                        int i = iz*nx_*ny_ + iy*nx_ + ix;
+                        float_t tx = 2.0*ox/hx_[ix];
+                        float_t psi = tx*x_flux[iy][iz] + ty*y_flux[ix][iz] + 
+                            tz*z_flux[ix][iy] + q_(i);
+                        psi /= tx + ty + tz + xstr_(i);
+
+                        flux_1g_(i) += psi*wgt;
+
+                        x_flux[iy][iz] = 2.0*psi - x_flux[iy][iz];
+                        y_flux[ix][iz] = 2.0*psi - y_flux[ix][iz];
+                        z_flux[ix][iy] = 2.0*psi - z_flux[ix][iy];
+                    }
+                }
+            }
+
+            // store the downwind boundary condition
+            bc_out_.set_face(0, iang, X_NORM, (float_t*)x_flux);
+            bc_out_.set_face(0, iang, Y_NORM, (float_t*)y_flux);
+            bc_out_.set_face(0, iang, Z_NORM, (float_t*)z_flux);
+            iang++;
+        }
+        // Update the boundary condition
+        this->update_boundary( group );
+    }
+
     void SnSweeper::initialize() {
+        flux_.fill(1.0);
+        flux_old_.fill(1.0);
+        bc_in_.initialize(0.0);
+        
         return;
     }
 
 
     void SnSweeper::get_pin_flux( int ig, VecF& flux ) const { 
+        return;
+    }
+
+    void SnSweeper::update_boundary( int group ) {
+        int iang = 0;
+        for( auto &ang: ang_quad_ ) {
+            Surface surf;
+            Normal norm;
+            int iang_refl;
+
+            // X-normal surface
+            norm = X_NORM;
+            surf = (ang.ox > 0) ? WEST : EAST;
+            iang_refl = ang_quad_.reflect( iang, norm );
+            if( bc_type_[surf] == REFLECT ) {
+                bc_in_.set_face(group, iang, norm, 
+                        bc_out_.get_face_ptr(0, iang_refl, norm ));
+            } else {
+                bc_in_.zero_face(group, iang, norm);
+            }
+            // Y-normal surface
+            norm = Y_NORM;
+            surf = (ang.oy > 0) ? SOUTH : NORTH;
+            iang_refl = ang_quad_.reflect( iang, norm );
+            if( bc_type_[surf] == REFLECT ) {
+                bc_in_.set_face(group, iang, norm, 
+                        bc_out_.get_face_ptr(0, iang_refl, norm ));
+            } else {
+                bc_in_.zero_face(group, iang, norm);
+            }
+            // Z-normal surface
+            norm = Z_NORM;
+            surf = (ang.oz > 0) ? BOTTOM : TOP;
+            iang_refl = ang_quad_.reflect( iang, norm );
+            if( bc_type_[surf] == REFLECT ) {
+                bc_in_.set_face(group, iang, norm, 
+                        bc_out_.get_face_ptr(0, iang_refl, norm ));
+            } else {
+                bc_in_.zero_face(group, iang, norm);
+            }
+
+            iang++;
+        }
+        return;
+    }
+
+    void SnSweeper::output( H5File& file ) const {
+        VecI dims;
+        dims.push_back(nz_);
+        dims.push_back(ny_);
+        dims.push_back(nx_);
+        
+        // Make a group in the file to store the flux
+        file.mkdir("/flux");
+        
+        // Provide energy group upper bounds
+        file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
+        file.write("/ng", ng_);
+        
+        for( int ig=0; ig<ng_; ig++ ) {
+            VecF flux;
+            
+            for( int ireg=0; ireg<n_reg_; ireg++ ) {
+                flux.push_back( flux_( ireg, ig ) );
+            }
+        
+            std::stringstream setname;
+            setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
+        
+            file.write(setname.str(), flux, dims);
+        }
         return;
     }
 }

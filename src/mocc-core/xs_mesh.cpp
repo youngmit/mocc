@@ -20,7 +20,6 @@ namespace mocc {
 
         // loop over all of the pins in the CoreMesh and set up the XSMesh
         std::vector<VecI> fsrs(mat_lib.n_materials());
-cout << "n mat: " << mat_lib.n_materials() << endl;
         int ireg = 0;
         for( auto &pini: mesh ) {
             const PinMesh& pm = pini->mesh();
@@ -28,7 +27,6 @@ cout << "n mat: " << mat_lib.n_materials() << endl;
             int ixsreg = 0;
             for( auto &mat_id: mat_ids ) {
                 int mat_index = mat_lib.get_index_by_id(mat_id);
-cout << "mat_index: " << mat_index << endl;
                 // post-increment pushes value, then increments
                 for( int reg=0; reg<pm.n_fsrs(ixsreg); reg++) {
                     fsrs[mat_index].push_back(ireg++);
@@ -48,7 +46,7 @@ cout << "mat_index: " << mat_index << endl;
                     mat.xstr(),
                     mat.xsnf(), 
                     mat.xsch(), 
-                    mat.xsf(), 
+                    mat.xskf(), 
                     mat.xssc() );
             imat++;
         }

@@ -9,18 +9,14 @@
 
 namespace mocc {
     UP_Sweeper_t TransportSweeperFactory( const pugi::xml_node &input,
-            const CoreMesh &mesh ) {
+            const CoreMesh& mesh ) {
         // Check the input XML for which type of sweeper to make
         std::string type = input.child("sweeper").attribute("type").value();
         if( type == "moc" ) {
-            SP_XSMesh_t xsm( new XSMesh(mesh) );
-            UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh, 
-                        xsm ) );
+            UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh ) );
             return ts;
         } else if ( type == "sn" ) {
-            SP_XSMesh_t xsm( new XSMesh(mesh) );
-            UP_Sweeper_t ts( new SnSweeper( input.child("sweeper"), mesh, 
-                        xsm ) );
+            UP_Sweeper_t ts( new SnSweeper( input.child("sweeper"), mesh ) );
             return ts;
         } else {
             throw EXCEPT("Failed to detect a valid sweeper type.");

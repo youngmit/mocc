@@ -6,5 +6,5 @@
 
 namespace mocc {
     UP_Sweeper_t TransportSweeperFactory( const pugi::xml_node &input,
-        const CoreMesh &mesh );
+        const CoreMesh& mesh );
 }

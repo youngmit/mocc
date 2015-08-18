@@ -35,7 +35,11 @@ namespace mocc {
             return pitch_y_;
         }
 
-        const VecF& vol() const {
+        float_t vol() const {
+            return pitch_x_ * pitch_y_;
+        }
+
+        const VecF& vols() const {
             return vol_;
         }
 

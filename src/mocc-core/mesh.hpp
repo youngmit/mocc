@@ -1,16 +1,21 @@
 #pragma once
 
+#include <iostream>
+#include <memory>
+
 namespace mocc {
     class Mesh {
     public:
         Mesh() { };
-        Mesh( int n_reg, int n_xsreg, int nx, int ny, int nz ):
+        Mesh( unsigned int n_reg, unsigned int n_xsreg, unsigned int nx, 
+                unsigned int ny, unsigned int nz ):
             n_reg_( n_reg ),
             n_xsreg_( n_xsreg ),
             nx_( nx ),
             ny_( ny ),
             nz_( nz )
         {
+std::cout << "building base mesh type" << std::endl;
             return;
         }
 
@@ -44,4 +49,6 @@ namespace mocc {
         unsigned int ny_;
         unsigned int nz_;
     };
+
+    typedef std::shared_ptr<Mesh> SP_Mesh_t;
 }

@@ -26,7 +26,7 @@ namespace mocc {
                 std::vector< float_t > > > BCSet_Out_t; // BCs
     public:
         MoCSweeper( const pugi::xml_node &input,
-                    const CoreMesh &mesh, SP_XSMesh_t xs_mesh );
+                    const CoreMesh& mesh );
         
         ~MoCSweeper() { }
         
@@ -34,15 +34,12 @@ namespace mocc {
 
         void initialize();
 
-        void calc_fission_source( float_t k,  ArrayX& fission_source) const;
-
         void get_pin_flux( int group, VecF& flux ) const;
 
         void output( H5File& file ) const;
 
     private:
-        const CoreMesh* core_mesh_;
-
+        const CoreMesh& mesh_;
 
         AngularQuadrature ang_quad_;
         RayData rays_;

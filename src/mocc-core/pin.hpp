@@ -35,8 +35,12 @@ namespace mocc {
             return pin_mesh_->id();
         }
 
-        const VecF& vol() const {
+        float_t vol() const {
             return pin_mesh_->vol();
+        }
+
+        const VecF& vols() const {
+            return pin_mesh_->vols();
         }
 
         const VecI& mat_ids() const {
