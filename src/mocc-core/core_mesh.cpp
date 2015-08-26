@@ -16,14 +16,6 @@ using std::stringstream;
 
 
 namespace mocc {
-    ////////////////////////////////////////////////////////////////////////////
-    /// \brief Stores the entire description of a problem.
-    ///
-    /// The CoreMesh stores the entire description of a physical system. All of
-    /// the pin meshes, pins, materials, boundary conditions are stored, as well
-    /// as various more advances representations of them, such as
-    ///geometrically-unique Plane's
-    ////////////////////////////////////////////////////////////////////////////
     CoreMesh::CoreMesh(pugi::xml_node &input) {
         // Parse meshes
         for (pugi::xml_node mesh = input.child( "mesh" );

@@ -15,104 +15,166 @@
 #include "plane.hpp"
 
 namespace mocc {
-    // The core mesh stores everything needed to represent the physical state
-    // of the system. Pin meshes, material library, actual pin types, lattices
-    // etc. The CoreMesh is then used to perform complex operations like ray
-    // tracing, generation of coarse mesh, etc. A lot of the heavy lifting for
-    // input processing happens in the constructor, and the CoreMesh assumes 
-    // ownership of a lot of the structures used to represent the system.
+    /**
+    * The core mesh stores everything needed to represent the physical state
+    * of the system. PinMesh's, MaterialLib's, Pin's, Lattice's
+    * etc. The CoreMesh is then used to perform complex operations like ray
+    * tracing, generation of coarse mesh, etc. A lot of the heavy lifting for
+    * input processing happens in the constructor, and the CoreMesh assumes
+    * ownership of a lot of the structures used to represent the system.
+    *
+    * Once the sturctures that are used to define the system in the input file
+    * are parsed in, the CoreMesh determines the set of geometrically-unique
+    * planes, which reduces the memory cost to perform ray tracing considerably.
+    */
     class CoreMesh: public Mesh {
     public:
-        // Construct a CoreMesh from XML input. This routine is responsible for
-        // parsing many of the tags in the XML document: <mesh>, <pin>,
-        // <material_lib>, <lattice>, <core>
+        /// Construct a CoreMesh from XML input. This routine is responsible for
+        /// parsing many of the tags in the XML document: \<mesh\>, \<pin\>,
+        /// \<material_lib\>, \<lattice\>, \<core\>
         CoreMesh( pugi::xml_node &input );
 
         ~CoreMesh();
 
-        // Return the total core length along the x dimension
+        /** 
+        * Return the total core length along the x dimension
+        */
         float_t hx() const {
             return hx_;
         }
 
-        // Return the total core length along the y dimension
+        /** 
+        * Return the total core length along the y dimension
+        */
         float_t hy() const {
             return hy_;
         }
 
-        // Return the pin boundary locations along the x dimension
+        /** 
+        * Return the pin boundary locations along the x dimension
+        */
         const VecF& pin_hx() const {
             return x_vec_;
         }
 
-        // Return the pin boundary locations along the y dimension
+        /** 
+        * Return the pin boundary locations along the y dimension
+        */
         const VecF& pin_hy() const {
             return y_vec_;
         }
 
+        /** 
+        * Return a const vector of plane heights
+        */
         const VecF& hz() const {
             return hz_vec_;
         }
 
+        /** 
+        * Return the number of geometrically-unique planes
+        */
         int n_unique_planes() const {
             return first_unique_.size();
         }
         
-        // Given a vector containing two points (Which should be on the boundary
-        // of the core mesh), insert points corresponding to intersections of
-        // the line formed by those points. The points are added to the vector
-        // itself.
+        /** 
+        * Given a vector containing two points (which should be on the boundary
+        * of the core mesh), insert points corresponding to intersections of the
+        * line formed by those points. The points are added to the vector
+        * itself.
+        */
         void trace( std::vector<Point2> &p ) const;           
 
-        // return a reference to the PinMesh that occupies the space at a point,
-        // within a given plane.
+        /**
+        * Return a reference to the PinMesh that occupies the space at a point,
+        * within a given plane.
+        */
         const PinMesh* get_pinmesh( Point2 &p, unsigned int iz, 
                 int &first_reg) const;
 
+        /**
+        * Return a const reference to the indexed plane. These planes are not
+        * considered "unique;" it returns actual Plane that fills the indezed
+        * axial region.
+        */
         const Plane& plane( unsigned int iz ) const {
             assert( (0 <= iz) & (iz < planes_.size()) );
             return planes_[iz];
         }
 
+        /**
+        * Return a const iterator to the first Pin in the CoreMesh.
+        */
         std::vector<const Pin*>::const_iterator begin_pin() const {
             return core_pins_.cbegin();
         }
 
+        /**
+        * Return a const iterator past the last Pin in the CoreMesh.
+        */
         std::vector<const Pin*>::const_iterator end_pin() const {
             return core_pins_.cend();
         }
+
+        /**
+        * Return a const iterator to the first Pin in the CoreMesh.
+        */
+        std::vector<const Pin*>::const_iterator begin() const {
+            return core_pins_.cbegin();
+        }
+
+        /**
+        * Return a const iterator past the last Pin in the CoreMesh.
+        */
+        std::vector<const Pin*>::const_iterator end() const {
+            return core_pins_.cend();
+        }
         
-        // Return a reference to the material library
+        /**
+        * Return a const reference to the material library.
+        */
         const MaterialLib& mat_lib() const {
             return mat_lib_;
         }
 
-        // Return the first FSR index for a given plane
+        /**
+        * Return the index of the first FSR within the given plane.
+        */
         unsigned int first_reg_plane( unsigned int iz ) const {
             assert( (0 <= iz ) & ( iz<nz_ ) );
             return first_reg_plane_[iz];
         }
 
-        // Return the core boundary conditions
+        /**
+        * Return a vector containing the core boundary conditions.
+        */
         std::vector<Boundary> boundary() const {
             return core_.boundary();
         }
 
-        std::vector<const Pin*>::const_iterator begin() const {
-            return core_pins_.cbegin();
-        }
-
-        std::vector<const Pin*>::const_iterator end() const {
-            return core_pins_.cend();
-        }
-
-        // Return the 1-D index of a position in a lexicographic sense
+        /**
+        * Return the 1-D lexicographic index of a Position.
+        *
+        * It is often useful to flatten the index space of the entire geometry
+        * for, usually to facilitate output to the HDF5 file. This accepts a
+        * Position, which stores x, y, z indices for a Pin in the mesh and
+        * returns a 1-D index. The 1-D index space is ordered lexicographically,
+        * meaning in ascending x, then y, then z. Otherwise called "natural"
+        * ordering.
+        */
         unsigned int index_lex( Position pos ) const {
             return pos.x + pos.y*nx_ + pos.z*nx_*ny_;
         }
         
-        // Return a Position, indicating the global position of a pin in the
-        // core geometry
+        /*
+        * Return a Position, indicating the global position of a pin in the
+        * core geometry.
+        *
+        * At some point it would be nifty to create a custom iterator class that
+        * can return this, obviating the need to keep track of pin index when
+        * iterating over the core.
+        */
         Position pin_position( unsigned int ipin ) const;
 
     private:
