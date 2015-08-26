@@ -55,7 +55,7 @@ namespace mocc {
         // arithmetic. Two points are equivalent if their coordinates are "close
         // enough."
         bool operator==(const Point2 &other) const {
-            return fp_equiv_abs(x, other.x) & fp_equiv_abs(y, other.y);
+            return fp_equiv_abs(x, other.x) && fp_equiv_abs(y, other.y);
         }
 
         // Vector-like subtraction of two points
