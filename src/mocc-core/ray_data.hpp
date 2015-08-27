@@ -10,34 +10,16 @@
 #include "angle.hpp"
 #include "geom.hpp"
 
-// Here are provided a couple of classes that facilitate ray tracing for MoC.
-// There is a Ray class, which contains vectors of ray segment lengths and the
-// FSR index corresponding to each segment, as well as the boundary condition
-// index corresponding the start and end points of the ray.
-//
-// The RayData class is a collection of rays, organized by plane, then by angle.
-// Rays are traced only for the set of geometrically-unique planes as determined
-// by the CoreMesh object used to construct a RayData object. Since the rays are
-// only intended for use in a 2-D MoC sweeper, only the first two octants are
-// treated, with octants 3 and 4 being treated by sweeping the rays backwards.
-//
-// Boundary condition indexing is somewhat arbitrary, so here's how it goes:
-//
-// +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
-// |                                |
-// 3                                3
-// |                                |
-// 2                                2
-// |                                |
-// 1                                1
-// |                                |
-// 0                                0
-// |                                |
-// +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
-//
-// There are technically 4 angles that share a set of boundary conditions: an
-// angle in quadrant 1, its reflected angle in quadrant 2, and the two angles
-// pointing opposite those angles.
+/** \file
+* Here are provided a couple of classes that facilitate ray tracing for MoC.
+* There is a Ray class, which contains vectors of ray segment lengths and the
+* FSR index corresponding to each segment, as well as the boundary condition
+* index corresponding the start and end points of the ray.
+*
+* Also defined is the RayData class, which is a collection of Ray objects
+* organized by angle and plane.
+*/
+
 
 namespace mocc {
     enum VolumeCorrection {
@@ -45,8 +27,15 @@ namespace mocc {
         ANGLE
     };
 
+    /**
+     * A Ray stores vectors of segment length and the flat source region index
+     * that each segment is crossing. The FSR indices are represented as an
+     * offset from the first FSR in a given plane, allowing for ray data to be
+     * reused for each instance of a geometrically-unique plane. 
+    */
     class Ray {
     public:
+        /** \brief Construct a ray from two starting points. */
         Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
                 const CoreMesh &mesh );
 
@@ -59,7 +48,16 @@ namespace mocc {
             return seg_len_;
         }
 
-        // Only return a reference to a single segment length
+        /**
+         * \brief Return a reference to a single segment length.
+         *
+         * This method is not const, since the segment lengths must be mutable,
+         * so that the RayData object can correct the segment lengths once all
+         * rays have been traced. Its a bit messy... when interacting with the
+         * rays in any other context, the const version should be used. This is
+         * relatively automatic, since the RayData object only exposes each Ray
+         * as a const reference.
+         */ 
         float_t& seg_len( int iseg ) {
             return seg_len_[iseg];
         }
@@ -96,7 +94,33 @@ namespace mocc {
         unsigned int bc_[2];
     };
 
-
+    /**
+    * The RayData class is a collection of Ray objects, organized by plane, then
+    * by angle.  Rays are traced only for the set of geometrically-unique planes
+    * as determined by the CoreMesh object used to construct a RayData object.
+    * Since the rays are only intended for use in a 2-D MoC sweeper, only the
+    * first two octants are treated, with octants 3 and 4 being treated by
+    * sweeping the rays backwards.
+    *
+    * Boundary condition indexing is somewhat arbitrary, so here's how it goes:
+    *
+    * \verbatim
+    +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
+    |                                |
+    3                                3
+    |                                |
+    2                                2
+    |                                |
+    1                                1
+    |                                |
+    0                                0
+    |                                |
+    +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+ \endverbatim
+    *
+    * There are technically 4 angles that share a set of boundary conditions: an
+    * angle in quadrant 1, its reflected angle in quadrant 2, and the two angles
+    * pointing opposite those angles.
+    */
     class RayData {
         typedef std::vector< std::vector <std::vector<Ray> > > RaySet_t;
     public:
@@ -104,38 +128,41 @@ namespace mocc {
                  const AngularQuadrature &ang_quad,
                  const CoreMesh &mesh );
 
-        // Iterator to the begining of the ray data (by plane)
+        /// Iterator to the begining of the ray data (by plane)
         RaySet_t::const_iterator begin() const {
             return rays_.cbegin();
         }
 
-        // Iterator to the end of the ray data (by plane)
+        /// Iterator to the end of the ray data (by plane)
         RaySet_t::const_iterator end() const {
             return rays_.cend();
         }
 
-        // Return the number of rays for the given angle index
+        /// Return the number of rays for the given angle index
         unsigned int n_rays( unsigned int iang ) const {
             return Nrays_[iang];
         }
 
-        // Return the number of rays impingent on the y-normal faces of the
-        // domain for the given angle
+        /// Return the number of rays impingent on the y-normal faces of the
+        /// domain for the given angle
         unsigned int nx( unsigned int iang ) const {
             return Nx_[iang];
         }
 
-        // Return the number of rays impingent on the x-normal faces of the
-        // domain for the given angle
+        /// Return the number of rays impingent on the x-normal faces of the
+        /// domain for the given angle
         unsigned int ny( unsigned int iang ) const {
             return Ny_[iang];
         }
 
-        // Return the ray spacing for the given angle
+        /// Return the ray spacing for the given angle
         float_t spacing( int iang ) {
             return spacing_[iang];
         }
 
+        /// Return the maximum number of segmens spanned by any Ray in the
+        /// collection. This is useful for defining the size of the scratch
+        /// space for MoC.
         unsigned int max_segments() const {
             return max_seg_;
         }

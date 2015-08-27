@@ -12,7 +12,16 @@ using std::endl;
 
 namespace mocc {
 
-    // Construct a ray from a starting point and angle
+    /** 
+     * \param p1 the starting point of the Ray.
+     * \param p2 the ending point of the Ray.
+     * \param bc1 the boundary condition index corresponding to p1.
+     * \param bc2 the boundary condition index corresponding to p2.
+     * \param iz the index of the geometry to trace. This can be any Z index
+     * that contains the geometrically-unique place that we are generating ray
+     * data for.
+     * \param mesh a reference to the CoreMesh to trace.
+     */
     Ray::Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
             const CoreMesh &mesh ) {
         std::vector<Point2> ps;
@@ -43,6 +52,32 @@ namespace mocc {
         return;
     }
 
+    /**
+     * \brief Construct a RayData object using a \<rays\> XML tag, a desired
+     * AngularQuadrature, and CoreMesh.
+     *
+     * For now, the angular quadrature is duplicated before performing
+     * modularization, which only mutates the RayData quadrature.
+     *
+     * \todo At some point, it is necessary to get access to the modularized
+     * quadrature. There are a couple options for this:
+     * - Define the modularization procedure on the AngularQuadrature itself,
+     *   and perform modularization on the quadrature before we even get to this
+     *   point. I don't like this, becuase it doesnt make sense conceptually to
+     *   live on the quadrature itself.
+     * - Provide a means to return the modularized quadrature after construction
+     *   of the RayData. A little better, but perhaps cumbersome.
+     * - Allow the passed AngularQuadrature reference to be non-const and mutate
+     *   it directly.
+     *
+     * Construction performs the following steps:
+     * -# Parse input from the XML
+     * -# Modularize the angular quadrature and determine ray spacing for each
+     *  angle
+     * -# Construct Ray objects for each geometrically-unique plane and angle
+     * -# Correct the ray segment lengths to preserve FSR volumes
+     *
+    */
     RayData::RayData( const pugi::xml_node &input, 
             const AngularQuadrature &ang_quad,
             const CoreMesh &mesh ):
