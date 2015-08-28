@@ -19,6 +19,17 @@ typedef std::vector<int> VecSI;
 
 
 struct Position {
+    Position():
+        x( 0 ),
+        y( 0 ),
+        z( 0 )
+    { }
+
+    Position( unsigned int x, unsigned int y, unsigned int z):
+        x( x ),
+        y( y ),
+        z( z )
+    { }
     unsigned int x;
     unsigned int y;
     unsigned int z;
