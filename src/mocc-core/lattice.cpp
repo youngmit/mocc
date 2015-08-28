@@ -127,6 +127,10 @@ namespace mocc {
 
     const PinMesh* Lattice::get_pinmesh( Point2 &p, int &first_reg ) const {
         // Locate the pin, and offset the point to pin-local coordinates.
+        /// \todo This is potentially pretty brittle. Future PinMesh types might
+        /// breake the assumption here that all PinMesh origins are smack-dab in
+        /// middle of the mesh. Should provide some functionality on the PinMesh
+        /// itself to provide its origin to clients.
         unsigned int ix=0;
         unsigned int iy=0;
         for (ix=0; ix<nx_; ix++) {
