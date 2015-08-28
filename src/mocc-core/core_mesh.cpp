@@ -28,7 +28,6 @@ namespace mocc {
             pin_meshes_.emplace(id, std::move( pm ) );
         }
  
-        
         // Parse Material Library
         if( input.child( "material_lib" ).empty() ) {
             Error("No material library specified.");
@@ -196,6 +195,10 @@ namespace mocc {
             n_reg_ += a->n_reg();
             n_xsreg_ += a->n_xsreg();
         }
+
+        
+        // calculate surface indices
+        this->prepare_surfaces();
 
         return;
     } // constructor
