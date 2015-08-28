@@ -29,9 +29,10 @@ namespace mocc {
     */
     class CoreMesh: public Mesh {
     public:
-        /// Construct a CoreMesh from XML input. This routine is responsible for
-        /// parsing many of the tags in the XML document: \<mesh\>, \<pin\>,
-        /// \<material_lib\>, \<lattice\>, \<core\>
+        /** Construct a CoreMesh from XML input. This routine is responsible for
+         * parsing many of the tags in the XML document: \<mesh\>, \<pin\>,
+         * \<material_lib\>, \<lattice\>, \<core\>
+        */
         CoreMesh( pugi::xml_node &input );
 
         ~CoreMesh();
@@ -79,18 +80,35 @@ namespace mocc {
         }
         
         /** 
-        * Given a vector containing two points (which should be on the boundary
-        * of the core mesh), insert points corresponding to intersections of the
-        * line formed by those points. The points are added to the vector
-        * itself.
+         * \brief Trace a ray through the Pin array.
         */
         void trace( std::vector<Point2> &p ) const;           
 
         /**
-        * Return a reference to the PinMesh that occupies the space at a point,
-        * within a given plane.
+        * \brief Obtain a tuple containing the pin position and a reference to the
+        * PinMesh that occupies the space at a point, within a given plane.
+        *
+        * \param[in,out] p a Point residing in the desired Pin. The location of
+        * the point will be updated to the location of the PinMesh origin. See
+        * the note below.
+        * \param iz the index of the Plane in which to search for the PinMesh.
+        *
+        * This routing provides a means by which to locate the PinMesh object
+        * that fills the space in which the passed Point resides. This is useful
+        * during ray tracing to determine the geometry that needs to be traced
+        * through each pin subdomain. See Ray::Ray() for and example of its use.
+        *
+        * \note The Point that is passed in will be modified! The new location
+        * will be the PinMesh origin, in the core-local (global) coordinate
+        * system. This is done because during the ray trace, the original vector
+        * of points coming from CoreMesh::trace() are in core-local
+        * coordinates, while the PinMesh::trace() routine needs its Point(s) to
+        * be defined in pin-local coordinates, since the PinMesh has no idea
+        * where it is in global space. By moving the point to the origin of the
+        * PinMesh (but in core-local coordinates), we can simply offset the ray
+        * points by the new location of \p p to get into pin-local coordinates.
         */
-        const PinMesh* get_pinmesh( Point2 &p, unsigned int iz, 
+        const PinMeshTuple get_pinmesh( Point2 &p, unsigned int iz, 
                 int &first_reg) const;
 
         /**
@@ -215,10 +233,10 @@ namespace mocc {
         // Total core size in the z dimension
         float_t hz_;
 
-        // List of pin boundaries in the x dimension
+        // List of pin boundaries in the x dimension (starts at 0.0)
         VecF x_vec_;
 
-        // List of pin boundaries in the y dimension
+        // List of pin boundaries in the y dimension (starts at 0.0)
         VecF y_vec_;
 
         // List of plane heights
