@@ -18,6 +18,108 @@ using std::endl;
 
 using namespace mocc;
 
+/**
+ * \mainpage MOCC
+ *
+ * Style
+ * =====
+ *
+ * Conventions
+ * ===========
+ * "A place for everything, and everything in its place."
+ *
+ * MOCC makes use of several conventions throughout the code in order to make
+ * certain difficult aspects of medium- to large-scale code projects obvious and
+ * simple.
+ *
+ * Pointers and Ownership
+ * ----------------------
+ * C/C++ (especially C) does not provide a formal, language-level concept of
+ * memory ownership; its kind of the Wild West when it comes to who should
+ * destroy and deallocate what.
+ *
+ * The concept of "ownership" is simple in concept, but potentially a horrendous
+ * mess if not approached with discipline. Ownership essentially means the scope
+ * or program unit that is responsible for the appropriate maintenance of a
+ * chunk of memory. For a scope or object to "own" a piece of memory means that
+ * that scope is responsible for the proper destruction of that memory. If
+ * everything is done properly, one should never encounter memory leaks or
+ * double frees or the like. In practice, this is usually easier said than done,
+ * as it is often not readily clear who the owner of an object (or rather a
+ * reference to an object) is.
+ *
+ * To keep things reasonable, we will make heavy and deliberate use of the newer
+ * memory management features of the C++ standard library in the \c memory
+ * header, namely \c std::unique_ptr<T> and \c std::shared_ptr<T>. Raw pointers
+ * are still used throughout, but their use is restricted to specific
+ * circumstances. Here I will describe where each is used and why:
+ *
+ * ### <tt>shared_ptr<T></tt> ######
+ * The shared pointer is used only when there is actual need for shared
+ * ownership of memory (which in the case of MOCC should be rare). A shared
+ * pointer contains an internal count of the number of places that are pointing
+ * to the location that is wrapped by the shared pointer.  When any instance of
+ * the shared pointer goes out of scope, the count is decremented, and whenever
+ * a new shared pointer is associated with the location, the count is
+ * incremented. The last shared pointer to the location pointed to is
+ * responsible for destroying/deallocating it.
+ *
+ * This approach, while very flexible, is the least expressive in terms of what
+ * it tells the developer about the ownership of the object being pointed to.
+ * Indeed, it practically tells the developer nothing at all; potentially any
+ * location that maintains an instance of the shared pointer could the the
+ * ultimate custodian of the memory being pointed to, making guarantees about
+ * object lifetime hard to determine.
+ *
+ * Due to the ambiguity built into \c shared_pointer<T>, it should only be used
+ * in situations where the lifetime of the object is truely ambiguous and
+ * difficult to determine at compile time. 
+ *
+ * \todo provide an example.
+ *
+ * ### <tt>unique_ptr<T></tt> ######
+ * The unique pointer is much simpler than the shared pointer, in that it does
+ * not maintain a count of references. It assumes that it is the sole owner
+ * of the memory being pointed to (hence the name). The primary functionality
+ * provided by the unique pointer is that its destructor <tt>delete</tt>s the
+ * location with which it is associated, potentially calling that object's
+ * destructor in the process.
+ *
+ * So the unique pointer provides a couple of things:
+ *  - A guarantee to the developer that the lifetime of the object being pointed
+ *  to is that of the unique pointer itself (and commonly, by extension, the
+ *  lifetime of an object of which the unique pointer is an attribute).
+ *  - The convenience of not having worry about explicitly <tt>delete</tt>ing
+ *  the pointer, since it happens automatically when the unique pointer falls
+ *  out of scope. Humans shouldn't have to remember such things; its below us.
+ *
+ * ### Raw pointers (<tt>T*</tt>) ######
+ * Raw pointers are used to provide a reference to an object or data in which no
+ * ownership is held by the pointer itself. Raw pointers are used in places
+ * where a reference to an object is needed temporarily, and it is assumed that
+ * ownership lies elsewhere. 
+ *
+ * \c new and \c delete should almost never be called on a raw pointer.
+ *
+ * Raw pointers are used sometimes as arguments to functions, which operate on
+ * or otherwise use a reference to an object temporarily. They are also used
+ * sometimes as data members of classes, instances of which are known not to
+ * outlive the shared or unique pointer with which the raw pointer is
+ * associated.
+ *
+ * An example of this are in the Pin types, which contain raw pointers to their
+ * associated PinMesh.  Since the mocc::Pin and mocc::PinMesh objects are stored
+ * in collections on the mocc::CoreMesh, we pretty much know that they have the
+ * same lifetime, so using a raw pointer in the Pin class makes it clear that
+ * the Pin does not own, and is not responsible for destroying the PinMesh
+ * associated with it. CoreMesh contains a collection of unique pointers to
+ * PinMesh objects, and is therefore the proper owner of them. The only
+ * potentially scary thing here is that we need to know at the Pin level that
+ * our lifetime will not extend past that of the PinMesh we are pointing to,
+ * which is easy to enforce. Were that not the case, it might make more sense to
+ * use shared pointers all around.
+ */
+
 // The global top-level solver
 SP_Solver_t solver;
 
