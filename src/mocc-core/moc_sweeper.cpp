@@ -186,18 +186,18 @@ namespace mocc {
                 // upwind and need to be updated for the given angle
                 Surface upwind[2];
                 if(ang_quad_[iang].ox > 0.0) {
-                    upwind[0] = WEST;
+                    upwind[0] = Surface::WEST;
                 } else {
-                    upwind[0] = EAST;
+                    upwind[0] = Surface::EAST;
                 }
                 if(ang_quad_[iang].oy > 0.0) {
-                    upwind[1] = SOUTH;
+                    upwind[1] = Surface::SOUTH;
                 } else {
-                    upwind[1] = NORTH;
+                    upwind[1] = Surface::NORTH;
                 }
 
                 // Treat the two surfaces that were determined above
-                if( bc_type_[upwind[0]] == REFLECT ) {
+                if( bc_type_[(int)upwind[0]] == Boundary::REFLECT ) {
                     int ang_ref = ang_quad_.reflect(iang, upwind[0]);
                     for( int ibc=0; ibc<ny; ibc++ ) {
                         plane_bcs[iang][ibc] =
@@ -209,7 +209,7 @@ namespace mocc {
                     }
                 }
                 
-                if( bc_type_[upwind[1]] == REFLECT ) {
+                if( bc_type_[(int)upwind[1]] == Boundary::REFLECT ) {
                     int ang_ref = ang_quad_.reflect(iang, upwind[1]);
                     for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
                         plane_bcs[iang][ibc] =

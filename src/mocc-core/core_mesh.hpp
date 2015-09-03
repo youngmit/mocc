@@ -224,21 +224,7 @@ namespace mocc {
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
 
-        // Total core size in the x dimension
-        float_t hx_;
-
-        // Total core size in the y dimension
-        float_t hy_;
-
-        // Total core size in the z dimension
-        float_t hz_;
-
-        // List of pin boundaries in the x dimension (starts at 0.0)
-        VecF x_vec_;
-
-        // List of pin boundaries in the y dimension (starts at 0.0)
-        VecF y_vec_;
-
+        
         // List of plane heights
         VecF hz_vec_;
 

@@ -138,9 +138,9 @@ namespace mocc {
             }
 
             // initialize upwind condition
-            bc_in_.get_face( group, iang, X_NORM, (float_t *)x_flux);
-            bc_in_.get_face( group, iang, Y_NORM, (float_t *)y_flux);
-            bc_in_.get_face( group, iang, Z_NORM, (float_t *)z_flux);
+            bc_in_.get_face( group, iang, Normal::X_NORM, (float_t *)x_flux);
+            bc_in_.get_face( group, iang, Normal::Y_NORM, (float_t *)y_flux);
+            bc_in_.get_face( group, iang, Normal::Z_NORM, (float_t *)z_flux);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 float_t tz = 2.0*oz/hz_[iz];
@@ -164,9 +164,9 @@ namespace mocc {
             }
 
             // store the downwind boundary condition
-            bc_out_.set_face(0, iang, X_NORM, (float_t*)x_flux);
-            bc_out_.set_face(0, iang, Y_NORM, (float_t*)y_flux);
-            bc_out_.set_face(0, iang, Z_NORM, (float_t*)z_flux);
+            bc_out_.set_face(0, iang, Normal::X_NORM, (float_t*)x_flux);
+            bc_out_.set_face(0, iang, Normal::Y_NORM, (float_t*)y_flux);
+            bc_out_.set_face(0, iang, Normal::Z_NORM, (float_t*)z_flux);
             iang++;
         }
         // Update the boundary condition
@@ -194,30 +194,30 @@ namespace mocc {
             int iang_refl;
 
             // X-normal surface
-            norm = X_NORM;
-            surf = (ang.ox > 0) ? WEST : EAST;
+            norm = Normal::X_NORM;
+            surf = (ang.ox > 0) ? Surface::WEST : Surface::EAST;
             iang_refl = ang_quad_.reflect( iang, norm );
-            if( bc_type_[surf] == REFLECT ) {
+            if( bc_type_[(int)surf] == Boundary::REFLECT ) {
                 bc_in_.set_face(group, iang, norm, 
                         bc_out_.get_face_ptr(0, iang_refl, norm ));
             } else {
                 bc_in_.zero_face(group, iang, norm);
             }
             // Y-normal surface
-            norm = Y_NORM;
-            surf = (ang.oy > 0) ? SOUTH : NORTH;
+            norm = Normal::Y_NORM;
+            surf = (ang.oy > 0) ? Surface::SOUTH : Surface::NORTH;
             iang_refl = ang_quad_.reflect( iang, norm );
-            if( bc_type_[surf] == REFLECT ) {
+            if( bc_type_[(int)surf] == Boundary::REFLECT ) {
                 bc_in_.set_face(group, iang, norm, 
                         bc_out_.get_face_ptr(0, iang_refl, norm ));
             } else {
                 bc_in_.zero_face(group, iang, norm);
             }
             // Z-normal surface
-            norm = Z_NORM;
-            surf = (ang.oz > 0) ? BOTTOM : TOP;
+            norm = Normal::Z_NORM;
+            surf = (ang.oz > 0) ? Surface::BOTTOM : Surface::TOP;
             iang_refl = ang_quad_.reflect( iang, norm );
-            if( bc_type_[surf] == REFLECT ) {
+            if( bc_type_[(int)surf] == Boundary::REFLECT ) {
                 bc_in_.set_face(group, iang, norm, 
                         bc_out_.get_face_ptr(0, iang_refl, norm ));
             } else {

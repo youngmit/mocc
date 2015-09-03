@@ -27,22 +27,22 @@ int main() {
 
     // Test the angle reflection capabilities
     // octant 1
-    assert(ang_quad.reflect(1, NORTH) == 10);
-    assert(ang_quad.reflect(2, SOUTH) == 11);
-    assert(ang_quad.reflect(2, EAST)  == 5);
-    assert(ang_quad.reflect(0, WEST)  == 3);
+    assert(ang_quad.reflect(1, Surface::NORTH) == 10);
+    assert(ang_quad.reflect(2, Surface::SOUTH) == 11);
+    assert(ang_quad.reflect(2, Surface::EAST)  == 5);
+    assert(ang_quad.reflect(0, Surface::WEST)  == 3);
 
     // octant 2
-    assert(ang_quad.reflect(4, WEST)  == 1);
-    assert(ang_quad.reflect(5, NORTH) == 8);
+    assert(ang_quad.reflect(4, Surface::WEST)  == 1);
+    assert(ang_quad.reflect(5, Surface::NORTH) == 8);
 
     // octant 3
-    assert(ang_quad.reflect(7, WEST)  == 10);
-    assert(ang_quad.reflect(6, SOUTH) == 3);
+    assert(ang_quad.reflect(7, Surface::WEST)  == 10);
+    assert(ang_quad.reflect(6, Surface::SOUTH) == 3);
 
     // octant 4
-    assert(ang_quad.reflect(11, EAST)  == 8);
-    assert(ang_quad.reflect( 9, SOUTH) == 0);
+    assert(ang_quad.reflect(11, Surface::EAST)  == 8);
+    assert(ang_quad.reflect( 9, Surface::SOUTH) == 0);
 
 
     // Test the angle reversal capabilities

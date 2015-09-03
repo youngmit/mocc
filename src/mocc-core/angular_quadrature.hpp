@@ -78,13 +78,13 @@ namespace mocc {
             int new_oct = 0;
             // Lets be real, im just showing off here...
             switch(normal) {
-                case X_NORM:
+                case Normal::X_NORM:
                     new_oct = ioct + 1-2*(ioct%2);
                     break;
-                case Y_NORM:
+                case Normal::Y_NORM:
                     new_oct = abs(ioct + 3-(ioct%2)*6) % 4;
                     break;
-                case Z_NORM:
+                case Normal::Z_NORM:
                     new_oct = (ioct+4) % 8;
                     break;
             }
@@ -94,12 +94,12 @@ namespace mocc {
 
         // Return the index of the angle reflected across the given surface
         unsigned int reflect( unsigned int iang, Surface surf ) const {
-            if( (surf == NORTH) | (surf == SOUTH) ) {
-                return this->reflect( iang, Y_NORM );
-            } else if ( (surf == EAST) | (surf == WEST) ) {
-                return this->reflect( iang, X_NORM );
+            if( (surf == Surface::NORTH) | (surf == Surface::SOUTH) ) {
+                return this->reflect( iang, Normal::Y_NORM );
+            } else if ( (surf == Surface::EAST) | (surf == Surface::WEST) ) {
+                return this->reflect( iang, Normal::X_NORM );
             } else {
-                return this->reflect( iang, Z_NORM );
+                return this->reflect( iang, Normal::Z_NORM );
             }
 
         }

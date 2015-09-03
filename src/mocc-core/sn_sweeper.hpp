@@ -23,21 +23,21 @@ namespace mocc {
             ang_stride_( nx*ny + nx*nz + ny*nz ),
             data_( (nx*ny + nx*nz + ny*nz) * n_ang * n_grp, 0.0 )
         {
-            n_face_[X_NORM] = ny_*nz_;
-            n_face_[Y_NORM] = nx_*nz_;
-            n_face_[Z_NORM] = nx_*ny_;
+            n_face_[(int)Normal::X_NORM] = ny_*nz_;
+            n_face_[(int)Normal::Y_NORM] = nx_*nz_;
+            n_face_[(int)Normal::Z_NORM] = nx_*ny_;
             int offset = 0;
             for( const auto norm: AllNormals ) {
-                face_offset_[norm] = offset;
-                offset += n_face_[norm];
+                face_offset_[(int)norm] = offset;
+                offset += n_face_[(int)norm];
             }
             return;
         }
 
         void get_face( int grp, int ang, Normal norm, float_t* out ) const {
             const float_t* data = data_.data() + ang_stride_*n_ang_*grp + 
-                ang_stride_*ang + face_offset_[norm];
-            for( int i=0; i<n_face_[norm]; i++ ) {
+                ang_stride_*ang + face_offset_[(int)norm];
+            for( int i=0; i<n_face_[(int)norm]; i++ ) {
                 out[i] = data[i];
             }
             return; 
@@ -45,21 +45,21 @@ namespace mocc {
 
         const float_t* get_face_ptr( int grp, int ang, Normal norm ) const {
             return data_.data() + ang_stride_*ang*grp + 
-                ang_stride_*ang + face_offset_[norm];
+                ang_stride_*ang + face_offset_[(int)norm];
         }
 
         void set_face( int grp, int ang, Normal norm, const float_t *in ) {
             float_t* data = data_.data() + ang_stride_*n_ang_*grp + 
-                ang_stride_*ang + face_offset_[norm];
-            for( int i=0; i<n_face_[norm]; i++ ) {
+                ang_stride_*ang + face_offset_[(int)norm];
+            for( int i=0; i<n_face_[(int)norm]; i++ ) {
                 data[i] = in[i];
             }
         }
 
         void zero_face( int grp, int ang, Normal norm ) {
             float_t* data = data_.data() + ang_stride_*n_ang_*grp + 
-                ang_stride_*ang + face_offset_[norm];
-            for( int i=0; i<n_face_[norm]; i++ ) {
+                ang_stride_*ang + face_offset_[(int)norm];
+            for( int i=0; i<n_face_[(int)norm]; i++ ) {
                 data[i] = 0.0;
             }
         }

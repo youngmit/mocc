@@ -206,6 +206,7 @@ namespace mocc {
     CoreMesh::~CoreMesh() {
         return;
     }
+
     /**
     * Given a vector containing two points (which should be on the boundary
     * of the core mesh), insert points corresponding to intersections of the

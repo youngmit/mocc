@@ -21,6 +21,12 @@ namespace mocc {
      * that contains the geometrically-unique place that we are generating ray
      * data for.
      * \param mesh a reference to the CoreMesh to trace.
+     *
+     * A Ray is defined by two Point2 structs, specifying the beginning and end
+     * of a ray, on the boundary of the problem. Given these two points, all of
+     * the segments of the ray are determined by first finding intersections
+     * with the pin cell edges (using CoreMesh::trace()), then the internal
+     * surface crossings for each pin (using PinMesh::trace()).
      */
     Ray::Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
             const CoreMesh &mesh ) {
@@ -31,16 +37,32 @@ namespace mocc {
 
         mesh.trace( ps );
 
-        // Now we have a list of points of intersections with all of the pins.
-        // Loop over them and trace individual pin meshes.
+        // Now we have a list of points of intersections with all of the pin
+        // boundaries. Loop over them and trace individual pin meshes.
         Point2 p_prev = ps[0];
-        for (auto pi=ps.begin()+1; pi!=ps.end(); ++pi) {
+        for( auto pi=ps.begin()+1; pi!=ps.end(); ++pi ) {
+            // Use the midpoint of the pin entry and exit points to locate the
+            // pin.
             Point2 pin_p = Midpoint(*pi, p_prev);
 
             int first_reg = 0;
-            const PinMesh* pm = mesh.get_pinmesh(pin_p, iz, first_reg);
+            const PinMeshTuple pmt = mesh.get_pinmesh(pin_p, iz, first_reg);
 
-            pm->trace(p_prev-pin_p, *pi-pin_p, first_reg, seg_len_, seg_index_);
+            int nseg = pmt.pm->trace(p_prev-pin_p, *pi-pin_p, first_reg, seg_len_,
+                    seg_index_);
+
+
+            // Figure out coarse mesh info.
+            nseg_pin_.push_back(nseg);
+            cm_cell_.push_back( mesh.coarse_cell(pmt.position) );
+            int surf[2];
+            int nsurf = mesh.coarse_surf_point( p_prev, cm_cell_.back(), 
+                    surf );
+            for( int i=0; i<nsurf; i++ ) {
+                cm_surf_.push_back(surf[i]);
+            }
+
+            
             p_prev = *pi;
         }
 

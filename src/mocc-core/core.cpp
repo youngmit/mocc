@@ -11,11 +11,11 @@ namespace mocc {
     Boundary bc_parse( const pugi::xml_node& input, const char* surf ) {
         std::string in = input.attribute(surf).value();
         if ( in == "vacuum" ) {
-            return VACUUM;
+            return Boundary::VACUUM;
         } else if ( in == "reflect" ) {
-            return REFLECT;
+            return Boundary::REFLECT;
         } else {
-            return INVALID;
+            return Boundary::INVALID;
         }
     }
 
@@ -28,7 +28,7 @@ namespace mocc {
                 const std::map<int, UP_Assembly_t> &assemblies):
         nx_( input.attribute("nx").as_int(0) ),
         ny_( input.attribute("ny").as_int(0) ),
-        bc_(6, INVALID)
+        bc_(6, Boundary::INVALID)
     {
         // Make sure that we read the a proper ID
         if( (nx_ < 1) | (ny_ < 1) ) {
@@ -36,15 +36,15 @@ namespace mocc {
         }
 
         // Read in the boundary conditions
-        bc_[Surface::NORTH]  = bc_parse( input, "north" );
-        bc_[Surface::SOUTH]  = bc_parse( input, "south" );
-        bc_[Surface::EAST]   = bc_parse( input, "east" );
-        bc_[Surface::WEST]   = bc_parse( input, "west" );
-        bc_[Surface::TOP]    = bc_parse( input, "top" );
-        bc_[Surface::BOTTOM] = bc_parse( input, "bottom" );
+        bc_[(int)Surface::NORTH]  = bc_parse( input, "north" );
+        bc_[(int)Surface::SOUTH]  = bc_parse( input, "south" );
+        bc_[(int)Surface::EAST]   = bc_parse( input, "east" );
+        bc_[(int)Surface::WEST]   = bc_parse( input, "west" );
+        bc_[(int)Surface::TOP]    = bc_parse( input, "top" );
+        bc_[(int)Surface::BOTTOM] = bc_parse( input, "bottom" );
 
         for( int i=0; i<6; i++ ) {
-            if( bc_[i] == INVALID ) {
+            if( bc_[i] == Boundary::INVALID ) {
                 Error("Not all boundary conditions properly specified.");
             }
         }

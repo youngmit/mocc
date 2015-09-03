@@ -10,7 +10,7 @@
 
 
 // Surface and direction indexing
-enum Surface {
+enum class Surface {
     EAST = 0,
     NORTH,
     WEST,
@@ -23,17 +23,22 @@ enum Surface {
     SE,
     INVALID
 };
-static const Surface AllSurfaces[] = { EAST, NORTH, WEST, SOUTH, TOP, BOTTOM };
+static const Surface AllSurfaces[] = { Surface::EAST, 
+                                       Surface::NORTH, 
+                                       Surface::WEST, 
+                                       Surface::SOUTH, 
+                                       Surface::TOP, 
+                                       Surface::BOTTOM };
 
-enum Normal {
+enum class Normal {
     X_NORM = 0,
     Y_NORM,
     Z_NORM
 };
-static Normal AllNormals[] = { X_NORM, Y_NORM, Z_NORM };
+static Normal AllNormals[] = { Normal::X_NORM, Normal::Y_NORM, Normal::Z_NORM };
 
 // Boundary condition enumeration
-enum Boundary {
+enum class Boundary {
     VACUUM,
     REFLECT,
     PARALLEL,
@@ -41,7 +46,7 @@ enum Boundary {
     INVALID
 };
 
-enum TraceDir {
+enum class TraceDir {
     FW,
     BW
 };

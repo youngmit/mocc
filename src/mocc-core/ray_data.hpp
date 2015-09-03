@@ -71,6 +71,7 @@ namespace mocc {
         const VecI& seg_index() const {
             return seg_index_;
         }
+
         // Only return a reference to a single segment length
         unsigned int seg_index( int iseg ) const {
             return seg_index_[iseg];
@@ -86,10 +87,26 @@ namespace mocc {
     private:
         // Length of ray segments
         VecF seg_len_;
+
         // FSR index of each segment from plane offset
         VecI seg_index_;
+
+        // Vector containing the number of ray segments passing through each pin
+        // mesh. This is needed in order to collect coarse mesh data during a
+        // sweep.
+        VecI nseg_pin_;
+
+        // The coarse mesh cell index corresponding to each pin traversed by the
+        // ray.
+        VecI cm_cell_;
+
+        // The coarse mesh surface index corresponding to each pin interface
+        // crossed by the ray (# of pins crossed + 1).
+        VecI cm_surf_;
+
         // Number of segments in the ray
         unsigned int nseg_;
+
         // Boundary condition index for the forward and backward directions
         unsigned int bc_[2];
     };
