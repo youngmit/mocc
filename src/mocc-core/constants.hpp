@@ -20,7 +20,8 @@ enum Surface {
     NE,
     NW,
     SW,
-    SE
+    SE,
+    INVALID
 };
 static const Surface AllSurfaces[] = { EAST, NORTH, WEST, SOUTH, TOP, BOTTOM };
 
