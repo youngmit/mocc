@@ -9,6 +9,7 @@
 using std::cout;
 using std::endl;
 
+using namespace mocc;
 
 int main() {
     std::string inp = "<ang_quad type=\"ls\" order=\"4\" />";

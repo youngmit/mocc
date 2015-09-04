@@ -13,3 +13,7 @@ add_test(testAngularQuadratrue testAngularQuadrature)
 add_executable(testMaterial test_material.cpp)
 target_link_libraries(testMaterial mocc-core pugixml)
 add_test(testMaterial testMaterial)
+
+add_executable(testMesh test_mesh.cpp)
+target_link_libraries(testMesh mocc-core pugixml)
+add_test(testMesh testMesh)
