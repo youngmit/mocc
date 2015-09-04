@@ -1,5 +1,8 @@
 #include "mesh.hpp"
 
+
+using std::cout;
+using std::endl;
 namespace mocc {
     void Mesh::prepare_surfaces() {
         // number of x-normal surfaces in each y row
@@ -63,6 +66,11 @@ namespace mocc {
                 on_x = true;
                 break;
             }
+            if( xi > p.x ) {
+                ix--;
+                break;
+            }
+            ix++;
         }
 
         int iy = 0;
@@ -71,6 +79,11 @@ namespace mocc {
                 on_y = true;
                 break;
             }
+            if( yi > p.y ) {
+                iy--;
+                break;
+            }
+            iy++;
         }
 
         if( on_x && !on_y ) {
@@ -79,6 +92,7 @@ namespace mocc {
             // x position (ix)
             // simplified to reduce number of ops
             s[0] = nx_*(ny_+iy) + iy + ix;
+            s[0] = nx_*ny_ + (nx_+1)*iy + ix;
             return 1;
         }
 
@@ -88,6 +102,7 @@ namespace mocc {
             // y position (iy)
             // simplified to reduce number of ops, fewer imuls
             s[0] = nx_*ny_ + nx_*ny_ + ny_ + iy;
+            s[0] = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*ix + iy;
             return 1;
         }
 
@@ -134,29 +149,66 @@ namespace mocc {
             /// - on the interior, go x normal first, then y normal.
             
             // Handle the boundary case
-            if( (ix == 0)     && (corner_x == Surface::WEST) ) {
-                s[0] = nx_*(ny_+iy) + iy + ix;
+            if( (ix == 0) && (corner_x == Surface::WEST) ) {
+                s[0] = this->coarse_surf( cell, Surface::WEST );
                 return 1;
             }
-            if( (ix == nx_+1) && (corner_x == Surface::EAST) ) {
-                s[0] = nx_*(ny_+iy) + iy + ix;
+            if( (ix == nx_) && (corner_x == Surface::EAST) ) {
+                s[0] = this->coarse_surf( cell, Surface::EAST );
                 return 1;
             }
-            if( (iy == 0)     && (corner_y == Surface::SOUTH) ) {
-                s[0] = nx_*ny_ + nx_*ny_ + ny_ + iy;
+            if( (iy == 0) && (corner_y == Surface::SOUTH) ) {
+                s[0] = this->coarse_surf( cell, Surface::SOUTH );
                 return 1;
             }
-            if( (iy== ny_+1) && (corner_y == Surface::NORTH) ) {
-                s[0] = nx_*ny_ + nx_*ny_ + ny_ + iy;
+            if( (iy== ny_) && (corner_y == Surface::NORTH) ) {
+                s[0] = this->coarse_surf( cell, Surface::NORTH );
                 return 1;
             }
 
             // So we aren't on a boundary. Handle the interior corner case
-            s[0] = nx_*(ny_+iy) + iy + ix;
-            s[1] = nx_*ny_ + nx_*ny_ + ny_ + iy;
+            s[0] = this->coarse_surf( cell, corner_x );
+            int neighbor = this->coarse_neighbor( cell, corner_x );
+            s[1] = this->coarse_surf( neighbor, corner_y );
             return 2;
         }
 
         return 0;
+    }
+    /**
+    * Given a vector containing two points (which should be on the boundary of
+    * the mesh), insert points corresponding to intersections of the line formed
+    * by those points and the interfaces of all of the cells in the Mesh. The
+    * points are added to the passed vector and sorted.
+    */
+    void Mesh::trace( std::vector<Point2> &ps ) const {
+        assert(ps.size() == 2);
+        Point2 p1 = ps[0];
+        Point2 p2 = ps[1];
+
+        Line l(p1, p2);
+
+        for( auto &li: lines_ ) {
+            Point2 intersection;
+            if( Intersect(li, l, intersection) == 1 ) {
+                ps.push_back( intersection );
+            }
+        }
+
+        // Sort the points and remove duplicates
+        std::sort(ps.begin(), ps.end());
+        ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
+
+        return;
+    }
+
+    int Mesh::coarse_cell_point( Point2 p ) const {
+        auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) - 
+            x_vec_.begin() - 1;
+        auto iy = std::distance( y_vec_.begin(),
+                std::lower_bound( y_vec_.begin(), y_vec_.end(), p.y ) ) - 1;
+
+        /// \todo add z support
+        return this->coarse_cell( Position(ix, iy, 0) );
     }
 }

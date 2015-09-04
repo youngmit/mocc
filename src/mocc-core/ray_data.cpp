@@ -38,12 +38,22 @@ namespace mocc {
         mesh.trace( ps );
 
         // Now we have a list of points of intersections with all of the pin
-        // boundaries. Loop over them and trace individual pin meshes.
+        // boundaries. 
+        Point2 pin_p = Midpoint(ps[0], ps[1]);
+        int cell = mesh.coarse_cell_point(pin_p);
+        int surf[2];
+        // Loop over them and trace individual pin meshes.
+        int nsurf = mesh.coarse_surf_point( ps[0], cell, surf );
+        if( nsurf == 1 ) {
+            cm_surf_.push_back(surf[0]);
+        } else {
+            throw EXCEPT("Boundary point should be unique.");
+        }
         Point2 p_prev = ps[0];
         for( auto pi=ps.begin()+1; pi!=ps.end(); ++pi ) {
             // Use the midpoint of the pin entry and exit points to locate the
             // pin.
-            Point2 pin_p = Midpoint(*pi, p_prev);
+            pin_p = Midpoint(*pi, p_prev);
 
             int first_reg = 0;
             const PinMeshTuple pmt = mesh.get_pinmesh(pin_p, iz, first_reg);

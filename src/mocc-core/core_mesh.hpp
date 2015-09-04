@@ -78,11 +78,6 @@ namespace mocc {
         int n_unique_planes() const {
             return first_unique_.size();
         }
-        
-        /** 
-         * \brief Trace a ray through the Pin array.
-        */
-        void trace( std::vector<Point2> &p ) const;           
 
         /**
         * \brief Obtain a tuple containing the pin position and a reference to the
@@ -242,9 +237,7 @@ namespace mocc {
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
 
-        // Vector of Line objects, representing pin boundaries. This greatly
-        // simplifies the ray trace.
-        std::vector<Line> lines_;
+        
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <algorithm>
 
 #include "global_config.hpp"
 #include "constants.hpp"
@@ -16,6 +17,9 @@ namespace mocc {
      * standalone coarse mesh (for things like CMFD and 2D/3D), the Mesh itself
      * provides method for interacting with homogenous regions and their
      * interface surfaces.
+     *
+     * \todo the unit test for Mesh is not really done. Its got some stuff in
+     * there for my testing, but it needs some serious work.
     */
     class Mesh {
     public:
@@ -31,9 +35,19 @@ namespace mocc {
             x_vec_( hx ),
             y_vec_( hy )
         {
-            std::cout << "generating a base mesh type on its own" << std::endl;
             hx_ = x_vec_.back();
+            for( auto &xi: x_vec_ ) {
+                lines_.push_back( Line( Point2( xi, 0.0 ),
+                                        Point2( xi, hx_ ) ) );
+            }
             hy_ = y_vec_.back();
+            for( auto &yi: y_vec_ ) {
+                lines_.push_back( Line( Point2( 0.0, yi ),
+                                        Point2( hx_, yi) ) );
+            }
+
+            assert( nx == hx.size()-1 );
+            assert( ny == hy.size()-1 );
             this->prepare_surfaces();
             return;
         }
@@ -65,6 +79,12 @@ namespace mocc {
         unsigned int coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
         }
+
+        /**
+         * \brief Return the coarse cell index corresponding to the Point2
+         * passed.
+         */
+        int coarse_cell_point( Point2 p ) const;
 
         /**
          * Return the Position of a coarse mesh cell index.
@@ -120,12 +140,42 @@ namespace mocc {
             const;
 
         /**
+         * \brief Return the neighboring coarse cell index of the passed cell
+         * index in the passed direction.
+         *
+         * \todo Handle the case where the neighbor doesnt exist.
+         */
+        int coarse_neighbor( unsigned int cell, Surface surf) const {
+            switch( surf ) {
+                case Surface::NORTH:
+                    return cell + nx_;
+                case Surface::SOUTH:
+                    return cell - nx_;
+                case Surface::EAST:
+                    return cell + 1;
+                case Surface::WEST:
+                    return cell - 1;
+                case Surface::TOP:
+                    return cell + nx_*ny_;
+                case Surface::BOTTOM:
+                    return cell - nx_*ny_;
+                default:
+                    return -1;
+            }
+        }
+
+        /**
          * \brief Return the surface normal of the given surface.
          */
         Surface surface_normal( int surface ) const {
             /// \todo implement this
             return Surface::NORTH;
         }
+        
+        /** 
+         * \brief Trace a ray through the coarse surfaces.
+        */
+        void trace( std::vector<Point2> &p ) const; 
 
     protected:
         /**
@@ -137,33 +187,37 @@ namespace mocc {
         */
         void prepare_surfaces();
 
-        // Total number of FSRs in the entire geometry
+        /// Total number of FSRs in the entire geometry
         unsigned int n_reg_;
-        // Total number of XS regions in the entire geometry
+        /// Total number of XS regions in the entire geometry
         unsigned int n_xsreg_;
         // Numbers of pins/planes in each dimension
         unsigned int nx_;
         unsigned int ny_;
         unsigned int nz_;
         
-        // Total core size in the x dimension
+        /// Total core size in the x dimension
         float_t hx_;
 
-        // Total core size in the y dimension
+        /// Total core size in the y dimension
         float_t hy_;
 
-        // Total core size in the z dimension
+        /// Total core size in the z dimension
         float_t hz_;
 
-        // List of pin boundaries in the x dimension (starts at 0.0)
+        /// List of pin boundaries in the x dimension (starts at 0.0)
         VecF x_vec_;
 
-        // List of pin boundaries in the y dimension (starts at 0.0)
+        /// List of pin boundaries in the y dimension (starts at 0.0)
         VecF y_vec_;
+        
+        /// Vector of Line objects, representing pin boundaries. This greatly
+        /// simplifies the ray trace.
+        std::vector<Line> lines_;
 
     private:
-        // Vector storing densely-packed coarse mesh surface indices for each
-        // cell.
+        /// Vector storing densely-packed coarse mesh surface indices for each
+        /// cell.
         VecI coarse_surf_;
     };
 

@@ -207,32 +207,6 @@ namespace mocc {
         return;
     }
 
-    /**
-    * Given a vector containing two points (which should be on the boundary
-    * of the core mesh), insert points corresponding to intersections of the
-    * line formed by those points and the interfaces of all of the Pin cells
-    * in the CoreMesh. The points are added to the passed vector and sorted.
-    */
-    void CoreMesh::trace( std::vector<Point2> &ps ) const {
-        assert(ps.size() == 2);
-        Point2 p1 = ps[0];
-        Point2 p2 = ps[1];
-
-        Line l(p1, p2);
-
-        for( auto &li: lines_ ) {
-            Point2 intersection;
-            if( Intersect(li, l, intersection) == 1 ) {
-                ps.push_back( intersection );
-            }
-        }
-
-        // Sort the points and remove duplicates
-        std::sort(ps.begin(), ps.end());
-        ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
-
-        return;
-    }
 
     const PinMeshTuple CoreMesh::get_pinmesh( Point2 &p, unsigned int iz, 
             int &first_reg ) const {
