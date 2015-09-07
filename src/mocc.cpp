@@ -118,6 +118,38 @@ using namespace mocc;
  * our lifetime will not extend past that of the PinMesh we are pointing to,
  * which is easy to enforce. Were that not the case, it might make more sense to
  * use shared pointers all around.
+ *
+ *
+ * Coordinate Systems
+ * ------------------
+ * When working with the mocc::CoreMesh class, it is important to have a good
+ * understanding of the various coordinate systems used. To facilitate a
+ * simple-to-understand and highly-structured ray tracing approach, multiple
+ * coordinate systems are used to conform to the heirarchical nature by which
+ * geometry is specified in the first place (Pin -> Lattice -> Assembly ->
+ * Core). While this makes ray tracing less of a mess in general, withouht an
+ * understanding of the coordinate systems, it is likely harder to understand.
+ *
+ * Here are the different coordinate systems that will be encountered:
+ *
+ * ### Global (Core) Coordinates ####
+ * Global coordinates are measured from the bottom, southwest corner of the
+ * global spatial domain.
+ *
+ * ### Lattice Coordinates ####
+ * Lattice coordinates are technically 2-D, and are measured from the southwest
+ * corner of the lattice.
+ *
+ * ### Pin Coordinates ####
+ * Pin coordinates are also 2-D, and mesasured from the dead center of the pin
+ * geometry. This is so that the most common case, a cylindrical pin, centered
+ * in the pin cell is easiest to trace. When encountering code that provides the
+ * location of a pin origin from in core/global coordinates, this specifies the
+ * origin of the pin coordinate system, translated to its location in real
+ * space, then converted to the global coordinate scheme. This is done to make
+ * conversion of global-coordinate points to pin-local points easy (refer to
+ * mocc::RayData::RayData() and mocc::CoreMesh::get_pinmesh() to see how this is
+ * done.)
  */
 
 // The global top-level solver
