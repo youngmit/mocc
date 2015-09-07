@@ -52,8 +52,6 @@ namespace mocc {
      * incremented to the first FSR index of the Lattice in which the PinMesh
      * resides.
      *
-     * \todo Define all of the coordinate systems somewhere
-     *
      * \note The passed Point2 \p p will be modified by the call to
      * Lattice::get_pinmesh(). See CoreMesh::get_pinmesh() for a detailed
      * description of why.
