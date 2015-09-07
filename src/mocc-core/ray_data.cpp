@@ -39,16 +39,18 @@ namespace mocc {
 
         // Now we have a list of points of intersections with all of the pin
         // boundaries. 
+        // Start by finding the first coarse surface crossing
         Point2 pin_p = Midpoint(ps[0], ps[1]);
         int cell = mesh.coarse_cell_point(pin_p);
         int surf[2];
-        // Loop over them and trace individual pin meshes.
         int nsurf = mesh.coarse_surf_point( ps[0], cell, surf );
         if( nsurf == 1 ) {
             cm_surf_.push_back(surf[0]);
         } else {
             throw EXCEPT("Boundary point should be unique.");
         }
+
+        // Loop over them and trace individual pin meshes.
         Point2 p_prev = ps[0];
         for( auto pi=ps.begin()+1; pi!=ps.end(); ++pi ) {
             // Use the midpoint of the pin entry and exit points to locate the
@@ -58,8 +60,8 @@ namespace mocc {
             int first_reg = 0;
             const PinMeshTuple pmt = mesh.get_pinmesh(pin_p, iz, first_reg);
 
-            int nseg = pmt.pm->trace(p_prev-pin_p, *pi-pin_p, first_reg, seg_len_,
-                    seg_index_);
+            int nseg = pmt.pm->trace(p_prev-pin_p, *pi-pin_p, first_reg,
+                    seg_len_, seg_index_);
 
 
             // Figure out coarse mesh info.
@@ -71,7 +73,6 @@ namespace mocc {
             for( int i=0; i<nsurf; i++ ) {
                 cm_surf_.push_back(surf[i]);
             }
-
             
             p_prev = *pi;
         }
