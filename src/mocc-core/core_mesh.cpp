@@ -213,18 +213,10 @@ namespace mocc {
         assert( (iz >= 0) & (iz<planes_.size()) );
 
         // Locate the Position of the pin
-        unsigned int ix = 0;
-        for( ix=1; ix<x_vec_.size(); ix++ ){
-            if( x_vec_[ix] > p.x ) {
-                break;
-            }
-        }
-        unsigned int iy = 0;
-        for( iy=1; iy<y_vec_.size(); iy++ ){
-            if( y_vec_[iy] > p.y ) {
-                break;
-            }
-        }
+        unsigned int ix = std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x ) - 
+            x_vec_.begin() - 1;
+        unsigned int iy = std::lower_bound(y_vec_.begin(), y_vec_.end(), p.y ) -
+            y_vec_.begin() - 1;
         
         Position pos(ix, iy, iz);
 

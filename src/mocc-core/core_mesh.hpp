@@ -86,9 +86,10 @@ namespace mocc {
         * \param[in,out] p a Point residing in the desired Pin. The location of
         * the point will be updated to the location of the PinMesh origin. See
         * the note below.
-        * \param iz the index of the Plane in which to search for the PinMesh.
+        * \param iz[in] the index of the Plane in which to search for the PinMesh.
+        * \param first_reg[in,out]
         *
-        * This routing provides a means by which to locate the PinMesh object
+        * This routine provides a means by which to locate the PinMesh object
         * that fills the space in which the passed Point resides. This is useful
         * during ray tracing to determine the geometry that needs to be traced
         * through each pin subdomain. See Ray::Ray() for and example of its use.
