@@ -20,7 +20,6 @@ namespace mocc {
                     Surface surf;
                     int cell_offset = i*6;
 
-
                     surf = Surface::EAST;
                     coarse_surf_[cell_offset+(int)surf] = surf_offset + 
                         nxsurf*iy + ix + 1 + nx_*ny_;
@@ -31,7 +30,7 @@ namespace mocc {
 
                     surf = Surface::NORTH;
                     coarse_surf_[cell_offset+(int)surf] = surf_offset + 
-                        nxsurf*ny_ + nysurf*ix + iy + 1 + nx_*ny_;
+                        nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*ix + iy + 1;
                     
                     surf = Surface::SOUTH;
                     coarse_surf_[cell_offset+(int)surf] = surf_offset + 
@@ -46,6 +45,7 @@ namespace mocc {
                         nx_*ny_ + nxysurf + nx_*iy + ix;
 
                     i++;
+
                 }
             }
             surf_offset += nxysurf + nx_*ny_;
@@ -128,6 +128,7 @@ namespace mocc {
             Position cellpos = this->coarse_position( cell );
             Surface corner_x = Surface::INVALID;
             Surface corner_y = Surface::INVALID;
+
             if( ix == cellpos.x) {
                 corner_x = Surface::WEST;
             } else if ( ix == cellpos.x + 1 ) {
@@ -202,6 +203,8 @@ namespace mocc {
         return;
     }
 
+    /// For now, this is a 2D routine. The cell returned is forced into the
+    /// zeroth plane
     int Mesh::coarse_cell_point( Point2 p ) const {
         auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) - 
             x_vec_.begin() - 1;

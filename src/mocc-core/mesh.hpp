@@ -43,7 +43,7 @@ namespace mocc {
             hy_ = y_vec_.back();
             for( auto &yi: y_vec_ ) {
                 lines_.push_back( Line( Point2( 0.0, yi ),
-                                        Point2( hx_, yi) ) );
+                                        Point2( hx_, yi ) ) );
             }
 
             assert( nx == hx.size()-1 );
@@ -91,7 +91,7 @@ namespace mocc {
         */
         Position coarse_position( unsigned int cell ) const {
             return Position( 
-                    cell % ny_, 
+                    cell % nx_, 
                     (cell % (nx_*ny_)) / nx_,
                     cell / (nx_*ny_) );
         }
@@ -167,9 +167,17 @@ namespace mocc {
         /**
          * \brief Return the surface normal of the given surface.
          */
-        Surface surface_normal( int surface ) const {
-            /// \todo implement this
-            return Surface::NORTH;
+        Normal surface_normal( int surface ) const {
+            // Number of surfaces per plane
+            int nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
+
+            if( surface % nsurfz < nx_*ny_ ) {
+                return Normal::Z_NORM;
+            }
+            if( surface % nsurfz < nx_*ny_ + (nx_+1)*ny_ ) {
+                return Normal::X_NORM;
+            }
+            return Normal::Y_NORM;
         }
         
         /** 
