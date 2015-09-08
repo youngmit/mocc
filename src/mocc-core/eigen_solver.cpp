@@ -39,6 +39,15 @@ namespace mocc{
             Error("Invalid number of maximum iterations.");
         }
         max_iterations_ = in_int;
+
+        // CMFD acceleration
+        bool do_cmfd = input.attribute("cmfd").as_bool(false);
+        if( do_cmfd ) {
+            // construct the CMFD solver using the mesh from the transport
+            // sweeper
+            /// \todo rename sweeper() to get_sweeper()
+            cmfd_ = CMFD( (Mesh*)&mesh );
+        }
     }
 
     // Perform a full-blown eigenvalue solve. Start with a guess for the

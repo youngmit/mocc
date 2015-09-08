@@ -8,6 +8,7 @@
 #include "fixed_source_solver.hpp"
 #include "transport_sweeper.hpp"
 #include "h5file.hpp"
+#include "cmfd.hpp"
 
 namespace mocc{
     struct ConvergenceCriteria {
@@ -82,5 +83,8 @@ namespace mocc{
         // Vector of the convergence criteria. We will export these to the HDF5
         // file at the end of the run for posterity
         std::vector<ConvergenceCriteria> convergence_;
+
+        // CMFD accelerator
+        CMFD cmfd_;
     };
 }
