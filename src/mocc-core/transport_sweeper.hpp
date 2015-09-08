@@ -8,6 +8,7 @@
 #include "xs_mesh.hpp"
 #include "source.hpp"
 #include "output_interface.hpp"
+#include "coarse_data.hpp"
 
 namespace mocc{
     class TransportSweeper: public HasOutput {
@@ -32,13 +33,13 @@ namespace mocc{
         virtual void initialize() = 0;
         virtual void get_pin_flux( int ig, VecF& flux ) const = 0;
 
-        // Given the current estimate of a system eigenvalue, calculate the
-        // group-independent fission source and store in the passed array
+        /// Given the current estimate of a system eigenvalue, calculate the
+        /// group-independent fission source and store in the passed array
         virtual void calc_fission_source( float_t k, 
                 ArrayX& fission_source) const;
 
-        // Construct and return a source object which conforms to the sweeper.
-        // For now, default to the MoC Source type
+        /// Construct and return a source object which conforms to the sweeper.
+        /// For now, default to the MoC Source type
         virtual UP_Source_t create_source() {
             UP_Source_t source( new Source( n_reg_, xs_mesh_.get(), 
                         this->cflux()) );
@@ -49,51 +50,54 @@ namespace mocc{
             return n_reg_;
         }
 
-        // Return a reference to the sweeper's XSMesh
+        /// Return a reference to the sweeper's XSMesh
         const XSMesh& xs_mesh() const {
             return *(xs_mesh_.get());
         }
 
-        // Return a reference to the MG flux
+        /// Return a reference to the MG flux
         const ArrayX& flux() const {
             return flux_;
         }
 
-        // Subscript and return a specific flux value
+        /// Subscript and return a specific flux value
         const float_t flux( unsigned int ig, unsigned int ireg ) const {
             return flux_( ireg, ig );
         }
 
-        // Return the number of energy groups
+        /// Return the number of energy groups
         unsigned int n_grp() const {
             return ng_;
         }
 
-        // Return a const reference to the MG flux. This is the same as the
-        // above for now, since im not sure if i want to expose a non-const
-        // reference. Probably will at some point, we will see. It'll be less
-        // refactoring if I start with an explicit const version and use it
-        // wherever I know I won't need mutability.
+        /// Return a const reference to the MG flux. This is the same as the
+        /// above for now, since im not sure if i want to expose a non-const
+        /// reference. Probably will at some point, we will see. It'll be less
+        /// refactoring if I start with an explicit const version and use it
+        /// wherever I know I won't need mutability.
         const ArrayX& cflux() const {
             return flux_;
         }
 
-        // Associate the sweeper with a source. This is usually done by
-        // something like the FixedSourceSolver.
+        /// Associate the sweeper with a source. This is usually done by
+        /// something like the FixedSourceSolver.
         void assign_source( Source* source) {
             assert( source != nullptr );
             source_ = source;
         }
 
-        // Store the current flux as the old flux
+        /// Store the current flux as the old flux
         void store_old_flux() {
             flux_old_ = flux_;
             return;
         }
 
-        // Compute the total fission source based on the current state of the
-        // flux
+        /// Compute the total fission source based on the current state of the
+        /// flux
         float_t total_fission( bool old=false ) const;
+
+        /// Homogenize flux and group constants to a CoarseData object
+        virtual void homogenize( CoarseData &data ) const =0;
     protected:
         SP_XSMesh_t xs_mesh_;
 

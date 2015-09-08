@@ -9,6 +9,7 @@
 #include "transport_sweeper.hpp"
 #include "angular_quadrature.hpp"
 #include "xs_mesh_homogenized.hpp"
+#include "coarse_data.hpp"
 
 namespace mocc {
     class SnSweeperBoundary {
@@ -102,6 +103,8 @@ namespace mocc {
             UP_Source_t source( s );
             return source;
         }
+
+        void homogenize( CoarseData &data ) const;
     private:
         // Update the boundary conditions 
         void update_boundary( int group );

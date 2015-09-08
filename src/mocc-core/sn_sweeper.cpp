@@ -68,6 +68,10 @@ namespace mocc {
         return;
     }
 
+    void SnSweeper::homogenize( CoarseData &data ) const {
+        return;
+    }
+
     void SnSweeper::sweep( int group ) {
 
         // Store the transport cross section somewhere useful

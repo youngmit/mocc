@@ -23,6 +23,25 @@ using namespace mocc;
  *
  * Style
  * =====
+ * For the most part, we are following the <a
+ * href="http://google-styleguide.googlecode.com/svn/trunk/cppguide.html">Google
+ * C++ style guide</a>. Some highlights are below.
+ *
+ * Class Names
+ * -----------
+ * All class names should start with a capitol letter, and the first letter of
+ * each subsequent word should be captiolized. Where one class is a simple or
+ * subtle extension of another class or concept (e.g. MoCSweeper_2D3D), use an
+ * underscore to separate the broad concept from the specialization. Most
+ * extensions of classes should be written as normal (e.g. MoCSweeper as an
+ * extension of TransportSweeper).
+ *
+ * File Naming
+ * -----------
+ * Most classes should have their own file, with the exception of small utility
+ * classes which may make sense to be packaged together with a larger, more
+ * standalone class. Class filenames should share the same name of the class
+ * that they contain, be all lowercase, with words separated by underscores.
  *
  * Conventions
  * ===========
@@ -31,6 +50,17 @@ using namespace mocc;
  * MOCC makes use of several conventions throughout the code in order to make
  * certain difficult aspects of medium- to large-scale code projects obvious and
  * simple.
+ *
+ * Constness
+ * ---------
+ * Be sure to understand the concept of constness. A few cood references can be
+ * found <a href="http://www.cprogramming.com/tutorial/const_correctness.html">
+ * here</a> and <a
+ * href="http://duramecho.com/ComputerInformation/WhyHowCppConst.html">here</a>.
+ * In general, make as many references, pointers, and class methods const as
+ * possible, as it clearly specifies intent, protects the sanity and
+ * ease-of-understanding of the data flow, and permits more optimization for the
+ * compiler.
  *
  * Pointers and Ownership
  * ----------------------

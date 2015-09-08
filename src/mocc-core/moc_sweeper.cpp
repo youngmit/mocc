@@ -165,6 +165,11 @@ namespace mocc {
         return;
     }
 
+    void MoCSweeper::homogenize( CoarseData &data ) const {
+        
+        return;
+    }
+
     void MoCSweeper::get_pin_flux( int group, VecF& flux ) const {
         flux.resize( mesh_.n_pin() );
         for( auto &f: flux ) {

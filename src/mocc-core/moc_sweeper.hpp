@@ -10,6 +10,7 @@
 #include "core_mesh.hpp"
 #include "angular_quadrature.hpp"
 #include "xs_mesh.hpp"
+#include "coarse_data.hpp"
 
 namespace mocc {
     class MoCSweeper: public TransportSweeper {
@@ -38,6 +39,7 @@ namespace mocc {
 
         void output( H5File& file ) const;
 
+        void homogenize( CoarseData &data ) const;
     private:
         const CoreMesh& mesh_;
 
@@ -48,7 +50,13 @@ namespace mocc {
         BCSet_t boundary_;
         BCSet_Out_t boundary_out_;
 
+        /// Perform a single "inner" iteration sweep
         void sweep1g( int group );
+
+        /// Perform a single "inner" iteration sweep, collecting currents at the
+        /// coarse mesh boundaries for CMFD. This version of the sweep is slower
+        /// than the stock version, and should only be used for the last sweep.
+        void sweep1g_current( int group );
 
         // Array of one group transport cross sections
         ArrayX xstr_;
