@@ -88,7 +88,13 @@ namespace mocc {
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
             source_->self_scatter( group, flux_1g_, qbar_ );
-            this->sweep1g( group );
+            // Perform the stock sweep unless we are on the last outer and have
+            // a CoarseData object.
+            if( inner == n_inner_-1 && coarse_data_ ) {
+                this->sweep1g_current( group );
+            } else {
+                this->sweep1g( group );
+            }
         }
 
         flux_.col( group ) = flux_1g_;

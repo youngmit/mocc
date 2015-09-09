@@ -77,6 +77,7 @@ void MoCSweeper::sweep1g( int group ) {
     return;
 }
 
+/// \todo actually implement current accumulation
 void MoCSweeper::sweep1g_current( int group ) {
     flux_1g_.fill(0.0);
 

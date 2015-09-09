@@ -13,7 +13,9 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
-        TransportSweeper() {
+        TransportSweeper():
+            coarse_data_(nullptr)
+        {
             return;
         }
 
@@ -23,7 +25,8 @@ namespace mocc{
             ng_( xs_mesh_->n_grp() ),
             flux_( n_reg_, ng_ ),
             flux_old_( n_reg_, ng_ ),
-            vol_( n_reg_, 1 )
+            vol_( n_reg_, 1 ),
+            coarse_data_(nullptr)
         {
             return;
         }
