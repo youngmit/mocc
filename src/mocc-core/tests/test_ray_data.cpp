@@ -43,7 +43,7 @@ int main() {
             mocc::float_t space = ray_data.spacing(iang);
             mocc::float_t wt_ang = space * ang_quad[iang].weight * 2.0*PI;
             for( auto &ray: angle_rays ) {
-                for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg);
                     vol[ireg] += ray.seg_len(iseg) * wt_ang;
                 }

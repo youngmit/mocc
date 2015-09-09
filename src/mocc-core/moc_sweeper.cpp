@@ -214,7 +214,7 @@ namespace mocc {
         file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
         file.write("/ng", ng_);
         
-        for( int ig=0; ig<ng_; ig++ ) {
+        for( unsigned int ig=0; ig<ng_; ig++ ) {
             VecF flux;
             this->get_pin_flux(ig, flux);
         

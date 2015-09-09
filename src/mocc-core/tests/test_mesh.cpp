@@ -115,7 +115,7 @@ int main() {
                             mocc::Position(4, 1, 0) };
         mocc::VecI surf;
     
-        for( int i=0; i< p.size(); i++ ) {
+        for( unsigned int i=0; i< p.size(); i++ ) {
             cout << p[i] << endl;
     
             cell = mesh.coarse_cell(cellpos[i]);

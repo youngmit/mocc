@@ -19,8 +19,8 @@ namespace mocc{
         out_ = VecF(ng_, 0.0);
 
         // Densify the scattering matrix
-        for(int to=0; to<ng_; to++){
-            for(int from=0; from<ng_; from++){
+        for( unsigned int to=0; to<ng_; to++ ) {
+            for( unsigned int from=0; from<ng_; from++ ) {
                 if(scat[to][from] > 0.0){
                     scat_.push_back(scat[to][from]);
                 }
@@ -36,18 +36,18 @@ namespace mocc{
         int prevPos = 0;
         int min_g = 0;
         int max_g = 0;
-        for(int to=0; to<ng_; to++){
+        for( unsigned int to=0; to<ng_; to++ ) {
             bool found_min = false;
             bool found_max = false;
-            for(int from=0; from<ng_; from++){
-                if(scat[to][from] > 0.0){
+            for( unsigned int from=0; from<ng_; from++ ) {
+                if( scat[to][from] > 0.0 ) {
                     if(!found_min){
                         found_min = true;
                         min_g = from;
                     }
                     pos++;
                 }
-                if(scat[to][from] == 0.0 && found_min){
+                if( scat[to][from] == 0.0 && found_min ) {
                     found_max = true;
                     max_g = from-1;
                     break;
@@ -66,8 +66,8 @@ namespace mocc{
             const ScatMat &scat_mat ) {
         os << "Scattering matrix: " << std::endl;
         for( auto &row: scat_mat.rows_ ) {
-            int gmin = row.min_g;
-            int gmax = row.max_g;
+            unsigned int gmin = row.min_g;
+            unsigned int gmax = row.max_g;
             for( unsigned int ig=0; ig<gmin; ig++ ) {
                 os << std::setw(12) << 0.0;
             }

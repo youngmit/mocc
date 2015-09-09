@@ -9,7 +9,7 @@ namespace mocc {
 
     void H5File::write( std::string path, VecF data, VecI dims ) {
         hsize_t dims_a[dims.size()];
-        for ( int i=0; i<dims.size(); i++ ) {
+        for ( unsigned int i=0; i<dims.size(); i++ ) {
             dims_a[i] = dims[i];
         }
 

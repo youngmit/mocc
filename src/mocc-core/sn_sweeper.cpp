@@ -49,11 +49,11 @@ namespace mocc {
 
         // Set up the mesh dimensions
         const VecF& core_x = core_mesh_.pin_hx();
-        for( int i=0; i<core_x.size()-1; i++ ) {
+        for( unsigned int i=0; i<core_x.size()-1; i++ ) {
             hx_.push_back(core_x[i+1]-core_x[i]);
         }
         const VecF& core_y = core_mesh_.pin_hy();
-        for( int i=0; i<core_y.size()-1; i++ ) {
+        for( unsigned int i=0; i<core_y.size()-1; i++ ) {
             hy_.push_back(core_y[i+1]-core_y[i]);
         }
         hz_ = core_mesh_.hz();
@@ -85,7 +85,7 @@ namespace mocc {
         flux_1g_ = flux_.col( group );
 
         // Perform inner iterations
-        for( int inner=0; inner<n_inner_; inner++ ) {
+        for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter( group, flux_1g_, q_ );
             this->sweep_std( group );
@@ -246,10 +246,10 @@ namespace mocc {
         file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
         file.write("/ng", ng_);
         
-        for( int ig=0; ig<ng_; ig++ ) {
+        for( unsigned int ig=0; ig<ng_; ig++ ) {
             VecF flux;
             
-            for( int ireg=0; ireg<n_reg_; ireg++ ) {
+            for( unsigned int ireg=0; ireg<n_reg_; ireg++ ) {
                 flux.push_back( flux_( ireg, ig ) );
             }
         

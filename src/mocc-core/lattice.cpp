@@ -12,6 +12,8 @@
 
 using std::stringstream;
 using std::string;
+using std::cout;
+using std::endl;
 
 namespace mocc {
     Lattice::Lattice( const pugi::xml_node &input, 

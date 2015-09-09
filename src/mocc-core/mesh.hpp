@@ -167,9 +167,9 @@ namespace mocc {
         /**
          * \brief Return the surface normal of the given surface.
          */
-        Normal surface_normal( int surface ) const {
+        Normal surface_normal( unsigned int surface ) const {
             // Number of surfaces per plane
-            int nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
+            unsigned int nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
 
             if( surface % nsurfz < nx_*ny_ ) {
                 return Normal::Z_NORM;

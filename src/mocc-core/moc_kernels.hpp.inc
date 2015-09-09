@@ -21,7 +21,7 @@ void MoCSweeper::sweep1g( int group ) {
                 int bc2 = ray.bc(1);
 
                 // Compute exponentials
-                for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
                     e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
                             ray.seg_len(iseg) * rstheta );
@@ -35,7 +35,7 @@ void MoCSweeper::sweep1g( int group ) {
                         boundary_[group][iplane][iang1][bc1];
 
                     // Propagate through core geometry
-                    for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                    for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
                         float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                         psi -= psi_diff;
@@ -101,7 +101,7 @@ void MoCSweeper::sweep1g_current( int group ) {
                 int bc2 = ray.bc(1);
 
                 // Compute exponentials
-                for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
                     e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
                             ray.seg_len(iseg) * rstheta );
@@ -115,7 +115,7 @@ void MoCSweeper::sweep1g_current( int group ) {
                         boundary_[group][iplane][iang1][bc1];
 
                     // Propagate through core geometry
-                    for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                    for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
                         float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                         psi -= psi_diff;

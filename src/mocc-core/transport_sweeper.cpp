@@ -7,7 +7,7 @@ namespace mocc {
         float_t tfis = 0.0;
         const ArrayX& flux = old ? flux_old_: flux_;
         for( auto &xsr: *xs_mesh_ ) {
-            for( int ig=0; ig<ng_; ig++ ) {
+            for( unsigned int ig=0; ig<ng_; ig++ ) {
                 float_t xsnf = xsr.xsmacnf()[ig];
                 for (auto &ireg: xsr.reg() ) {
                     tfis += flux(ireg, ig)*vol_(ireg)*xsnf;

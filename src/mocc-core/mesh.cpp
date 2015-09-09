@@ -60,7 +60,7 @@ namespace mocc {
         bool on_x = false;
         bool on_y = false;
 
-        int ix = 0;
+        unsigned int ix = 0;
         for( auto &xi: x_vec_ ) {
             if( fp_equiv_abs(p.x, xi) ) {
                 on_x = true;
@@ -73,7 +73,7 @@ namespace mocc {
             ix++;
         }
 
-        int iy = 0;
+        unsigned int iy = 0;
         for( auto &yi: y_vec_ ) {
             if( fp_equiv_abs(p.y, yi) ) {
                 on_y = true;

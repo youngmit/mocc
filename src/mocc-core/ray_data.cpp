@@ -191,7 +191,6 @@ cout << ang_quad_ << endl;
                 // to cast it into the first octant.
                 int Nx = Nx_[iang];
                 int Ny = Ny_[iang];
-                int Nxy = Nx+Ny;
                 int bc1 = 0;
                 int bc2 = 0;
                 float_t space = spacing_[iang];

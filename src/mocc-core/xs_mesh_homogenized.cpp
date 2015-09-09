@@ -79,10 +79,11 @@ namespace mocc {
 
         }
 
-        for( auto &row: scat ) {
-            for( auto &c: row) {
-            }
-        }
+        /// \todo i guess i never finished scattering matrix homogenization?
+        //for( auto &row: scat ) {
+        //    for( auto &c: row) {
+        //    }
+        //}
 
         ScatMat scat_mat(scat);
 

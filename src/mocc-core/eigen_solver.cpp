@@ -4,6 +4,9 @@
 
 #include "error.hpp"
 
+using std::endl;
+using std::cout;
+
 namespace mocc{
     EigenSolver::EigenSolver( const pugi::xml_node &input, 
             const CoreMesh &mesh ):

@@ -39,7 +39,7 @@ namespace mocc {
         for( auto &xsr: *xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
             unsigned int min_g = scat_row.min_g;
-            int igg = min_g;
+            unsigned int igg = min_g;
             for( auto sc: scat_row ) {
                 // Dont add a contribution for self-scatter. TODO: it might be a
                 // good idea to remove self-scatter from the scattering matrix

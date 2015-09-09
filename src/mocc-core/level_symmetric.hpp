@@ -46,13 +46,11 @@ namespace {
 // 'order'
 std::vector<mocc::Angle> GenSn( int order ){
 
-    std::cout << "Generating Sn quadrature of order " << order << std::endl;
-
     if( order%2 != 0 ) {
-        Error("Sn quadrature order must be even.");
+        mocc::Error("Sn quadrature order must be even.");
     }
     if( order > 16 ) {
-        Error("Max supported Sn quadrature order is 16.");
+        mocc::Error("Max supported Sn quadrature order is 16.");
     }
 
     // n is the number of base cosines to use
@@ -61,7 +59,6 @@ std::vector<mocc::Angle> GenSn( int order ){
     // set up the list of base cosines
     mocc::VecF mu;
     mu.push_back(mu_base[n-1]);
-    cout << mu[0] << " " << mu_base[0] << endl;
     if( order > 2) {
         const mocc::float_t delta_mu = 2.0 * ( 1.0 - 
                 3.0*(mu[0]*mu[0]) ) / (mocc::float_t)(order-2);
