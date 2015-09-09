@@ -23,19 +23,17 @@ namespace mocc {
         SE,
         INVALID
     };
-    static const Surface AllSurfaces[] = { Surface::EAST, 
-                                           Surface::NORTH, 
-                                           Surface::WEST, 
-                                           Surface::SOUTH, 
-                                           Surface::TOP, 
-                                           Surface::BOTTOM };
-    
+
+    extern const Surface AllSurfaces[6];
+        
     enum class Normal {
         X_NORM = 0,
         Y_NORM,
         Z_NORM
     };
-    static Normal AllNormals[] = { Normal::X_NORM, Normal::Y_NORM, Normal::Z_NORM };
+
+    extern const Normal AllNormals[3];
+    
     
     // Boundary condition enumeration
     enum class Boundary {
