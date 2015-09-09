@@ -70,6 +70,12 @@ namespace mocc{
             return ng_;
         }
 
+        /// Assign a CoarseData object to the sweeper, allowing it to store
+        /// currents and such.
+        void set_coarse_data( CoarseData *cd ) {
+            coarse_data_ = cd;
+        }
+
         /// Return a const reference to the MG flux. This is the same as the
         /// above for now, since im not sure if i want to expose a non-const
         /// reference. Probably will at some point, we will see. It'll be less
@@ -115,6 +121,10 @@ namespace mocc{
         // Region volumes. In a 3-D sweeper this is the true volume, while in a
         // 2-D sweeper, this is actually surface area.
         ArrayX vol_;
+
+        // Reference to the CoarseData object that should be used to store
+        // coarse mesh values. This is passed in from above.
+        CoarseData *coarse_data_;
     };
 
     typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;
