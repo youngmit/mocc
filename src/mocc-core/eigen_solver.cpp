@@ -46,7 +46,7 @@ namespace mocc{
             // construct the CMFD solver using the mesh from the transport
             // sweeper
             /// \todo rename sweeper() to get_sweeper()
-            cmfd_ = CMFD( (Mesh*)&mesh );
+            cmfd_.reset( new CMFD( (Mesh*)&mesh, fss_.n_group() ) );
         }
     }
 

@@ -85,6 +85,6 @@ namespace mocc{
         std::vector<ConvergenceCriteria> convergence_;
 
         // CMFD accelerator
-        CMFD cmfd_;
+        UP_CMFD_t cmfd_;
     };
 }

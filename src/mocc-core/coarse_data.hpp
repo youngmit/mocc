@@ -8,10 +8,17 @@
 namespace mocc {
     /**
      * CoarseData stores the data needed to do CMFD. Coarse surface currents,
-     * fluxes, etc.
+     * fluxes, etc. 
      */
-    class CoarseData {
+    struct CoarseData {
     public:
+        CoarseData( int nreg, int ngroup ):
+            current_( ngroup, VecF(nreg, 0.0) ),
+            flux_( ngroup, VecF(nreg, 0.0) ),
+            old_flux_( ngroup, VecF(nreg, 0.0) )
+        {
+            return;
+        }
         std::vector<VecF> get_current() {
             return current_;
         }
