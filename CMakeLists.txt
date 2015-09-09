@@ -42,9 +42,8 @@ message("Flags: ${warnings} ${options}")
 
 find_package(Boost REQUIRED COMPONENTS regex)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
+include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")
+include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 add_subdirectory(lib)
