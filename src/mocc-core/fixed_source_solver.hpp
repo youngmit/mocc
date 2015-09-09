@@ -69,6 +69,11 @@ namespace mocc{
             return sweeper_->n_reg();
         }
 
+        /// Return the number of energy groups
+        unsigned int n_group() {
+            return ng_;
+        }
+
         /// Return a constant reference to the transport sweeper.
         const TransportSweeper* sweeper() const {
             return sweeper_.get();
