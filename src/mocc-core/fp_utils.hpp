@@ -5,17 +5,46 @@
 
 namespace mocc {
 
-    inline bool fp_equiv_ulp(float_t v1, float_t v2) {
-        int i1 = *(int*) &v1;
-        if (i1 < 0) {
-            i1 = 0x80000000 - i1;
-        }
-        int i2 = *(int*) &v2;
-        if (i2 < 0) {
-            i2 = 0x80000000 - i2;
+    union float_int {
+        float f;
+        int32_t i;
+    };
+
+    union double_int {
+        double f;
+        int64_t i;
+    };
+
+    inline bool fp_equiv_ulp(float v1, float v2) {
+        float_int i1;
+        i1.f = v1;
+        if (i1.i < 0) {
+            i1.i = 0x80000000 - i1.i;
         }
 
-        return abs(i1 - i2) < 100; 
+        float_int i2;
+        i2.f = v2;
+        if (i2.i < 0) {
+            i2.i = 0x80000000 - i2.i;
+        }
+
+        return abs(i1.i - i2.i) < 100; 
+    }
+
+    inline bool fp_equiv_ulp(double v1, double v2) {
+        double_int i1;
+        i1.f = v1;
+        if (i1.i < 0) {
+            i1.i = 0x80000000 - i1.i;
+        }
+
+        double_int i2;
+        i2.f = v2;
+        if (i2.i < 0) {
+            i2.i = 0x80000000 - i2.i;
+        }
+
+        return abs(i1.i - i2.i) < 100; 
     }
 
     inline bool fp_equiv_rel(float_t v1, float_t v2) {
