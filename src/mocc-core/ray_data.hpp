@@ -82,7 +82,10 @@ namespace mocc {
             return bc_[dir];
         }
 
-        
+        unsigned int ncseg() const {
+            return cm_cell_.size();
+        }
+
 
     private:
         // Length of ray segments
