@@ -26,7 +26,7 @@ namespace mocc {
     		std::string line;
     		std::getline(stream_, line);
     		// Strip the comments
-    		unsigned int commentPos = line.find(flag_, 0);
+    		size_t commentPos = line.find(flag_, 0);
     		if(commentPos != std::string::npos){
     			line.erase(commentPos, std::string::npos);
     		}
