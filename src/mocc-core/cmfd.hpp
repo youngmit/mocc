@@ -15,6 +15,15 @@ namespace mocc {
         void solve();
 
         void project( ArrayX &flux );
+
+        /** 
+         * Return a pointer to the coarse data. This is used to couple sweepers
+         * and other objects that need access to the coarse data to the CMFD
+         * solver.
+         */
+        CoarseData* get_data(){
+            return &coarse_data_;
+        }
     private:
         Mesh* mesh_;
         CoarseData coarse_data_;

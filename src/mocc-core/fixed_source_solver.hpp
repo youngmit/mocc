@@ -74,8 +74,13 @@ namespace mocc{
             return ng_;
         }
 
-        /// Return a constant reference to the transport sweeper.
         const TransportSweeper* sweeper() const {
+            return sweeper_.get();
+        }
+
+        /// Return a mutable pointer to the the TransportSweeper. Use with care.
+        /// \todo maybe think about making this an rvalue reference?
+        TransportSweeper* sweeper_mut() {
             return sweeper_.get();
         }
 

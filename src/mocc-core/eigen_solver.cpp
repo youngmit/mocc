@@ -50,6 +50,9 @@ namespace mocc{
             // sweeper
             /// \todo rename sweeper() to get_sweeper()
             cmfd_.reset( new CMFD( (Mesh*)&mesh, fss_.n_group() ) );
+            // Associate the sweeper with the coarse data from the CMFD solver
+            CoarseData * const cd = cmfd_->get_data();
+            fss_.sweeper_mut()->set_coarse_data( cd );
         }
     }
 
