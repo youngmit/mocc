@@ -82,6 +82,7 @@ void MoCSweeper::sweep1g_current( int group ) {
     flux_1g_.fill(0.0);
 
     ArrayX e_tau(rays_.max_segments(), 1);
+    ArrayX psi(rays_.max_segments()+1, 1);
 
     int iplane = 0;
     for( auto &plane_rays: rays_ ) {
@@ -109,38 +110,35 @@ void MoCSweeper::sweep1g_current( int group ) {
 
 
                 // Forward direction
-                {
-                    // Initialize from bc
-                    float_t psi = 
-                        boundary_[group][iplane][iang1][bc1];
+                // Initialize from bc
+                psi(0) = boundary_[group][iplane][iang1][bc1];
 
-                    // Propagate through core geometry
-                    for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
-                        int ireg = ray.seg_index(iseg) + first_reg;
-                        float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
-                        psi -= psi_diff;
-                        flux_1g_(ireg) += psi_diff*wt_v_st;
-                    }
-                    // Store boundary condition
-                    boundary_out_[iplane][iang1][bc2] = psi;
+                // Propagate through core geometry
+                for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                    int ireg = ray.seg_index(iseg) + first_reg;
+                    float_t psi_diff = (psi(iseg) - qbar_(ireg)) * 
+                    e_tau(iseg);
+                    psi(iseg+1) = psi(iseg) - psi_diff;
+                    flux_1g_(ireg) += psi_diff*wt_v_st;
                 }
+                // Store boundary condition
+                boundary_out_[iplane][iang1][bc2] = psi( ray.nseg() );
                 
                 // Backward direction
-                {
-                    // Initialize from bc
-                    float_t psi =
-                        boundary_[group][iplane][iang2][bc2];
+                // Initialize from bc
+                psi(ray.nseg()) =
+                    boundary_[group][iplane][iang2][bc2];
 
-                    // Propagate through core geometry
-                    for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
-                        int ireg = ray.seg_index(iseg) + first_reg;
-                        float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
-                        psi -= psi_diff;
-                        flux_1g_(ireg) += psi_diff*wt_v_st;
-                    }
-                    // Store boundary condition
-                    boundary_out_[iplane][iang2][bc1] = psi;
+                // Propagate through core geometry
+                for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
+                    int ireg = ray.seg_index(iseg) + first_reg;
+                    float_t psi_diff = (psi(iseg+1) - qbar_(ireg)) * 
+                        e_tau(iseg);
+                    psi(iseg) = psi(iseg+1) - psi_diff;
+                    flux_1g_(ireg) += psi_diff*wt_v_st;
                 }
+                // Store boundary condition
+                boundary_out_[iplane][iang2][bc1] = psi(0);
                 iray++;
             } // Rays
             iang++;
