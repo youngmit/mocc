@@ -1,8 +1,9 @@
 #include "assembly.hpp"
 
-#include <string>
-#include <sstream>
+#include <algorithm>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "error.hpp"
 #include "string_utils.hpp"
@@ -40,6 +41,16 @@ namespace mocc {
                 // hz is over-defined
                 Error("Plane heights are over-specified for assembly.");
             }
+            string hzs = hz_in.child_value();
+            stringstream hzstream(hzs);
+
+            while( !hzstream.eof() ) {
+                float_t hzi;
+                hzstream >> hzi;
+                hz_.push_back(hzi);
+                std::reverse( hz_.begin(), hz_.end() );
+            }
+
         }
 
         // Parse lattice IDs

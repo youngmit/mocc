@@ -16,7 +16,6 @@ namespace mocc {
     public:
         SnSweeperBoundary() { }
         SnSweeperBoundary( int n_grp, int n_ang , int nx, int ny, int nz):
-            n_grp_( n_grp ),
             n_ang_( n_ang ),
             nx_( nx ),
             ny_( ny ),
@@ -72,7 +71,6 @@ namespace mocc {
         }
 
     private:
-        int n_grp_;
         int n_ang_;
         int nx_;
         int ny_;

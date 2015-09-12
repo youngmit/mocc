@@ -1,14 +1,13 @@
 #include "lattice.hpp"
 
+#include <iostream>
 #include <map>
 #include <sstream>
 #include <string>
-#include <iostream>
 
-#include "pin.hpp"
 #include "error.hpp"
+#include "pin.hpp"
 #include "string_utils.hpp"
-#include "arrays.hpp"
 
 using std::stringstream;
 using std::string;

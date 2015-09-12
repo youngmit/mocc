@@ -28,7 +28,7 @@ namespace mocc {
             i2.i = 0x80000000 - i2.i;
         }
 
-        return abs(i1.i - i2.i) < 100; 
+        return std::abs(i1.i - i2.i) < 100; 
     }
 
     inline bool fp_equiv_ulp(double v1, double v2) {
@@ -44,7 +44,7 @@ namespace mocc {
             i2.i = 0x80000000 - i2.i;
         }
 
-        return abs(i1.i - i2.i) < 100; 
+        return std::abs(i1.i - i2.i) < 100; 
     }
 
     inline bool fp_equiv_rel(float_t v1, float_t v2) {
