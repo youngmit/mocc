@@ -9,6 +9,7 @@
 
 using std::cout;
 using std::endl;
+using std::cin;
 
 namespace mocc {
 
@@ -65,10 +66,10 @@ namespace mocc {
 
 
             // Figure out coarse mesh info.
-            nseg_pin_.push_back(nseg);
+            cm_nseg_.push_back(nseg);
             cm_cell_.push_back( mesh.coarse_cell(pmt.position) );
             int surf[2];
-            int nsurf = mesh.coarse_surf_point( p_prev, cm_cell_.back(), 
+            int nsurf = mesh.coarse_surf_point( *pi, cm_cell_.back(), 
                     surf );
             for( int i=0; i<nsurf; i++ ) {
                 cm_surf_.push_back(surf[i]);

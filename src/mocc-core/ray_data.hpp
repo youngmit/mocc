@@ -86,6 +86,19 @@ namespace mocc {
             return cm_cell_.size();
         }
 
+        const VecI& cm_cell() const {
+            return cm_cell_;
+        }
+
+        int cm_surf( int i ) const {
+            return cm_surf_[i];
+        }
+
+        const VecI& cm_nseg() const {
+            return cm_nseg_;
+        }
+
+
 
     private:
         // Length of ray segments
@@ -97,7 +110,7 @@ namespace mocc {
         // Vector containing the number of ray segments passing through each pin
         // mesh. This is needed in order to collect coarse mesh data during a
         // sweep.
-        VecI nseg_pin_;
+        VecI cm_nseg_;
 
         // The coarse mesh cell index corresponding to each pin traversed by the
         // ray.
