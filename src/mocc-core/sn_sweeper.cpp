@@ -20,7 +20,7 @@ namespace mocc {
         // maintainable way to do this; will revisit.
         xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
         n_reg_ = mesh.n_pin();
-        ng_ = xs_mesh_->n_grp();
+        ng_ = xs_mesh_->n_group();
         flux_.resize( n_reg_, ng_ );
         flux_old_.resize( n_reg_, ng_ );
         vol_.resize( n_reg_, 1 );

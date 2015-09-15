@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 
+#include "arrays.hpp"
+#include "eigen_interface.hpp"
 #include "global_config.hpp"
 
 namespace mocc {
@@ -12,33 +14,17 @@ namespace mocc {
      */
     struct CoarseData {
     public:
-        CoarseData( int nreg, int ngroup ):
-            current_( ngroup, VecF(nreg, 0.0) ),
-            flux_( ngroup, VecF(nreg, 0.0) ),
-            old_flux_( ngroup, VecF(nreg, 0.0) )
+        CoarseData( size_t nreg, size_t nsurf, size_t ngroup ):
+            current( nsurf, ngroup ),
+            flux( nreg, ngroup ),
+            old_flux( nreg, ngroup )
         {
             return;
         }
-        std::vector<VecF> get_current() {
-            return current_;
-        }
-        
-        VecF get_gurrent( int group ) {
-            return current_[group];
-        }
 
-        std::vector<VecF> get_flux() {
-            return flux_;
-        }
-
-        VecF get_flux( int group ) {
-            return flux_[group];
-        }
-
-    private:
-        std::vector<VecF> current_;
-        std::vector<VecF> flux_;
-        std::vector<VecF> old_flux_;
+        ArrayX current;
+        ArrayX flux;
+        ArrayX old_flux;
     };
 
     typedef std::shared_ptr<CoarseData> SP_CoarseData_t;

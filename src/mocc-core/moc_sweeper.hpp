@@ -4,13 +4,14 @@
 
 #include "pugixml.hpp"
 
-#include "eigen_interface.hpp"
-#include "transport_sweeper.hpp"
-#include "ray_data.hpp"
-#include "core_mesh.hpp"
 #include "angular_quadrature.hpp"
-#include "xs_mesh.hpp"
 #include "coarse_data.hpp"
+#include "core_mesh.hpp"
+#include "eigen_interface.hpp"
+#include "ray_data.hpp"
+#include "transport_sweeper.hpp"
+#include "xs_mesh.hpp"
+#include "xs_mesh_homogenized.hpp"
 
 namespace mocc {
     class MoCSweeper: public TransportSweeper {
@@ -40,6 +41,11 @@ namespace mocc {
         void output( H5File& file ) const;
 
         void homogenize( CoarseData &data ) const;
+
+        SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
+            return SP_XSMeshHomogenized_t( 
+                    new XSMeshHomogenized( mesh_ ) );
+        }
     private:
         const CoreMesh& mesh_;
 

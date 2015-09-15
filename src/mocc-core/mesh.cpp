@@ -54,7 +54,7 @@ namespace mocc {
         return;
     }
 
-    unsigned int Mesh::coarse_surf_point( Point2 p, int cell, int (&s)[2] ) 
+    int Mesh::coarse_surf_point( Point2 p, int cell, int (&s)[2] ) 
             const 
     {
         bool on_x = false;
@@ -176,6 +176,7 @@ namespace mocc {
 
         return 0;
     }
+
     /**
     * Given a vector containing two points (which should be on the boundary of
     * the mesh), insert points corresponding to intersections of the line formed

@@ -103,6 +103,10 @@ namespace mocc {
         }
 
         void homogenize( CoarseData &data ) const;
+
+        SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
+            return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
+        }
     private:
         // Update the boundary conditions 
         void update_boundary( int group );

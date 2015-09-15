@@ -29,6 +29,10 @@ namespace mocc {
         void homogenize( CoarseData &data ) const {
             
         }
+
+        SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
+            return sn_sweeper_.get_homogenized_xsmesh();
+        }
         
     private:
         SnSweeper_CDD sn_sweeper_;

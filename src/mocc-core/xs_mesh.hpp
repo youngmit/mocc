@@ -84,7 +84,7 @@ namespace mocc {
         XSMesh( const CoreMesh& mesh );
 
         // Return the number of energy groups
-        unsigned int n_grp() const {
+        size_t n_group() const {
             return ng_;
         }
         
@@ -97,7 +97,7 @@ namespace mocc {
             return regions_.cend(); 
         }
 
-        unsigned int size() const {
+        size_t size() const {
             return regions_.size();
         }
 
@@ -107,7 +107,7 @@ namespace mocc {
 
     protected:
         // list of mesh regions corresponding to each XSMesh region
-        unsigned int ng_;
+        size_t ng_;
 
         // Vector of xs mesh regions
         std::vector<XSMeshRegion> regions_;

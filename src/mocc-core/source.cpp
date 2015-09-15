@@ -6,7 +6,7 @@
 namespace mocc {
     Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayX& flux ):
         xs_mesh_(xs_mesh),
-        ng_(xs_mesh->n_grp()),
+        ng_(xs_mesh->n_group()),
         has_external_(false),
         source_1g_(nreg, 1),
         flux_(flux)

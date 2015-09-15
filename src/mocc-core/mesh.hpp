@@ -24,8 +24,8 @@ namespace mocc {
     class Mesh {
     public:
         Mesh() { };
-        Mesh( unsigned int n_reg, unsigned int n_xsreg, 
-                unsigned int nx, unsigned int ny, unsigned int nz,
+        Mesh( size_t n_reg, size_t n_xsreg, 
+                size_t nx, size_t ny, size_t nz,
                 VecF &hx, VecF &hy ):
             n_reg_( n_reg ),
             n_xsreg_( n_xsreg ),
@@ -52,31 +52,35 @@ namespace mocc {
             return;
         }
 
-        unsigned int n_reg() const {
+        size_t n_reg() const {
             return n_reg_;
         }
         
-        unsigned int nx() const {
+        size_t nx() const {
             return nx_;
         }
 
-        unsigned int ny() const {
+        size_t ny() const {
             return ny_;
         }
 
-        unsigned int nz() const {
+        size_t nz() const {
             return nz_;
         }
 
-        unsigned int n_pin() const {
+        size_t n_pin() const {
             return nx_*ny_*nz_;
+        }
+
+        size_t n_surf() const {
+            return (nx_+1)*ny_*nz_ + (ny_+1)*nx_*nz_ + (nz_+1)*nx_*ny_;
         }
         
         /**
          * Return the coarse cell index given a pin Position. Cell indexing is
          * natural in x, y z.
         */
-        unsigned int coarse_cell( Position pos ) const {
+        size_t coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
         }
 
@@ -89,7 +93,7 @@ namespace mocc {
         /**
          * Return the Position of a coarse mesh cell index.
         */
-        Position coarse_position( unsigned int cell ) const {
+        Position coarse_position( size_t cell ) const {
             return Position( 
                     cell % nx_, 
                     (cell % (nx_*ny_)) / nx_,
@@ -113,7 +117,7 @@ namespace mocc {
          * indexed. Move up to the next plane above you and repeat the process,
          * keeping in mind that the surfaces below you already have numbers.
         */
-        unsigned int coarse_surf( unsigned int i, Surface surf ) const {
+        size_t coarse_surf( size_t i, Surface surf ) const {
             return coarse_surf_[i*6+(int)surf];
         }
 
@@ -136,7 +140,7 @@ namespace mocc {
          * in the bottom-most plane; the code using the resulting indices is
          * therefore required to offset them to the appropriate plane.
         */
-        unsigned int coarse_surf_point( Point2 p, int cell, int (&s)[2] ) 
+        int coarse_surf_point( Point2 p, int cell, int (&s)[2] ) 
             const;
 
         /**
@@ -145,7 +149,7 @@ namespace mocc {
          *
          * \todo Handle the case where the neighbor doesnt exist.
          */
-        int coarse_neighbor( unsigned int cell, Surface surf) const {
+        int coarse_neighbor( size_t cell, Surface surf) const {
             switch( surf ) {
                 case Surface::NORTH:
                     return cell + nx_;
@@ -167,9 +171,9 @@ namespace mocc {
         /**
          * \brief Return the surface normal of the given surface.
          */
-        Normal surface_normal( unsigned int surface ) const {
+        Normal surface_normal( size_t surface ) const {
             // Number of surfaces per plane
-            unsigned int nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
+            size_t nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
 
             if( surface % nsurfz < nx_*ny_ ) {
                 return Normal::Z_NORM;
@@ -196,13 +200,13 @@ namespace mocc {
         void prepare_surfaces();
 
         /// Total number of FSRs in the entire geometry
-        unsigned int n_reg_;
+        size_t n_reg_;
         /// Total number of XS regions in the entire geometry
-        unsigned int n_xsreg_;
+        size_t n_xsreg_;
         // Numbers of pins/planes in each dimension
-        unsigned int nx_;
-        unsigned int ny_;
-        unsigned int nz_;
+        size_t nx_;
+        size_t ny_;
+        size_t nz_;
         
         /// Total core size in the x dimension
         float_t hx_;

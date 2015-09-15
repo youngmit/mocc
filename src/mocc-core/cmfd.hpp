@@ -2,15 +2,16 @@
 
 #include <memory>
 
-#include "global_config.hpp"
 #include "coarse_data.hpp"
 #include "eigen_interface.hpp"
+#include "global_config.hpp"
 #include "mesh.hpp"
+#include "xs_mesh_homogenized.hpp"
 
 namespace mocc {
     class CMFD {
     public:
-        CMFD( Mesh *mesh, int ng );
+        CMFD( Mesh *mesh, SP_XSMeshHomogenized_t xsmesh );
 
         void solve();
 
@@ -26,6 +27,7 @@ namespace mocc {
         }
     private:
         Mesh* mesh_;
+        SP_XSMeshHomogenized_t xsmesh_;
         CoarseData coarse_data_;
     };
     typedef std::unique_ptr<CMFD> UP_CMFD_t;

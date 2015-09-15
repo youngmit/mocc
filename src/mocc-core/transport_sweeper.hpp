@@ -3,12 +3,13 @@
 #include <memory>
 #include <vector>
 
+#include "coarse_data.hpp"
 #include "eigen_interface.hpp"
 #include "global_config.hpp"
-#include "xs_mesh.hpp"
-#include "source.hpp"
 #include "output_interface.hpp"
-#include "coarse_data.hpp"
+#include "source.hpp"
+#include "xs_mesh.hpp"
+#include "xs_mesh_homogenized.hpp"
 
 namespace mocc{
     class TransportSweeper: public HasOutput {
@@ -22,7 +23,7 @@ namespace mocc{
         TransportSweeper( const CoreMesh& mesh ):
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
-            ng_( xs_mesh_->n_grp() ),
+            ng_( xs_mesh_->n_group() ),
             flux_( n_reg_, ng_ ),
             flux_old_( n_reg_, ng_ ),
             vol_( n_reg_, 1 ),
@@ -32,22 +33,47 @@ namespace mocc{
         }
 
         virtual ~TransportSweeper(){ }
+
+        /**
+         * Perform a transport sweep of the passed group.
+         */
         virtual void sweep(int group) = 0;
+
+        /** 
+         * Initialize the solution variables (scalar, boundary flux, etc.) to
+         * reasonable initial guesses.
+         */
         virtual void initialize() = 0;
+
+        /**
+         * Produce pin-homogenized scalar flux for the specified group and store
+         * in the passed vector.
+         */
         virtual void get_pin_flux( int ig, VecF& flux ) const = 0;
 
-        /// Given the current estimate of a system eigenvalue, calculate the
-        /// group-independent fission source and store in the passed array
+        /**
+         * Given the current estimate of a system eigenvalue, calculate the
+         * group-independent fission source and store in the passed array
+         */
         virtual void calc_fission_source( float_t k, 
                 ArrayX& fission_source) const;
 
-        /// Construct and return a source object which conforms to the sweeper.
-        /// For now, default to the MoC Source type
+        /**
+         * Construct and return a source object which conforms to the sweeper.
+         * For now, default to the MoC Source type
+         */
         virtual UP_Source_t create_source() {
             UP_Source_t source( new Source( n_reg_, xs_mesh_.get(), 
                         this->cflux()) );
             return source;
         }
+
+        /**
+         * Return a shared pointer to a homogenized XS mesh. This is
+         * polymorphic, because some sweepers already operate on a homogenized
+         * mesh, and there is no need to generate a new one.
+         */
+        virtual SP_XSMeshHomogenized_t get_homogenized_xsmesh() = 0;
         
         unsigned int n_reg() const {
             return n_reg_;
