@@ -6,8 +6,6 @@ using std::cout;
 using std::endl;
 
 namespace mocc {
-    
-
     XSMeshHomogenized::XSMeshHomogenized( const CoreMesh& mesh ):
         mesh_( mesh )
     {
@@ -88,5 +86,9 @@ namespace mocc {
         ScatMat scat_mat(scat);
 
         return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
+    }
+
+    void update( const ArrayX &flux ){
+        return;
     }
 }
