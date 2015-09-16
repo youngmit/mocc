@@ -32,7 +32,7 @@ namespace mocc {
         
         ~MoCSweeper() { }
         
-        void sweep(int group);
+        virtual void sweep(int group);
 
         void initialize();
 
@@ -41,6 +41,13 @@ namespace mocc {
         void output( H5File& file ) const;
 
         void homogenize( CoarseData &data ) const;
+
+        /**
+         * Return a copy of the sweeper's angular quadrature.
+         */
+        AngularQuadrature get_ang_quad() const {
+            return ang_quad_;
+        }
 
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
             return SP_XSMeshHomogenized_t( 
@@ -59,10 +66,13 @@ namespace mocc {
         /// Perform a single "inner" iteration sweep
         void sweep1g( int group );
 
-        /// Perform a single "inner" iteration sweep, collecting currents at the
-        /// coarse mesh boundaries for CMFD. This version of the sweep is slower
-        /// than the stock version, and should only be used for the last sweep.
-        void sweep1g_current( int group );
+        /**
+         * Perform a single "inner" iteration sweep, collecting special
+         * information needed for coupling. At a bare minimum, this should
+         * compute the interpin surface currents for use with CMFD, though
+         * derived types of MoCSweeper may collect other data as needed.
+         */
+        virtual void sweep1g_final( int group );
 
         // Array of one group transport cross sections
         ArrayX xstr_;

@@ -2,6 +2,8 @@
 
 #include "pugixml.hpp"
 
+#include "angular_quadrature.hpp"
+#include "correction_data.hpp"
 #include "global_config.hpp"
 #include "moc_sweeper_2d3d.hpp"
 #include "sn_sweeper_cdd.hpp"
@@ -37,5 +39,7 @@ namespace mocc {
     private:
         SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
+        AngularQuadrature ang_quad_;
+        CorrectionData corrections_;
     };
 }

@@ -75,6 +75,8 @@ namespace mocc {
     }
 
     void MoCSweeper::sweep( int group ) {
+        assert(source_);
+
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
             float_t xstr = xsr.xsmactr()[group];
@@ -92,7 +94,7 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
-                this->sweep1g_current( group );
+                this->sweep1g_final( group );
             } else {
                 this->sweep1g( group );
             }

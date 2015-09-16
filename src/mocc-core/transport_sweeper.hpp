@@ -84,6 +84,11 @@ namespace mocc{
             return *(xs_mesh_.get());
         }
 
+        /// Return a shared pointer to the sweeper's XSMesh. Use with caution
+        SP_XSMesh_t get_xs_mesh() {
+            return xs_mesh_;
+        }
+
         /// Return a reference to the MG flux
         const ArrayX& flux() const {
             return flux_;

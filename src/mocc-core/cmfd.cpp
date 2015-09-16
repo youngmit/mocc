@@ -11,7 +11,9 @@ namespace mocc {
     
     
     void CMFD::solve() {
-
+        
+        // Construct the system matrix
+        
 
         return;
     }

@@ -78,7 +78,7 @@ void MoCSweeper::sweep1g( int group ) {
 }
 
 /// \todo actually implement current accumulation
-void MoCSweeper::sweep1g_current( int group ) {
+void MoCSweeper::sweep1g_final( int group ) {
     flux_1g_.fill(0.0);
 
     ArrayX e_tau(rays_.max_segments(), 1);

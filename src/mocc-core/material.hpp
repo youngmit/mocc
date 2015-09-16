@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <iostream>
 #include <vector>
 
@@ -11,6 +12,11 @@ namespace mocc{
     public:
         const int min_g;
         const int max_g;
+
+        /**
+         *\todo come up with a better way to do this. having to perform the
+         * group offset manually in the client code is scary and error-prone.
+         */
         float_t const * const from;
     
         ScatRow(int min, int max, float_t const * const from):
@@ -51,16 +57,23 @@ namespace mocc{
             return;
         }
 
-        // Return the total out-scattering cross section for group ig
+        /**
+         * Return the total out-scattering cross section for group ig
+         */
         float_t out( unsigned int ig ) const {
             return out_[ig]; 
         };
 
-        // Iterators to begin and end
+        /** 
+         * Return iterator to the first scattering row.
+         */
         std::vector<ScatRow>::const_iterator begin() const {
             return rows_.cbegin();
         }
 
+        /** 
+         * Return iterator past the last scattering row.
+         */
         std::vector<ScatRow>::const_iterator end() const {
             return rows_.cend();
         }
@@ -69,7 +82,7 @@ namespace mocc{
         friend std::ostream& operator<<(std::ostream& os, 
                 const ScatMat &scat_mat);
     private:
-        unsigned int ng_;
+        size_t ng_;
         VecF scat_;
         VecF out_;
         std::vector<ScatRow> rows_;
@@ -104,6 +117,14 @@ namespace mocc{
 
         const ScatMat& xssc() const {
             return xssc_;
+        }
+
+        /**
+         * Return whether the material is fissile.
+         */
+        bool is_fissile() const {
+            return std::any_of(xsnf_.begin(), xsnf_.end(), 
+                    [](float_t v){return v>0.0;});
         }
 
     private:
