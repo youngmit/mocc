@@ -13,12 +13,13 @@ namespace mocc {
         const MaterialLib& mat_lib = mesh.mat_lib();
 
         // Assume the same number of groups as the source material library
-        ng_ = mat_lib.n_grp();
+        ng_ = mat_lib.n_group();
 
         // Get energy group bounds
         eubounds_ = mat_lib.g_bounds();
 
         // loop over all of the pins in the CoreMesh and set up the XSMesh
+        // regions
         std::vector<VecI> fsrs(mat_lib.n_materials());
         int ireg = 0;
         for( auto &pini: mesh ) {

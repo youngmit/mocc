@@ -75,8 +75,15 @@ namespace mocc {
         /** 
         * Return the number of geometrically-unique planes
         */
-        int n_unique_planes() const {
+        size_t n_unique_planes() const {
             return first_unique_.size();
+        }
+
+        /**
+         * Return the number of groups in the material library.
+         */
+        size_t n_group() const {
+            return mat_lib_.n_group();
         }
 
         /**
@@ -225,7 +232,7 @@ namespace mocc {
         VecF hz_vec_;
 
         // Number of assemblies
-        unsigned int nasy_;
+        size_t nasy_;
 
         // List of geometrically-unique planes. Each entry in the list
         // corresponds to the unique plane index that is geometrically valid for

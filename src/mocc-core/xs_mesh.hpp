@@ -55,6 +55,10 @@ namespace mocc {
             return xsmacsc_;
         }
 
+        /**
+         * Return a vector containing ALL of the FSRs that are filled with this
+         * material.
+         */
         const VecI& reg() const {
             return reg_;
         }

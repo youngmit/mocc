@@ -41,7 +41,7 @@ namespace mocc {
         }
 
         // Return the number of groups spanned by the library
-        unsigned int n_grp() const {
+        unsigned int n_group() const {
             return n_grp_;
         }
 
