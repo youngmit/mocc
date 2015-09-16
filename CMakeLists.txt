@@ -24,12 +24,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(options "-std=c++11")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /XW /EHsc")
-else ()
-    message("wtf")
-endif()
+else()
     set(warnings "-Wall")
     set(options "-std=c++11")
-message("Compiler ID: '${CMAKE_CXX_COMPILER_ID}'")
+
+endif()
 
 message("Flags: ${warnings} ${options}")
 
