@@ -29,8 +29,8 @@ using namespace mocc;
  *
  * Class Names
  * -----------
- * All class names should start with a capitol letter, and the first letter of
- * each subsequent word should be captiolized. Where one class is a simple or
+ * All class names should start with a capital letter, and the first letter of
+ * each subsequent word should be captialized. Where one class is a simple or
  * subtle extension of another class or concept (e.g. MoCSweeper_2D3D), use an
  * underscore to separate the broad concept from the specialization. Most
  * extensions of classes should be written as normal (e.g. MoCSweeper as an
