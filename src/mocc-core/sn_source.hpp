@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "source.hpp"
 
 namespace mocc {
@@ -13,8 +15,10 @@ namespace mocc {
         {
             return;
         }
+        ~SnSource() {
+        }
 
-        void self_scatter( unsigned int ig, ArrayX& flux_1g, 
+        void self_scatter( size_t ig, ArrayX& flux_1g, 
                 ArrayX& qbar ) const 
         {
             for( auto &xsr: *xs_mesh_ ) {
@@ -23,7 +27,6 @@ namespace mocc {
                 for ( auto &ireg: xsr.reg() ) {
                     qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
                         RFPI;
-                    //qbar(ireg) = ( source_1g_(ireg) ) * RFPI;
                 }
             }
 

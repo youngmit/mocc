@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "eigen_interface.hpp"
 
 #include "xs_mesh.hpp"
@@ -9,20 +11,23 @@ namespace mocc {
     public:
         Source( int nreg, const XSMesh* xs_mesh, const ArrayX& flux );
 
+        virtual ~Source(){
+        }
+
         // Initialize the source with the external source, if it exists, then
         // add the groups contribution from the multi-group fission source
-        void fission( const ArrayX& fs, int ig );
+        virtual void fission( const ArrayX& fs, int ig );
 
         // Add the contribution from in-scattering from other groups. At some
         // point, ill play with upscattering iterations, but for now KISS.
-        void in_scatter( unsigned int ig );
+        virtual void in_scatter( size_t ig );
 
         // Add a contribution due to self-scatter within the current group,
         // returning the final source. This is usually called several times by a
         // sweeper in its "inner" iterations, and therefore does not mutate the
         // interal representation of the source, but instead returns the result
         // to the caller through the qbar argument.
-        virtual void self_scatter( unsigned int ig, ArrayX& flux_1g, 
+        virtual void self_scatter( size_t ig, ArrayX& flux_1g, 
                 ArrayX& qbar ) const;
 
         // Return a pointer to the source
@@ -31,7 +36,7 @@ namespace mocc {
         }
     protected:
         const XSMesh *xs_mesh_;
-        unsigned int ng_;
+        size_t ng_;
         // This is true if an external source has been specified. For now it's
         // initialized false.
         bool has_external_;

@@ -62,7 +62,7 @@ namespace mocc{
          * Construct and return a source object which conforms to the sweeper.
          * For now, default to the MoC Source type
          */
-        virtual UP_Source_t create_source() {
+        virtual UP_Source_t create_source() const {
             UP_Source_t source( new Source( n_reg_, xs_mesh_.get(), 
                         this->cflux()) );
             return source;
@@ -121,23 +121,24 @@ namespace mocc{
 
         /// Associate the sweeper with a source. This is usually done by
         /// something like the FixedSourceSolver.
-        void assign_source( Source* source) {
+        virtual void assign_source( const Source* source) {
             assert( source != nullptr );
             source_ = source;
         }
 
         /// Store the current flux as the old flux
-        void store_old_flux() {
+        virtual void store_old_flux() {
             flux_old_ = flux_;
             return;
         }
 
         /// Compute the total fission source based on the current state of the
         /// flux
-        float_t total_fission( bool old=false ) const;
+        virtual float_t total_fission( bool old=false ) const;
 
         /// Homogenize flux and group constants to a CoarseData object
-        virtual void homogenize( CoarseData &data ) const =0;
+        virtual void homogenize( CoarseData &data ) const = 0;
+
     protected:
         SP_XSMesh_t xs_mesh_;
 

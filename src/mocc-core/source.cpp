@@ -35,11 +35,11 @@ namespace mocc {
 
     // Compute the contribution to the source from inscattering from other
     // groups
-    void Source::in_scatter( unsigned int ig ) {
+    void Source::in_scatter( size_t ig ) {
         for( auto &xsr: *xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
-            unsigned int min_g = scat_row.min_g;
-            unsigned int igg = min_g;
+            size_t min_g = scat_row.min_g;
+            size_t igg = min_g;
             for( auto sc: scat_row ) {
                 // Dont add a contribution for self-scatter. TODO: it might be a
                 // good idea to remove self-scatter from the scattering matrix
@@ -59,7 +59,7 @@ namespace mocc {
 
     // This can get away with being const, since we are actually returning the
     // source to the caller. Nothing should get touched internally
-    void Source::self_scatter( unsigned int ig, ArrayX& flux_1g, 
+    void Source::self_scatter( size_t ig, ArrayX& flux_1g, 
             ArrayX& qbar ) const {
         for( auto &xsr: *xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);

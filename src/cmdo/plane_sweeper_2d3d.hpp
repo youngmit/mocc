@@ -7,6 +7,7 @@
 #include "global_config.hpp"
 #include "moc_sweeper_2d3d.hpp"
 #include "sn_sweeper_cdd.hpp"
+#include "source_2d3d.hpp"
 
 namespace mocc {
     /**
@@ -24,7 +25,6 @@ namespace mocc {
 
         void get_pin_flux( int ig, VecF &flux ) const;
 
-        void calc_fission_source( float_t k, ArrayX &fission_source ) const;
     
         void output( H5File& file ) const;
 
@@ -32,10 +32,43 @@ namespace mocc {
             
         }
 
+        /** 
+         * Associate the sweeper with a source. This has to do a little extra
+         * work, since the Sn sweeper needs its own source.
+         */
+        virtual void assign_source( const Source* source ) {
+            assert( source != nullptr );
+            source_ = source;
+            moc_sweeper_.assign_source( source );
+            /// \todo this static_cast is scary. Maybe think about relaxing the
+            /// ownership of the source by FSS and allow the TS to figure out the
+            /// types more explicitly...
+            const Source_2D3D * s = static_cast<const Source_2D3D*>(source);
+            sn_sweeper_.assign_source( s->get_sn_source() );
+
+        }
+
+        UP_Source_t create_source() const {
+            return UP_Source_t( new Source_2D3D( moc_sweeper_, sn_sweeper_ ) ); 
+        }
+
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
             return sn_sweeper_.get_homogenized_xsmesh();
         }
-        
+
+        void calc_fission_source( float_t k, ArrayX &fission_source ) const;
+
+        float_t total_fission( bool old ) const;
+
+        /**
+         * Defer to the MoC and Sn sweepers.
+         */
+        void store_old_flux() {
+            moc_sweeper_.store_old_flux();
+            sn_sweeper_.store_old_flux();
+            return;
+        }
+
     private:
         SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;

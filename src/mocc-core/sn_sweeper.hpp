@@ -96,7 +96,7 @@ namespace mocc {
 
         // Override the create_source() method to make an SnSource instead of
         // the regular
-        UP_Source_t create_source() {
+        UP_Source_t create_source() const {
             Source *s = new SnSource( n_reg_, xs_mesh_.get(), this->cflux());
             UP_Source_t source( s );
             return source;

@@ -1,5 +1,9 @@
 #include "plane_sweeper_2d3d.hpp"
 
+using std::cout;
+using std::endl;
+using std::cin;
+
 namespace mocc {
     PlaneSweeper_2D3D::PlaneSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
@@ -33,19 +37,27 @@ namespace mocc {
     }
 
     void PlaneSweeper_2D3D::get_pin_flux( int ig, VecF &flux ) const {
-        /// \todo implement. probably just call it on the Sn sweeper, since its
-        /// already homogenized.
+        sn_sweeper_.get_pin_flux( ig, flux );
     }
 
-    void PlaneSweeper_2D3D::calc_fission_source( float_t k, ArrayX
-            &fission_source ) const {
-        /// \todo implement. not sure what to do here (how should the
-        /// EigenSolver see this sweeper?) Nice to have a choice for once, at
-        /// least...
+    float_t PlaneSweeper_2D3D::total_fission( bool old ) const {
+        // using the MoC for now, but once things start to converge, might want
+        // to use Sn, since it should yield the same result at convergence and
+        // is cheaper to evaluate.
+        float_t tfis = moc_sweeper_.total_fission( old );
+        return tfis;
+    }
+
+    void PlaneSweeper_2D3D::calc_fission_source( float_t k, 
+            ArrayX &fission_source ) const {
+        moc_sweeper_.calc_fission_source( k, fission_source );
+        return;
     }
 
     void PlaneSweeper_2D3D::output( H5File& file ) const {
+        // We need to be a little careful about how we do output to avoid
+        // collisions in the HDF5 tree. For now, lets just output Sn data.
         sn_sweeper_.output( file );
-        moc_sweeper_.output( file );
+        //moc_sweeper_.output( file );
     }
 }
