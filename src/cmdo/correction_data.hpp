@@ -30,8 +30,8 @@ namespace mocc {
             nreg_( nreg ),
             nang_( nang ),
             ngroup_( ngroup ),
-            alpha_( nreg_*nang_*ngroup_*2, 0 ),
-            beta_( nreg_*nang_*ngroup_, 0 )
+            alpha_( nreg_*nang_*ngroup_*2, 0.5 ),
+            beta_( nreg_*nang_*ngroup_, 1.0 )
         {
             return;
         }
