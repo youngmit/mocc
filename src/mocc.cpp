@@ -220,6 +220,6 @@ int main(int argc, char* argv[]){
     catch(Exception e) {
         cout << "Error:" << endl;
         cout << e.what();
-        exit(EXIT_FAILURE);
+        return 1;
     }
 }

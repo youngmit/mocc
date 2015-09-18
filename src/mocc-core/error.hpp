@@ -13,14 +13,8 @@ namespace mocc {
     class Exception: public std::exception {
     public:
         Exception( const char* file, int line, const char* func, 
-                const char* msg ):
-            file_( file ),
-            line_( line ),
-            func_( func ),
-            message_( msg )
-        {
-            return;
-        }
+                const char* msg );
+
         const char* what() const noexcept;
 
     private:
@@ -28,6 +22,7 @@ namespace mocc {
         int line_;
         std::string func_;
         std::string message_;
+        std::string print_message_;
     };
 
     
