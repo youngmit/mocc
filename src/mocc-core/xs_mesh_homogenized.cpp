@@ -53,7 +53,7 @@ namespace mocc {
                 const ScatRow& scat_row = mat.xssc().to(ig);
                 int gmin = scat_row.min_g;
                 int gmax = scat_row.max_g;
-                for( int i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
+                for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
                     xstr[ig] += vols[ireg] * mat.xstr()[ig];
                     xsnf[ig] += vols[ireg] * mat.xsnf()[ig];
                     xskf[ig] += vols[ireg] * mat.xskf()[ig];
@@ -135,7 +135,7 @@ namespace mocc {
                 const ScatRow& scat_row = mat.xssc().to(ig);
                 int gmin = scat_row.min_g;
                 int gmax = scat_row.max_g;
-                for( int i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
+                for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
                     int ireg_global = first_reg + ireg;
                     float_t v = vols[ireg];
                     float_t flux_i = flux(ireg_global, ig);

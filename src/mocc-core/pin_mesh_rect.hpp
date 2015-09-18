@@ -18,7 +18,7 @@ namespace mocc {
 
         int find_reg( Point2 p ) const;
 
-        int n_fsrs( unsigned int xsreg ) const {
+        size_t n_fsrs( unsigned int xsreg ) const {
             return 1;
         }
     private:

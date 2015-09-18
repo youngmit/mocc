@@ -29,7 +29,7 @@ namespace mocc {
             for( auto &mat_id: mat_ids ) {
                 int mat_index = mat_lib.get_index_by_id(mat_id);
                 // post-increment pushes value, then increments
-                for( int reg=0; reg<pm.n_fsrs(ixsreg); reg++) {
+                for( size_t reg=0; reg<pm.n_fsrs(ixsreg); reg++) {
                     fsrs[mat_index].push_back(ireg++);
                 }
                 ixsreg++;

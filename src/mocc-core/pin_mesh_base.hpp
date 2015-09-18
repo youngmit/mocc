@@ -84,7 +84,7 @@ namespace mocc {
          * Return the number of flat source regions corresponding to an XS
          * region (indexed pin-locally).
         */
-        virtual int n_fsrs( unsigned int xsreg ) const =0;
+        virtual size_t n_fsrs( unsigned int xsreg ) const =0;
 
     protected:
     	unsigned int id_;
