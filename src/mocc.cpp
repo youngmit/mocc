@@ -194,24 +194,32 @@ int main(int argc, char* argv[]){
 		Error("No input file specified!");
 	}
 	
-	// Spin up the log file. For now, just use the name of the input file.
-	StartLogFile(argv[1]);
-	
-	LogFile << "Welcome to " << PROG_NAME << "!" << std::endl << std::endl;
+    try {
+	    // Spin up the log file. For now, just use the name of the input file.
+	    StartLogFile(argv[1]);
+	    
+	    LogFile << "Welcome to " << PROG_NAME << "!" << std::endl << std::endl;
 
-	// Parse the input file
-	InputProc inProc(argv[1]);
+	    // Parse the input file
+	    InputProc inProc(argv[1]);
 
-    // Get an SP to the core mesh
-    mesh = inProc.core_mesh();
+        // Get an SP to the core mesh
+        mesh = inProc.core_mesh();
 
-    // Pull a shared pointer to the top-level solver and make it go
-    solver = inProc.solver();
-    solver->solve();
+        // Pull a shared pointer to the top-level solver and make it go
+        solver = inProc.solver();
+        solver->solve();
 
-    // Output stuff
-    H5File outfile("out.h5");
-    solver->output( outfile );
+        // Output stuff
+        H5File outfile("out.h5");
+        solver->output( outfile );
 
-    StopLogFile();
+        StopLogFile();
+    }
+
+    catch(Exception e) {
+        cout << "Error:" << endl;
+        cout << e.what();
+        exit(EXIT_FAILURE);
+    }
 }
