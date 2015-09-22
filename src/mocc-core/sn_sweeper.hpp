@@ -107,7 +107,16 @@ namespace mocc {
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
             return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
         }
-    private:
+
+    protected:
+        // Mesh parameters
+        int nx_;
+        int ny_;
+        int nz_;
+        VecF hx_;
+        VecF hy_;
+        VecF hz_;
+
         // Update the boundary conditions 
         void update_boundary( int group );
 
@@ -120,15 +129,7 @@ namespace mocc {
         
         // Temporary storage for 1-group scalar flux
         ArrayX flux_1g_;
-
-        // Mesh parameters
-        int nx_;
-        int ny_;
-        int nz_;
-        VecF hx_;
-        VecF hy_;
-        VecF hz_;
-
+        
         // Temporary storage of the current-group transport cross section
         ArrayX xstr_;
 
@@ -141,6 +142,7 @@ namespace mocc {
         // Outgoing boundary condition. Only difined for one group
         SnSweeperBoundary bc_out_;
 
-        void sweep_std( int group );
+        virtual void sweep_std( int group );
+        virtual void sweep_final( int group );
     };
 }

@@ -88,7 +88,12 @@ namespace mocc {
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter( group, flux_1g_, q_ );
-            this->sweep_std( group );
+
+            if( inner == n_inner_-1 && coarse_data_ ) {
+                this->sweep_final( group );
+            } else {
+                this->sweep_std( group );
+            }
         }
         flux_.col( group ) = flux_1g_;
 
@@ -96,6 +101,89 @@ namespace mocc {
     }
 
     void SnSweeper::sweep_std( int group ) {
+        flux_1g_.fill(0.0);
+
+        float_t x_flux[ny_][nz_];
+        float_t y_flux[nx_][nz_];
+        float_t z_flux[nx_][ny_];
+
+        int iang = 0;
+        for( auto ang: ang_quad_ ) {
+            float_t wgt = ang.weight * HPI; 
+            float_t ox = ang.ox;
+            float_t oy = ang.oy;
+            float_t oz = ang.oz;
+
+            // Configure the loop direction. Could template this for speed at
+            // some point.
+            int sttx = 0;
+            int stpx = nx_;
+            int xdir = 1;
+            if( ox < 0.0 ) {
+                ox = -ox;
+                sttx = nx_-1;
+                stpx = -1;
+                xdir = -1;
+            }
+            
+            int stty = 0;
+            int stpy = ny_;
+            int ydir = 1;
+            if( oy < 0.0 ) {
+                oy = -oy;
+                stty = ny_-1;
+                stpy = -1;
+                ydir = -1;
+            }
+            
+            int sttz = 0;
+            int stpz = nz_;
+            int zdir = 1;
+            if( oz < 0.0 ) {
+                oz = -oz;
+                sttz = nz_-1;
+                stpz = -1;
+                zdir = -1;
+            }
+
+            // initialize upwind condition
+            bc_in_.get_face( group, iang, Normal::X_NORM, (float_t *)x_flux);
+            bc_in_.get_face( group, iang, Normal::Y_NORM, (float_t *)y_flux);
+            bc_in_.get_face( group, iang, Normal::Z_NORM, (float_t *)z_flux);
+
+            for( int iz=sttz; iz!=stpz; iz+=zdir ) {
+                float_t tz = 2.0*oz/hz_[iz];
+                for( int iy=stty; iy!=stpy; iy+=ydir ) {
+                    float_t ty = 2.0*oy/hy_[iy];
+                    for( int ix=sttx; ix!=stpx; ix+=xdir ) {
+                        // Gross. really need an Sn mesh abstraction
+                        int i = iz*nx_*ny_ + iy*nx_ + ix;
+                        float_t tx = 2.0*ox/hx_[ix];
+                        float_t psi = tx*x_flux[iy][iz] + ty*y_flux[ix][iz] + 
+                            tz*z_flux[ix][iy] + q_(i);
+                        psi /= tx + ty + tz + xstr_(i);
+
+                        flux_1g_(i) += psi*wgt;
+
+                        x_flux[iy][iz] = 2.0*psi - x_flux[iy][iz];
+                        y_flux[ix][iz] = 2.0*psi - y_flux[ix][iz];
+                        z_flux[ix][iy] = 2.0*psi - z_flux[ix][iy];
+                    }
+                }
+            }
+
+            // store the downwind boundary condition
+            bc_out_.set_face(0, iang, Normal::X_NORM, (float_t*)x_flux);
+            bc_out_.set_face(0, iang, Normal::Y_NORM, (float_t*)y_flux);
+            bc_out_.set_face(0, iang, Normal::Z_NORM, (float_t*)z_flux);
+            iang++;
+        }
+        // Update the boundary condition
+        this->update_boundary( group );
+    }
+
+    /// \todo implement current calculations here
+    void SnSweeper::sweep_final( int group ) {
         flux_1g_.fill(0.0);
 
         float_t x_flux[ny_][nz_];
