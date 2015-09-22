@@ -106,7 +106,7 @@ namespace mocc{
 
         /// Assign a CoarseData object to the sweeper, allowing it to store
         /// currents and such.
-        void set_coarse_data( CoarseData *cd ) {
+        virtual void set_coarse_data( CoarseData *cd ) {
             coarse_data_ = cd;
         }
 
