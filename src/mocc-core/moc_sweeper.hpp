@@ -53,7 +53,7 @@ namespace mocc {
             return SP_XSMeshHomogenized_t( 
                     new XSMeshHomogenized( mesh_ ) );
         }
-    private:
+    protected:
         const CoreMesh& mesh_;
 
         AngularQuadrature ang_quad_;
