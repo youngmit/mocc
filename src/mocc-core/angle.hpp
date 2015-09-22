@@ -12,16 +12,21 @@ namespace mocc {
     }
 
     struct Angle {
-        // x- y- z- components of the angle
+        /// x-component of the angle
         float_t ox;
+        /// y-component of the angle
         float_t oy;
+        /// z-component of the angle
         float_t oz;
-        // azimuthal angle
+        /// azimuthal angle
         float_t alpha;
-        // polar cosine
+        /// polar cosine
         float_t theta;
-        // quadrature weight
+        /// quadrature weight
         float_t weight;
+        /// Reciprocal of the sine of the polar angle. This is useful for
+        /// computing true ray segment length from 2D projected length.
+        float_t rsintheta;
 
         // Construct using alpha/theta
         Angle( float_t alpha, float_t theta, float_t weight ):
@@ -40,6 +45,7 @@ namespace mocc {
         {
             theta = acos(oz);
             alpha = acos(ox/sin(theta));
+            rsintheta = 1.0/sin(theta);
         }
         
         // Provide stream insertion support

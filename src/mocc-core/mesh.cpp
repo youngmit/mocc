@@ -1,8 +1,5 @@
 #include "mesh.hpp"
 
-
-using std::cout;
-using std::endl;
 namespace mocc {
     void Mesh::prepare_surfaces() {
         // number of x-normal surfaces in each y row

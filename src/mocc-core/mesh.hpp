@@ -2,11 +2,10 @@
 
 #include <iostream>
 #include <memory>
-#include <algorithm>
 
-#include "global_config.hpp"
 #include "constants.hpp"
 #include "geom.hpp"
+#include "global_config.hpp"
 
 namespace mocc {
     /**
