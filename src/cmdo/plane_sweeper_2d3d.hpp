@@ -69,6 +69,12 @@ namespace mocc {
             return;
         }
 
+        void set_coarse_data( CoarseData *cd ) {
+            coarse_data_ = cd;
+            moc_sweeper_.set_coarse_data( cd );
+            sn_sweeper_.set_coarse_data( cd );
+        }
+
     private:
         SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;

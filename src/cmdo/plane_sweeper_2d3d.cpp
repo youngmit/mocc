@@ -1,5 +1,7 @@
 #include "plane_sweeper_2d3d.hpp"
 
+#include "error.hpp"
+
 using std::cout;
 using std::endl;
 using std::cin;
@@ -20,12 +22,19 @@ namespace mocc {
                 ng_ );
 
         sn_sweeper_.set_corrections( &corrections_ );
-        moc_sweeper_.set_corrections( &corrections_ );
+        const XSMeshHomogenized* sn_xs_mesh = 
+            sn_sweeper_.get_homogenized_xsmesh().get();
+        moc_sweeper_.set_coupling( &corrections_, sn_xs_mesh );
+
+        coarse_data_ = nullptr;
         
         return;
     }
 
     void PlaneSweeper_2D3D::sweep( int group ) {
+        if (!coarse_data_) {
+            throw EXCEPT("CMFD must be enabled to do 2D3D.");
+        }
         moc_sweeper_.sweep( group );
         sn_sweeper_.sweep( group );
         

@@ -16,6 +16,9 @@ namespace mocc {
         }
         
     private:
+        void sweep_std( int group );
+        void sweep_final( int group );
+
         const CorrectionData *corrections_;
     };
 }
