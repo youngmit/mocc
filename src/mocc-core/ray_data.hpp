@@ -36,10 +36,10 @@ namespace mocc {
     class Ray {
     public:
         /** \brief Construct a ray from two starting points. */
-        Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
+        Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iz, 
                 const CoreMesh &mesh );
 
-        unsigned int nseg() const {
+        size_t nseg() const {
             return nseg_;
         }
 
@@ -73,16 +73,21 @@ namespace mocc {
         }
 
         // Only return a reference to a single segment length
-        unsigned int seg_index( int iseg ) const {
+        size_t seg_index( int iseg ) const {
             return seg_index_[iseg];
         }
 
         // Return the bc index for the start/stop of the ray
-        unsigned int bc( int dir ) const {
+        size_t bc( int dir ) const {
             return bc_[dir];
         }
 
-        unsigned int ncseg() const {
+        /**
+         * Return the number of coarse mesh regions spanned by the ray. Corner
+         * crossings technically count as two, since the current must flow
+         * through adjacent cells.
+         */
+        size_t ncseg() const {
             return cm_cell_.size();
         }
 
@@ -121,10 +126,10 @@ namespace mocc {
         VecI cm_surf_;
 
         // Number of segments in the ray
-        unsigned int nseg_;
+        size_t nseg_;
 
         // Boundary condition index for the forward and backward directions
-        unsigned int bc_[2];
+        size_t bc_[2];
     };
 
     /**
@@ -172,19 +177,19 @@ namespace mocc {
         }
 
         /// Return the number of rays for the given angle index
-        unsigned int n_rays( unsigned int iang ) const {
+        size_t n_rays( size_t iang ) const {
             return Nrays_[iang];
         }
 
         /// Return the number of rays impingent on the y-normal faces of the
         /// domain for the given angle
-        unsigned int nx( unsigned int iang ) const {
+        size_t nx( size_t iang ) const {
             return Nx_[iang];
         }
 
         /// Return the number of rays impingent on the x-normal faces of the
         /// domain for the given angle
-        unsigned int ny( unsigned int iang ) const {
+        size_t ny( size_t iang ) const {
             return Ny_[iang];
         }
 
@@ -196,7 +201,7 @@ namespace mocc {
         /// Return the maximum number of segmens spanned by any Ray in the
         /// collection. This is useful for defining the size of the scratch
         /// space for MoC.
-        unsigned int max_segments() const {
+        size_t max_segments() const {
             return max_seg_;
         }
     
@@ -224,10 +229,10 @@ namespace mocc {
 
         // Number of planes that we have ray data for. This is copied from
         // n_unique_planes() on the CoreMesh used to initialize the ray data.
-        unsigned int n_planes_;
+        size_t n_planes_;
 
         // Maximum number of ray segments in a single ray
-        unsigned int max_seg_;
+        size_t max_seg_;
         
         // Perform a volume-correction of the ray segment lengths. This can be
         // done in two ways: using an angular integral of the ray volumes, or

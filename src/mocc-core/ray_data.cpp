@@ -29,7 +29,7 @@ namespace mocc {
      * with the pin cell edges (using CoreMesh::trace()), then the internal
      * surface crossings for each pin (using PinMesh::trace()).
      */
-    Ray::Ray( Point2 p1, Point2 p2, unsigned int bc1, unsigned int bc2, int iz, 
+    Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iz, 
             const CoreMesh &mesh ) {
         std::vector<Point2> ps;
 
@@ -179,7 +179,7 @@ cout << ang_quad_ << endl;
         Box core_box = Box(Point2(0.0, 0.0), Point2(hx, hy));
         max_seg_ = 0;
         // loop over the planes of unique geometry
-        for ( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
+        for ( size_t iplane=0; iplane<n_planes_; iplane++ ) {
             // generate rays for each angle in octants 1 and 2
             int iang = 0;
             std::vector< std::vector<Ray> > angle_rays;
@@ -266,7 +266,7 @@ cout << ang_quad_ << endl;
                         [](int i){return i==0;}) ) {
                     Warn("No rays passed through at least one FSR. Try finer "
                             "ray spacing or larger regions.");
-                    for( unsigned int ifsr=0; ifsr<nrayfsr.size(); ifsr++) {
+                    for( size_t ifsr=0; ifsr<nrayfsr.size(); ifsr++) {
                         cout << ifsr << " " << nrayfsr[ifsr] << endl;
                     }
                 }
@@ -288,7 +288,7 @@ cout << ang_quad_ << endl;
     {
         switch(type) {
             case FLAT:
-                for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
+                for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
                     for ( auto ang = ang_quad_.octant(1); 
@@ -299,18 +299,18 @@ cout << ang_quad_ << endl;
                         float_t space = spacing_[iang];
                         
                         for( auto &ray: rays ) {
-                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
                             {
-                                unsigned int ireg = ray.seg_index(iseg);
+                                size_t ireg = ray.seg_index(iseg);
                                 fsr_vol[ireg] += ray.seg_len(iseg) * space;
                             }
                         }
 
                         // Correct
                         for( auto &ray: rays ) {
-                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
                             {
-                                unsigned int ireg = ray.seg_index(iseg);
+                                size_t ireg = ray.seg_index(iseg);
                                 ray.seg_len(iseg) = ray.seg_len(iseg) *
                                     true_vol[ireg]/fsr_vol[ireg];
                             }
@@ -321,7 +321,7 @@ cout << ang_quad_ << endl;
 
                 break;
             case ANGLE:
-                for( unsigned int iplane=0; iplane<n_planes_; iplane++ ) {
+                for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                     int iang=0;
@@ -333,9 +333,9 @@ cout << ang_quad_ << endl;
                         float_t wgt = ang->weight*0.5;
 
                         for( auto &ray: rays ) {
-                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
                             { 
-                                unsigned int ireg = ray.seg_index(iseg);
+                                size_t ireg = ray.seg_index(iseg);
                                 fsr_vol[ireg] += ray.seg_len(iseg) * space * 
                                     wgt;
                             }
@@ -343,7 +343,7 @@ cout << ang_quad_ << endl;
                         ++iang;
                     }
                     // Convert fsr_vol into a correction factor
-                    for( unsigned int ireg=0; ireg<mesh.plane(iplane).n_reg();
+                    for( size_t ireg=0; ireg<mesh.plane(iplane).n_reg();
                             ireg++ ) 
                     {
                         fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
@@ -355,9 +355,9 @@ cout << ang_quad_ << endl;
                          ++ang ) {
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         for( auto &ray: rays ){
-                            for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
                             { 
-                                unsigned int ireg = ray.seg_index(iseg);
+                                size_t ireg = ray.seg_index(iseg);
                                 ray.seg_len(iseg) = ray.seg_len(iseg) * 
                                     fsr_vol[ireg];
                             }
