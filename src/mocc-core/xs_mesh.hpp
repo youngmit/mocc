@@ -20,6 +20,7 @@
 
 namespace mocc {
     // For now im using the lazy implementation of the xsmesh region class.
+    // Using a structure of arrays would be more useful.
     class XSMeshRegion {
     friend class XSMesh;
     public:
@@ -99,6 +100,10 @@ namespace mocc {
 
         const std::vector<XSMeshRegion>::const_iterator end() const {
             return regions_.cend(); 
+        }
+
+        const XSMeshRegion& operator[]( size_t i ) const {
+            return regions_[i];
         }
 
         size_t size() const {
