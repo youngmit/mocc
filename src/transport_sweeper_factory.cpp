@@ -5,7 +5,7 @@
 #include "error.hpp"
 #include "mesh.hpp"
 #include "moc_sweeper.hpp"
-#include "sn_sweeper.hpp"
+#include "sn_sweeper_factory.hpp"
 #include "plane_sweeper_2d3d.hpp"
 
 namespace mocc {
@@ -17,7 +17,8 @@ namespace mocc {
             UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh ) );
             return ts;
         } else if ( type == "sn" ) {
-            UP_Sweeper_t ts( new SnSweeper( input.child("sweeper"), mesh ) );
+            auto snts = SnSweeperFactory( input.child("sweeper"), mesh );
+            UP_Sweeper_t ts( std::move(snts) );
             return ts;
         } else if ( type == "2d3d" ) {
             UP_Sweeper_t ts( new PlaneSweeper_2D3D( input.child("sweeper"),

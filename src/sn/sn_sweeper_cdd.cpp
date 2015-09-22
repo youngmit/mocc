@@ -10,13 +10,26 @@ namespace mocc {
         SnSweeper( input, mesh ),
         corrections_( nullptr )
     {
+        if( input.child("data") ) {
+            if( input.child("data").attribute("type") ) {
+                std::string data_type = 
+                    input.child("data").attribute("type").value();
+                if( data_type == "default" ) {
+                    cout << "Generating default values for correction factors."
+                        << endl;
+                    my_corrections_.reset( new CorrectionData( n_reg_, 
+                                ang_quad_.ndir(), ng_) );
+                    corrections_ = my_corrections_.get();
+                }
+            }
+        }
 
     }
 
     // Perform a single sweep as fast as possible with the CDD equations. Don't
     // collect currents or anything.
     void SnSweeper_CDD::sweep_std( int group ) {
-cout << "cdd sweeper" << endl;
+        assert( corrections_ );
         flux_1g_.fill(0.0);
 
         float_t x_flux[ny_][nz_];

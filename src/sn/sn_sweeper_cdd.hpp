@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "pugixml.hpp"
 
 #include "core_mesh.hpp"
@@ -20,5 +22,7 @@ namespace mocc {
         void sweep_final( int group );
 
         const CorrectionData *corrections_;
+
+        std::unique_ptr<const CorrectionData> my_corrections_;
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "constants.hpp"
 #include "global_config.hpp"
 
@@ -63,4 +65,6 @@ namespace mocc {
         VecF alpha_;
         VecF beta_;
     };
+
+    typedef std::unique_ptr<CorrectionData> UP_CorrectionData_t;
 }

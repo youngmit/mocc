@@ -1,5 +1,7 @@
 #include "plane_sweeper_2d3d.hpp"
 
+#include <cmath>
+
 #include "error.hpp"
 
 using std::cout;
@@ -7,6 +9,7 @@ using std::endl;
 using std::cin;
 
 namespace mocc {
+    /// \todo make sure to check the angular quadratures for conformance
     PlaneSweeper_2D3D::PlaneSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
         sn_sweeper_(input.child("sn_sweeper"), mesh),
@@ -37,6 +40,20 @@ namespace mocc {
         }
         moc_sweeper_.sweep( group );
         sn_sweeper_.sweep( group );
+
+        // Compute Sn-MoC residual
+        VecF moc_flux;
+        moc_sweeper_.get_pin_flux( group, moc_flux );
+cout << "representative moc flux: " << moc_flux[0] << endl;
+        float_t residual = 0.0;
+        for( size_t i=0; i<moc_flux.size(); i++ ) {
+            cout << moc_flux[i] << " " << sn_sweeper_.flux( group, i ) << endl;
+            residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
+                        (moc_flux[i] - sn_sweeper_.flux( group, i ));
+        }
+        residual = sqrt(residual);
+        cout << "MoC/Sn residual: " << residual << endl;
+        cin.ignore();
         
     }
 

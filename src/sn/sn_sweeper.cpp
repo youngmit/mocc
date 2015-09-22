@@ -6,6 +6,7 @@
 
 using std::cout;
 using std::endl;
+using std::cin;
 
 namespace mocc {
     SnSweeper::SnSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
@@ -96,6 +97,8 @@ namespace mocc {
             }
         }
         flux_.col( group ) = flux_1g_;
+cout << "sn flux: " << flux_1g_(0) << endl;
+cin.ignore();
 
         return;
     }
@@ -114,8 +117,8 @@ namespace mocc {
             float_t oy = ang.oy;
             float_t oz = ang.oz;
 
-            // Configure the loop direction. Could template this for speed at
-            // some point.
+            // Configure the loop direction. Could template the below for speed
+            // at some point.
             int sttx = 0;
             int stpx = nx_;
             int xdir = 1;

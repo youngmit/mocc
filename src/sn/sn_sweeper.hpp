@@ -145,4 +145,6 @@ namespace mocc {
         virtual void sweep_std( int group );
         virtual void sweep_final( int group );
     };
+
+    typedef std::unique_ptr<SnSweeper> UP_SnSweeper_t;
 }
