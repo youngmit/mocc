@@ -122,7 +122,7 @@ namespace mocc {
 
         /**
          * \brief Return the number of surfaces coincident with the passed
-         * Point2.
+         * Point2 and determine the index(s) of the surface(s) crossed.
          *
          * \param[in] p the Point2 to check for surface.
          * \param[in] cell the index of a cell that the point should be

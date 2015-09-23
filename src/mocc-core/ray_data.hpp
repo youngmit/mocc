@@ -62,22 +62,30 @@ namespace mocc {
             return seg_len_[iseg];
         }
 
-        // Return a const segment length
+        /**
+         * Return a const segment length
+         */
         float_t seg_len( int iseg ) const {
             return seg_len_[iseg];
         }
 
-        // Return a reference to the whole vector of segment indices
+        /**
+         * Return a reference to the whole vector of segment indices
+         */
         const VecI& seg_index() const {
             return seg_index_;
         }
 
-        // Only return a reference to a single segment length
+        /**
+         * Only return a reference to a single segment length
+         */
         size_t seg_index( int iseg ) const {
             return seg_index_[iseg];
         }
 
-        // Return the bc index for the start/stop of the ray
+        /**
+         * Return the bc index for the start/stop of the ray
+         */
         size_t bc( int dir ) const {
             return bc_[dir];
         }
@@ -91,14 +99,28 @@ namespace mocc {
             return cm_cell_.size();
         }
 
+        /** 
+         * Return a reference to a vector of coarse mesh cells traversed by the
+         * ray.
+         *
+         * \todo this needs work. Right now it doesnt conform to the surface
+         * crossings
+         */
         const VecI& cm_cell() const {
+            assert( false );
             return cm_cell_;
         }
 
+        /** 
+         * Return the indexed coarse mesh surface crossed by the ray.
+         */
         int cm_surf( int i ) const {
             return cm_surf_[i];
         }
 
+        /** 
+         * Return the number of segments on the ray 
+         */
         const VecI& cm_nseg() const {
             return cm_nseg_;
         }

@@ -45,10 +45,8 @@ namespace mocc {
         int cell = mesh.coarse_cell_point(pin_p);
         int surf[2];
         int nsurf = mesh.coarse_surf_point( ps[0], cell, surf );
-        if( nsurf == 1 ) {
-            cm_surf_.push_back(surf[0]);
-        } else {
-            throw EXCEPT("Boundary point should be unique.");
+        for( int i=0; i<nsurf; i++ ) {
+            cm_surf_.push_back(surf[i]);
         }
 
         // Loop over them and trace individual pin meshes.

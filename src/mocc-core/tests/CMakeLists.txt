@@ -17,3 +17,7 @@ add_test(testMaterial testMaterial)
 add_executable(testMesh test_mesh.cpp)
 target_link_libraries(testMesh mocc-core pugixml)
 add_test(testMesh testMesh)
+
+add_executable(testRay test_ray.cpp)
+target_link_libraries(testRay mocc-core pugixml)
+add_test(testRay testRay)

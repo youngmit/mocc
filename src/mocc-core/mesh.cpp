@@ -140,6 +140,24 @@ namespace mocc {
             assert(corner_x != Surface::INVALID);
             assert(corner_y != Surface::INVALID);
 
+            Surface corner = Surface::INVALID;
+            if( corner_x == Surface::WEST ) {
+                if( corner_y == Surface::NORTH ) {
+                    corner = Surface::NW;
+                } else {
+                    corner = Surface::SW;
+                }
+            } else {
+                if( corner_y == Surface::NORTH ) {
+                    corner = Surface::NE;
+                } else {
+                    corner = Surface::SE;
+                }
+            }
+
+
+        
+
             /// So to break down the rules
             /// - on the domain boundary, only return the surface normal to the
             /// boundary. This may need to be re-addressed when we start
@@ -147,27 +165,67 @@ namespace mocc {
             /// - on the interior, go x normal first, then y normal.
             
             // Handle the boundary case
-            if( (ix == 0) && (corner_x == Surface::WEST) ) {
-                s[0] = this->coarse_surf( cell, Surface::WEST );
-                return 1;
+            if( ix == 0 ) {
+                int neighbor = this->coarse_neighbor( cell, corner_y );
+                switch( corner ) {
+                    case Surface::SW:
+                        s[0] = this->coarse_surf( neighbor, corner_x );
+                        s[1] = this->coarse_surf( cell, corner_y );
+                        return 2;
+                    case Surface::NW:
+                        s[0] = this->coarse_surf( cell, corner_x );
+                        return 1;
+                    default:
+                        assert( false );
+                }
             }
-            if( (ix == nx_) && (corner_x == Surface::EAST) ) {
-                s[0] = this->coarse_surf( cell, Surface::EAST );
-                return 1;
+            if( ix == nx_ ) {
+                int neighbor = this->coarse_neighbor( cell, corner_y );
+                switch( corner ) {
+                    case Surface::SE:
+                        s[0] = this->coarse_surf( neighbor, corner_x );
+                        s[1] = this->coarse_surf( cell, corner_y );
+                        return 2;
+                    case Surface::NE:
+                        s[0] = this->coarse_surf( cell, corner_x );
+                        return 1;
+                    default:
+                        assert( false );
+                }
             }
-            if( (iy == 0) && (corner_y == Surface::SOUTH) ) {
-                s[0] = this->coarse_surf( cell, Surface::SOUTH );
-                return 1;
+            if( iy == 0 ) {
+                int neighbor = this->coarse_neighbor( cell, corner_x );
+                switch( corner ) {
+                    case Surface::SW:
+                        s[0] = this->coarse_surf( neighbor, corner_y );
+                        s[1] = this->coarse_surf( cell, corner_x );
+                        return 2;
+                    case Surface::SE:
+                        s[0] = this->coarse_surf( cell, corner_y );
+                        return 1;
+                    default:
+                        assert( false );
+                }
             }
-            if( (iy== ny_) && (corner_y == Surface::NORTH) ) {
-                s[0] = this->coarse_surf( cell, Surface::NORTH );
-                return 1;
+            if( iy == ny_ ) {
+                int neighbor = this->coarse_neighbor( cell, Surface::EAST );
+                switch( corner ) {
+                    case Surface::NE:
+                        s[0] = this->coarse_surf( neighbor, Surface::NORTH );
+                        s[1] = this->coarse_surf( cell, Surface::EAST );
+                        return 2;
+                    case Surface::NW:
+                        s[0] = this->coarse_surf( cell, Surface::NORTH );
+                        return 1;
+                    default:
+                        assert( false );
+                }
             }
 
             // So we aren't on a boundary. Handle the interior corner case
             s[0] = this->coarse_surf( cell, corner_x );
-            int neighbor = this->coarse_neighbor( cell, corner_x );
-            s[1] = this->coarse_surf( neighbor, corner_y );
+            int neigh = this->coarse_neighbor( cell, corner_x );
+            s[1] = this->coarse_surf( neigh, corner_y );
             return 2;
         }
 
