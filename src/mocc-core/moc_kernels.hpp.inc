@@ -156,7 +156,7 @@ void MoCSweeper::sweep1g_final( int group ) {
 
                 // Stash currents
                 int iseg = 0;
-                for( size_t icseg=0; icseg<ray.ncseg(); icseg++ ) {
+                for( size_t icseg=0; icseg<=ray.ncseg(); icseg++ ) {
                     int isurf = ray.cm_surf(icseg);
                     Normal norm = mesh_.surface_normal( isurf );
 
