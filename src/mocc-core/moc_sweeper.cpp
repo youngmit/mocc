@@ -7,6 +7,8 @@ using std::endl;
 using std::cout;
 using std::cin;
 
+mocc::VecF temp;
+
 namespace mocc {
     
     MoCSweeper::MoCSweeper( const pugi::xml_node& input, 

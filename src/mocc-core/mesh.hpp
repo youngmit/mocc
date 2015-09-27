@@ -9,6 +9,25 @@
 
 namespace mocc {
     /**
+     * \page coarseraypage Coarse Ray Tracing
+     * Each ray crossing a mesh corner must deposit its information
+     * on one exiting face of the current cell and one entering surface of
+     * the diagonal neighbor. Consistency must be maintained between
+     * coincident rays of different angle, otherwise surface quantities may
+     * end up with non-sensical values. A good example is when current
+     * should be zero in certain symmetric situations. If the corner
+     * crossings are not handled properly, non-zero current could be
+     * calculated because a ray that crosses one face in one direction is
+     * not being cancelled out by its sibling ray in the direction reflected
+     * across that face (for instance if the reflected ray passes instead
+     * through the neighboring coarse mesh surface). This would impart an
+     * artificially non-zero current on both of those faces.
+
+     * \todo include discussion of coarse ray trace peculiarities and
+     * conventions.
+    */
+
+    /**
      * This defines a base Mesh type, which provides some basic information. For
      * now, the mesh is restricted to a structured grid of cells, which in the
      * case of the derived CoreMesh class are filled with Pin objects, but in
@@ -19,7 +38,9 @@ namespace mocc {
      *
      * \todo the unit test for Mesh is not really done. Its got some stuff in
      * there for my testing, but it needs some serious work.
-    */
+     *
+     */
+    
     class Mesh {
     public:
         Mesh() { };
@@ -121,6 +142,27 @@ namespace mocc {
         }
 
         /**
+         * Determine the surface of a coarse cell that a point is on. If the
+         * point is on a corner, things get weird. Read on...
+         *
+         * This is useful for performing the coarse ray trace, and has to
+         * consider a number of concerns related to current and surface flux
+         * calculations, mostly when a point is in the vicinity of a mesh
+         * corner. In such a case, potentially two surfaces are crossed and both
+         * must be returned. The conventions for handling this are described
+         * in \ref coarseraypage.
+         */
+        size_t coarse_norm_point( Point2 p, int octant, Surface (&s)[2] ) const;
+
+        /**
+         * Return the cell index that a point on the boundary of the mesh should
+         * be considered within.
+         *
+         * This follows the conventions described in
+         */
+        size_t coarse_boundary_cell( Point2 p, int octant ) const;
+
+        /**
          * \brief Return the number of surfaces coincident with the passed
          * Point2 and determine the index(s) of the surface(s) crossed.
          *
@@ -186,7 +228,9 @@ namespace mocc {
         /** 
          * \brief Trace a ray through the coarse surfaces.
         */
-        void trace( std::vector<Point2> &p ) const; 
+        void trace( std::vector<Point2> &p, size_t &start_fw, size_t &start_bw,
+                std::vector<Surface> &surfs_fw, std::vector<Surface> &surfs_bw)
+                const; 
 
     protected:
         /**

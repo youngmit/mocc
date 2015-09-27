@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #define PI 3.1415926535897932
 #define TWOPI 2.0*PI
 #define HPI 0.5*PI
@@ -48,4 +50,7 @@ namespace mocc {
         FW,
         BW
     };
+
+    std::ostream& operator<<(std::ostream& os, const Surface s );
+    
 }

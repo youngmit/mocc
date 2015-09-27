@@ -36,8 +36,6 @@ namespace mocc {
         float_t y_flux[nx_][nz_];
         float_t z_flux[nx_][ny_];
 
-        float_t az = 0.5;
-
         int iang = 0;
         for( auto ang: ang_quad_ ) {
             float_t wgt = ang.weight * HPI; 
@@ -89,6 +87,7 @@ namespace mocc {
                     for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                         // Gross. really need an Sn mesh abstraction
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
+                        float_t tx = ox/hx_[ix];
 
                         float_t psi_lx = x_flux[iy][iz];
                         float_t psi_ly = y_flux[ix][iz];
@@ -103,11 +102,9 @@ namespace mocc {
                         float_t gx = ax*b;
                         float_t gy = ay*b;
 
-                        float_t tx = ox/hx_[ix];
-
-                        float_t psi = ( q_(i) + 
-                            2.0*(tx*psi_lx + ty*psi_ly + tz*psi_lz )) / 
-                            ( ox/gx + oy/gy + oz/az + xstr_(i) );
+                        float_t psi = q_(i) + 
+                            2.0*(tx*psi_lx + ty*psi_ly + tz*psi_lz );
+                        psi /= tx/gx + ty/gy + 2.0*tz + xstr_(i);
 
                         flux_1g_(i) += psi*wgt;
 
@@ -126,7 +123,6 @@ namespace mocc {
         }
         // Update the boundary condition
         this->update_boundary( group );
-
     }
 
     /// \todo implement current sweep

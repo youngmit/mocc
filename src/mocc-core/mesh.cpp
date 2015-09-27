@@ -1,5 +1,17 @@
 #include "mesh.hpp"
 
+using std::cout;
+using std::endl;
+using std::cin;
+
+// Assuming that p1 is the "origin" return the quadrant of the angle formed by
+// p1. Since we assume that p1 is below p2 in y, only octants 1 or 2 can be
+// returned.
+inline int get_octant( mocc::Point2 p1, mocc::Point2 p2 ) {
+    assert(p2.y > p1.y);
+    return ( p2.x > p1.x ) ? 1 : 2;
+}
+
 namespace mocc {
     void Mesh::prepare_surfaces() {
         // number of x-normal surfaces in each y row
@@ -11,9 +23,9 @@ namespace mocc {
         int i = 0;
         coarse_surf_ = VecI(6*nx_*ny_*nz_, 0);
         int surf_offset = 0;
-        for( unsigned int iz=0; iz<nz_; iz++ ) {
-            for( unsigned int iy=0; iy<ny_; iy++ ) {
-                for( unsigned int ix=0; ix<nx_; ix++ ) {
+        for( size_t iz=0; iz<nz_; iz++ ) {
+            for( size_t iy=0; iy<ny_; iy++ ) {
+                for( size_t ix=0; ix<nx_; ix++ ) {
                     Surface surf;
                     int cell_offset = i*6;
 
@@ -238,10 +250,22 @@ namespace mocc {
     * by those points and the interfaces of all of the cells in the Mesh. The
     * points are added to the passed vector and sorted.
     */
-    void Mesh::trace( std::vector<Point2> &ps ) const {
-        assert(ps.size() == 2);
+    void Mesh::trace( std::vector<Point2> &ps, size_t &start_fw, 
+            size_t &start_bw, std::vector<Surface> &surfs_fw, 
+            std::vector<Surface> &surfs_bw ) const {
+        assert( surfs_fw.size() == 0 );
+        assert( surfs_bw.size() == 0 );
+        assert( ps.size() == 2 );
+
         Point2 p1 = ps[0];
         Point2 p2 = ps[1];
+        assert( p2.y > p1.y );
+
+        // Determine the octant of the angle of the ray
+        int octant_fw = get_octant( p1, p2 );
+        int octant_bw = (octant_fw == 1) ? 3 : 4;
+        start_fw = this->coarse_boundary_cell( p1, octant_fw );
+        start_bw = this->coarse_boundary_cell( p2, octant_bw );
 
         Line l(p1, p2);
 
@@ -251,11 +275,32 @@ namespace mocc {
                 ps.push_back( intersection );
             }
         }
+        
 
         // Sort the points and remove duplicates
         std::sort(ps.begin(), ps.end());
         ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
 
+        // determine the surface crossings for each point.
+        for( auto p: ps ) {
+            Surface s[2];
+            // Forward
+            int ns = this->coarse_norm_point( p, octant_fw, s );
+            for( int i=0; i<ns; i++ ) {
+                surfs_fw.push_back( s[i] );
+            }
+            // Backward
+            ns = this->coarse_norm_point( p, octant_bw, s );
+            for( int i=0; i<ns; i++ ) {
+                surfs_bw.push_back( s[i] );
+            }
+        }
+        // reverse the order of the surface crossings in the backward direction
+        std::reverse( surfs_bw.begin(), surfs_bw.end() );
+
+for( auto s: surfs_fw ) {
+cout << s << endl;
+}
         return;
     }
 
@@ -269,5 +314,225 @@ namespace mocc {
 
         /// \todo add z support
         return this->coarse_cell( Position(ix, iy, 0) );
+    }
+
+    size_t Mesh::coarse_norm_point( Point2 p, int octant, Surface (&s)[2] ) 
+            const {
+        assert( octant < 5 );
+        
+        bool on_x = false;
+        bool on_y = false;
+
+        unsigned int ix = 0;
+        for( auto &xi: x_vec_ ) {
+            if( fp_equiv_abs(p.x, xi) ) {
+                on_x = true;
+                break;
+            }
+            if( xi > p.x ) {
+                ix--;
+                break;
+            }
+            ix++;
+        }
+
+        unsigned int iy = 0;
+        for( auto &yi: y_vec_ ) {
+            if( fp_equiv_abs(p.y, yi) ) {
+                on_y = true;
+                break;
+            }
+            if( yi > p.y ) {
+                iy--;
+                break;
+            }
+            iy++;
+        }
+
+        // Return super early if we arent even on a face
+        if( !on_x && !on_y ) {
+            return 0;
+        }
+
+        // Return early if we have a clean intersection
+        if( on_x != on_y ) {
+            if( on_x ) {
+                if( (octant == 1) || (octant == 4) ) {
+                    s[0] = Surface::EAST;
+                }
+                if( (octant == 2) || (octant == 3) ) {
+                    s[0] = Surface::WEST;
+                }
+            } else {
+                if( (octant == 1) || (octant == 2) ) {
+                    s[0] = Surface::NORTH;
+                }
+                if( (octant == 3) || (octant == 3) ) {
+                    s[0] = Surface::SOUTH;
+                }
+            }
+            return 1;
+        }
+
+        // If we make it this far, our point is sitting on a corner
+        if( ix == 0 ) {
+            switch( octant ) {
+                case 1:
+                    s[0] = Surface::WEST;
+                    return 1;
+                case 2:
+                    s[0] = Surface::NORTH;
+                    s[1] = Surface::WEST;
+                    return 2;
+                case 3:
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::WEST;
+                    return 2;
+                case 4:
+                    s[0] = Surface::WEST;
+                    return 1;
+            }
+        }
+
+        if( ix == nx_ ) {
+            switch( octant ) {
+                case 1:
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::EAST;
+                    return 2;
+                case 2:
+                    s[0] = Surface::EAST;
+                    return 1;
+                case 3:
+                    s[0] = Surface::EAST;
+                    return 1;
+                case 4:
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::EAST;
+                    return 2;
+            }
+        }
+
+        if( iy == 0 ) {
+            switch( octant ) {
+                case 1:
+                    s[0] = Surface::SOUTH;
+                    return 1;
+                case 2:
+                    s[0] = Surface::SOUTH;
+                    return 1;
+                case 3:
+                    s[0] = Surface::WEST;
+                    s[1] = Surface::SOUTH;
+                    return 2;
+                case 4:
+                    s[0] = Surface::EAST;
+                    s[1] = Surface::SOUTH;
+                    return 2;
+            }
+        }
+
+        if( iy == ny_ ) {
+            switch( octant ) {
+                case 1:
+                    s[0] = Surface::EAST;
+                    s[1] = Surface::NORTH;
+                    return 2;
+                case 2:
+                    s[0] = Surface::WEST;
+                    s[1] = Surface::NORTH;
+                    return 2;
+                case 3:
+                    s[0] = Surface::NORTH;
+                    return 1;
+                case 4:
+                    s[0] = Surface::NORTH;
+                    return 1;
+            }
+        }
+
+        return 0;
+    }
+
+    size_t Mesh::coarse_boundary_cell( Point2 p, int octant ) const {
+        assert( octant < 5 );
+
+        bool on_x = false;
+        bool on_y = false;
+
+        size_t ix = 0;
+        for( auto &xi: x_vec_ ) {
+            if( fp_equiv_abs(p.x, xi) ) {
+                on_x = true;
+                break;
+            }
+            if( xi > p.x ) {
+                ix--;
+                break;
+            }
+            ix++;
+        }
+
+        size_t iy = 0;
+        for( auto &yi: y_vec_ ) {
+            if( fp_equiv_abs(p.y, yi) ) {
+                on_y = true;
+                break;
+            }
+            if( yi > p.y ) {
+                iy--;
+                break;
+            }
+            iy++;
+        }
+
+        if( on_x != on_y ) {
+            Position pos( ix, iy, 0 );
+            return this->coarse_cell( pos );
+        }
+
+        // Determine which boundary we are on
+        if( fp_equiv_abs(p.x, 0.0) ) {
+            // On the west side
+            assert( (octant == 1) || (octant == 4) );
+            if( octant == 1 ) {
+                // Good to leave as-is
+            } else {
+                // As per convention, bump down one in y
+                iy--;
+            }
+        } else if( fp_equiv_abs(p.x, hx_) ) {
+            // On the east side
+            ix--;
+            assert( (octant == 2) || (octant == 3) );
+            if( octant == 2 ) {
+                // Good to leave as-is
+            } else {
+                // As per convention, bump down one in y
+                iy--;
+            }
+        } else if( fp_equiv_abs(p.y, 0.0) ) {
+            // On the south side
+            assert( (octant == 1) || (octant == 2) );
+            if( octant == 1 ) {
+                // Good to leave as-is
+            } else {
+                // As per convention, bump down one in x
+                ix--;
+            }
+        } else if( fp_equiv_abs(p.y, hy_) ) {
+            // On the north side
+            iy--;
+            assert( (octant == 3) || (octant == 4) );
+            if( octant == 3 ) {
+                // As per convention, bump down one in x
+                ix--;
+            } else {
+                // Good to leave as-is
+            }
+        } else {
+            assert(false);
+        }
+        return this->coarse_cell(Position(ix, iy, 0));
     }
 }

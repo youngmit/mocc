@@ -97,8 +97,6 @@ namespace mocc {
             }
         }
         flux_.col( group ) = flux_1g_;
-cout << "sn flux: " << flux_1g_(0) << endl;
-cin.ignore();
 
         return;
     }
@@ -155,16 +153,17 @@ cin.ignore();
             bc_in_.get_face( group, iang, Normal::Z_NORM, (float_t *)z_flux);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
-                float_t tz = 2.0*oz/hz_[iz];
+                float_t tz = oz/hz_[iz];
                 for( int iy=stty; iy!=stpy; iy+=ydir ) {
-                    float_t ty = 2.0*oy/hy_[iy];
+                    float_t ty = oy/hy_[iy];
                     for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                         // Gross. really need an Sn mesh abstraction
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
-                        float_t tx = 2.0*ox/hx_[ix];
-                        float_t psi = tx*x_flux[iy][iz] + ty*y_flux[ix][iz] + 
-                            tz*z_flux[ix][iy] + q_(i);
-                        psi /= tx + ty + tz + xstr_(i);
+                        float_t tx = ox/hx_[ix];
+                        float_t psi = 2.0*(tx*x_flux[iy][iz] + 
+                                           ty*y_flux[ix][iz] + 
+                                           tz*z_flux[ix][iy]) + q_(i);
+                        psi /= 2.0*(tx + ty + tz) + xstr_(i);
 
                         flux_1g_(i) += psi*wgt;
 

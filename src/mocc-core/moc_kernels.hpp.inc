@@ -7,6 +7,7 @@ void MoCSweeper::sweep1g( int group ) {
     for( auto &plane_rays: rays_ ) {
         int first_reg = mesh_.first_reg_plane(iplane);
         int iang = 0;
+
         for( auto &ang_rays: plane_rays ) {
             int iang1 = iang;
             int iang2 = ang_quad_.reverse(iang);
@@ -26,7 +27,6 @@ void MoCSweeper::sweep1g( int group ) {
                     e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
                             ray.seg_len(iseg) * rstheta );
                 }
-
 
                 // Forward direction
                 {
@@ -94,6 +94,7 @@ void MoCSweeper::sweep1g_final( int group ) {
         int first_reg = mesh_.first_reg_plane(iplane);
         int iang = 0;
         // Angles
+temp.clear();
         for( auto &ang_rays: plane_rays ) {
             int iang1 = iang;
             int iang2 = ang_quad_.reverse(iang);
@@ -159,27 +160,25 @@ void MoCSweeper::sweep1g_final( int group ) {
                 for( size_t icseg=0; icseg<=ray.ncseg(); icseg++ ) {
                     int isurf = ray.cm_surf(icseg);
                     Normal norm = mesh_.surface_normal( isurf );
-
-                    coarse_data_->current( isurf, group) += 
+                    float_t contrib = 
                         ( psi1(iseg) - psi2(iseg) ) * current_weights[(int)norm];
+
+                    coarse_data_->current( isurf, group ) += contrib;
+                        
                     iseg += ray.cm_nseg()[icseg];
 
                 }
-
                 iray++;
             } // Rays
             iang++;
         } // angles
         iplane++;
 
-//for( auto c=coarse_data_->current.row_begin( group ); c !=
-//        coarse_data_->current.row_end( group ); ++c ) {
-//    cout << *c << " ";
-//}
 cout << endl;
 cout << coarse_data_->current.col(group) << endl;
 cout << endl;
 
+cin.ignore();
 
         // Scale the scalar flux by the volume and add back the source
         flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
