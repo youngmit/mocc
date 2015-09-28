@@ -8,7 +8,7 @@ namespace mocc {
     }
 
     void H5File::write( std::string path, VecF data, VecI dims ) {
-        hsize_t dims_a[dims.size()];
+        hsize_t *dims_a = new hsize_t(dims.size());
         for ( unsigned int i=0; i<dims.size(); i++ ) {
             dims_a[i] = dims[i];
         }
@@ -18,6 +18,7 @@ namespace mocc {
                 H5::PredType::NATIVE_DOUBLE, space);
         dataset.write(data.data(), H5::PredType::NATIVE_DOUBLE);
 
+		delete dims_a;
         return;
     }
 

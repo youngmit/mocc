@@ -104,9 +104,9 @@ namespace mocc {
     void SnSweeper::sweep_std( int group ) {
         flux_1g_.fill(0.0);
 
-        float_t x_flux[ny_][nz_];
-        float_t y_flux[nx_][nz_];
-        float_t z_flux[nx_][ny_];
+        float_t *x_flux = nullptr;
+        float_t *y_flux = nullptr;
+        float_t *z_flux = nullptr;
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
@@ -148,9 +148,9 @@ namespace mocc {
             }
 
             // initialize upwind condition
-            bc_in_.get_face( group, iang, Normal::X_NORM, (float_t *)x_flux);
-            bc_in_.get_face( group, iang, Normal::Y_NORM, (float_t *)y_flux);
-            bc_in_.get_face( group, iang, Normal::Z_NORM, (float_t *)z_flux);
+            bc_in_.get_face( group, iang, Normal::X_NORM, x_flux);
+            bc_in_.get_face( group, iang, Normal::Y_NORM, y_flux);
+            bc_in_.get_face( group, iang, Normal::Z_NORM, z_flux);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 float_t tz = oz/hz_[iz];
@@ -158,26 +158,30 @@ namespace mocc {
                     float_t ty = oy/hy_[iy];
                     for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                         // Gross. really need an Sn mesh abstraction
+                        float_t psi_lx = x_flux[ny_*iz + iy];
+                        float_t psi_ly = y_flux[nx_*iz + ix];
+                        float_t psi_lz = z_flux[nx_*iz + ix];
+
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
                         float_t tx = ox/hx_[ix];
-                        float_t psi = 2.0*(tx*x_flux[iy][iz] + 
-                                           ty*y_flux[ix][iz] + 
-                                           tz*z_flux[ix][iy]) + q_(i);
+                        float_t psi = 2.0*(tx*psi_lx + 
+                                           ty*psi_ly + 
+                                           tz*psi_lz) + q_(i);
                         psi /= 2.0*(tx + ty + tz) + xstr_(i);
 
                         flux_1g_(i) += psi*wgt;
 
-                        x_flux[iy][iz] = 2.0*psi - x_flux[iy][iz];
-                        y_flux[ix][iz] = 2.0*psi - y_flux[ix][iz];
-                        z_flux[ix][iy] = 2.0*psi - z_flux[ix][iy];
+                        x_flux[ny_*iz + iy] = 2.0*psi - x_flux[ny_*iz + iy];
+                        y_flux[nx_*iz + ix] = 2.0*psi - y_flux[nx_*iz + ix];
+                        z_flux[nx_*iz + ix] = 2.0*psi - z_flux[nx_*iz + ix];
                     }
                 }
             }
 
             // store the downwind boundary condition
-            bc_out_.set_face(0, iang, Normal::X_NORM, (float_t*)x_flux);
-            bc_out_.set_face(0, iang, Normal::Y_NORM, (float_t*)y_flux);
-            bc_out_.set_face(0, iang, Normal::Z_NORM, (float_t*)z_flux);
+            bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
+            bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
+            bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
             iang++;
         }
         // Update the boundary condition
@@ -188,9 +192,9 @@ namespace mocc {
     void SnSweeper::sweep_final( int group ) {
         flux_1g_.fill(0.0);
 
-        float_t x_flux[ny_][nz_];
-        float_t y_flux[nx_][nz_];
-        float_t z_flux[nx_][ny_];
+        float_t *x_flux = nullptr;
+        float_t *y_flux = nullptr;
+        float_t *z_flux = nullptr;
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
@@ -232,9 +236,9 @@ namespace mocc {
             }
 
             // initialize upwind condition
-            bc_in_.get_face( group, iang, Normal::X_NORM, (float_t *)x_flux);
-            bc_in_.get_face( group, iang, Normal::Y_NORM, (float_t *)y_flux);
-            bc_in_.get_face( group, iang, Normal::Z_NORM, (float_t *)z_flux);
+            bc_in_.get_face( group, iang, Normal::X_NORM, x_flux);
+            bc_in_.get_face( group, iang, Normal::Y_NORM, y_flux);
+            bc_in_.get_face( group, iang, Normal::Z_NORM, z_flux);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 float_t tz = 2.0*oz/hz_[iz];
@@ -243,24 +247,32 @@ namespace mocc {
                     for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                         // Gross. really need an Sn mesh abstraction
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
+
+                        // This is also pretty nasty. Quick hack since the 2D 
+                        // arrays that i was using before were technically not 
+                        // supported by the standard...
+                        float_t psi_lx = x_flux[ny_*iz + iy];
+                        float_t psi_ly = y_flux[nx_*iz + ix];
+                        float_t psi_lz = z_flux[nx_*iz + ix];
+
                         float_t tx = 2.0*ox/hx_[ix];
-                        float_t psi = tx*x_flux[iy][iz] + ty*y_flux[ix][iz] + 
-                            tz*z_flux[ix][iy] + q_(i);
+                        float_t psi = tx*psi_lx + ty*psi_ly + 
+                            tz*psi_lz + q_(i);
                         psi /= tx + ty + tz + xstr_(i);
 
                         flux_1g_(i) += psi*wgt;
 
-                        x_flux[iy][iz] = 2.0*psi - x_flux[iy][iz];
-                        y_flux[ix][iz] = 2.0*psi - y_flux[ix][iz];
-                        z_flux[ix][iy] = 2.0*psi - z_flux[ix][iy];
+                        x_flux[ny_*iz + iy] = 2.0*psi - x_flux[ny_*iz + iy];
+                        y_flux[nx_*iz + ix] = 2.0*psi - y_flux[nx_*iz + ix];
+                        z_flux[nx_*iz + ix] = 2.0*psi - z_flux[nx_*iz + ix];
                     }
                 }
             }
 
             // store the downwind boundary condition
-            bc_out_.set_face(0, iang, Normal::X_NORM, (float_t*)x_flux);
-            bc_out_.set_face(0, iang, Normal::Y_NORM, (float_t*)y_flux);
-            bc_out_.set_face(0, iang, Normal::Z_NORM, (float_t*)z_flux);
+            bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
+            bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
+            bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
             iang++;
         }
         // Update the boundary condition

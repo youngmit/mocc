@@ -40,6 +40,7 @@ message("Flags: ${warnings} ${options}")
 #endif()
 
 find_package(Boost REQUIRED COMPONENTS regex)
+find_package(HDF5)
 
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")

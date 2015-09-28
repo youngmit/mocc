@@ -32,9 +32,9 @@ namespace mocc {
         assert( corrections_ );
         flux_1g_.fill(0.0);
 
-        float_t x_flux[ny_][nz_];
-        float_t y_flux[nx_][nz_];
-        float_t z_flux[nx_][ny_];
+		float_t *x_flux = nullptr;
+		float_t *y_flux = nullptr;
+		float_t *z_flux = nullptr;
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
@@ -76,9 +76,9 @@ namespace mocc {
             }
 
             // initialize upwind condition
-            bc_in_.get_face( group, iang, Normal::X_NORM, (float_t *)x_flux);
-            bc_in_.get_face( group, iang, Normal::Y_NORM, (float_t *)y_flux);
-            bc_in_.get_face( group, iang, Normal::Z_NORM, (float_t *)z_flux);
+            bc_in_.get_face( group, iang, Normal::X_NORM, x_flux);
+            bc_in_.get_face( group, iang, Normal::Y_NORM, y_flux);
+            bc_in_.get_face( group, iang, Normal::Z_NORM, z_flux);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 float_t tz = oz/hz_[iz];
@@ -89,9 +89,9 @@ namespace mocc {
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
                         float_t tx = ox/hx_[ix];
 
-                        float_t psi_lx = x_flux[iy][iz];
-                        float_t psi_ly = y_flux[ix][iz];
-                        float_t psi_lz = z_flux[ix][iy];
+                        float_t psi_lx = x_flux[ny_*iz + iy];
+						float_t psi_ly = y_flux[nx_*iz + ix];
+						float_t psi_lz = z_flux[nx_*iz + ix];
 
                         float_t ax = corrections_->alpha( i, iang, group, 
                                 Normal::X_NORM);
@@ -108,17 +108,17 @@ namespace mocc {
 
                         flux_1g_(i) += psi*wgt;
 
-                        x_flux[iy][iz] = (psi - gx*psi_lx)/gx;
-                        y_flux[ix][iz] = (psi - gy*psi_ly)/gy;
-                        z_flux[ix][iy] = 2.0*psi - psi_lz;
+                        x_flux[ny_*iz + iy] = (psi - gx*psi_lx) / gx;
+						y_flux[nx_*iz + ix] = (psi - gy*psi_ly) / gy;
+						z_flux[nx_*iz + ix] = 2.0*psi - psi_lz;
                     }
                 }
             }
 
             // store the downwind boundary condition
-            bc_out_.set_face(0, iang, Normal::X_NORM, (float_t*)x_flux);
-            bc_out_.set_face(0, iang, Normal::Y_NORM, (float_t*)y_flux);
-            bc_out_.set_face(0, iang, Normal::Z_NORM, (float_t*)z_flux);
+            bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
+            bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
+            bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
             iang++;
         }
         // Update the boundary condition
