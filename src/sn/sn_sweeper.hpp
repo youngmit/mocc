@@ -12,6 +12,9 @@
 #include "coarse_data.hpp"
 
 namespace mocc {
+    /**
+     * \todo pull the boundary class into its own file.
+     */
     class SnSweeperBoundary {
     public:
         SnSweeperBoundary() { }

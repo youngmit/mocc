@@ -32,9 +32,9 @@ namespace mocc {
         assert( corrections_ );
         flux_1g_.fill(0.0);
 
-		float_t *x_flux = nullptr;
-		float_t *y_flux = nullptr;
-		float_t *z_flux = nullptr;
+		float_t *x_flux = new float_t[ny_*nz_];
+		float_t *y_flux = new float_t[nx_*nz_];
+		float_t *z_flux = new float_t[nx_*ny_];
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
@@ -123,6 +123,12 @@ namespace mocc {
         }
         // Update the boundary condition
         this->update_boundary( group );
+
+        delete[] x_flux;
+        delete[] y_flux;
+        delete[] z_flux;
+
+        return;
     }
 
     /// \todo implement current sweep
