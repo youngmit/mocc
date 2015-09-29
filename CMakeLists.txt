@@ -2,8 +2,6 @@ project(MOCC)
 cmake_minimum_required(VERSION 3.2)
 enable_testing()
 
-
-
 MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
     message("Copying file: ${in_file} to: ${out_file}")
     IF(${in_file} IS_NEWER_THAN ${out_file})    
@@ -39,7 +37,7 @@ message("Flags: ${warnings} ${options}")
         CACHE STRING "Flags used by the compiler during all build types." FORCE)
 #endif()
 
-find_package(Boost REQUIRED COMPONENTS regex)
+find_package(Boost REQUIRED COMPONENTS regex unit_test_framework)
 find_package(HDF5)
 
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")

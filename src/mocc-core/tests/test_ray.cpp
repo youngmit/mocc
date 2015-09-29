@@ -1,20 +1,71 @@
-#include <string>
+#define BOOST_TEST_MAIN
+#include <boost/test/included/unit_test.hpp>
+
 #include <cassert>
+#include <string>
 
 #include "pugixml.hpp"
 
-#include "ray_data.hpp"
 #include "angular_quadrature.hpp"
-#include "core_mesh.hpp"
 #include "constants.hpp"
+#include "core_mesh.hpp"
 #include "global_config.hpp"
+#include "ray_data.hpp"
 
 using namespace mocc;
 
 using std::cout;
 using std::endl;
 
-int main() {
+BOOST_AUTO_TEST_CASE( testsimple )
+{
+    pugi::xml_document geom_xml;
+    pugi::xml_parse_result result = geom_xml.load_file( "6x5.xml" );
+
+    BOOST_CHECK( result );
+    
+    mocc::CoreMesh mesh( geom_xml );
+    {
+        
+        {
+            Ray ray( Point2(0.0,1.0), Point2(4.0,5.0), 0, 0, 0, mesh );
+
+            //BOOST_CHECK(ray.);
+            cout << ray.cm_data()[3].fw << endl;
+            
+            cout << "size of cm data element: " << sizeof(ray.cm_data().front()) << endl;
+            for( auto rcd: ray.cm_data() ) {
+                cout << rcd << endl;
+            }
+cout << endl;
+        }
+
+        {
+            Ray ray( Point2(4.0,0.0), Point2(6.0,2.0), 0, 0, 0, mesh );
+        }
+
+        {
+            Ray ray( Point2(2.0,0.0), Point2(0.0,2.0), 0, 0, 0, mesh );
+        }
+
+        {
+            Ray ray( Point2(6.0,3.0), Point2(4.0,5.0), 0, 0, 0, mesh );
+        }
+
+        {
+            Ray ray( Point2(0.0,0.5), Point2(6.0,3.25), 0, 0, 0, mesh );
+            for( auto rcd: ray.cm_data() ) {
+                cout << rcd << endl;
+            }
+cout << endl;
+        }
+
+
+    }
+}
+
+BOOST_AUTO_TEST_CASE( testall )
+{
 
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "square.xml" );
@@ -24,42 +75,20 @@ int main() {
     pugi::xml_document angquad_xml;
     result = 
         angquad_xml.load_string("<ang_quad type=\"ls\" order=\"4\" />");
-
-    if ( !result ) {
-        return 1;
-    }
-
-
     // Make a nasty ray to exercise the coarse indexing
     {
         Ray ray( Point2(1.26, 0.0), Point2(3.78, 2.52), 0, 0, 0, mesh );
-        assert( ray.cm_surf(0) == 21 );
-        assert( ray.cm_surf(1) == 10 );
-        assert( ray.cm_surf(2) == 11 );
-        assert( ray.cm_surf(3) == 30 );
-        assert( ray.cm_surf(4) == 16 );
     }
     {
-        Ray ray( Point2(0.0, 1.26), Point2(1.26, 0.0), 0, 0, 0, mesh );
-        assert( ray.cm_surf(0) == 21 );
-        assert( ray.cm_surf(1) == 9 );
+        Ray ray( Point2(1.26, 0.0), Point2(0.0, 1.26), 0, 0, 0, mesh );
     }
     {
         Ray ray( Point2(0.0, 1.26), Point2(2.52, 3.78), 0, 0, 0, mesh );
-        assert( ray.cm_surf(0) == 9 );
-        assert( ray.cm_surf(1) == 22 );
-        assert( ray.cm_surf(2) == 14 );
-        assert( ray.cm_surf(3) == 27 );
-        assert( ray.cm_surf(4) == 32 );
-        assert( ray.cm_surf(5) == 19 );
+            for( auto rcd: ray.cm_data() ) {
+                cout << rcd << endl;
+            }
     }
     {
-        Ray ray( Point2(2.52, 3.78), Point2(3.78, 2.52), 0, 0, 0, mesh );
-        assert( ray.cm_surf(0) == 16 );
-        assert( ray.cm_surf(1) == 31 );
-        assert( ray.cm_surf(2) == 32 );
+        Ray ray( Point2(3.78, 2.52), Point2(2.52, 3.78), 0, 0, 0, mesh );
     }
-
-    
-    return 0;
 }

@@ -21,3 +21,5 @@ add_test(testMesh testMesh)
 add_executable(testRay test_ray.cpp)
 target_link_libraries(testRay mocc-core pugixml)
 add_test(testRay testRay)
+copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/6x5.xml 
+    ${CMAKE_CURRENT_BINARY_DIR}/6x5.xml testRay)
