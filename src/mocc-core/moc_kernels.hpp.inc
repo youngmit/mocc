@@ -85,8 +85,6 @@ void MoCSweeper::sweep1g_final( int group ) {
     ArrayX psi2(rays_.max_segments()+1, 1);
 
     // Wipe out the existing currents
-    //std::fill( coarse_data_->current.row_begin( group ),
-    //        coarse_data_->current.row_end( group ), 0.0 );
     coarse_data_->current.col( group ) = 0.0;
 
     int iplane = 0;
@@ -94,7 +92,6 @@ void MoCSweeper::sweep1g_final( int group ) {
         int first_reg = mesh_.first_reg_plane(iplane);
         int iang = 0;
         // Angles
-temp.clear();
         for( auto &ang_rays: plane_rays ) {
             int iang1 = iang;
             int iang2 = ang_quad_.reverse(iang);
@@ -156,17 +153,31 @@ temp.clear();
 
 
                 // Stash currents
-                int iseg = 0;
-                for( size_t icseg=0; icseg<=ray.ncseg(); icseg++ ) {
-                    int isurf = ray.cm_surf(icseg);
-                    Normal norm = mesh_.surface_normal( isurf );
-                    float_t contrib = 
-                        ( psi1(iseg) - psi2(iseg) ) * current_weights[(int)norm];
+                size_t cell_fw = ray.cm_start_fw();
+                size_t cell_bw = ray.cm_start_bw();
+                size_t iseg_fw = 0;
+                size_t iseg_bw = ray.nseg();
+                auto begin = ray.cm_data().cbegin();
+                auto end = ray.cm_data().cend();
+                for( auto crd = begin; crd != end; ++crd ) {
+                    size_t surf_fw = mesh_.coarse_surf( cell_fw, crd->fw );
+                    size_t surf_bw = mesh_.coarse_surf( cell_bw, crd->bw );
 
-                    coarse_data_->current( isurf, group ) += contrib;
-                        
-                    iseg += ray.cm_nseg()[icseg];
+                    Normal norm_fw = surface_to_normal( crd->fw );
+                    Normal norm_bw = surface_to_normal( crd->bw );
 
+                    iseg_fw += crd->nseg_fw;
+                    iseg_bw -= crd->nseg_bw;
+
+                    coarse_data_->current( surf_fw, group ) += 
+                        psi1(iseg_fw) * current_weights[(int)norm_fw];
+                    coarse_data_->current( surf_bw, group ) -= 
+                        psi2(iseg_bw) * current_weights[(int)norm_bw];
+
+                    if( crd != begin ) {
+                        cell_fw = mesh_.coarse_neighbor( cell_fw, (crd)->fw );
+                        cell_bw = mesh_.coarse_neighbor( cell_bw, (crd)->bw );
+                    }
                 }
                 iray++;
             } // Rays

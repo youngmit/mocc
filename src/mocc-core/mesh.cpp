@@ -4,13 +4,6 @@ using std::cout;
 using std::endl;
 using std::cin;
 
-// Assuming that p1 is the "origin" return the quadrant of the angle formed by
-// p1. Since we assume that p1 is below p2 in y, only octants 1 or 2 can be
-// returned.
-inline int get_octant( mocc::Point2 p1, mocc::Point2 p2 ) {
-    assert(p2.y > p1.y);
-    return ( p2.x > p1.x ) ? 1 : 2;
-}
 
 namespace mocc {
     void Mesh::prepare_surfaces() {
@@ -250,22 +243,12 @@ namespace mocc {
     * by those points and the interfaces of all of the cells in the Mesh. The
     * points are added to the passed vector and sorted.
     */
-    void Mesh::trace( std::vector<Point2> &ps, size_t &start_fw, 
-            size_t &start_bw, std::vector<Surface> &surfs_fw, 
-            std::vector<Surface> &surfs_bw ) const {
-        assert( surfs_fw.size() == 0 );
-        assert( surfs_bw.size() == 0 );
+    void Mesh::trace( std::vector<Point2> &ps ) const {
         assert( ps.size() == 2 );
 
         Point2 p1 = ps[0];
         Point2 p2 = ps[1];
         assert( p2.y > p1.y );
-
-        // Determine the octant of the angle of the ray
-        int octant_fw = get_octant( p1, p2 );
-        int octant_bw = (octant_fw == 1) ? 3 : 4;
-        start_fw = this->coarse_boundary_cell( p1, octant_fw );
-        start_bw = this->coarse_boundary_cell( p2, octant_bw );
 
         Line l(p1, p2);
 
@@ -276,31 +259,10 @@ namespace mocc {
             }
         }
         
-
         // Sort the points and remove duplicates
         std::sort(ps.begin(), ps.end());
         ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
 
-        // determine the surface crossings for each point.
-        for( auto p: ps ) {
-            Surface s[2];
-            // Forward
-            int ns = this->coarse_norm_point( p, octant_fw, s );
-            for( int i=0; i<ns; i++ ) {
-                surfs_fw.push_back( s[i] );
-            }
-            // Backward
-            ns = this->coarse_norm_point( p, octant_bw, s );
-            for( int i=0; i<ns; i++ ) {
-                surfs_bw.push_back( s[i] );
-            }
-        }
-        // reverse the order of the surface crossings in the backward direction
-        std::reverse( surfs_bw.begin(), surfs_bw.end() );
-
-for( auto s: surfs_fw ) {
-cout << s << endl;
-}
         return;
     }
 
@@ -356,6 +318,29 @@ cout << s << endl;
 
         // Return early if we have a clean intersection
         if( on_x != on_y ) {
+            // Upwind domain boundaries are a little different
+            if( on_x ) {
+                if( (ix == 0) && ( (octant == 1) || (octant == 4) ) ) {
+                    s[0] = Surface::WEST;
+                    return 1;
+                }
+                if( (ix == nx_) && ( (octant == 2) || (octant == 3) ) ) {
+                    s[0] = Surface::EAST;
+                    return 1;
+                }
+            }
+            if( on_y ) {
+                if( (iy == 0) && ( (octant == 1) || (octant == 2) ) ) {
+                    s[0] = Surface::SOUTH;
+                    return 1;
+                }
+                if( (iy == ny_) && ( (octant == 3) || (octant == 4) ) ) {
+                    s[0] = Surface::NORTH;
+                    return 1;
+                }
+            }
+
+            // Interior crossings (yay, some sanity!)
             if( on_x ) {
                 if( (octant == 1) || (octant == 4) ) {
                     s[0] = Surface::EAST;
@@ -367,11 +352,34 @@ cout << s << endl;
                 if( (octant == 1) || (octant == 2) ) {
                     s[0] = Surface::NORTH;
                 }
-                if( (octant == 3) || (octant == 3) ) {
+                if( (octant == 3) || (octant == 4) ) {
                     s[0] = Surface::SOUTH;
                 }
             }
             return 1;
+        }
+
+        // Interior corners are a little different than boundary corners
+        if( (ix > 0) && (ix < nx_) && (iy > 0) && (iy < ny_) ) {
+            switch( octant ) {
+                case 1:
+                    s[0] = Surface::EAST;
+                    s[1] = Surface::NORTH;
+                    break;
+                case 2:
+                    s[0] = Surface::WEST;
+                    s[1] = Surface::NORTH;
+                    break;
+                case 3:
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::WEST;
+                    break;
+                case 4:
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::EAST;
+                    break;
+            }
+            return 2;
         }
 
         // If we make it this far, our point is sitting on a corner
@@ -385,8 +393,8 @@ cout << s << endl;
                     s[1] = Surface::WEST;
                     return 2;
                 case 3:
-                    s[0] = Surface::SOUTH;
-                    s[1] = Surface::WEST;
+                    s[0] = Surface::WEST;
+                    s[1] = Surface::SOUTH;
                     return 2;
                 case 4:
                     s[0] = Surface::WEST;
@@ -397,7 +405,7 @@ cout << s << endl;
         if( ix == nx_ ) {
             switch( octant ) {
                 case 1:
-                    s[0] = Surface::SOUTH;
+                    s[0] = Surface::NORTH;
                     s[1] = Surface::EAST;
                     return 2;
                 case 2:
@@ -407,8 +415,8 @@ cout << s << endl;
                     s[0] = Surface::EAST;
                     return 1;
                 case 4:
-                    s[0] = Surface::SOUTH;
-                    s[1] = Surface::EAST;
+                    s[0] = Surface::EAST;
+                    s[1] = Surface::SOUTH;
                     return 2;
             }
         }
@@ -422,12 +430,12 @@ cout << s << endl;
                     s[0] = Surface::SOUTH;
                     return 1;
                 case 3:
-                    s[0] = Surface::WEST;
-                    s[1] = Surface::SOUTH;
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::WEST;
                     return 2;
                 case 4:
-                    s[0] = Surface::EAST;
-                    s[1] = Surface::SOUTH;
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::EAST;
                     return 2;
             }
         }
@@ -486,10 +494,8 @@ cout << s << endl;
             iy++;
         }
 
-        if( on_x != on_y ) {
-            Position pos( ix, iy, 0 );
-            return this->coarse_cell( pos );
-        }
+        assert( ix <= nx_ );
+        assert( iy <= ny_ );
 
         // Determine which boundary we are on
         if( fp_equiv_abs(p.x, 0.0) ) {
@@ -498,8 +504,10 @@ cout << s << endl;
             if( octant == 1 ) {
                 // Good to leave as-is
             } else {
-                // As per convention, bump down one in y
-                iy--;
+                if( on_y ) {
+                    // As per convention, bump down one in y
+                    iy--;
+                }
             }
         } else if( fp_equiv_abs(p.x, hx_) ) {
             // On the east side
@@ -508,8 +516,10 @@ cout << s << endl;
             if( octant == 2 ) {
                 // Good to leave as-is
             } else {
-                // As per convention, bump down one in y
-                iy--;
+                if( on_y ) {
+                    // As per convention, bump down one in y
+                    iy--;
+                }
             }
         } else if( fp_equiv_abs(p.y, 0.0) ) {
             // On the south side
@@ -517,22 +527,30 @@ cout << s << endl;
             if( octant == 1 ) {
                 // Good to leave as-is
             } else {
-                // As per convention, bump down one in x
-                ix--;
+                if( on_x ) {
+                    // As per convention, bump down one in x
+                    ix--;
+                }
             }
         } else if( fp_equiv_abs(p.y, hy_) ) {
             // On the north side
             iy--;
             assert( (octant == 3) || (octant == 4) );
             if( octant == 3 ) {
-                // As per convention, bump down one in x
-                ix--;
+                if( on_x ) {
+                    // As per convention, bump down one in x
+                    ix--;
+                }
             } else {
                 // Good to leave as-is
             }
         } else {
             assert(false);
         }
-        return this->coarse_cell(Position(ix, iy, 0));
+
+
+        size_t cell = this->coarse_cell(Position(ix, iy, 0));
+
+        return cell;
     }
 }

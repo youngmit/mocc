@@ -26,7 +26,7 @@ namespace mocc {
         
         // Temporary storage for surface- and node-average fluxes
         ArrayF flux_surf_sum(mesh_.n_surf()*2);
-        std::valarray<int> flux_surf_norm(mesh_.n_surf());
+        std::valarray<int> flux_surf_norm(mesh_.n_surf()*2);
         ArrayF flux_vol_sum(mesh_.n_pin()*2);
         ArrayF flux_vol_norm(mesh_.n_pin());
         ArrayF sigt_sum(mesh_.n_pin()*2);
@@ -75,7 +75,6 @@ namespace mocc {
                                 ray.seg_len(iseg) * rstheta );
                     }
     
-    
                     // Forward direction
                     // Initialize from bc
                     psi1(0) = boundary_[group][iplane][iang1][bc1];
@@ -107,71 +106,73 @@ namespace mocc {
                     // Store boundary condition
                     boundary_out_[iplane][iang2][bc1] = psi2(0);
 
-    
+                    // Stash currents
+                    size_t cell_fw = ray.cm_start_fw();
+                    size_t cell_bw = ray.cm_start_bw();
+                    size_t iseg_fw = 0;
+                    size_t iseg_bw = ray.nseg();
+                    auto begin = ray.cm_data().cbegin();
+                    auto end = ray.cm_data().cend();
+                    for( auto crd = begin; crd != end; ++crd ) {
+                        size_t surf_fw = mesh_.coarse_surf( cell_fw, crd->fw );
+                        size_t surf_bw = mesh_.coarse_surf( cell_bw, crd->bw );
 
+                        Normal norm_fw = surface_to_normal( crd->fw );
+                        Normal norm_bw = surface_to_normal( crd->bw );
 
-                    // Stash currents, fluxes, etc
-                    int iseg = 0;
-                    for( size_t icseg=0; icseg<ray.ncseg(); icseg++ ) {
-                        int isurf = ray.cm_surf(icseg);
-                        int icell = ray.cm_cell()[icseg];
-                        Normal norm = mesh_.surface_normal( isurf );
-    
-                        coarse_data_->current( isurf, group) += 
-                            ( psi1(iseg) - psi2(iseg) ) *
-                            current_weights[(int)norm];
+                        coarse_data_->current( surf_fw, group ) += 
+                            psi1(iseg_fw) * current_weights[(int)norm_fw];
+                        coarse_data_->current( surf_bw, group ) -= 
+                            psi2(iseg_bw) * current_weights[(int)norm_bw];
 
-                        flux_surf_sum[isurf*2 + 0] += psi1(iseg);
-                        flux_surf_sum[isurf*2 + 1] += psi2(iseg);
-                        flux_surf_norm[isurf]++;
-                        
-                        // Handle volumetric quantities    
-                        for(size_t is=0; is<ray.cm_nseg()[icseg]; is++) {
-                            int ireg = ray.seg_index(iseg) + first_reg;
+                        flux_surf_sum[surf_fw*2+0] += psi1(iseg_fw);
+                        flux_surf_norm[surf_fw*2+0] += 1.0;
+                        flux_surf_sum[surf_bw*2+1] += psi2(iseg_bw);
+                        flux_surf_norm[surf_bw*2+1] += 1.0;
+
+                        // Store foreward volumetric quantities
+                        for( int i=0; i<crd->nseg_fw; i++ ) {
+                            int ireg = ray.seg_index(iseg_fw) + first_reg;
                             float_t xstr = xstr_(ireg);
-                            float_t t = ang.rsintheta * ray.seg_len(iseg);
-
-                            float_t fluxvol1 = t * qbar_(ireg) + e_tau(iseg)*
-                                (psi1(iseg)-qbar_(ireg))/xstr;
-                            float_t fluxvol2 = t * qbar_(ireg) + e_tau(iseg)*
-                                (psi2(iseg+1)-qbar_(ireg))/xstr;
-
-                            flux_vol_sum[icell*2+0] += fluxvol1;
-                            flux_vol_sum[icell*2+1] += fluxvol2;
-                            flux_vol_norm[icell] += t;
-                            
-                            sigt_sum[icell*2+0] += xstr*fluxvol1;
-                            sigt_sum[icell*2+1] += xstr*fluxvol2;
-                            
-                            iseg++;
+                            float_t t = ang.rsintheta * ray.seg_len(iseg_fw);
+                            float_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
+                                (psi1(iseg_fw)-qbar_(ireg))/xstr;
+                            flux_vol_sum[cell_fw*2+0] += fluxvol;
+                            flux_vol_norm[cell_fw] += t;
+                            sigt_sum[cell_fw*2+0] += xstr*fluxvol;
+                            iseg_fw++;
                         }
+
+                        // Store backward volumetric quantities
+                        for( int i=0; i<crd->nseg_bw; i++ ) {
+                            iseg_bw--;
+                            int ireg = ray.seg_index(iseg_bw) + first_reg;
+                            float_t xstr = xstr_(ireg);
+                            float_t t = ang.rsintheta * ray.seg_len(iseg_bw);
+                            float_t fluxvol = t * qbar_(ireg) + e_tau(iseg_bw)*
+                                (psi2(iseg_bw)-qbar_(ireg))/xstr;
+                            flux_vol_sum[cell_bw*2+1] += fluxvol;
+                            sigt_sum[cell_bw*2+1] += xstr*fluxvol;
+                        }
+                        
+                        if( crd != begin ) {
+                            cell_fw = mesh_.coarse_neighbor( cell_fw, 
+                                    (crd)->fw );
+                            cell_bw = mesh_.coarse_neighbor( cell_bw, 
+                                    (crd)->bw );
+                        }
+
                     }
-
-                    // Handle the last surface crossing
-                    int isurf = ray.cm_surf(ray.ncseg());
-                    iseg = ray.nseg();
-                    Normal norm = mesh_.surface_normal( isurf );
-                    
-                    coarse_data_->current( isurf, group) += ( psi1(iseg) -
-                            psi2(iseg) ) * current_weights[(int)norm];
-
-                    flux_surf_sum[isurf*2 + 0] += psi1(iseg);
-                    flux_surf_sum[isurf*2 + 1] += psi2(iseg);
-                    flux_surf_norm[isurf]++;
-
                     iray++;
                 } // Rays
 
                 // Normalize the flux and sigt values and calculate
                 // correction factors for the current angle/energy
                 for( size_t i=0; i<flux_surf_norm.size(); i++) {
-                    flux_surf_sum[2*i+0] /= flux_surf_norm[i];
-                    flux_surf_sum[2*i+1] /= flux_surf_norm[i];
+                    flux_surf_sum[i] /= flux_surf_norm[i];
                 }
 
                 for( size_t i=0; i<flux_vol_norm.size(); i++) {
-//cout << sigt_sum[2*i+0] << " " << sigt_sum[2*i+1] << " " 
-//     << flux_vol_sum[2*i+0] << " " << flux_vol_sum[2*i+1] << endl;
                     sigt_sum[2*i+0] /= flux_vol_sum[2*i+0];
                     sigt_sum[2*i+1] /= flux_vol_sum[2*i+1];
                     flux_vol_sum[2*i+0] /= flux_vol_norm[i];
@@ -280,7 +281,7 @@ namespace mocc {
 //            cout << v << endl;
 //        }
 //
-//        cout << "Cell fluxes: " << endl;
+//        cout << "Cell fluxes: " << flux_node.size() << endl;
 //        for( auto v: flux_node ) {
 //            cout << v << endl;
 //        }
@@ -289,7 +290,6 @@ namespace mocc {
 //        for( auto v: sigt ) {
 //            cout << v << endl;
 //        }
-
         return;
     }
 

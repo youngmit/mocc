@@ -4,6 +4,8 @@
 #include "geom.hpp"
 #include "global_config.hpp"
 
+#define MAX_NSEG 255
+
 namespace mocc {
     /**
      * A Ray stores vectors of segment length and the flat source region index
@@ -13,7 +15,19 @@ namespace mocc {
     */
     class Ray {
         struct RayCoarseData {
-            unsigned int i; 
+            Surface fw: 3; 
+            Surface bw: 3; 
+            unsigned int nseg_fw: 8;
+            unsigned int nseg_bw: 8;
+
+            friend std::ostream& operator<<(std::ostream& os, 
+                    const RayCoarseData rcd ) {
+
+                os << rcd.fw << " " << rcd.nseg_fw << "\t|\t" 
+                   << rcd.bw << " " << rcd.nseg_bw;
+
+                return os;
+            }
         };
     public:
         /** \brief Construct a ray from two starting points. */
@@ -22,6 +36,27 @@ namespace mocc {
 
         size_t nseg() const {
             return nseg_;
+        }
+
+        size_t ncseg() const {
+            return cm_data_.size();
+        }
+
+        // Return a reference to the coarse ray data
+        const std::vector<RayCoarseData>& cm_data() const {
+            return cm_data_;
+        }
+
+        // Return the index of the first coarse mesh cell encountered by this
+        // ray in the forward direction
+        size_t cm_start_fw() const {
+            return cm_start_fw_;
+        }
+
+        // Return the index of the first coarse mesh cell encountered by this
+        // ray in the backward direction
+        size_t cm_start_bw() const {
+            return cm_start_bw_;
         }
 
         // Return a reference to the whole vector of segment lengths
@@ -61,6 +96,7 @@ namespace mocc {
          * Only return a reference to a single segment length
          */
         size_t seg_index( int iseg ) const {
+            assert(iseg < nseg_);
             return seg_index_[iseg];
         }
 
@@ -71,65 +107,18 @@ namespace mocc {
             return bc_[dir];
         }
 
-        /**
-         * Return the number of coarse mesh regions spanned by the ray. Corner
-         * crossings technically count as two, since the current must flow
-         * through adjacent cells.
-         */
-        size_t ncseg() const {
-            return cm_cell_.size();
-        }
-
-        /** 
-         * Return a reference to a vector of coarse mesh cells traversed by the
-         * ray.
-         *
-         * \todo this needs work. Right now it doesnt conform to the surface
-         * crossings
-         */
-        const VecI& cm_cell() const {
-            assert( false );
-            return cm_cell_;
-        }
-
-        /** 
-         * Return the indexed coarse mesh surface crossed by the ray.
-         */
-        int cm_surf( int i ) const {
-            return cm_surf_[i];
-        }
-
-        /** 
-         * Return the number of segments on the ray 
-         */
-        const VecI& cm_nseg() const {
-            return cm_nseg_;
-        }
-
-
 
     private:
         size_t cm_start_fw_;
         size_t cm_start_bw_;
+
+        std::vector<RayCoarseData> cm_data_;
         
         // Length of ray segments
         VecF seg_len_;
 
         // FSR index of each segment from plane offset
         VecI seg_index_;
-
-        // Vector containing the number of ray segments passing through each pin
-        // mesh. This is needed in order to collect coarse mesh data during a
-        // sweep.
-        VecI cm_nseg_;
-
-        // The coarse mesh cell index corresponding to each pin traversed by the
-        // ray.
-        VecI cm_cell_;
-
-        // The coarse mesh surface index corresponding to each pin interface
-        // crossed by the ray (# of pins crossed + 1).
-        VecI cm_surf_;
 
         // Number of segments in the ray
         size_t nseg_;

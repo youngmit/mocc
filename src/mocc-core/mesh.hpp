@@ -138,6 +138,8 @@ namespace mocc {
          * keeping in mind that the surfaces below you already have numbers.
         */
         size_t coarse_surf( size_t i, Surface surf ) const {
+            assert( i >= 0 );
+            assert( i < this->n_pin() );
             return coarse_surf_[i*6+(int)surf];
         }
 
@@ -228,9 +230,7 @@ namespace mocc {
         /** 
          * \brief Trace a ray through the coarse surfaces.
         */
-        void trace( std::vector<Point2> &p, size_t &start_fw, size_t &start_bw,
-                std::vector<Surface> &surfs_fw, std::vector<Surface> &surfs_bw)
-                const; 
+        void trace( std::vector<Point2> &p ) const; 
 
     protected:
         /**
