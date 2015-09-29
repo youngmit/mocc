@@ -13,10 +13,10 @@
 namespace mocc {
     // Surface and direction indexing
     enum class Surface {
-        EAST = 0,
-        NORTH,
-        WEST,
-        SOUTH,
+        EAST  = 0,
+        NORTH = 1,
+        WEST  = 2,
+        SOUTH = 3,
         TOP,
         BOTTOM,
         NE,
@@ -52,5 +52,7 @@ namespace mocc {
     };
 
     std::ostream& operator<<(std::ostream& os, const Surface s );
+
+    Normal surface_to_normal( Surface s );
     
 }
