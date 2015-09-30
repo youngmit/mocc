@@ -4,25 +4,27 @@
 #include "global_config.hpp"
 
 namespace mocc {
+    
+    namespace fp_utils {
+        union float_int {
+            float f;
+            int32_t i;
+        };
 
-    union float_int {
-        float f;
-        int32_t i;
-    };
-
-    union double_int {
-        double f;
-        int64_t i;
-    };
+        union double_int {
+            double f;
+            int64_t i;
+        };
+    }
 
     inline bool fp_equiv_ulp(float v1, float v2) {
-        float_int i1;
+        fp_utils::float_int i1;
         i1.f = v1;
         if (i1.i < 0) {
             i1.i = 0x80000000 - i1.i;
         }
 
-        float_int i2;
+        fp_utils::float_int i2;
         i2.f = v2;
         if (i2.i < 0) {
             i2.i = 0x80000000 - i2.i;
@@ -32,13 +34,13 @@ namespace mocc {
     }
 
     inline bool fp_equiv_ulp(double v1, double v2) {
-        double_int i1;
+        fp_utils::double_int i1;
         i1.f = v1;
         if (i1.i < 0) {
             i1.i = 0x80000000 - i1.i;
         }
 
-        double_int i2;
+        fp_utils::double_int i2;
         i2.f = v2;
         if (i2.i < 0) {
             i2.i = 0x80000000 - i2.i;
