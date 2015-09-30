@@ -10,6 +10,7 @@ namespace mocc {
         SnSweeper( input, mesh ),
         corrections_( nullptr )
     {
+cout << "CDD Sweeper: " << endl;
         if( input.child("data") ) {
             if( input.child("data").attribute("type") ) {
                 std::string data_type = 
@@ -36,8 +37,11 @@ namespace mocc {
 		float_t *y_flux = new float_t[nx_*nz_];
 		float_t *z_flux = new float_t[nx_*ny_];
 
+        int nang_half = ang_quad_.ndir()/2;
+
         int iang = 0;
         for( auto ang: ang_quad_ ) {
+            int iang_a = iang % nang_half;
             float_t wgt = ang.weight * HPI; 
             float_t ox = ang.ox;
             float_t oy = ang.oy;
@@ -93,11 +97,11 @@ namespace mocc {
 						float_t psi_ly = y_flux[nx_*iz + ix];
 						float_t psi_lz = z_flux[nx_*iz + ix];
 
-                        float_t ax = corrections_->alpha( i, iang, group, 
+                        float_t ax = corrections_->alpha( i, iang_a, group, 
                                 Normal::X_NORM);
-                        float_t ay = corrections_->alpha( i, iang, group, 
+                        float_t ay = corrections_->alpha( i, iang_a, group, 
                                 Normal::Y_NORM);
-                        float_t b = corrections_->beta( i, iang, group );
+                        float_t b = corrections_->beta( i, iang_a, group );
 
                         float_t gx = ax*b;
                         float_t gy = ay*b;

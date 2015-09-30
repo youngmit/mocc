@@ -12,6 +12,7 @@ namespace mocc {
     /// \todo make sure to check the angular quadratures for conformance
     PlaneSweeper_2D3D::PlaneSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
+        mesh_(mesh),
         sn_sweeper_(input.child("sn_sweeper"), mesh),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad())
@@ -53,8 +54,6 @@ cout << "representative moc flux: " << moc_flux[0] << endl;
         }
         residual = sqrt(residual);
         cout << "MoC/Sn residual: " << residual << endl;
-        cin.ignore();
-        
     }
 
     void PlaneSweeper_2D3D::initialize() {
@@ -84,6 +83,45 @@ cout << "representative moc flux: " << moc_flux[0] << endl;
         // We need to be a little careful about how we do output to avoid
         // collisions in the HDF5 tree. For now, lets just output Sn data.
         sn_sweeper_.output( file );
-        //moc_sweeper_.output( file );
+
+        // Write out the correction factors
+        file.mkdir("/alpha_x");
+        file.mkdir("/alpha_y");
+        file.mkdir("/beta");
+
+        VecI dims;
+        dims.push_back(mesh_.nz());
+        dims.push_back(mesh_.ny());
+        dims.push_back(mesh_.nx());
+        for( size_t g=0; g<ng_; g++ ) {
+            for( size_t a=0; a<ang_quad_.ndir_oct()*4; a++ ) {
+                VecF alpha_x( mesh_.n_pin(), 0.0 );
+                VecF alpha_y( mesh_.n_pin(), 0.0 );
+                VecF beta( mesh_.n_pin(), 0.0 );
+                for( size_t i=0; i<mesh_.n_pin(); i++ ) {
+                    alpha_x[i] = corrections_.alpha( i, a, g, Normal::X_NORM );
+                    alpha_y[i] = corrections_.alpha( i, a, g, Normal::Y_NORM );
+                    beta[i] = corrections_.beta( i, a, g );
+                }
+
+                {
+                    std::stringstream setname;
+                    setname << "/alpha_x/" << g << "_" << a;
+                    file.write( setname.str(), alpha_x, dims );
+                }
+
+                {
+                    std::stringstream setname;
+                    setname << "/alpha_y/" << g << "_" << a;
+                    file.write( setname.str(), alpha_y, dims );
+                }
+
+                {
+                    std::stringstream setname;
+                    setname << "/beta/" << g << "_" << a;
+                    file.write( setname.str(), beta, dims );
+                }
+            }
+        }
     }
 }

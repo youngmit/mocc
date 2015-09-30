@@ -76,6 +76,7 @@ namespace mocc {
         }
 
     private:
+        const CoreMesh& mesh_;
         SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;

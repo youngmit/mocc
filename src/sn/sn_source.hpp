@@ -27,7 +27,6 @@ namespace mocc {
                 for ( auto &ireg: xsr.reg() ) {
                     qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
                         RFPI;
-//std::cout << "sn source: " << source_1g_(ireg) << " " << flux_1g(ireg) << " " << qbar(ireg) << std::endl;
                 }
             }
 
