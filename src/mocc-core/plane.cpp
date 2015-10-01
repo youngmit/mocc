@@ -1,29 +1,48 @@
 #include "plane.hpp"
 
+#include <iostream>
+
+#include "error.hpp"
+#include "fp_utils.hpp"
+
 namespace mocc {
     Plane::Plane( const std::vector<const Lattice*> &lattices, 
-            unsigned int nx, unsigned int ny ) {
+            size_t nx, size_t ny ):
+        lattices_(lattices) 
+    {
         assert(lattices.size() == nx*ny);
 
-        for (auto li=lattices.begin(); li!=lattices.end(); ++li) {
-            lattices_.push_back(*li);
-        }
-        
         nx_ = nx;
         ny_ = ny;
 
         // determine the locations of the lattice interfaces
+        VecF dx;
         float_t prev = 0.0;
         hx_.push_back(0.0);
-        for(unsigned int ix=0; ix<nx_; ix++) {
+        for( size_t ix=0; ix<nx_; ix++) {
             hx_.push_back(prev + this->at(ix, 0).hx());
+            dx.push_back(this->at(ix, 0).hx());
             prev += this->at(ix, 0).hx();
         }
+        VecF dy;
         prev = 0.0;
         hy_.push_back(0.0);
-        for(unsigned int iy=0; iy<ny_; iy++) {
+        for( size_t iy=0; iy<ny_; iy++ ) {
             hy_.push_back(prev + this->at(0, iy).hy());
+            dy.push_back(this->at(0, iy).hy());
             prev += this->at(0, iy).hy();
+        }
+
+        // Ensure that the lattices in the plane conform
+        for( size_t iy=0; iy<ny_; iy++ ) {
+            for( size_t ix=0; ix<nx_; ix++ ) {
+                if( !fp_equiv_ulp( this->at(ix, iy).hx(), dx[ix] )) {
+                    throw EXCEPT("Lattices do not have compatible dimensions.");
+                }
+                if( !fp_equiv_ulp( this->at(ix, iy).hy(), dy[iy] )) {
+                    throw EXCEPT("Lattices do not have compatible dimensions.");
+                }
+            }
         }
 
         // Store the first region index for each lattice within the plane
@@ -58,7 +77,7 @@ namespace mocc {
      */
     const PinMesh* Plane::get_pinmesh( Point2 &p, int &first_reg ) const {
         // Locate the lattice
-        unsigned int ix, iy;
+        size_t ix, iy;
         for (ix=0; ix<nx_; ix++) {
             if(p.x < hx_[ix+1]) {
                 break;
@@ -70,7 +89,7 @@ namespace mocc {
             }
         }
 
-        unsigned int ilat = nx_*iy + ix;
+        size_t ilat = nx_*iy + ix;
 
         assert( (0<= ix) && (ix<nx_) );
         assert( (0<= iy) && (iy<ny_) );
@@ -92,7 +111,7 @@ namespace mocc {
         return pm;
     }
 
-    Position Plane::pin_position( unsigned int ipin ) const {
+    Position Plane::pin_position( size_t ipin ) const {
         int ilat = 0;
         for( auto &lattice: lattices_ ) {
             if( ipin < lattice->n_pin() ) {

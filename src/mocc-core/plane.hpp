@@ -1,29 +1,28 @@
 #pragma once
 
 #include <vector>
-#include <iostream>
 
-#include "lattice.hpp"
 #include "geom.hpp"
 #include "global_config.hpp"
+#include "lattice.hpp"
 
 namespace mocc {
     class Plane {
     public:
-        Plane(const std::vector<const Lattice*> &lattices, unsigned int nx, 
-                unsigned int ny);
+        Plane(const std::vector<const Lattice*> &lattices, size_t nx, 
+                size_t ny);
         
-        const Lattice& at(unsigned int ix, unsigned int iy) const {
+        const Lattice& at(size_t ix, size_t iy) const {
             return *(lattices_[ix + nx_*iy]);
         }
 
         const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;        
 
-        unsigned int n_reg() const {
+        size_t n_reg() const {
             return n_reg_;
         }
 
-        unsigned int n_xsreg() const {
+        size_t n_xsreg() const {
             return n_xsreg_;
         }
 
@@ -31,22 +30,28 @@ namespace mocc {
             VecF vols;
             for( auto &lat: lattices_ ) {
                 for( auto &pin: *lat ) {
-                    vols.insert(vols.end(), pin->vols().begin(), pin->vols().end());
+                    vols.insert(vols.end(), pin->vols().begin(), 
+                            pin->vols().end());
                 }
             }
 
             return vols;
         }
 
-        Position pin_position( unsigned int ipin ) const;
+        Position pin_position( size_t ipin ) const;
 
     private:
-        // Plane dimensions in lattices
-        unsigned int nx_;
-        unsigned int ny_;
+        /**
+         * Number of lattices in the x direction
+         */
+        size_t nx_;
+        /**
+         * Number of lattices in the y direction
+         */
+        size_t ny_;
 
-        unsigned int n_reg_;
-        unsigned int n_xsreg_;
+        size_t n_reg_;
+        size_t n_xsreg_;
         
         // Locations of lattice interfaces
         VecF hx_;
