@@ -14,7 +14,8 @@ namespace mocc {
         if( input.attribute("equation") ) {
             equation = input.attribute("equation").value();
         }
-        std::cout << "Generating sn sweeper with equation: " << equation;
+        std::cout << "Generating sn sweeper with equation: " 
+            << equation << std::endl;
 
         if( equation == "dd") {
             return UP_SnSweeper_t( new SnSweeper( input, mesh ) );

@@ -2,88 +2,17 @@
 
 #include "pugixml.hpp"
 
-#include "mesh.hpp"
-#include "sn_source.hpp"
+#include "angular_quadrature.hpp"
+#include "coarse_data.hpp"
 #include "core_mesh.hpp"
 #include "global_config.hpp"
+#include "mesh.hpp"
+#include "sn_boundary.hpp"
+#include "sn_source.hpp"
 #include "transport_sweeper.hpp"
-#include "angular_quadrature.hpp"
 #include "xs_mesh_homogenized.hpp"
-#include "coarse_data.hpp"
 
 namespace mocc {
-    /**
-     * \todo pull the boundary class into its own file.
-     */
-    class SnSweeperBoundary {
-    public:
-        SnSweeperBoundary() { }
-        SnSweeperBoundary( int n_grp, int n_ang , int nx, int ny, int nz):
-            n_ang_( n_ang ),
-            nx_( nx ),
-            ny_( ny ),
-            nz_( nz ),
-            ang_stride_( nx*ny + nx*nz + ny*nz ),
-            data_( (nx*ny + nx*nz + ny*nz) * n_ang * n_grp, 0.0 )
-        {
-            n_face_[(int)Normal::X_NORM] = ny_*nz_;
-            n_face_[(int)Normal::Y_NORM] = nx_*nz_;
-            n_face_[(int)Normal::Z_NORM] = nx_*ny_;
-            int offset = 0;
-            for( const auto norm: AllNormals ) {
-                face_offset_[(int)norm] = offset;
-                offset += n_face_[(int)norm];
-            }
-            return;
-        }
-
-        void get_face( int grp, int ang, Normal norm, float_t* out ) const {
-            const float_t* data = data_.data() + ang_stride_*n_ang_*grp + 
-                ang_stride_*ang + face_offset_[(int)norm];
-            for( int i=0; i<n_face_[(int)norm]; i++ ) {
-                out[i] = data[i];
-            }
-            return; 
-        }
-
-        const float_t* get_face_ptr( int grp, int ang, Normal norm ) const {
-            return data_.data() + ang_stride_*ang*grp + 
-                ang_stride_*ang + face_offset_[(int)norm];
-        }
-
-        void set_face( int grp, int ang, Normal norm, const float_t *in ) {
-            float_t* data = data_.data() + ang_stride_*n_ang_*grp + 
-                ang_stride_*ang + face_offset_[(int)norm];
-            for( int i=0; i<n_face_[(int)norm]; i++ ) {
-                data[i] = in[i];
-            }
-        }
-
-        void zero_face( int grp, int ang, Normal norm ) {
-            float_t* data = data_.data() + ang_stride_*n_ang_*grp + 
-                ang_stride_*ang + face_offset_[(int)norm];
-            for( int i=0; i<n_face_[(int)norm]; i++ ) {
-                data[i] = 0.0;
-            }
-        }
-
-        void initialize( float_t val ) {
-            for( auto &v: data_ ) {
-                v = val;
-            }
-        }
-
-    private:
-        int n_ang_;
-        int nx_;
-        int ny_;
-        int nz_;
-        int ang_stride_;
-        int face_offset_[3];
-        int n_face_[3];
-        VecF data_;
-    };
-
     class SnSweeper: public TransportSweeper {
     public:
         SnSweeper( const pugi::xml_node& input, const CoreMesh& mesh );
@@ -140,10 +69,10 @@ namespace mocc {
         ArrayX q_;
 
         // Incomming boundary condition
-        SnSweeperBoundary bc_in_;
+        SnBoundary bc_in_;
 
         // Outgoing boundary condition. Only difined for one group
-        SnSweeperBoundary bc_out_;
+        SnBoundary bc_out_;
 
         virtual void sweep_std( int group );
         virtual void sweep_final( int group );

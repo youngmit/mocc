@@ -29,7 +29,6 @@ namespace mocc {
                         RFPI;
                 }
             }
-
             return;
         }
     };

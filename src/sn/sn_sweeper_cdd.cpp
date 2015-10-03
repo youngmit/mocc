@@ -33,9 +33,9 @@ cout << "CDD Sweeper: " << endl;
         assert( corrections_ );
         flux_1g_.fill(0.0);
 
-		float_t *x_flux = new float_t[ny_*nz_];
-		float_t *y_flux = new float_t[nx_*nz_];
-		float_t *z_flux = new float_t[nx_*ny_];
+		ArrayF x_flux(ny_*nz_);
+		ArrayF y_flux(nx_*nz_);
+		ArrayF z_flux(nx_*ny_);
 
         int nang_half = ang_quad_.ndir()/2;
 
@@ -80,9 +80,9 @@ cout << "CDD Sweeper: " << endl;
             }
 
             // initialize upwind condition
-            bc_in_.get_face( group, iang, Normal::X_NORM, x_flux);
-            bc_in_.get_face( group, iang, Normal::Y_NORM, y_flux);
-            bc_in_.get_face( group, iang, Normal::Z_NORM, z_flux);
+            x_flux = bc_in_.get_face( group, iang, Normal::X_NORM);
+            y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM);
+            z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 float_t tz = oz/hz_[iz];
@@ -127,10 +127,6 @@ cout << "CDD Sweeper: " << endl;
         }
         // Update the boundary condition
         this->update_boundary( group );
-
-        delete[] x_flux;
-        delete[] y_flux;
-        delete[] z_flux;
 
         return;
     }
