@@ -103,6 +103,12 @@ cout << "representative moc flux: " << moc_flux[0] << endl;
                     alpha_y[i] = corrections_.alpha( i, a, g, Normal::Y_NORM );
                     beta[i] = corrections_.beta( i, a, g );
                 }
+                
+                {
+                    std::stringstream setname;
+                    setname << "/beta/" << g << "_" << a;
+                    file.write( setname.str(), beta, dims );
+                }
 
                 {
                     std::stringstream setname;
@@ -114,12 +120,6 @@ cout << "representative moc flux: " << moc_flux[0] << endl;
                     std::stringstream setname;
                     setname << "/alpha_y/" << g << "_" << a;
                     file.write( setname.str(), alpha_y, dims );
-                }
-
-                {
-                    std::stringstream setname;
-                    setname << "/beta/" << g << "_" << a;
-                    file.write( setname.str(), beta, dims );
                 }
             }
         }

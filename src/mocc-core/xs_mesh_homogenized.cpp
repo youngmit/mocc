@@ -3,6 +3,7 @@
 #include <iostream>
 
 using std::cout;
+using std::cin;
 using std::endl;
 
 namespace mocc {
@@ -22,12 +23,12 @@ namespace mocc {
             // sweeper as it is implemented now. This is really brittle, and
             // should be replaced with some sort of Sn Mesh object, which both
             // the XS Mesh and the Sn sweeper will use to handle indexing.
-            int ireg = mesh.index_lex( mesh.pin_position(ipin) );
+            auto pos = mesh.pin_position(ipin);
+            int ireg = mesh.index_lex( pos );
             regions_.push_back(this->homogenize_region( ireg, *pin ));
             ipin++;
             first_reg += pin->n_reg();
         }
-
     }
 
     
