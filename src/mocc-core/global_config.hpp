@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <vector>
 #include <valarray>
+#include <iostream>
 
 namespace mocc{
 
@@ -38,6 +39,11 @@ struct Position {
     unsigned int x;
     unsigned int y;
     unsigned int z;
+
+    friend std::ostream& operator<<(std::ostream& os, const Position &pos ) {
+        os << pos.x << " " << pos.y << " " << pos.z;
+        return os;
+    }
 };
 
 }
