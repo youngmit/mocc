@@ -185,11 +185,11 @@ void MoCSweeper::sweep1g_final( int group ) {
         } // angles
         iplane++;
 
-cout << endl;
-cout << coarse_data_->current.col(group) << endl;
-cout << endl;
+//cout << endl;
+//cout << coarse_data_->current.col(group) << endl;
+//cout << endl;
 
-cin.ignore();
+//cin.ignore();
 
         // Scale the scalar flux by the volume and add back the source
         flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
