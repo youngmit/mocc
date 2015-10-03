@@ -120,6 +120,8 @@ namespace mocc {
             ipin -= lattice->n_pin();
             ilat++;
         }
+
+
         // ilat should be the index of the lattice in which the pin resides.
         // ipin should be the lattice-local index of the pin
         Position pos(0, 0, 0);
@@ -135,7 +137,7 @@ namespace mocc {
         for( int iy=0; iy<lat_y; iy++ ) {
             pos.y += this->at(0, iy).ny();
         }
-        pos.y += ipin / this->at(lat_x, lat_y).ny();
+        pos.y += ipin / this->at(lat_x, lat_y).nx();
 
         return pos;
     }
