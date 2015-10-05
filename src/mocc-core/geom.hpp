@@ -1,13 +1,13 @@
 #pragma once
 
-#include <cmath>
 #include <algorithm>
-#include <iostream>
 #include <cassert>
+#include <cmath>
+#include <iostream>
 
-#include "global_config.hpp"
-#include "fp_utils.hpp"
 #include "angle.hpp"
+#include "fp_utils.hpp"
+#include "global_config.hpp"
 
 #define GEOM_EPS 1e-13
 
