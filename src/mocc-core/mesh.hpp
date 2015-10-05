@@ -95,6 +95,14 @@ namespace mocc {
         size_t n_surf() const {
             return (nx_+1)*ny_*nz_ + (ny_+1)*nx_*nz_ + (nz_+1)*nx_*ny_;
         }
+
+        /**
+         * Return a vector containing the x-, y-, z-dimensions of the mesh.
+         */
+        VecI dimensions() const {
+            VecI d = { (unsigned int)nx_, (unsigned int)ny_, (unsigned int)nz_ };
+            return d;
+        }
         
         /**
          * Return the coarse cell index given a pin Position. Cell indexing is
