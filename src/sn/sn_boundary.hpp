@@ -29,8 +29,10 @@ namespace mocc {
         }
 
         void zero_face( int grp, int ang, Normal norm ) {
-            size_t start = group_stride_*grp + ang_stride_*ang;
-            data_[std::slice(start, n_face_[(int)norm], 1)] = 0.0;
+            size_t start = group_stride_*grp + ang_stride_*ang + 
+                face_offset_[(int)norm];
+            size_t size = n_face_[(int)norm];
+            data_[std::slice(start, size, 1)] = 0.0;
         }
 
         void initialize( float_t val ) {

@@ -29,8 +29,7 @@ namespace mocc {
         return;
     }
 
-    std::ostream& operator<<(std::ostream& os, 
-            const SnBoundary &b ) {
+    std::ostream& operator<<(std::ostream& os, const SnBoundary &b ) {
         for( size_t ig=0; ig<b.n_grp_; ig++ ) {
             cout << "Group " << ig << endl;
             for( size_t iang=0; iang<b.n_ang_; iang++ ) {
