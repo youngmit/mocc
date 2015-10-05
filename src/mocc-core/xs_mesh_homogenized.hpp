@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "eigen_interface.hpp"
+#include "h5file.hpp"
 #include "xs_mesh.hpp"
 
 namespace mocc {
@@ -14,6 +15,11 @@ namespace mocc {
          * Update homogenized cross sections using the passed flux array
          */
         void update( const ArrayX &flux );
+
+        /**
+         * Generate output of important cross sections on the homogenized mesh
+         */
+        void output( H5File &file ) const;
     private:
         const CoreMesh& mesh_;
         

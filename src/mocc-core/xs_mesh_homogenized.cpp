@@ -1,6 +1,7 @@
 #include "xs_mesh_homogenized.hpp"
 
 #include <iostream>
+#include <sstream>
 
 using std::cout;
 using std::cin;
@@ -14,6 +15,8 @@ namespace mocc {
         // Set up the non-xs part of the xs mesh
         eubounds_ = mesh_.mat_lib().g_bounds();
         ng_ = eubounds_.size();
+
+        regions_ = std::vector<XSMeshRegion>( mesh_.n_pin() );
         
         int ipin = 0;
         int first_reg = 0;
@@ -25,7 +28,8 @@ namespace mocc {
             // the XS Mesh and the Sn sweeper will use to handle indexing.
             auto pos = mesh.pin_position(ipin);
             int ireg = mesh.index_lex( pos );
-            regions_.push_back(this->homogenize_region( ireg, *pin ));
+            int ixsreg = mesh_.index_lex( pos );
+            regions_[ixsreg] = this->homogenize_region( ireg, *pin );
             ipin++;
             first_reg += pin->n_reg();
         }
@@ -195,5 +199,26 @@ namespace mocc {
         return;
     }
 
+    void XSMeshHomogenized::output( H5File &file ) const {
+        file.mkdir( "/xsmesh" );
+        file.mkdir( "/xsmesh/xstr" );
+
+        auto d = mesh_.dimensions();
+        std::reverse(d.begin(), d.end());
+
+        for( size_t ig=0; ig<ng_; ig++ ) {
+            // Transport cross section
+            VecF xstr( this->size(), 0.0 );
+            int i = 0;
+            for( auto xsr: regions_ ) {
+                xstr[i] = xsr.xsmactr()[ig];
+                i++;
+            }
+            std::stringstream setname;
+            setname << "/xsmesh/xstr/" << ig;
+            file.write( setname.str(), xstr, d );
+        }
+        return;
+    }
 
 }
