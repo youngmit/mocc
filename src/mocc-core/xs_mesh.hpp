@@ -1,8 +1,10 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 
 #include "core_mesh.hpp"
+#include "output_interface.hpp"
 
 // TODO:
 //  - make a struct/class for an XS Mesh "region"
@@ -16,14 +18,13 @@
 //      + store all of the XS data on the xsmesh itself, and alias the proper
 //      portion of the data in that blob. data will be super local, less
 //      overhead, but a pain to implement.
-
-
 namespace mocc {
     // For now im using the lazy implementation of the xsmesh region class.
     // Using a structure of arrays would be more useful.
     class XSMeshRegion {
     friend class XSMesh;
     public:
+        XSMeshRegion(){ }
         XSMeshRegion( const VecI& fsrs, const VecF& xstr, const VecF& xsnf,
                 const VecF& xsch, const VecF& xsf, const ScatMat& xssc ):
             reg_(fsrs),
@@ -64,6 +65,26 @@ namespace mocc {
             return reg_;
         }
 
+        friend std::ostream& operator<<(std::ostream& os, 
+                const XSMeshRegion &xsr ) {
+            os << "Transport: " << std::endl;
+            for( auto v: xsr.xsmactr_ ){
+                os << v << " ";
+            }
+            os << std::endl;
+
+            os << "nu-fission: " << std::endl;
+            for( auto v: xsr.xsmacnf_ ) {
+                os << v << " ";
+            }
+            os << std::endl;
+
+            os << "Scattering matrix:" << std::endl;
+            os << xsr.xsmacsc_ << std::endl;
+
+            return os;
+        }
+
     private:
         // List of FSR indices that use this XS mesh region
         VecI reg_;
@@ -79,7 +100,7 @@ namespace mocc {
 
     };
 
-    class XSMesh {
+    class XSMesh: public HasOutput {
     public:
         // Default constructor does almost nothing, and lets some other code
         // tell it what to do
@@ -112,6 +133,11 @@ namespace mocc {
 
         const VecF& eubounds() const {
             return eubounds_;
+        }
+        
+        virtual void output( H5File &file ) const {
+            // Not really implementing for the general XS Mesh type.
+            assert(false);
         }
 
     protected:
