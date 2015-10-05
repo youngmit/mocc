@@ -148,9 +148,9 @@ namespace mocc {
             }
 
             // initialize upwind condition
-            x_flux = bc_in_.get_face( group, iang, Normal::X_NORM);
-            y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM);
-            z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM);
+            x_flux = bc_in_.get_face( group, iang, Normal::X_NORM );
+            y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM );
+            z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 float_t tz = oz/hz_[iz];
@@ -211,6 +211,7 @@ namespace mocc {
 
     void SnSweeper::update_boundary( int group ) {
         int iang = 0;
+
         for( auto &ang: ang_quad_ ) {
             Surface surf;
             Normal norm;
@@ -221,8 +222,8 @@ namespace mocc {
             surf = (ang.ox > 0) ? Surface::WEST : Surface::EAST;
             iang_refl = ang_quad_.reflect( iang, norm );
             if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-                bc_in_.set_face(group, iang, norm, 
-                        bc_out_.get_face(0, iang_refl, norm ));
+                auto new_bc = bc_out_.get_face( 0, iang_refl, norm );
+                bc_in_.set_face( group, iang, norm, new_bc );
             } else {
                 bc_in_.zero_face(group, iang, norm);
             }
@@ -231,8 +232,8 @@ namespace mocc {
             surf = (ang.oy > 0) ? Surface::SOUTH : Surface::NORTH;
             iang_refl = ang_quad_.reflect( iang, norm );
             if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-                bc_in_.set_face(group, iang, norm, 
-                        bc_out_.get_face(0, iang_refl, norm ));
+                auto new_bc = bc_out_.get_face( 0, iang_refl, norm );
+                bc_in_.set_face(group, iang, norm, new_bc);
             } else {
                 bc_in_.zero_face(group, iang, norm);
             }
@@ -241,8 +242,8 @@ namespace mocc {
             surf = (ang.oz > 0) ? Surface::BOTTOM : Surface::TOP;
             iang_refl = ang_quad_.reflect( iang, norm );
             if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-                bc_in_.set_face(group, iang, norm, 
-                        bc_out_.get_face(0, iang_refl, norm ));
+                auto new_bc = bc_out_.get_face( 0, iang_refl, norm );
+                bc_in_.set_face(group, iang, norm, new_bc );
             } else {
                 bc_in_.zero_face(group, iang, norm);
             }
@@ -277,6 +278,8 @@ namespace mocc {
         
             file.write(setname.str(), flux, dims);
         }
+
+        xs_mesh_->output( file );
         return;
     }
 }
