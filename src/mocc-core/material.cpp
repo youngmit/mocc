@@ -64,7 +64,6 @@ namespace mocc{
 
     std::ostream& operator<<( std::ostream& os, 
             const ScatMat &scat_mat ) {
-        os << "Scattering matrix: " << std::endl;
         for( auto &row: scat_mat.rows_ ) {
             unsigned int gmin = row.min_g;
             unsigned int gmax = row.max_g;
@@ -72,8 +71,8 @@ namespace mocc{
                 os << std::setw(12) << 0.0;
             }
 
-            for( auto &sc: row ) {
-                cout << std::setw(12) << sc;
+            for( size_t ig=gmin; ig<=gmax; ig++ ) {
+                cout << std::setw(12) << row[ig];
             }
 
             for( unsigned int ig=gmax+1; ig<scat_mat.rows_.size(); ig++) {

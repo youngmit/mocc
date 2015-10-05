@@ -10,31 +10,49 @@ namespace mocc{
     // Scattering matrix row
     struct ScatRow{
     public:
-        const int min_g;
-        const int max_g;
-
-        /**
-         *\todo come up with a better way to do this. having to perform the
-         * group offset manually in the client code is scary and error-prone.
-         */
-        float_t const * const from;
-    
         ScatRow(int min, int max, float_t const * const from):
             min_g(min), max_g(max), from(from){}
+        int min_g;
+        int max_g;
+        float_t const * const from;
 
-        float_t const * const begin() const {
+        float_t operator[]( size_t g ) const {
+            return from[g-min_g];
+        }
+
+        const float_t* begin() const {
             return from;
         }
 
-        float_t const * const end() const {
+        const float_t* end() const {
             return from + max_g - min_g + 1;
         }
+
     };
     
-    // Scattering matrix structure
+    /**
+     * This class provides an efficient means by which to store a matrix of
+     * scattering cross sections. Generally speaking, scattering matrices tend
+     * to be relatively sparse, since upscatter is not present at high energies
+     * (so the matrix is largely lower-triangular), and downscattering energy
+     * transfer is physically limited by the ratio of masses. Therefore we use a
+     * compressed representation, where each "row" of outscatter cross sections
+     * are stored contiguously, along with their group boundaries.
+     */
     class ScatMat{
     public:
+        ScatMat():
+            ng_(0) 
+        { }
+
+        /**
+         * Construct a scattering matrix using a 2-dimensional vector<vector<>>.
+         * This full, dense representation of the scattering matrix will be
+         * densified.
+         */
         ScatMat(std::vector<VecF> scat);
+
+
         const ScatRow& to( int ig ) const {
             return rows_[ig];
         }
@@ -46,16 +64,32 @@ namespace mocc{
             scat_( other.scat_ ),
             out_( other.out_ )
         {
-            // Pretty much everything can copy strait over, but we need to reach
-            // into the scattering rows and update their pointers to the
+            // Pretty much everything can copy straight over, but we need to
+            // reach into the scattering rows and update their pointers to the
             // location of the new scat_ vector
             int pos = 0;
             for( auto &row: other ) {
                 rows_.push_back( ScatRow(row.min_g, row.max_g, &scat_[pos]) );
                 pos += row.max_g - row.min_g + 1;
             }
+            
             return;
         }
+
+        ScatMat& operator=( const ScatMat &rhs ) {
+            if( this != &rhs ) {
+                ng_ = rhs.ng_;
+                scat_ = rhs.scat_;
+                out_ = rhs.out_;
+                int pos = 0;
+                for( auto &row: rhs ) {
+                    rows_.push_back( ScatRow(row.min_g, row.max_g, &scat_[pos]) );
+                    pos += row.max_g - row.min_g + 1;
+                }
+            }
+            return *this;
+        }
+
 
         /**
          * Return the total out-scattering cross section for group ig
@@ -86,8 +120,6 @@ namespace mocc{
         VecF scat_;
         VecF out_;
         std::vector<ScatRow> rows_;
-
-        
     };
     
     
