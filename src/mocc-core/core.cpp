@@ -1,8 +1,8 @@
 #include "core.hpp"
 
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "error.hpp"
 #include "string_utils.hpp"
@@ -45,7 +45,7 @@ namespace mocc {
 
         for( int i=0; i<6; i++ ) {
             if( bc_[i] == Boundary::INVALID ) {
-                Error("Not all boundary conditions properly specified.");
+                throw EXCEPT("Not all boundary conditions properly specified.");
             }
         }
         

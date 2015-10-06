@@ -153,31 +153,44 @@ void MoCSweeper::sweep1g_final( int group ) {
 
 
                 // Stash currents
-                size_t cell_fw = ray.cm_start_fw();
-                size_t cell_bw = ray.cm_start_bw();
+
+
+
+                size_t cell_fw = ray.cm_cell_fw();
+                size_t cell_bw = ray.cm_cell_bw();
+                size_t surf_fw = ray.cm_surf_fw();
+                size_t surf_bw = ray.cm_surf_bw();
                 size_t iseg_fw = 0;
                 size_t iseg_bw = ray.nseg();
+
+                Normal norm_fw = mesh_.surface_normal( surf_fw );
+                Normal norm_bw = mesh_.surface_normal( surf_bw );
+                coarse_data_->current( surf_fw, group ) += 
+                    psi1(iseg_fw) * current_weights[(int)norm_fw];
+                coarse_data_->current( surf_bw, group ) -= 
+                    psi2(iseg_bw) * current_weights[(int)norm_bw];
                 auto begin = ray.cm_data().cbegin();
                 auto end = ray.cm_data().cend();
                 for( auto crd = begin; crd != end; ++crd ) {
-                    size_t surf_fw = mesh_.coarse_surf( cell_fw, crd->fw );
-                    size_t surf_bw = mesh_.coarse_surf( cell_bw, crd->bw );
-
-                    Normal norm_fw = surface_to_normal( crd->fw );
-                    Normal norm_bw = surface_to_normal( crd->bw );
-
-                    iseg_fw += crd->nseg_fw;
-                    iseg_bw -= crd->nseg_bw;
-
-                    coarse_data_->current( surf_fw, group ) += 
-                        psi1(iseg_fw) * current_weights[(int)norm_fw];
-                    coarse_data_->current( surf_bw, group ) -= 
-                        psi2(iseg_bw) * current_weights[(int)norm_bw];
-
-                    if( crd != begin ) {
-                        cell_fw = mesh_.coarse_neighbor( cell_fw, (crd)->fw );
-                        cell_bw = mesh_.coarse_neighbor( cell_bw, (crd)->bw );
+                    // Hopefully branch prediction saves me here.
+                    if( crd->fw != Surface::INVALID ) {
+                        iseg_fw += crd->nseg_fw;
+                        norm_fw = surface_to_normal( crd->fw );
+                        surf_fw = mesh_.coarse_surf( cell_fw, crd->fw );
+                        coarse_data_->current( surf_fw, group ) += 
+                            psi1(iseg_fw) * current_weights[(int)norm_fw];
                     }
+
+                    if( crd->bw != Surface::INVALID ) {
+                        iseg_bw -= crd->nseg_bw;
+                        norm_bw = surface_to_normal( crd->bw );
+                        surf_bw = mesh_.coarse_surf( cell_bw, crd->bw );
+                        coarse_data_->current( surf_bw, group ) -= 
+                            psi2(iseg_bw) * current_weights[(int)norm_bw];
+                    }
+
+                    cell_fw = mesh_.coarse_neighbor( cell_fw, (crd)->fw );
+                    cell_bw = mesh_.coarse_neighbor( cell_bw, (crd)->bw );
                 }
                 iray++;
             } // Rays

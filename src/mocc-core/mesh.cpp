@@ -382,7 +382,7 @@ namespace mocc {
             return 2;
         }
 
-        // If we make it this far, our point is sitting on a corner
+        // If we make it this far, our point is sitting on a boundary corner
         if( ix == 0 ) {
             switch( octant ) {
                 case 1:
@@ -393,8 +393,8 @@ namespace mocc {
                     s[1] = Surface::WEST;
                     return 2;
                 case 3:
-                    s[0] = Surface::WEST;
-                    s[1] = Surface::SOUTH;
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::WEST;
                     return 2;
                 case 4:
                     s[0] = Surface::WEST;
@@ -415,8 +415,8 @@ namespace mocc {
                     s[0] = Surface::EAST;
                     return 1;
                 case 4:
-                    s[0] = Surface::EAST;
-                    s[1] = Surface::SOUTH;
+                    s[0] = Surface::SOUTH;
+                    s[1] = Surface::EAST;
                     return 2;
             }
         }
@@ -430,12 +430,12 @@ namespace mocc {
                     s[0] = Surface::SOUTH;
                     return 1;
                 case 3:
-                    s[0] = Surface::SOUTH;
-                    s[1] = Surface::WEST;
+                    s[0] = Surface::WEST;
+                    s[1] = Surface::SOUTH;
                     return 2;
                 case 4:
-                    s[0] = Surface::SOUTH;
-                    s[1] = Surface::EAST;
+                    s[0] = Surface::EAST;
+                    s[1] = Surface::SOUTH;
                     return 2;
             }
         }

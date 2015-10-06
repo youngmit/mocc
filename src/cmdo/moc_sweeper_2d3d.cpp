@@ -107,8 +107,8 @@ namespace mocc {
                     boundary_out_[iplane][iang2][bc1] = psi2(0);
 
                     // Stash currents
-                    size_t cell_fw = ray.cm_start_fw();
-                    size_t cell_bw = ray.cm_start_bw();
+                    size_t cell_fw = ray.cm_cell_fw();
+                    size_t cell_bw = ray.cm_cell_bw();
                     size_t iseg_fw = 0;
                     size_t iseg_bw = ray.nseg();
                     auto begin = ray.cm_data().cbegin();

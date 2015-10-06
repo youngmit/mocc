@@ -4,6 +4,7 @@
 
 using std::cout;
 using std::endl;
+using std::cin;
 
 // Assuming that p1 is the "origin" return the quadrant of the angle formed by
 // p1. Since we assume that p1 is below p2 in y, only octants 1 or 2 can be
@@ -38,42 +39,18 @@ namespace mocc {
         ps.push_back(p1);
         ps.push_back(p2);
 
+cout << "Ray: " << p1 << p2 << endl;
+
         std::vector<Surface> s_fw;
         std::vector<Surface> s_bw;
-        VecI cm_nseg;
 
         mesh.trace( ps );
+        std::vector<Point2> cps = ps;
 
-        // Determine the octant of the angle of the ray
-        int octant_fw = get_octant( p1, p2 );
-        int octant_bw = (octant_fw == 1) ? 3 : 4;
-        cm_start_fw_ = mesh.coarse_boundary_cell( p1, octant_fw );
-        cm_start_bw_ = mesh.coarse_boundary_cell( p2, octant_bw );
-        
-        size_t ns = 0;
-        
-        // Loop over them and trace individual pin meshes.
-        Point2 p_prev = ps[0];
-
-        // Always start with zero segments at the beginning, since the first
-        // surface normal is "upwind"
-        cm_nseg.push_back( 0 );
-
-        // Get the starting CM ray info for FW, ending for BW
-        Surface s[2];
-        ns = mesh.coarse_norm_point( p_prev, octant_fw, s );
-        for( int i=0; i<ns; i++ ) {
-            s_fw.push_back(s[i]);
-        }
-        if( ns == 2 ) {
-            cm_nseg.push_back( 0 );
-        }
-        ns = mesh.coarse_norm_point( p_prev, octant_bw, s );
-        for( int i=0; i<ns; i++ ) {
-            s_bw.push_back(s[i]);
-        }
-
-
+        // Trace the fine ray. We need to keep track of the number of segments
+        // in each pin crossing for the coarse ray data.
+        VecI cm_nseg;
+        auto p_prev = cps.front();
         for( auto pi=ps.begin()+1; pi!=ps.end(); ++pi ) {
             // Use the midpoint of the pin entry and exit points to locate the
             // pin.
@@ -85,58 +62,98 @@ namespace mocc {
             int nseg = pmt.pm->trace(p_prev-pin_p, *pi-pin_p, first_reg,
                     seg_len_, seg_index_);
 
-
-            ns = mesh.coarse_norm_point( *pi, octant_fw, s );
-            for( int i=0; i<ns; i++ ) {
-                s_fw.push_back( s[i] );
-            }
             cm_nseg.push_back( nseg );
-            if( ns == 2 ) {
-                cm_nseg.push_back( 0 );
-            }
-            ns = mesh.coarse_norm_point( *pi, octant_bw, s );
-            for( int i=0; i<ns; i++ ) {
-                s_bw.push_back( s[i] );
-            }
             
             p_prev = *pi;
         }
 
-        // Flip the order of the BW surfaces
-        std::reverse( s_bw.begin(), s_bw.end() );
-
-        /**
-         * \todo there is room to do a couple clevers here, maybe only store one
-         * value for nseg. Should come back to it when i get a chance.
-         */
-
-        // Here ns is the offset by which we should access the number of
-        // segments in the backward direction from the list of segments in the
-        // forward direction. Normally, it should be size-1, or the last
-        // element. If the ray crosses a corner at the end in the FW direction,
-        // there is zero that we need to jump over.
-        ns = cm_nseg.size();
-        if( cm_nseg[cm_nseg.size()-1] == 0 ) {
-            ns -= 1;
-        }
-        for( size_t i=0; i<cm_nseg.size(); i++ ) {
-            RayCoarseData rcd;
-            rcd.fw = s_fw[i];
-            rcd.bw = s_bw[i];
-            rcd.nseg_fw = cm_nseg[i];
-            rcd.nseg_bw = cm_nseg[ (ns-i)%cm_nseg.size() ];
-            cm_data_.push_back(rcd);
-        }
-        /*
+        // Figure out the coarse mesh data for the ray. Start with the starting
+        // cells and surfaces.
+        size_t ns = 0;
+        Surface s[2];
+        // All of the forward stuff
+        int octant = get_octant( p1, p2 );
+        std::vector<Surface> surfs_fw;
+        VecI nsegs_fw;
         {
+            auto pp = cps.cbegin();
+            auto p = cps.cbegin()+1;
+            // Per convention, the first crossing is always only one surface. neat.
+            cm_cell_fw_ = mesh.coarse_boundary_cell( *pp, octant );
+            ns = mesh.coarse_norm_point( *pp, octant, s );
+            assert(ns == 1);
+            cm_surf_fw_ = mesh.coarse_surf( cm_cell_fw_, s[0] );
+            for( auto nseg: cm_nseg ) {
+                ns = mesh.coarse_norm_point( *p, octant, s );
+                for( int i=0; i<ns; i++ ) {
+                    surfs_fw.push_back(s[i]);
+                }
+                nsegs_fw.push_back( nseg );
+                if( ns > 1 ) {
+                    nsegs_fw.push_back( 0 );
+                }
+                ++pp;
+                ++p;
+            }
+        }
+        // Backward stuff
+        std::reverse( cm_nseg.begin(), cm_nseg.end() );
+        octant = (octant == 1) ? 3 : 4;
+        std::vector<Surface> surfs_bw;
+        VecI nsegs_bw;
+        {
+            auto pp = cps.crbegin();
+            auto p = cps.crbegin()+1;
+            cm_cell_bw_ = mesh.coarse_boundary_cell( *pp, octant );
+            ns = mesh.coarse_norm_point( *pp, octant, s);
+            assert( ns == 1);
+            cm_surf_bw_ = mesh.coarse_surf( cm_cell_bw_, s[0] );
+            for( auto nseg: cm_nseg ) {
+                ns = mesh.coarse_norm_point( *p, octant, s);
+                for( int i=0; i<ns; i++ ) {
+                    surfs_bw.push_back(s[i]);
+                }
+                nsegs_bw.push_back( nseg );
+                if( ns > 1 ) {
+                    nsegs_bw.push_back( 0 );
+                }
+                ++pp;
+                ++p;
+            }
+        }
+
+        size_t stp = std::min(nsegs_fw.size(), nsegs_bw.size());
+        for( size_t i=0; i<stp; i++ ) {
             RayCoarseData rcd;
-            rcd.fw = s_fw.back();
-            rcd.bw = s_bw.back();
+            rcd.fw = surfs_fw[i];
+            rcd.bw = surfs_bw[i];
+            rcd.nseg_fw = nsegs_fw[i];
+            rcd.nseg_bw = nsegs_bw[i];
+
+            cm_data_.push_back( rcd );
+        }
+
+        // Things get weird here. If there are different numbers of entries in
+        // the forward or backward direction, ONE end of the ray must have hit a
+        // corner, but not the other end. In this case, we add an extra RCD
+        // instance to carry the information for the corner double-crossing
+        // direction, and a no-op for the other.
+        if( nsegs_fw.size() > nsegs_bw.size() ) {
+            RayCoarseData rcd;
+            rcd.fw = surfs_fw.back();
+            rcd.bw = Surface::INVALID;
             rcd.nseg_fw = 0;
             rcd.nseg_bw = 0;
-            cm_data_.push_back(rcd);
+            cm_data_.push_back( rcd );
         }
-        */
+        if( nsegs_bw.size() > nsegs_fw.size() ) {
+            RayCoarseData rcd;
+            rcd.fw = Surface::INVALID;
+            rcd.bw = surfs_bw.back();
+            rcd.nseg_fw = 0;
+            rcd.nseg_bw = 0;
+            cm_data_.push_back( rcd );
+        }
 
         nseg_ = seg_len_.size();
 

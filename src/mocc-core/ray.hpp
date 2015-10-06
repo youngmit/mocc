@@ -14,9 +14,17 @@ namespace mocc {
      * reused for each instance of a geometrically-unique plane. 
     */
     class Ray {
+        /**
+         * This struct stores data for the "coarse ray trace," or the
+         * interaction of a ray with the coarse mesh boundaries. Each entry has
+         * several members, stored in a bitfield. The data on the RayCoarseData
+         * essentially say "move forward/backward" n segments, and deposit
+         * information on the corresponding boundary. If the surface is INVALID,
+         * treat the entry as a no-op.
+         */
         struct RayCoarseData {
-            Surface fw: 3; 
-            Surface bw: 3; 
+            Surface fw: 4; 
+            Surface bw: 4; 
             unsigned int nseg_fw: 8;
             unsigned int nseg_bw: 8;
 
@@ -49,15 +57,28 @@ namespace mocc {
 
         // Return the index of the first coarse mesh cell encountered by this
         // ray in the forward direction
-        size_t cm_start_fw() const {
-            return cm_start_fw_;
+        size_t cm_cell_fw() const {
+            return cm_cell_fw_;
         }
 
         // Return the index of the first coarse mesh cell encountered by this
         // ray in the backward direction
-        size_t cm_start_bw() const {
-            return cm_start_bw_;
+        size_t cm_cell_bw() const {
+            return cm_cell_bw_;
         }
+        
+        // Return the index of the first coarse mesh surface encountered by this
+        // ray in the forward direction
+        size_t cm_surf_fw() const {
+            return cm_surf_fw_;
+        }
+
+        // Return the index of the first coarse mesh surface encountered by this
+        // ray in the backward direction
+        size_t cm_surf_bw() const {
+            return cm_surf_bw_;
+        }
+
 
         // Return a reference to the whole vector of segment lengths
         const VecF& seg_len() const {
@@ -109,8 +130,10 @@ namespace mocc {
 
 
     private:
-        size_t cm_start_fw_;
-        size_t cm_start_bw_;
+        size_t cm_surf_fw_;
+        size_t cm_surf_bw_;
+        size_t cm_cell_fw_;
+        size_t cm_cell_bw_;
 
         std::vector<RayCoarseData> cm_data_;
         
