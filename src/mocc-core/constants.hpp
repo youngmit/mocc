@@ -17,13 +17,13 @@ namespace mocc {
         NORTH = 1,
         WEST  = 2,
         SOUTH = 3,
-        TOP,
-        BOTTOM,
+        TOP = 4,
+        BOTTOM = 5,
+        INVALID = 6,
         NE,
         NW,
         SW,
-        SE,
-        INVALID
+        SE
     };
 
     extern const Surface AllSurfaces[6];

@@ -15,7 +15,6 @@ namespace mocc {
     
     
     std::ostream& operator<<(std::ostream& os, const Surface s ) {
-        os << "(" << (int)s << ") ";
         switch( s ) {
             case Surface::EAST:
                 os << "east";
@@ -48,7 +47,7 @@ namespace mocc {
                 os << "se";
                 break;
             case Surface::INVALID:
-                os << "invalid";
+                os << "inv";
                 break;
         }
         return os;
