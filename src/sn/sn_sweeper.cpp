@@ -76,7 +76,7 @@ namespace mocc {
     void SnSweeper::sweep( int group ) {
         // Store the transport cross section somewhere useful
         for( auto &xsr: *xs_mesh_ ) {
-            float_t xstr = xsr.xsmactr()[group];
+            real_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
                 xstr_(ireg) = xstr;
             }
@@ -110,10 +110,10 @@ namespace mocc {
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
-            float_t wgt = ang.weight * HPI; 
-            float_t ox = ang.ox;
-            float_t oy = ang.oy;
-            float_t oz = ang.oz;
+            real_t wgt = ang.weight * HPI; 
+            real_t ox = ang.ox;
+            real_t oy = ang.oy;
+            real_t oz = ang.oz;
 
             // Configure the loop direction. Could template the below for speed
             // at some point.
@@ -153,18 +153,18 @@ namespace mocc {
             z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
-                float_t tz = oz/hz_[iz];
+                real_t tz = oz/hz_[iz];
                 for( int iy=stty; iy!=stpy; iy+=ydir ) {
-                    float_t ty = oy/hy_[iy];
+                    real_t ty = oy/hy_[iy];
                     for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                         // Gross. really need an Sn mesh abstraction
-                        float_t psi_lx = x_flux[ny_*iz + iy];
-                        float_t psi_ly = y_flux[nx_*iz + ix];
-                        float_t psi_lz = z_flux[nx_*iy + ix];
+                        real_t psi_lx = x_flux[ny_*iz + iy];
+                        real_t psi_ly = y_flux[nx_*iz + ix];
+                        real_t psi_lz = z_flux[nx_*iy + ix];
 
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
-                        float_t tx = ox/hx_[ix];
-                        float_t psi = 2.0*(tx*psi_lx + 
+                        real_t tx = ox/hx_[ix];
+                        real_t psi = 2.0*(tx*psi_lx + 
                                            ty*psi_ly + 
                                            tz*psi_lz) + q_(i);
                         psi /= 2.0*(tx + ty + tz) + xstr_(i);

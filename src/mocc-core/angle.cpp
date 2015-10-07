@@ -57,7 +57,7 @@ namespace mocc {
     }
 
     // Change alpha and update ox and oy accordingly
-    Angle ModifyAlpha(Angle in, float_t new_alpha) {
+    Angle ModifyAlpha(Angle in, real_t new_alpha) {
         return Angle(new_alpha, in.theta, in.weight);
     }
 }

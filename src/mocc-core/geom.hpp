@@ -20,22 +20,22 @@ namespace {
 namespace mocc {
     class Point2 {
     public:
-        float_t x;
-        float_t y;
+        real_t x;
+        real_t y;
         bool ok;
 
         Point2() {
             ok=false;
             return;
         }
-        Point2(float_t x, float_t y):
+        Point2(real_t x, real_t y):
             x(x), y(y), ok(true)
         {
 
         }
         
         // return the euclidian distance between the point and another point
-        float_t distance(Point2 p) {
+        real_t distance(Point2 p) {
             return sqrt((x-p.x)*(x-p.x) + (y-p.y)*(y-p.y));
         }
 
@@ -73,7 +73,7 @@ namespace mocc {
         // Return the angle, in radians, made by the line from the origin to the
         // point from the positive-x axis. This uses atan2 and some other
         // jiggery to force the result to lie in [0,2PI]
-        float_t alpha() const {
+        real_t alpha() const {
             if(y > 0.0) {
                 return atan2(y, x);
             } else {
@@ -94,13 +94,13 @@ namespace mocc {
 
         Point2 intersect( Point2 p, Angle ang ) {
             // Project ox/oy to 2D plane
-            float_t ox = cos(ang.alpha);
-            float_t oy = sin(ang.alpha);
+            real_t ox = cos(ang.alpha);
+            real_t oy = sin(ang.alpha);
 
             // Dont use this code for astronomy stuff
-            float_t d_min = 1.0e12;
-            float_t d;
-            float_t x, y;
+            real_t d_min = 1.0e12;
+            real_t d;
+            real_t x, y;
 
             Point2 p_out;
 
@@ -156,8 +156,8 @@ namespace mocc {
 
     struct Circle { 
         Point2 c;
-        float_t r;
-        Circle(Point2 c, float_t r): c(c), r(r) { }
+        real_t r;
+        Circle(Point2 c, real_t r): c(c), r(r) { }
     };
 
     struct Line {
@@ -175,13 +175,13 @@ namespace mocc {
     // http://mathworld.wolfram.com/Circle-LineIntersection.html 
     inline int Intersect( Line l, Circle circ, Point2 &p1, Point2 &p2 ) {
         int ret = 0;
-        float_t u1 = l.p2.x - l.p1.x;
-        float_t u2 = l.p2.y - l.p1.y;
-        float_t w1 = l.p1.x - circ.c.x;
-        float_t w2 = l.p1.y - circ.c.y;
+        real_t u1 = l.p2.x - l.p1.x;
+        real_t u2 = l.p2.y - l.p1.y;
+        real_t w1 = l.p1.x - circ.c.x;
+        real_t w2 = l.p1.y - circ.c.y;
 
-        float_t b = w1*u1 + w2*u2;
-        float_t c = w1*w1 + w2*w2 - circ.r*circ.r;
+        real_t b = w1*u1 + w2*u2;
+        real_t c = w1*w1 + w2*w2 - circ.r*circ.r;
         if ( (c > 0.0) & (b > 0.0) ) {
             // no intersection
             p1.ok = false;
@@ -189,8 +189,8 @@ namespace mocc {
             return 0;
         }
 
-        float_t a = u1*u1 + u2*u2;
-        float_t discriminant = b*b-a*c;
+        real_t a = u1*u1 + u2*u2;
+        real_t discriminant = b*b-a*c;
         if ( discriminant < 0.0 ) {
             // No intersection
             p1.ok = false;
@@ -207,10 +207,10 @@ namespace mocc {
             p1.ok = true;
             p2.ok = true;
             
-            float_t ra = 1.0/a;
+            real_t ra = 1.0/a;
             discriminant = sqrt(discriminant);
-            float_t t1 = (-b-discriminant)*ra;
-            float_t t2 = (-b+discriminant)*ra;
+            real_t t1 = (-b-discriminant)*ra;
+            real_t t2 = (-b+discriminant)*ra;
             if( (0.0 < t1) & (t1 < 1.0) ) {
                 p1 = l.p1;
                 p1.x += u1*t1;
@@ -240,16 +240,16 @@ namespace mocc {
 
 
     inline int Intersect( Line l1, Line l2, Point2 &p ) {
-        float_t u1 = l1.p2.x - l1.p1.x;
-        float_t u2 = l1.p2.y - l1.p1.y;
-        float_t v1 = l2.p2.x - l2.p1.x;
-        float_t v2 = l2.p2.y - l2.p1.y;
-        float_t w1 = l1.p1.x - l2.p1.x;
-        float_t w2 = l1.p1.y - l2.p1.y;
+        real_t u1 = l1.p2.x - l1.p1.x;
+        real_t u2 = l1.p2.y - l1.p1.y;
+        real_t v1 = l2.p2.x - l2.p1.x;
+        real_t v2 = l2.p2.y - l2.p1.y;
+        real_t w1 = l1.p1.x - l2.p1.x;
+        real_t w2 = l1.p1.y - l2.p1.y;
 
-        float_t d = u1*v2 - u2*v1;
-        float_t s = v1*w2 - v2*w1;
-        float_t t = u1*w2 - u2*w1;
+        real_t d = u1*v2 - u2*v1;
+        real_t s = v1*w2 - v2*w1;
+        real_t t = u1*w2 - u2*w1;
 
         if ( fabs(d) < 0.0 ) {
             // Parallel lines

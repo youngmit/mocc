@@ -81,7 +81,7 @@ namespace mocc {
 
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
-            float_t xstr = xsr.xsmactr()[group];
+            real_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
                 xstr_(ireg) = xstr;
             }
@@ -163,7 +163,7 @@ namespace mocc {
         flux_.fill(1.0);
 
         // Walk through the boundary conditions and initialize them the 1/4pi
-        float_t val = 1.0/FPI;
+        real_t val = 1.0/FPI;
         for( auto &group_rays: boundary_ ) {
             for( auto &plane_rays: group_rays ) {
                 for( auto &angle_rays: plane_rays ) {
@@ -192,7 +192,7 @@ namespace mocc {
         for( auto &pin: mesh_ ) {
             Position pos = mesh_.pin_position(ipin);
             int i = mesh_.index_lex(pos);
-            float_t v = 0.0;
+            real_t v = 0.0;
             for( int ir=0; ir<pin->n_reg(); ir++) {
                 v += vol_(ireg);
                 flux[i] += flux_(ireg, group)*vol_(ireg);

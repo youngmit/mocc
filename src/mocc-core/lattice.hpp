@@ -39,12 +39,12 @@ namespace mocc {
         }
 
         // Return the size of the lattice along the x dimension
-        float_t hx() const {
+        real_t hx() const {
             return hx_;
         }
 
         // Return the size of the lattice along the y dimension
-        float_t hy() const {
+        real_t hy() const {
             return hy_;
         }
 
@@ -98,8 +98,8 @@ namespace mocc {
         unsigned int ny_;
         unsigned int n_reg_;
         unsigned int n_xsreg_;
-        float_t hx_;
-        float_t hy_;
+        real_t hx_;
+        real_t hy_;
         VecF hx_vec_;
         VecF hy_vec_;
         VecF x_vec_;

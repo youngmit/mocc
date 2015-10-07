@@ -49,10 +49,10 @@ namespace mocc {
         return std::abs(i1.i - i2.i) < 100; 
     }
 
-    inline bool fp_equiv_rel(float_t v1, float_t v2) {
+    inline bool fp_equiv_rel(real_t v1, real_t v2) {
         return fabs(v1-v2)/fabs(v1) < FLOAT_EPS;
     }
-    inline bool fp_equiv_abs(float_t v1, float_t v2) {
+    inline bool fp_equiv_abs(real_t v1, real_t v2) {
         return fabs(v1-v2) < FLOAT_EPS;
     }
 }

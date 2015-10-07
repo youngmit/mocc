@@ -56,9 +56,9 @@ namespace mocc {
             return sn_sweeper_.get_homogenized_xsmesh();
         }
 
-        void calc_fission_source( float_t k, ArrayX &fission_source ) const;
+        void calc_fission_source( real_t k, ArrayX &fission_source ) const;
 
-        float_t total_fission( bool old ) const;
+        real_t total_fission( bool old ) const;
 
         /**
          * Defer to the MoC and Sn sweepers.

@@ -32,15 +32,15 @@ namespace mocc {
             return n_xsreg_;
         }
 
-        float_t pitch_x() const {
+        real_t pitch_x() const {
             return pitch_x_;
         }
 
-        float_t pitch_y() const {
+        real_t pitch_y() const {
             return pitch_y_;
         }
 
-        float_t vol() const {
+        real_t vol() const {
             return pitch_x_ * pitch_y_;
         }
 
@@ -90,8 +90,8 @@ namespace mocc {
     	unsigned int id_;
         unsigned int n_reg_;
         unsigned int n_xsreg_;
-    	float_t pitch_x_;
-    	float_t pitch_y_;
+    	real_t pitch_x_;
+    	real_t pitch_y_;
         VecF vol_;
     };
     

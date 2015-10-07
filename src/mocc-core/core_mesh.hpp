@@ -40,14 +40,14 @@ namespace mocc {
         /** 
         * Return the total core length along the x dimension
         */
-        float_t hx() const {
+        real_t hx() const {
             return hx_;
         }
 
         /** 
         * Return the total core length along the y dimension
         */
-        float_t hy() const {
+        real_t hy() const {
             return hy_;
         }
 

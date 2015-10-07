@@ -7,29 +7,29 @@
 #include "constants.hpp"
 
 namespace mocc {
-    inline float_t RadToDeg( float_t rad ) {
+    inline real_t RadToDeg( real_t rad ) {
         return 180*(rad*RPI);
     }
 
     struct Angle {
         /// x-component of the angle
-        float_t ox;
+        real_t ox;
         /// y-component of the angle
-        float_t oy;
+        real_t oy;
         /// z-component of the angle
-        float_t oz;
+        real_t oz;
         /// azimuthal angle
-        float_t alpha;
+        real_t alpha;
         /// polar cosine
-        float_t theta;
+        real_t theta;
         /// quadrature weight
-        float_t weight;
+        real_t weight;
         /// Reciprocal of the sine of the polar angle. This is useful for
         /// computing true ray segment length from 2D projected length.
-        float_t rsintheta;
+        real_t rsintheta;
 
         // Construct using alpha/theta
-        Angle( float_t alpha, float_t theta, float_t weight ):
+        Angle( real_t alpha, real_t theta, real_t weight ):
             alpha(alpha),
             theta(theta),
             weight(weight)
@@ -40,7 +40,7 @@ namespace mocc {
         }
 
         // Construct using direction cosines
-        Angle( float_t ox, float_t oy, float_t oz, float_t weight):
+        Angle( real_t ox, real_t oy, real_t oz, real_t weight):
             ox(ox), oy(oy), oz(oz), weight(weight)
         {
             theta = acos(oz);
@@ -60,7 +60,7 @@ namespace mocc {
     
     Angle ToOctant( Angle in, int octant );
 
-    Angle ModifyAlpha ( Angle in, float_t new_alpha );
+    Angle ModifyAlpha ( Angle in, real_t new_alpha );
 
     
 }

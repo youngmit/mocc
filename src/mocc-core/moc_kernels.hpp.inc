@@ -11,9 +11,9 @@ void MoCSweeper::sweep1g( int group ) {
         for( auto &ang_rays: plane_rays ) {
             int iang1 = iang;
             int iang2 = ang_quad_.reverse(iang);
-            float_t stheta = sin(ang_quad_[iang].theta);
-            float_t rstheta = 1.0/stheta;
-            float_t wt_v_st = ang_quad_[iang].weight * rays_.spacing(iang) *
+            real_t stheta = sin(ang_quad_[iang].theta);
+            real_t rstheta = 1.0/stheta;
+            real_t wt_v_st = ang_quad_[iang].weight * rays_.spacing(iang) *
                 stheta * PI;
 
             int iray = 0;
@@ -31,13 +31,13 @@ void MoCSweeper::sweep1g( int group ) {
                 // Forward direction
                 {
                     // Initialize from bc
-                    float_t psi = 
+                    real_t psi = 
                         boundary_[group][iplane][iang1][bc1];
 
                     // Propagate through core geometry
                     for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
+                        real_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                         psi -= psi_diff;
                         flux_1g_(ireg) += psi_diff*wt_v_st;
                     }
@@ -48,13 +48,13 @@ void MoCSweeper::sweep1g( int group ) {
                 // Backward direction
                 {
                     // Initialize from bc
-                    float_t psi =
+                    real_t psi =
                         boundary_[group][iplane][iang2][bc2];
 
                     // Propagate through core geometry
                     for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        float_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
+                        real_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
                         psi -= psi_diff;
                         flux_1g_(ireg) += psi_diff*wt_v_st;
                     }
@@ -96,12 +96,12 @@ void MoCSweeper::sweep1g_final( int group ) {
             int iang1 = iang;
             int iang2 = ang_quad_.reverse(iang);
             Angle ang = ang_quad_[iang];
-            float_t stheta = sin(ang.theta);
-            float_t rstheta = 1.0/stheta;
-            float_t wt_v_st = ang.weight * rays_.spacing(iang) *
+            real_t stheta = sin(ang.theta);
+            real_t rstheta = 1.0/stheta;
+            real_t wt_v_st = ang.weight * rays_.spacing(iang) *
                 stheta * PI;
 
-            float_t current_weights[3] = {
+            real_t current_weights[3] = {
                 ang.weight * rays_.spacing(iang) * ang.ox,
                 ang.weight * rays_.spacing(iang) * ang.oy,
                 ang.weight * rays_.spacing(iang) * ang.oz
@@ -127,7 +127,7 @@ void MoCSweeper::sweep1g_final( int group ) {
                 // Propagate through core geometry
                 for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
-                    float_t psi_diff = (psi1(iseg) - qbar_(ireg)) * 
+                    real_t psi_diff = (psi1(iseg) - qbar_(ireg)) * 
                     e_tau(iseg);
                     psi1(iseg+1) = psi1(iseg) - psi_diff;
                     flux_1g_(ireg) += psi_diff*wt_v_st;
@@ -143,7 +143,7 @@ void MoCSweeper::sweep1g_final( int group ) {
                 // Propagate through core geometry
                 for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
-                    float_t psi_diff = (psi2(iseg+1) - qbar_(ireg)) * 
+                    real_t psi_diff = (psi2(iseg+1) - qbar_(ireg)) * 
                         e_tau(iseg);
                     psi2(iseg) = psi2(iseg+1) - psi_diff;
                     flux_1g_(ireg) += psi_diff*wt_v_st;

@@ -161,7 +161,7 @@ namespace mocc {
         // Put together the list of pin boundaries. For now we are treating them
         // as independent of axial plane
         x_vec_.push_back(0.0);
-        float_t h_prev = 0.0;
+        real_t h_prev = 0.0;
         for( int ilatx=0; ilatx < core_.nx(); ilatx++ ) {
             const Assembly* asy = &core_.at(ilatx, 0);
             const Lattice* lat = &((*asy)[0]);

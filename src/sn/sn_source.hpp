@@ -23,7 +23,7 @@ namespace mocc {
         {
             for( auto &xsr: *xs_mesh_ ) {
                 const ScatRow& scat_row = xsr.xsmacsc().to(ig);
-                float_t xssc = scat_row.from[ig-scat_row.min_g];
+                real_t xssc = scat_row.from[ig-scat_row.min_g];
                 for ( auto &ireg: xsr.reg() ) {
                     qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
                         RFPI;

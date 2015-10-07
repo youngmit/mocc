@@ -10,11 +10,11 @@
 
 // Hide all of these constants from the rest of the world
 namespace {
-    mocc::float_t mu_base[] = {0.577350269189626, 0.350021000000000,
+    mocc::real_t mu_base[] = {0.577350269189626, 0.350021000000000,
         0.266636000000000, 0.218218218218218, 0.192450089729876,
         0.174077655955702, 0.161575000000000, 0.149071198499989};
 
-    mocc::float_t w_unique[] = {
+    mocc::real_t w_unique[] = {
         1.0, 
         1.0/3.0, 
         0.1761262, 0.1572071,
@@ -60,8 +60,8 @@ std::vector<mocc::Angle> GenSn( int order ){
     mocc::VecF mu;
     mu.push_back(mu_base[n-1]);
     if( order > 2) {
-        const mocc::float_t delta_mu = 2.0 * ( 1.0 - 
-                3.0*(mu[0]*mu[0]) ) / (mocc::float_t)(order-2);
+        const mocc::real_t delta_mu = 2.0 * ( 1.0 - 
+                3.0*(mu[0]*mu[0]) ) / (mocc::real_t)(order-2);
         for (int i=1; i<n; i++) {
             mu.push_back( sqrt(mu[0]*mu[0] + i*delta_mu) );
         }
@@ -69,7 +69,7 @@ std::vector<mocc::Angle> GenSn( int order ){
 
     // Alias the w_unique array to get a slice for the order we are interested
     // in.
-    mocc::float_t* weights = &w_unique[w_offset[n-1]];
+    mocc::real_t* weights = &w_unique[w_offset[n-1]];
     // Alias into the w_map to get our indices
     int* map = &w_map[w_map_offset[n-1]];
 

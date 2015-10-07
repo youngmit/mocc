@@ -124,13 +124,13 @@ namespace mocc {
             }
         }
 
-        float_t fs_sum = 0.0;
+        real_t fs_sum = 0.0;
         for( auto &v: fs ) {
             fs_sum += v;
         }
 
 
-        float_t fluxvolsum = 0.0;
+        real_t fluxvolsum = 0.0;
         VecF scatsum(ng_, 0.0);
         for( size_t ig=0; ig<ng_; ig++ ) {
             int ireg = 0; // pin-local region index
@@ -142,8 +142,8 @@ namespace mocc {
                 int gmax = scat_row.max_g;
                 for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
                     int ireg_global = first_reg + ireg;
-                    float_t v = vols[ireg];
-                    float_t flux_i = flux(ireg_global, ig);
+                    real_t v = vols[ireg];
+                    real_t flux_i = flux(ireg_global, ig);
                     fluxvolsum += v * flux_i;
                     xstr[ig] += v * flux_i * mat.xstr()[ig];
                     xsnf[ig] += v * flux_i * mat.xsnf()[ig];
@@ -151,9 +151,9 @@ namespace mocc {
                     xsch[ig] += fs[ireg] * mat.xsch()[ig];
 
                     for( int igg=gmin; igg<=gmax; igg++ ) {
-                        float_t fluxgg = flux(ireg_global, igg);
+                        real_t fluxgg = flux(ireg_global, igg);
                         scatsum[igg] += fluxgg * v;
-                        float_t scgg = scat_row.from[igg-gmin];
+                        real_t scgg = scat_row.from[igg-gmin];
                         scat[ig][igg] += scgg * v * fluxgg;
                     }
                     ireg++;

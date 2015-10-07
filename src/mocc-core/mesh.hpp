@@ -260,13 +260,13 @@ namespace mocc {
         size_t nz_;
         
         /// Total core size in the x dimension
-        float_t hx_;
+        real_t hx_;
 
         /// Total core size in the y dimension
-        float_t hy_;
+        real_t hy_;
 
         /// Total core size in the z dimension
-        float_t hz_;
+        real_t hz_;
 
         /// List of pin boundaries in the x dimension (starts at 0.0)
         VecF x_vec_;

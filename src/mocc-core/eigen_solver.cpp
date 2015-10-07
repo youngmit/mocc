@@ -20,7 +20,7 @@ namespace mocc{
 
         // grab the convergence constraints from the XML
         int in_int = 0;
-        float_t in_float = 0.0;
+        real_t in_float = 0.0;
 
         // K tolerance
         in_float = input.attribute("k_tol").as_float(-1.0);
@@ -74,8 +74,8 @@ namespace mocc{
         // Hand a reference to the fission source to the fixed source solver
         fss_.set_fission_source(&fission_source_);
 
-        float_t error_k = 1.0; // K residual
-        float_t error_psi = 1.0; // L-2 norm of the fission source residual
+        real_t error_k = 1.0; // K residual
+        real_t error_psi = 1.0; // L-2 norm of the fission source residual
 
         unsigned int n_iterations = 0;
 
@@ -120,8 +120,8 @@ namespace mocc{
         fss_.step();
         
         // Get the total fission sources
-        float_t tfis1 = fss_.sweeper()->total_fission(false);
-        float_t tfis2 = fss_.sweeper()->total_fission(true);
+        real_t tfis1 = fss_.sweeper()->total_fission(false);
+        real_t tfis2 = fss_.sweeper()->total_fission(true);
 
         // update estimate for k
         keff_prev_ = keff_;

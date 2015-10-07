@@ -29,9 +29,9 @@ namespace mocc {
 
     private:
     	// Radii of material rings
-    	std::vector<float_t> xs_radii_;
+    	std::vector<real_t> xs_radii_;
     	// Radii of actual mesh rings
-    	std::vector<float_t> radii_;
+    	std::vector<real_t> radii_;
         // Vector of circle objects.
         std::vector<Circle> circles_;
         // Vector of line objects

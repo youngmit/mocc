@@ -12,13 +12,13 @@
 
 namespace mocc{
     struct ConvergenceCriteria {
-        ConvergenceCriteria( float_t k, float_t error_k, float_t error_psi ):
+        ConvergenceCriteria( real_t k, real_t error_k, real_t error_psi ):
             k(k),
             error_k(error_k),
             error_psi(error_psi) { }
-        float_t k;
-        float_t error_k;
-        float_t error_psi;
+        real_t k;
+        real_t error_k;
+        real_t error_psi;
     };
 
 
@@ -63,16 +63,16 @@ namespace mocc{
         ArrayX fission_source_prev_;
 
         // Current guess for k
-        float_t keff_;
+        real_t keff_;
 
         // Previous guess for k
-        float_t keff_prev_;
+        real_t keff_prev_;
 
         // Convergence criterion for the system eigenvalue
-        float_t tolerance_k_;
+        real_t tolerance_k_;
 
         // Convergence criterion for the fission source distribution (L-2 norm)
-        float_t tolerance_psi_;
+        real_t tolerance_psi_;
 
         // Maximum allowable outer iterations
         unsigned int max_iterations_;

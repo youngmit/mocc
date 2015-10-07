@@ -74,14 +74,14 @@ namespace mocc {
             // Store the pitches along each dimension
             hx_ = 0.0;
             for ( unsigned int ix=0; ix<nx_; ix++ ) {
-                float_t dx = this->at(ix, 0).mesh().pitch_x();
+                real_t dx = this->at(ix, 0).mesh().pitch_x();
                 hx_ += dx;
                 hx_vec_.push_back(dx);
             }
 
             hy_ = 0.0;
             for ( unsigned int iy=0; iy<ny_; iy++ ) {
-                float_t dy = this->at(0, iy).mesh().pitch_y();
+                real_t dy = this->at(0, iy).mesh().pitch_y();
                 hy_ += dy;
                 hy_vec_.push_back(dy);
             }

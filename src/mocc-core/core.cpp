@@ -91,7 +91,7 @@ namespace mocc {
         }
 
         for( unsigned int i=0; i<nz; i++ ) {
-            float_t hz = (*assemblies_.begin())->hz(i);
+            real_t hz = (*assemblies_.begin())->hz(i);
             for( auto asy = assemblies_.begin(); 
                  asy != assemblies_.end(); ++asy ) {
                 if ((*asy)->hz(i) != hz) {
@@ -112,7 +112,7 @@ namespace mocc {
         }
 
         // Store the x and y boundaries of the assemblies
-        float_t prev = 0.0;
+        real_t prev = 0.0;
         for( unsigned int ix=0; ix<nx_; ix++) {
             hx_vec_.push_back(prev+this->at(ix, 0).hx());
             prev = hx_vec_[ix];

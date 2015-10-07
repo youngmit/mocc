@@ -46,7 +46,7 @@ namespace mocc {
         VecF moc_flux;
         moc_sweeper_.get_pin_flux( group, moc_flux );
 cout << "representative moc flux: " << moc_flux[0] << endl;
-        float_t residual = 0.0;
+        real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
             cout << moc_flux[i] << " " << sn_sweeper_.flux( group, i ) << endl;
             residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
@@ -65,15 +65,15 @@ cout << "representative moc flux: " << moc_flux[0] << endl;
         sn_sweeper_.get_pin_flux( ig, flux );
     }
 
-    float_t PlaneSweeper_2D3D::total_fission( bool old ) const {
+    real_t PlaneSweeper_2D3D::total_fission( bool old ) const {
         // using the MoC for now, but once things start to converge, might want
         // to use Sn, since it should yield the same result at convergence and
         // is cheaper to evaluate.
-        float_t tfis = moc_sweeper_.total_fission( old );
+        real_t tfis = moc_sweeper_.total_fission( old );
         return tfis;
     }
 
-    void PlaneSweeper_2D3D::calc_fission_source( float_t k, 
+    void PlaneSweeper_2D3D::calc_fission_source( real_t k, 
             ArrayX &fission_source ) const {
         moc_sweeper_.calc_fission_source( k, fission_source );
         return;

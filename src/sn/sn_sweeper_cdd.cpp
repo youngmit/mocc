@@ -42,10 +42,10 @@ cout << "CDD Sweeper: " << endl;
         int iang = 0;
         for( auto ang: ang_quad_ ) {
             int iang_a = iang % nang_half;
-            float_t wgt = ang.weight * HPI; 
-            float_t ox = ang.ox;
-            float_t oy = ang.oy;
-            float_t oz = ang.oz;
+            real_t wgt = ang.weight * HPI; 
+            real_t ox = ang.ox;
+            real_t oy = ang.oy;
+            real_t oz = ang.oz;
 
             // Configure the loop direction. Could template this for speed at
             // some point.
@@ -85,28 +85,28 @@ cout << "CDD Sweeper: " << endl;
             z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM);
 
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
-                float_t tz = oz/hz_[iz];
+                real_t tz = oz/hz_[iz];
                 for( int iy=stty; iy!=stpy; iy+=ydir ) {
-                    float_t ty = oy/hy_[iy];
+                    real_t ty = oy/hy_[iy];
                     for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                         // Gross. really need an Sn mesh abstraction
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
-                        float_t tx = ox/hx_[ix];
+                        real_t tx = ox/hx_[ix];
 
-                        float_t psi_lx = x_flux[ny_*iz + iy];
-						float_t psi_ly = y_flux[nx_*iz + ix];
-						float_t psi_lz = z_flux[nx_*iz + ix];
+                        real_t psi_lx = x_flux[ny_*iz + iy];
+						real_t psi_ly = y_flux[nx_*iz + ix];
+						real_t psi_lz = z_flux[nx_*iz + ix];
 
-                        float_t ax = corrections_->alpha( i, iang_a, group, 
+                        real_t ax = corrections_->alpha( i, iang_a, group, 
                                 Normal::X_NORM);
-                        float_t ay = corrections_->alpha( i, iang_a, group, 
+                        real_t ay = corrections_->alpha( i, iang_a, group, 
                                 Normal::Y_NORM);
-                        float_t b = corrections_->beta( i, iang_a, group );
+                        real_t b = corrections_->beta( i, iang_a, group );
 
-                        float_t gx = ax*b;
-                        float_t gy = ay*b;
+                        real_t gx = ax*b;
+                        real_t gy = ay*b;
 
-                        float_t psi = q_(i) + 
+                        real_t psi = q_(i) + 
                             2.0*(tx*psi_lx + ty*psi_ly + tz*psi_lz );
                         psi /= tx/gx + ty/gy + 2.0*tz + xstr_(i);
 

@@ -53,12 +53,12 @@ namespace mocc {
                 flux_vol_norm = 0.0;
                 sigt_sum = 0.0;
 
-                float_t stheta = sin(ang.theta);
-                float_t rstheta = 1.0/stheta;
-                float_t wt_v_st = ang.weight * rays_.spacing(iang) *
+                real_t stheta = sin(ang.theta);
+                real_t rstheta = 1.0/stheta;
+                real_t wt_v_st = ang.weight * rays_.spacing(iang) *
                     stheta * PI;
 
-                float_t current_weights[3] = {
+                real_t current_weights[3] = {
                     ang.weight * rays_.spacing(iang) * ang.ox,
                     ang.weight * rays_.spacing(iang) * ang.oy,
                     ang.weight * rays_.spacing(iang) * ang.oz
@@ -83,7 +83,7 @@ namespace mocc {
                     // Propagate through core geometry
                     for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        float_t psi_diff = (psi1(iseg) - qbar_(ireg)) * 
+                        real_t psi_diff = (psi1(iseg) - qbar_(ireg)) * 
                         e_tau(iseg);
                         psi1(iseg+1) = psi1(iseg) - psi_diff;
                         flux_1g_(ireg) += psi_diff*wt_v_st;
@@ -99,7 +99,7 @@ namespace mocc {
                     // Propagate through core geometry
                     for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        float_t psi_diff = (psi2(iseg+1) - qbar_(ireg)) * 
+                        real_t psi_diff = (psi2(iseg+1) - qbar_(ireg)) * 
                             e_tau(iseg);
                         psi2(iseg) = psi2(iseg+1) - psi_diff;
                         flux_1g_(ireg) += psi_diff*wt_v_st;
@@ -135,9 +135,9 @@ namespace mocc {
                             // Store forward volumetric stuff
                             for( int i=0; i<crd->nseg_fw; i++ ) {
                                 int ireg = ray.seg_index(iseg_fw) + first_reg;
-                                float_t xstr = xstr_(ireg);
-                                float_t t = ang.rsintheta * ray.seg_len(iseg_fw);
-                                float_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
+                                real_t xstr = xstr_(ireg);
+                                real_t t = ang.rsintheta * ray.seg_len(iseg_fw);
+                                real_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
                                     (psi1(iseg_fw)-qbar_(ireg))/xstr;
                                 flux_vol_sum[cell_fw*2+0] += fluxvol;
                                 flux_vol_norm[cell_fw] += t;
@@ -158,9 +158,9 @@ namespace mocc {
                             for( int i=0; i<crd->nseg_bw; i++ ) {
                                 iseg_bw--;
                                 int ireg = ray.seg_index(iseg_bw) + first_reg;
-                                float_t xstr = xstr_(ireg);
-                                float_t t = ang.rsintheta * ray.seg_len(iseg_bw);
-                                float_t fluxvol = t * qbar_(ireg) + 
+                                real_t xstr = xstr_(ireg);
+                                real_t t = ang.rsintheta * ray.seg_len(iseg_bw);
+                                real_t fluxvol = t * qbar_(ireg) + 
                                     e_tau(iseg_bw) * 
                                     (psi2(iseg_bw+1)-qbar_(ireg))/xstr;
                                 flux_vol_sum[cell_bw*2+1] += fluxvol;
@@ -223,7 +223,7 @@ namespace mocc {
         const int YR = 3;
         int iang1 = ang;
         int iang2 = ang_quad_.reverse(ang);
-        float_t ox = ang_quad_[ang].ox;
+        real_t ox = ang_quad_[ang].ox;
 
         Surface surfs[2][4];
         // We know that all of our moc angles are positive in the y direction
@@ -249,19 +249,19 @@ namespace mocc {
 
             // FW direction
             {
-                float_t psi_xl = 
+                real_t psi_xl = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[FW][XL])*2+0];
-                float_t psi_xr = 
+                real_t psi_xr = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[FW][XR])*2+0];
-                float_t psi_yl = 
+                real_t psi_yl = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[FW][YL])*2+0];
-                float_t psi_yr = 
+                real_t psi_yr = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[FW][YR])*2+0];
             
-                float_t ax = flux_node[ic*2+0]/(psi_xl + psi_xr);
-                float_t ay = flux_node[ic*2+0]/(psi_yl + psi_yr);
+                real_t ax = flux_node[ic*2+0]/(psi_xl + psi_xr);
+                real_t ay = flux_node[ic*2+0]/(psi_yl + psi_yr);
 
-                float_t b = sigt[ic*2+0]/xstr;
+                real_t b = sigt[ic*2+0]/xstr;
 cout << ax << " " << ay << " " << b << endl;
 
                 corrections_->alpha( ic, iang1, group, Normal::X_NORM ) = ax;
@@ -272,19 +272,19 @@ cout << ax << " " << ay << " " << b << endl;
 
             // BW direction
             {
-                float_t psi_xl = 
+                real_t psi_xl = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[BW][XL])*2+1];
-                float_t psi_xr = 
+                real_t psi_xr = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[BW][XR])*2+1];
-                float_t psi_yl = 
+                real_t psi_yl = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[BW][YL])*2+1];
-                float_t psi_yr = 
+                real_t psi_yr = 
                     flux_surf[mesh_.coarse_surf(ic, surfs[BW][YR])*2+1];
 
-                float_t ax = flux_node[ic*2+1]/(psi_xl + psi_xr);
-                float_t ay = flux_node[ic*2+1]/(psi_yl + psi_yr);
+                real_t ax = flux_node[ic*2+1]/(psi_xl + psi_xr);
+                real_t ay = flux_node[ic*2+1]/(psi_yl + psi_yr);
 
-                float_t b = sigt[ic*2+1]/xstr;
+                real_t b = sigt[ic*2+1]/xstr;
 
 cout << ax << " " << ay << " " << b << endl;
                 corrections_->alpha( ic, iang2, group, Normal::X_NORM ) = ax;

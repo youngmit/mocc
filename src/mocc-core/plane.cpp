@@ -17,7 +17,7 @@ namespace mocc {
 
         // determine the locations of the lattice interfaces
         VecF dx;
-        float_t prev = 0.0;
+        real_t prev = 0.0;
         hx_.push_back(0.0);
         for( size_t ix=0; ix<nx_; ix++) {
             hx_.push_back(prev + this->at(ix, 0).hx());

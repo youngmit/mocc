@@ -31,7 +31,7 @@ namespace mocc {
                 ArrayX& qbar ) const;
 
         // Return a pointer to the source
-        const float_t* get() const {
+        const real_t* get() const {
             return source_1g_.data();
         }
     protected:

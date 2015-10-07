@@ -37,19 +37,19 @@ namespace mocc {
             return;
         }
 
-        const float_t* xsmactr() const {
+        const real_t* xsmactr() const {
             return xsmactr_.data();
         }
 
-        const float_t* xsmacnf() const {
+        const real_t* xsmacnf() const {
             return xsmacnf_.data();
         }
 
-        const float_t* xsmackf() const {
+        const real_t* xsmackf() const {
             return xsmackf_.data();
         }
 
-        const float_t* xsmacch() const {
+        const real_t* xsmacch() const {
             return xsmacch_.data();
         }
 

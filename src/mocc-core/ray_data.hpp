@@ -79,7 +79,7 @@ namespace mocc {
         }
 
         /// Return the ray spacing for the given angle
-        float_t spacing( int iang ) {
+        real_t spacing( int iang ) {
             return spacing_[iang];
         }
 

@@ -25,7 +25,7 @@ namespace mocc {
     	{
     		stringstream radiiIn(input.child("radii").child_value());
     		while (!radiiIn.eof()) {
-    			mocc::float_t rad;
+    			mocc::real_t rad;
     			radiiIn >> rad;
     			xs_radii_.push_back(rad);
     			
@@ -139,12 +139,12 @@ namespace mocc {
         }
 
         // Construct Line objects corresponding to each azimuthal subdivision
-        float_t h_pitch_x = 0.5*pitch_x_;
-        float_t h_pitch_y = 0.5*pitch_y_;
+        real_t h_pitch_x = 0.5*pitch_x_;
+        real_t h_pitch_y = 0.5*pitch_y_;
         int n_azi = sub_azi_[0];
         Box pin_box( Point2(-h_pitch_x, -h_pitch_y), 
                      Point2( h_pitch_x,  h_pitch_y) );
-        float_t ang_sep = TWOPI/n_azi;
+        real_t ang_sep = TWOPI/n_azi;
         for( int iazi=0; iazi<n_azi; iazi++ ) {
             Angle ang(iazi*ang_sep, HPI, 0.0);
             // Point at which the azimuthal subdivision intersects the bounding
@@ -157,9 +157,9 @@ namespace mocc {
 
 
         // Determine FSR volumes
-        float_t prev_r = 0.0;
+        real_t prev_r = 0.0;
         for( auto &ri: radii_) {
-            float_t voli = PI*(ri*ri - prev_r*prev_r)/n_azi;
+            real_t voli = PI*(ri*ri - prev_r*prev_r)/n_azi;
             for( int iazi=0; iazi<n_azi; iazi++ ) {
                 vol_.push_back(voli);
             }
@@ -167,8 +167,8 @@ namespace mocc {
         }
 
         // Add the volumes from the outer annular region
-        float_t large_r = radii_[radii_.size()-1];
-        float_t v_outer = (pitch_x_*pitch_y_ - PI*large_r*large_r)/n_azi;
+        real_t large_r = radii_[radii_.size()-1];
+        real_t v_outer = (pitch_x_*pitch_y_ - PI*large_r*large_r)/n_azi;
         for( int ia=0; ia<n_azi; ia++ ) {
             vol_.push_back(v_outer);
         }
@@ -237,7 +237,7 @@ namespace mocc {
         }
 
         // Find the radial division of the point
-        float_t r = sqrt( p.x*p.x+p.y*p.y );
+        real_t r = sqrt( p.x*p.x+p.y*p.y );
         unsigned int ir = 0;
         for( ir=0; ir<radii_.size(); ir++ ) {
             if( r < radii_[ir]) {
@@ -251,7 +251,7 @@ namespace mocc {
         // index corresponding to that region, so we can go ahead and use it.
         
         // Find the azimuthal subdivision that the point is in.
-        float_t azi = p.alpha();
+        real_t azi = p.alpha();
         unsigned int ia = azi/(TWOPI/sub_azi_[0]);
         unsigned int ireg = ir*sub_azi_[0] + ia;
 

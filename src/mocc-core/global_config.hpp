@@ -8,20 +8,20 @@
 namespace mocc{
 
 #ifdef FORCE_SINGLE
-typedef float float_t;
+typedef float real_t;
 #define FLOAT_EPS 1e-5
 #else
-typedef double float_t;
+typedef double real_t;
 #define FLOAT_EPS 1e-12
 #endif
 
 // General purpose vector of floats, ints, etc
-typedef std::vector<float_t> VecF;
+typedef std::vector<real_t> VecF;
 typedef std::vector<unsigned int> VecI;
 typedef std::vector<int> VecSI;
 
 // valarray of floats
-typedef std::valarray<float_t> ArrayF;
+typedef std::valarray<real_t> ArrayF;
 
 
 struct Position {

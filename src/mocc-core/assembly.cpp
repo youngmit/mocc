@@ -45,7 +45,7 @@ namespace mocc {
             stringstream hzstream(hzs);
 
             while( !hzstream.eof() ) {
-                float_t hzi;
+                real_t hzi;
                 hzstream >> hzi;
                 hz_.push_back(hzi);
                 std::reverse( hz_.begin(), hz_.end() );

@@ -55,7 +55,7 @@ namespace mocc{
          * Given the current estimate of a system eigenvalue, calculate the
          * group-independent fission source and store in the passed array
          */
-        virtual void calc_fission_source( float_t k, 
+        virtual void calc_fission_source( real_t k, 
                 ArrayX& fission_source) const;
 
         /**
@@ -95,7 +95,7 @@ namespace mocc{
         }
 
         /// Subscript and return a specific flux value
-        const float_t flux( unsigned int ig, unsigned int ireg ) const {
+        const real_t flux( unsigned int ig, unsigned int ireg ) const {
             return flux_( ireg, ig );
         }
 
@@ -134,7 +134,7 @@ namespace mocc{
 
         /// Compute the total fission source based on the current state of the
         /// flux
-        virtual float_t total_fission( bool old=false ) const;
+        virtual real_t total_fission( bool old=false ) const;
 
         /// Homogenize flux and group constants to a CoarseData object
         virtual void homogenize( CoarseData &data ) const = 0;

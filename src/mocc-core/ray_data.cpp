@@ -49,7 +49,7 @@ namespace mocc {
         }
 
         // Get the optimal ray spacing
-        float_t opt_spacing = input.attribute("spacing").as_float(-1.0);
+        real_t opt_spacing = input.attribute("spacing").as_float(-1.0);
         if( opt_spacing <= 0.0 ) {
             Error("Failed to read valid ray spacing.");
         }
@@ -58,8 +58,8 @@ namespace mocc {
         n_planes_ = mesh.n_unique_planes();
 
         // Figure out modular angles and spacings
-        float_t hx = mesh.hx();
-        float_t hy = mesh.hy();
+        real_t hx = mesh.hx();
+        real_t hy = mesh.hy();
 
 cout << "Original Angular quadrature " << endl;
 cout << ang_quad_ << endl;
@@ -79,11 +79,11 @@ cout << ang_quad_ << endl;
             Ny_.push_back(Ny);
             Nrays_.push_back(Nx+Ny);
 
-            float_t new_alpha = atan( hy*Nx/(hx*Ny) );
+            real_t new_alpha = atan( hy*Nx/(hx*Ny) );
             ang = ModifyAlpha( ang, new_alpha );
 
             ang_quad_.modify_angle( iang, ang );
-            float_t space = cos(ang_it->alpha) * hy/Ny;
+            real_t space = cos(ang_it->alpha) * hy/Ny;
             spacing_.push_back( space );
 
             iang++;
@@ -120,9 +120,9 @@ cout << ang_quad_ << endl;
                 int Ny = Ny_[iang];
                 int bc1 = 0;
                 int bc2 = 0;
-                float_t space = spacing_[iang];
-                float_t space_x = fabs( space/sin(ang->alpha) );
-                float_t space_y = fabs( space/cos(ang->alpha) );
+                real_t space = spacing_[iang];
+                real_t space_x = fabs( space/sin(ang->alpha) );
+                real_t space_y = fabs( space/cos(ang->alpha) );
 
                 std::vector<Ray> rays;
                 // Handle rays entering on the x-normal faces
@@ -222,7 +222,7 @@ cout << ang_quad_ << endl;
                     {
                         VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                         std::vector<Ray>& rays = rays_[iplane][iang];
-                        float_t space = spacing_[iang];
+                        real_t space = spacing_[iang];
                         
                         for( auto &ray: rays ) {
                             for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
@@ -255,8 +255,8 @@ cout << ang_quad_ << endl;
                          ang!=ang_quad_.octant(3); ++ang )
                     {
                         std::vector<Ray>& rays = rays_[iplane][iang];
-                        float_t space = spacing_[iang];
-                        float_t wgt = ang->weight*0.5;
+                        real_t space = spacing_[iang];
+                        real_t wgt = ang->weight*0.5;
 
                         for( auto &ray: rays ) {
                             for( size_t iseg=0; iseg<ray.nseg(); iseg++ )

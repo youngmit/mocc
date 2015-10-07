@@ -10,21 +10,21 @@ namespace mocc{
     // Scattering matrix row
     struct ScatRow{
     public:
-        ScatRow(int min, int max, float_t const * const from):
+        ScatRow(int min, int max, real_t const * const from):
             min_g(min), max_g(max), from(from){}
         int min_g;
         int max_g;
-        float_t const * const from;
+        real_t const * const from;
 
-        float_t operator[]( size_t g ) const {
+        real_t operator[]( size_t g ) const {
             return from[g-min_g];
         }
 
-        const float_t* begin() const {
+        const real_t* begin() const {
             return from;
         }
 
-        const float_t* end() const {
+        const real_t* end() const {
             return from + max_g - min_g + 1;
         }
 
@@ -94,7 +94,7 @@ namespace mocc{
         /**
          * Return the total out-scattering cross section for group ig
          */
-        float_t out( unsigned int ig ) const {
+        real_t out( unsigned int ig ) const {
             return out_[ig]; 
         };
 
@@ -156,7 +156,7 @@ namespace mocc{
          */
         bool is_fissile() const {
             return std::any_of(xsnf_.begin(), xsnf_.end(), 
-                    [](float_t v){return v>0.0;});
+                    [](real_t v){return v>0.0;});
         }
 
     private:

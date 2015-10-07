@@ -38,7 +38,7 @@ namespace mocc {
         }
 
         // Return the total height of the assembly
-        float_t hz( unsigned int iz ) const {
+        real_t hz( unsigned int iz ) const {
             return hz_[iz];
         }
 
@@ -47,12 +47,12 @@ namespace mocc {
         }
         
         // Return the total size of the assembly in the x dimension
-        float_t hx() const {
+        real_t hx() const {
             return hx_;
         }
 
         // Return the total size of the assembly in the y dimension
-        float_t hy() const {
+        real_t hy() const {
             return hy_;
         }
 
@@ -76,8 +76,8 @@ namespace mocc {
         unsigned int nz_;
         VecF hz_;
 
-        float_t hx_;
-        float_t hy_;
+        real_t hx_;
+        real_t hy_;
 
         unsigned int n_reg_;
         unsigned int n_xsreg_;

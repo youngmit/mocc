@@ -35,7 +35,7 @@ namespace mocc {
             return pin_mesh_->id();
         }
 
-        float_t vol() const {
+        real_t vol() const {
             return pin_mesh_->vol();
         }
 

@@ -95,14 +95,14 @@ namespace mocc {
          * relatively automatic, since the RayData object only exposes each Ray
          * as a const reference.
          */ 
-        float_t& seg_len( int iseg ) {
+        real_t& seg_len( int iseg ) {
             return seg_len_[iseg];
         }
 
         /**
          * Return a const segment length
          */
-        float_t seg_len( int iseg ) const {
+        real_t seg_len( int iseg ) const {
             return seg_len_[iseg];
         }
 

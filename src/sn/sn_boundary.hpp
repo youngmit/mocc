@@ -35,7 +35,7 @@ namespace mocc {
             data_[std::slice(start, size, 1)] = 0.0;
         }
 
-        void initialize( float_t val ) {
+        void initialize( real_t val ) {
             data_ = val;
         }
         

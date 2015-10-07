@@ -25,7 +25,7 @@ namespace mocc {
         }
 
         for( auto &xsr: *xs_mesh_ ) {
-            float_t xsch = xsr.xsmacch()[ig];
+            real_t xsch = xsr.xsmacch()[ig];
             for( auto &ireg: xsr.reg() ) {
                 source_1g_(ireg) +=  xsch*fs(ireg);
             }
@@ -47,7 +47,7 @@ namespace mocc {
                 // routine to have less indirection.
                 if( igg != ig ) {
                     for( auto &ireg: xsr.reg() ) {
-                        float_t scat_src = sc*flux_(ireg, igg);
+                        real_t scat_src = sc*flux_(ireg, igg);
                         source_1g_(ireg) += scat_src;
                     }
                 }
@@ -64,8 +64,8 @@ namespace mocc {
             ArrayX& qbar ) const {
         for( auto &xsr: *xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
-            float_t xssc = scat_row.from[ig-scat_row.min_g];
-            float_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
+            real_t xssc = scat_row.from[ig-scat_row.min_g];
+            real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
             for ( auto &ireg: xsr.reg() ) {
                 qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
                     r_fpi_tr;
