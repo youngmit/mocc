@@ -153,9 +153,6 @@ void MoCSweeper::sweep1g_final( int group ) {
 
 
                 // Stash currents
-
-
-
                 size_t cell_fw = ray.cm_cell_fw();
                 size_t cell_bw = ray.cm_cell_bw();
                 size_t surf_fw = ray.cm_surf_fw();
@@ -197,12 +194,6 @@ void MoCSweeper::sweep1g_final( int group ) {
             iang++;
         } // angles
         iplane++;
-
-//cout << endl;
-//cout << coarse_data_->current.col(group) << endl;
-//cout << endl;
-
-//cin.ignore();
 
         // Scale the scalar flux by the volume and add back the source
         flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;

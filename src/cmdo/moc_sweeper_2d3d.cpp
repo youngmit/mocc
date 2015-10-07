@@ -1,6 +1,7 @@
 #include "moc_sweeper_2d3d.hpp"
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
 #include <valarray>
 
@@ -109,60 +110,75 @@ namespace mocc {
                     // Stash currents
                     size_t cell_fw = ray.cm_cell_fw();
                     size_t cell_bw = ray.cm_cell_bw();
+                    size_t surf_fw = ray.cm_surf_fw();
+                    size_t surf_bw = ray.cm_surf_bw();
                     size_t iseg_fw = 0;
                     size_t iseg_bw = ray.nseg();
+
+                    Normal norm_fw = mesh_.surface_normal( surf_fw );
+                    Normal norm_bw = mesh_.surface_normal( surf_bw );
+                    coarse_data_->current( surf_fw, group ) += 
+                        psi1(iseg_fw) * current_weights[(int)norm_fw];
+                    coarse_data_->current( surf_bw, group ) -= 
+                        psi2(iseg_bw) * current_weights[(int)norm_bw];
+
+                    flux_surf_sum[surf_fw*2+0] += psi1(iseg_fw);
+                    flux_surf_norm[surf_fw*2+0] += 1.0;
+                    flux_surf_sum[surf_bw*2+1] += psi2(iseg_bw);
+                    flux_surf_norm[surf_bw*2+1] += 1.0;
+
                     auto begin = ray.cm_data().cbegin();
                     auto end = ray.cm_data().cend();
                     for( auto crd = begin; crd != end; ++crd ) {
-                        size_t surf_fw = mesh_.coarse_surf( cell_fw, crd->fw );
-                        size_t surf_bw = mesh_.coarse_surf( cell_bw, crd->bw );
-
-                        Normal norm_fw = surface_to_normal( crd->fw );
-                        Normal norm_bw = surface_to_normal( crd->bw );
-
-                        coarse_data_->current( surf_fw, group ) += 
-                            psi1(iseg_fw) * current_weights[(int)norm_fw];
-                        coarse_data_->current( surf_bw, group ) -= 
-                            psi2(iseg_bw) * current_weights[(int)norm_bw];
-
-                        flux_surf_sum[surf_fw*2+0] += psi1(iseg_fw);
-                        flux_surf_norm[surf_fw*2+0] += 1.0;
-                        flux_surf_sum[surf_bw*2+1] += psi2(iseg_bw);
-                        flux_surf_norm[surf_bw*2+1] += 1.0;
-
-                        // Store foreward volumetric quantities
-                        for( int i=0; i<crd->nseg_fw; i++ ) {
-                            int ireg = ray.seg_index(iseg_fw) + first_reg;
-                            float_t xstr = xstr_(ireg);
-                            float_t t = ang.rsintheta * ray.seg_len(iseg_fw);
-                            float_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
-                                (psi1(iseg_fw)-qbar_(ireg))/xstr;
-                            flux_vol_sum[cell_fw*2+0] += fluxvol;
-                            flux_vol_norm[cell_fw] += t;
-                            sigt_sum[cell_fw*2+0] += xstr*fluxvol;
-                            iseg_fw++;
+                        // Hopefully branch prediction saves me here.
+                        if( crd->fw != Surface::INVALID ) {
+                            // Store forward volumetric stuff
+                            for( int i=0; i<crd->nseg_fw; i++ ) {
+                                int ireg = ray.seg_index(iseg_fw) + first_reg;
+                                float_t xstr = xstr_(ireg);
+                                float_t t = ang.rsintheta * ray.seg_len(iseg_fw);
+                                float_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
+                                    (psi1(iseg_fw)-qbar_(ireg))/xstr;
+                                flux_vol_sum[cell_fw*2+0] += fluxvol;
+                                flux_vol_norm[cell_fw] += t;
+                                sigt_sum[cell_fw*2+0] += xstr*fluxvol;
+                                iseg_fw++;
+                            }
+                            // Store FW surface stuff
+                            norm_fw = surface_to_normal( crd->fw );
+                            surf_fw = mesh_.coarse_surf( cell_fw, crd->fw );
+                            coarse_data_->current( surf_fw, group ) += 
+                                psi1(iseg_fw) * current_weights[(int)norm_fw];
+                            flux_surf_sum[surf_fw*2+0] += psi1(iseg_fw);
+                            flux_surf_norm[surf_fw*2+0] += 1.0;
                         }
 
-                        // Store backward volumetric quantities
-                        for( int i=0; i<crd->nseg_bw; i++ ) {
-                            iseg_bw--;
-                            int ireg = ray.seg_index(iseg_bw) + first_reg;
-                            float_t xstr = xstr_(ireg);
-                            float_t t = ang.rsintheta * ray.seg_len(iseg_bw);
-                            float_t fluxvol = t * qbar_(ireg) + e_tau(iseg_bw)*
-                                (psi2(iseg_bw)-qbar_(ireg))/xstr;
-                            flux_vol_sum[cell_bw*2+1] += fluxvol;
-                            sigt_sum[cell_bw*2+1] += xstr*fluxvol;
-                        }
-                        
-                        if( crd != begin ) {
-                            cell_fw = mesh_.coarse_neighbor( cell_fw, 
-                                    (crd)->fw );
-                            cell_bw = mesh_.coarse_neighbor( cell_bw, 
-                                    (crd)->bw );
+                        if( crd->bw != Surface::INVALID ) {
+                            // Store backward volumetric stuff
+                            for( int i=0; i<crd->nseg_bw; i++ ) {
+                                iseg_bw--;
+                                int ireg = ray.seg_index(iseg_bw) + first_reg;
+                                float_t xstr = xstr_(ireg);
+                                float_t t = ang.rsintheta * ray.seg_len(iseg_bw);
+                                float_t fluxvol = t * qbar_(ireg) + 
+                                    e_tau(iseg_bw) * 
+                                    (psi2(iseg_bw+1)-qbar_(ireg))/xstr;
+                                flux_vol_sum[cell_bw*2+1] += fluxvol;
+                                sigt_sum[cell_bw*2+1] += xstr*fluxvol;
+                            }
+                            // Store BW surface stuff
+                            norm_bw = surface_to_normal( crd->bw );
+                            surf_bw = mesh_.coarse_surf( cell_bw, crd->bw );
+                            coarse_data_->current( surf_bw, group ) -= 
+                                psi2(iseg_bw) * current_weights[(int)norm_bw];
+                            flux_surf_sum[surf_bw*2+1] += psi2(iseg_bw);
+                            flux_surf_norm[surf_bw*2+1] += 1.0;
                         }
 
+                        cell_fw = mesh_.coarse_neighbor( cell_fw, (crd)->fw );
+                        cell_bw = mesh_.coarse_neighbor( cell_bw, (crd)->bw );
                     }
+
                     iray++;
                 } // Rays
 
@@ -246,6 +262,7 @@ namespace mocc {
                 float_t ay = flux_node[ic*2+0]/(psi_yl + psi_yr);
 
                 float_t b = sigt[ic*2+0]/xstr;
+cout << ax << " " << ay << " " << b << endl;
 
                 corrections_->alpha( ic, iang1, group, Normal::X_NORM ) = ax;
                 corrections_->alpha( ic, iang1, group, Normal::Y_NORM ) = ay;
@@ -269,6 +286,7 @@ namespace mocc {
 
                 float_t b = sigt[ic*2+1]/xstr;
 
+cout << ax << " " << ay << " " << b << endl;
                 corrections_->alpha( ic, iang2, group, Normal::X_NORM ) = ax;
                 corrections_->alpha( ic, iang2, group, Normal::Y_NORM ) = ay;
 
@@ -276,20 +294,21 @@ namespace mocc {
             }
         }
 
-//        cout << "Surface fluxes: " << endl;
-//        for( auto v: flux_surf ) {
-//            cout << v << endl;
-//        }
-//
-//        cout << "Cell fluxes: " << flux_node.size() << endl;
-//        for( auto v: flux_node ) {
-//            cout << v << endl;
-//        }
-//
-//        cout << "sig t:" << endl;
-//        for( auto v: sigt ) {
-//            cout << v << endl;
-//        }
+        cout << "Surface fluxes: " << endl;
+        for( auto v: flux_surf ) {
+            cout << v << endl;
+        }
+
+        cout << "Cell fluxes: " << flux_node.size() << endl;
+        for( auto v: flux_node ) {
+            cout << v << endl;
+        }
+
+        cout << "sig t:" << endl;
+        for( auto v: sigt ) {
+            cout << v << endl;
+        }
+
         return;
     }
 
