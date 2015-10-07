@@ -25,17 +25,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 else()
     set(warnings "-Wall")
     set(options "-std=c++11")
-
 endif()
 
 message("Flags: ${warnings} ${options}")
 
-#if (NOT CONFIGURED_ONCE)
-    set(CMAKE_CXX_FLAGS "${warnings} ${options}"
-        CACHE STRING "Flags used by the compiler during all build types." FORCE)
-    set(CMAKE_C_FLAGS   "${warnings} ${options}"
-        CACHE STRING "Flags used by the compiler during all build types." FORCE)
-#endif()
+set(CMAKE_CXX_FLAGS "${warnings} ${options}"
+    CACHE STRING "Flags used by the compiler during all build types." FORCE)
+set(CMAKE_C_FLAGS   "${warnings} ${options}"
+    CACHE STRING "Flags used by the compiler during all build types." FORCE)
+#set(CMAKE_CXX_LINK_FLAGS ${link})
 
 find_package(Boost REQUIRED COMPONENTS regex unit_test_framework)
 find_package(HDF5)

@@ -371,12 +371,12 @@ namespace mocc {
                     s[1] = Surface::NORTH;
                     break;
                 case 3:
-                    s[0] = Surface::SOUTH;
-                    s[1] = Surface::WEST;
+                    s[0] = Surface::WEST;
+                    s[1] = Surface::SOUTH;
                     break;
                 case 4:
-                    s[0] = Surface::SOUTH;
-                    s[1] = Surface::EAST;
+                    s[0] = Surface::EAST;
+                    s[1] = Surface::SOUTH;
                     break;
             }
             return 2;

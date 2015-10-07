@@ -166,6 +166,7 @@ void MoCSweeper::sweep1g_final( int group ) {
                     psi1(iseg_fw) * current_weights[(int)norm_fw];
                 coarse_data_->current( surf_bw, group ) -= 
                     psi2(iseg_bw) * current_weights[(int)norm_bw];
+
                 auto begin = ray.cm_data().cbegin();
                 auto end = ray.cm_data().cend();
                 for( auto crd = begin; crd != end; ++crd ) {

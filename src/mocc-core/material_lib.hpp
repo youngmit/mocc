@@ -1,12 +1,10 @@
 #pragma once
-#include <fstream>
 #include <map>
 #include <string>
-#include <iostream>
 
-#include "material.hpp"
-#include "file_scrubber.hpp"
 #include "global_config.hpp"
+#include "file_scrubber.hpp"
+#include "material.hpp"
 
 namespace mocc {
     typedef std::map<unsigned int, const Material*> MaterialMap;
