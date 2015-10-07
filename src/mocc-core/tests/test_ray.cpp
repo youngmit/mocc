@@ -27,17 +27,27 @@ BOOST_AUTO_TEST_CASE( testsimple )
     mocc::CoreMesh mesh( geom_xml );
     {
         
+        // Test a few rays that starts on a corner, ends on a corner and crosses
+        // a bunch of corners
         {
             Ray ray( Point2(0.0,1.0), Point2(4.0,5.0), 0, 0, 0, mesh );
 
-            //BOOST_CHECK(ray.);
-            cout << ray.cm_data()[3].fw << endl;
+            BOOST_CHECK_EQUAL( ray.cm_surf_fw(), 37 );
+            BOOST_CHECK_EQUAL( ray.cm_cell_fw(), 6 );
+            BOOST_CHECK_EQUAL( ray.cm_surf_bw(), 88 );
+            BOOST_CHECK_EQUAL( ray.cm_cell_bw(), 27 );
+
+            BOOST_CHECK_EQUAL( ray.nseg(), 12 );
+            BOOST_CHECK_EQUAL( ray.ncseg(), 8 );
             
-            cout << "size of cm data element: " << sizeof(ray.cm_data().front()) << endl;
-            for( auto rcd: ray.cm_data() ) {
-                cout << rcd << endl;
+            // all of the segment lengths should be the same. I'm not testing
+            // this too much in the general sense, since the tests for the pin
+            // meshes should find most of these types of issues.
+            double t = 1.0/3.0*sqrt(2);
+            for( auto v: ray.seg_len() ) {
+                BOOST_CHECK_CLOSE( v, t, 0.00001 );
             }
-cout << endl;
+
         }
 
         {
@@ -54,10 +64,6 @@ cout << endl;
 
         {
             Ray ray( Point2(0.0,0.5), Point2(6.0,3.25), 0, 0, 0, mesh );
-            for( auto rcd: ray.cm_data() ) {
-                cout << rcd << endl;
-            }
-cout << endl;
         }
 
 
@@ -84,9 +90,6 @@ BOOST_AUTO_TEST_CASE( testall )
     }
     {
         Ray ray( Point2(0.0, 1.26), Point2(2.52, 3.78), 0, 0, 0, mesh );
-            for( auto rcd: ray.cm_data() ) {
-                cout << rcd << endl;
-            }
     }
     {
         Ray ray( Point2(3.78, 2.52), Point2(2.52, 3.78), 0, 0, 0, mesh );

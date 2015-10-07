@@ -1,9 +1,11 @@
 <mesh id="1" type="rect" pitch="1.0">
-    <sub_x>1</sub_x>
-    <sub_y>1</sub_y>
+    <sub_x>3</sub_x>
+    <sub_y>3</sub_y>
 </mesh>
 <pin id="1" mesh="1">
-    1
+    1 1 1
+    1 1 1
+    1 1 1
 </pin>
 <lattice id="1" nx="6" ny="5">
     1 1 1 1 1 1 

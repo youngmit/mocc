@@ -39,8 +39,6 @@ namespace mocc {
         ps.push_back(p1);
         ps.push_back(p2);
 
-cout << "Ray: " << p1 << p2 << endl;
-
         std::vector<Surface> s_fw;
         std::vector<Surface> s_bw;
 
