@@ -199,7 +199,7 @@ namespace mocc {
     void SnSweeper::initialize() {
         flux_.fill(1.0);
         flux_old_.fill(1.0);
-        bc_in_.initialize(0.0);
+        bc_in_.initialize(1.0/FPI);
         
         return;
     }
