@@ -4,18 +4,18 @@
 
 namespace mocc {
     const Surface AllSurfaces[] = { Surface::EAST, 
-                                               Surface::NORTH, 
-                                               Surface::WEST, 
-                                               Surface::SOUTH, 
-                                               Surface::TOP, 
-                                               Surface::BOTTOM };
+                                    Surface::NORTH, 
+                                    Surface::WEST, 
+                                    Surface::SOUTH, 
+                                    Surface::TOP, 
+                                    Surface::BOTTOM };
     
-    const Normal AllNormals[] = { Normal::X_NORM, Normal::Y_NORM,
-        Normal::Z_NORM };
+    const Normal AllNormals[] = { Normal::X_NORM, 
+                                  Normal::Y_NORM,
+                                  Normal::Z_NORM };
     
-    
-    std::ostream& operator<<(std::ostream& os, const Surface s ) {
-        switch( s ) {
+    std::ostream& operator<<(std::ostream& os, const Surface d ) {
+        switch( d ) {
             case Surface::EAST:
                 os << "east";
                 break;
@@ -34,19 +34,47 @@ namespace mocc {
             case Surface::BOTTOM:
                 os << "bottom";
                 break;
-            case Surface::NE:
+            case Surface::INVALID:
+                os << "inv";
+                break;
+        }
+        return os;
+    }
+
+
+    std::ostream& operator<<(std::ostream& os, const Direction d ) {
+        switch( d ) {
+            case Direction::EAST:
+                os << "east";
+                break;
+            case Direction::WEST:
+                os << "west";
+                break;
+            case Direction::NORTH:
+                os << "north";
+                break;
+            case Direction::SOUTH:
+                os << "south";
+                break;
+            case Direction::TOP:
+                os << "top";
+                break;
+            case Direction::BOTTOM:
+                os << "bottom";
+                break;
+            case Direction::NE:
                 os << "ne";
                 break;
-            case Surface::NW:
+            case Direction::NW:
                 os << "nw";
                 break;
-            case Surface::SW:
+            case Direction::SW:
                 os << "sw";
                 break;
-            case Surface::SE:
+            case Direction::SE:
                 os << "se";
                 break;
-            case Surface::INVALID:
+            case Direction::INVALID:
                 os << "inv";
                 break;
         }

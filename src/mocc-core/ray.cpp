@@ -83,7 +83,7 @@ namespace mocc {
             cm_surf_fw_ = mesh.coarse_surf( cm_cell_fw_, s[0] );
             for( auto nseg: cm_nseg ) {
                 ns = mesh.coarse_norm_point( *p, octant, s );
-                for( int i=0; i<ns; i++ ) {
+                for( size_t i=0; i<ns; i++ ) {
                     surfs_fw.push_back(s[i]);
                 }
                 nsegs_fw.push_back( nseg );
@@ -108,7 +108,7 @@ namespace mocc {
             cm_surf_bw_ = mesh.coarse_surf( cm_cell_bw_, s[0] );
             for( auto nseg: cm_nseg ) {
                 ns = mesh.coarse_norm_point( *p, octant, s);
-                for( int i=0; i<ns; i++ ) {
+                for( size_t i=0; i<ns; i++ ) {
                     surfs_bw.push_back(s[i]);
                 }
                 nsegs_bw.push_back( nseg );

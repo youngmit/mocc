@@ -12,7 +12,7 @@
 
 namespace mocc {
     // Surface and direction indexing
-    enum class Surface {
+    enum Surface {
         EAST  = 0,
         NORTH = 1,
         WEST  = 2,
@@ -20,10 +20,22 @@ namespace mocc {
         TOP = 4,
         BOTTOM = 5,
         INVALID = 6,
+    };
+
+
+
+    enum class Direction {
+        EAST  = 0,
+        NORTH = 1,
+        WEST  = 2,
+        SOUTH = 3,
+        TOP = 4,
+        BOTTOM = 5,
         NE,
         NW,
         SW,
-        SE
+        SE,
+        INVALID
     };
 
     extern const Surface AllSurfaces[6];

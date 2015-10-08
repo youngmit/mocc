@@ -116,7 +116,7 @@ namespace mocc {
         /**
          * Only return a reference to a single segment length
          */
-        size_t seg_index( int iseg ) const {
+        size_t seg_index( size_t iseg ) const {
             assert(iseg < nseg_);
             return seg_index_[iseg];
         }
