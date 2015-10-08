@@ -262,7 +262,6 @@ namespace mocc {
                 real_t ay = flux_node[ic*2+0]/(psi_yl + psi_yr);
 
                 real_t b = sigt[ic*2+0]/xstr;
-cout << ax << " " << ay << " " << b << endl;
 
                 corrections_->alpha( ic, iang1, group, Normal::X_NORM ) = ax;
                 corrections_->alpha( ic, iang1, group, Normal::Y_NORM ) = ay;
@@ -286,29 +285,12 @@ cout << ax << " " << ay << " " << b << endl;
 
                 real_t b = sigt[ic*2+1]/xstr;
 
-cout << ax << " " << ay << " " << b << endl;
                 corrections_->alpha( ic, iang2, group, Normal::X_NORM ) = ax;
                 corrections_->alpha( ic, iang2, group, Normal::Y_NORM ) = ay;
 
                 corrections_->beta( ic, iang1, group ) = b;
             }
         }
-
-        cout << "Surface fluxes: " << endl;
-        for( auto v: flux_surf ) {
-            cout << v << endl;
-        }
-
-        cout << "Cell fluxes: " << flux_node.size() << endl;
-        for( auto v: flux_node ) {
-            cout << v << endl;
-        }
-
-        cout << "sig t:" << endl;
-        for( auto v: sigt ) {
-            cout << v << endl;
-        }
-
         return;
     }
 

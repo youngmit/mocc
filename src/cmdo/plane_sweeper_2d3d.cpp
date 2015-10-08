@@ -45,15 +45,13 @@ namespace mocc {
         // Compute Sn-MoC residual
         VecF moc_flux;
         moc_sweeper_.get_pin_flux( group, moc_flux );
-cout << "representative moc flux: " << moc_flux[0] << endl;
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
-            cout << moc_flux[i] << " " << sn_sweeper_.flux( group, i ) << endl;
             residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
                         (moc_flux[i] - sn_sweeper_.flux( group, i ));
         }
         residual = sqrt(residual);
-        cout << "MoC/Sn residual: " << residual << endl;
+cout << "MoC/Sn residual: " << residual << endl;
     }
 
     void PlaneSweeper_2D3D::initialize() {
