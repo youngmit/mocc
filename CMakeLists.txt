@@ -35,7 +35,7 @@ set(CMAKE_C_FLAGS   "${warnings} ${options}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 #set(CMAKE_CXX_LINK_FLAGS ${link})
 
-find_package(Boost REQUIRED COMPONENTS regex unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 find_package(HDF5)
 
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")

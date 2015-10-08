@@ -1,8 +1,8 @@
 #include "material_lib.hpp"
 
+#include <regex>
 #include <string>
 #include <sstream>
-#include <boost/regex.hpp>
 #include <iostream>
 #include <vector>
 
@@ -14,6 +14,10 @@ using std::string;
 using std::cout;
 using std::cin;
 using std::endl;
+
+using std::regex;
+using std::smatch;
+using std::regex_match;
 
 namespace mocc{
 
@@ -61,8 +65,8 @@ namespace mocc{
             // Get the name of the material
             line = input.getline();
             
-            boost::regex headExp("^\\s*XSMACRO\\s+([^\\s]+)\\s+([0-9]+)\\s*$");
-            boost::smatch results;
+            regex headExp("^\\s*XSMACRO\\s+([^\\s]+)\\s+([0-9]+)\\s*$");
+            smatch results;
             regex_match(line, results, headExp);
             string materialName = results[1].str();
     
