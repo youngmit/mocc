@@ -128,6 +128,7 @@ namespace mocc {
             return bc_[dir];
         }
 
+        friend std::ostream& operator<<(std::ostream& os, const Ray &ray );
 
     private:
         size_t cm_surf_fw_;
@@ -147,6 +148,11 @@ namespace mocc {
         size_t nseg_;
 
         // Boundary condition index for the forward and backward directions
-        size_t bc_[2];
+        const size_t bc_[2];
+
+        // Store the points that were used to initialize the points. You know...
+        // for posterity
+        const Point2 p1_;
+        const Point2 p2_;
     };
 }

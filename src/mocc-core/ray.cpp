@@ -33,7 +33,11 @@ namespace mocc {
      * surface crossings for each pin (using PinMesh::trace()).
      */
     Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iz, 
-            const CoreMesh &mesh ) {
+            const CoreMesh &mesh ):
+        bc_{bc1, bc2},
+        p1_(p1),
+        p2_(p2)
+    {
         std::vector<Point2> ps;
 
         ps.push_back(p1);
@@ -67,6 +71,11 @@ namespace mocc {
 
         // Figure out the coarse mesh data for the ray. Start with the starting
         // cells and surfaces.
+        /** \todo Think about moving some of this logic into the Mesh itself.
+         * Have the Mesh::trace() method also insert instances of the
+         * RayCoarseData struct into a passed vector. Not sure if the best idea,
+         * but might be really neat.
+         */
         size_t ns = 0;
         Surface s[2];
         // All of the forward stuff
@@ -155,9 +164,13 @@ namespace mocc {
 
         nseg_ = seg_len_.size();
 
-        bc_[0] = bc1;
-        bc_[1] = bc2;
         return;
+    }
+    
+    std::ostream& operator<<( std::ostream& os, const Ray &ray ) {
+        os << ray.p1_ << " " << ray.p2_ << endl;
+
+        return os;
     }
 
 }
