@@ -75,6 +75,8 @@ cout << ang_quad_ << endl;
             Nx += Nx%2+1;
             Ny += Ny%2+1; 
 
+cout << "Total number of rays (Nx/Ny): " << Nx << " " << Ny << endl;
+
             Nx_.push_back(Nx);
             Ny_.push_back(Ny);
             Nrays_.push_back(Nx+Ny);
@@ -295,4 +297,6 @@ cout << ang_quad_ << endl;
         
         }
     }
+
+    
 }
