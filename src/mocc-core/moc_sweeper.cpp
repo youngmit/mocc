@@ -193,7 +193,7 @@ namespace mocc {
             Position pos = mesh_.pin_position(ipin);
             int i = mesh_.index_lex(pos);
             real_t v = 0.0;
-            for( int ir=0; ir<pin->n_reg(); ir++) {
+            for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 v += vol_(ireg);
                 flux[i] += flux_(ireg, group)*vol_(ireg);
                 ireg++;
