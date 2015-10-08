@@ -95,7 +95,7 @@ cout << "CDD Sweeper: " << endl;
 
                         real_t psi_lx = x_flux[ny_*iz + iy];
 						real_t psi_ly = y_flux[nx_*iz + ix];
-						real_t psi_lz = z_flux[nx_*iz + ix];
+						real_t psi_lz = z_flux[nx_*iy + ix];
 
                         real_t ax = corrections_->alpha( i, iang_a, group, 
                                 Normal::X_NORM);
@@ -114,7 +114,7 @@ cout << "CDD Sweeper: " << endl;
 
                         x_flux[ny_*iz + iy] = (psi - gx*psi_lx) / gx;
 						y_flux[nx_*iz + ix] = (psi - gy*psi_ly) / gy;
-						z_flux[nx_*iz + ix] = 2.0*psi - psi_lz;
+						z_flux[nx_*iy + ix] = 2.0*psi - psi_lz;
                     }
                 }
             }
