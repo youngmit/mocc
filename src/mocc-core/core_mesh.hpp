@@ -90,12 +90,14 @@ namespace mocc {
         * \brief Obtain a tuple containing the pin position and a reference to the
         * PinMesh that occupies the space at a point, within a given plane.
         *
-        * \param[in,out] p a Point residing in the desired Pin. The location of
+        * \param[inout] p  a Point residing in the desired Pin. The location of
         * the point will be updated to the location of the PinMesh origin. See
         * the note below.
-        * \param iz[in] the index of the Plane in which to search for the PinMesh.
-        * \param first_reg[in,out]
+        * \param[in] iz the index of the Plane in which to search for the PinMesh.
+        * \param[inout] first_reg still need to accurately define this param
         *
+        * \todo document thie first_reg parameter. important!
+        * 
         * This routine provides a means by which to locate the PinMesh object
         * that fills the space in which the passed Point resides. This is useful
         * during ray tracing to determine the geometry that needs to be traced
