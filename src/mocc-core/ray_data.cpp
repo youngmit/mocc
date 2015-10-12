@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
 #include "constants.hpp"
 #include "error.hpp"
@@ -45,13 +46,13 @@ namespace mocc {
     {
         // Make sure we have reasonable input
         if ( input.empty() ) {
-            Error("No input privided for ray spacing.");
+            throw EXCEPT("No input privided for ray spacing.");
         }
 
         // Get the optimal ray spacing
         real_t opt_spacing = input.attribute("spacing").as_float(-1.0);
         if( opt_spacing <= 0.0 ) {
-            Error("Failed to read valid ray spacing.");
+            throw EXCEPT("Failed to read valid ray spacing.");
         }
 
         // Store some necessary stuff from the CoreMesh
@@ -70,8 +71,8 @@ cout << ang_quad_ << endl;
 
             Angle ang = *ang_it;
 
-            int Nx = ceil( hx/opt_spacing*fabs( sin( ang.alpha ) ) );
-            int Ny = ceil( hy/opt_spacing*fabs( cos( ang.alpha ) ) );
+            int Nx = ceil( hx/opt_spacing*std::abs( sin( ang.alpha ) ) );
+            int Ny = ceil( hy/opt_spacing*std::abs( cos( ang.alpha ) ) );
             Nx += Nx%2+1;
             Ny += Ny%2+1; 
 
@@ -123,8 +124,8 @@ cout << ang_quad_ << endl;
                 int bc1 = 0;
                 int bc2 = 0;
                 real_t space = spacing_[iang];
-                real_t space_x = fabs( space/sin(ang->alpha) );
-                real_t space_y = fabs( space/cos(ang->alpha) );
+                real_t space_x = std::abs( space/sin(ang->alpha) );
+                real_t space_y = std::abs( space/cos(ang->alpha) );
 
                 std::vector<Ray> rays;
                 // Handle rays entering on the x-normal faces
@@ -294,9 +295,27 @@ cout << ang_quad_ << endl;
                     }
                 } // Volume correction
                 break;
-        
         }
-    }
+    } // correct_volume
 
-    
+    std::ostream& operator<<( std::ostream &os, const RayData &rays) {
+        // For now, we are more interested in the rays in the macro sense. Where
+        // they start and stop, more than what they do internally, so only do
+        // output for one plane.
+        const auto &plane_rays = rays.begin();
+        int iang=0;
+        for( auto &ang_rays: *plane_rays ){
+            os << "#Rays for angle " << iang << endl;
+            std::stringstream varname;
+            varname << "ang_" << iang;
+            os << varname.str() << " = [" << endl;
+            for( auto &r: ang_rays ) {
+                os << r << "," << endl;
+            }
+            os << "]" << endl;
+            iang++;
+        }
+
+        return os;
+    }
 }

@@ -51,44 +51,64 @@ namespace mocc {
                  const AngularQuadrature &ang_quad,
                  const CoreMesh &mesh );
 
-        /// Iterator to the begining of the ray data (by plane)
+        /**
+         * Iterator to the begining of the ray data (by plane)
+         */
         RaySet_t::const_iterator begin() const {
             return rays_.cbegin();
         }
 
-        /// Iterator to the end of the ray data (by plane)
+        /** 
+         * Iterator to the end of the ray data (by plane)
+         */
         RaySet_t::const_iterator end() const {
             return rays_.cend();
         }
 
-        /// Return the number of rays for the given angle index
+        /**
+         * Return the number of rays for the given angle index
+         */
         size_t n_rays( size_t iang ) const {
             return Nrays_[iang];
         }
 
-        /// Return the number of rays impingent on the y-normal faces of the
-        /// domain for the given angle
+        /**
+         * Return the number of rays impingent on the y-normal faces of the
+         * domain for the given angle
+         */
         size_t nx( size_t iang ) const {
             return Nx_[iang];
         }
 
-        /// Return the number of rays impingent on the x-normal faces of the
-        /// domain for the given angle
+        /**
+         * Return the number of rays impingent on the x-normal faces of the
+         * domain for the given angle
+         */
         size_t ny( size_t iang ) const {
             return Ny_[iang];
         }
 
-        /// Return the ray spacing for the given angle
+        /**
+         * Return the ray spacing for the given angle
+         */
         real_t spacing( int iang ) {
             return spacing_[iang];
         }
 
-        /// Return the maximum number of segmens spanned by any Ray in the
-        /// collection. This is useful for defining the size of the scratch
-        /// space for MoC.
+        /**
+         * Return the maximum number of segmens spanned by any Ray in the
+         * collection. This is useful for defining the size of the scratch
+         * space for MoC.
+         */
         size_t max_segments() const {
             return max_seg_;
         }
+
+        /**
+         * Provide stream insertion support.
+         */
+        friend std::ostream& operator<<( std::ostream &os, 
+                const RayData &rays );
     
     private:
         // This starts as a copy of the angular quadrature that is passed in

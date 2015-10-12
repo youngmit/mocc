@@ -168,7 +168,7 @@ namespace mocc {
     }
     
     std::ostream& operator<<( std::ostream& os, const Ray &ray ) {
-        os << ray.p1_ << " " << ray.p2_ << endl;
+        os << "[" << ray.p1_ << ", " << ray.p2_ << "]";
 
         return os;
     }
