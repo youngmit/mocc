@@ -1,6 +1,8 @@
 #include "moc_sweeper.hpp"
 
+#include <fstream>
 #include <iomanip>
+
 #include "error.hpp"
 
 using std::endl;
@@ -71,6 +73,11 @@ namespace mocc {
                 angle_rays[iang].resize(rays_.n_rays(iang));
                 iang++;
             }
+        }
+
+        {
+            std::ofstream rayfile("rays.py");
+            rayfile << rays_ << endl;
         }
 
         return;
@@ -222,15 +229,36 @@ namespace mocc {
         file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
         file.write("/ng", ng_);
         
+        std::vector<VecF> flux;
+
+        real_t sum = 0.0;
+
         for( unsigned int ig=0; ig<ng_; ig++ ) {
-            VecF flux;
-            this->get_pin_flux(ig, flux);
+            VecF flux_g;
+            this->get_pin_flux(ig, flux_g);
+
+            for( const auto &v: flux_g ) {
+                sum += v;
+            }
         
-        
+            flux.push_back(flux_g);
+        }
+
+        // Normalize the flux
+        real_t f = mesh_.n_pin() * ng_ / sum;
+        for( auto &flux_1g: flux ) {
+            for( auto &v: flux_1g ) {
+                v *= f;
+            }
+        }
+
+        int ig = 0;
+        for( const auto &f: flux ){
             std::stringstream setname;
             setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
         
-            file.write(setname.str(), flux, dims);
+            file.write(setname.str(), f, dims);
+            ig++;
         }
 
         return;
