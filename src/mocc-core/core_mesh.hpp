@@ -37,34 +37,7 @@ namespace mocc {
 
         ~CoreMesh();
 
-        /** 
-        * Return the total core length along the x dimension
-        */
-        real_t hx() const {
-            return hx_;
-        }
-
-        /** 
-        * Return the total core length along the y dimension
-        */
-        real_t hy() const {
-            return hy_;
-        }
-
-        /** 
-        * Return the pin boundary locations along the x dimension
-        */
-        const VecF& pin_hx() const {
-            return x_vec_;
-        }
-
-        /** 
-        * Return the pin boundary locations along the y dimension
-        */
-        const VecF& pin_hy() const {
-            return y_vec_;
-        }
-
+        
         /** 
         * Return a const vector of plane heights
         */
@@ -228,7 +201,6 @@ namespace mocc {
 
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
-
         
         // List of plane heights
         VecF hz_vec_;

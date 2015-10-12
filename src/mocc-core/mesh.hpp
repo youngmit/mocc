@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 
@@ -53,8 +54,13 @@ namespace mocc {
             ny_( ny ),
             nz_( nz ),
             x_vec_( hx ),
-            y_vec_( hy )
+            y_vec_( hy ),
+            dx_vec_( hx.size()-1 ),
+            dy_vec_( hy.size()-1 )
         {
+            assert( std::is_sorted( x_vec_.begin(), x_vec_.end() ) );
+            assert( std::is_sorted( y_vec_.begin(), y_vec_.end() ) );
+
             hx_ = x_vec_.back();
             for( auto &xi: x_vec_ ) {
                 lines_.push_back( Line( Point2( xi, 0.0 ),
@@ -66,32 +72,89 @@ namespace mocc {
                                         Point2( hx_, yi ) ) );
             }
 
+            for( size_t i=1; i<x_vec_.size(); i++ ) {
+                dx_vec_[i] = x_vec_[i] - x_vec_[i-1];
+            }
+            for( size_t i=1; i<y_vec_.size(); i++ ) {
+                dy_vec_[i] = y_vec_[i] - y_vec_[i-1];
+            }
+
             assert( nx == hx.size()-1 );
             assert( ny == hy.size()-1 );
             this->prepare_surfaces();
             return;
         }
 
+        /**
+         * Return the total number of regions in the computational mesh. This is
+         * not neccessarily the number of pins. For a MoC/CoreMesh this is the
+         * number of flat source regions.
+         */
         size_t n_reg() const {
             return n_reg_;
         }
-        
+
+        /**
+         * Return the number of pins along the X dimension
+         */
         size_t nx() const {
             return nx_;
         }
 
+        /**
+         * Return the number of pins along the Y dimension
+         */
         size_t ny() const {
             return ny_;
         }
 
+        /**
+         * Return the number of planes in the Z dimension
+         */
         size_t nz() const {
             return nz_;
         }
+        
+        /**
+        * Return the total core length along the x dimension
+        */
+        real_t hx() const {
+            return hx_;
+        }
 
+        /**
+        * Return the total core length along the y dimension
+        */
+        real_t hy() const {
+            return hy_;
+        }
+
+        /**
+        * Return the pin boundary locations along the x dimension
+        */
+        const VecF& pin_dx() const {
+            return dx_vec_;
+        }
+
+        /**
+        * Return the pin boundary locations along the y dimension
+        */
+        const VecF& pin_dy() const {
+            return dy_vec_;
+        }
+
+        /**
+         * Return the total number of pin regions in the mesh. This includes
+         * plane separations. This is essentially the number of coarse mesh
+         * regions.
+         */
         size_t n_pin() const {
             return nx_*ny_*nz_;
         }
 
+        /**
+         * Return the number of coarse surfaces.
+         */
         size_t n_surf() const {
             return (nx_+1)*ny_*nz_ + (ny_+1)*nx_*nz_ + (nz_+1)*nx_*ny_;
         }
@@ -273,6 +336,12 @@ namespace mocc {
 
         /// List of pin boundaries in the y dimension (starts at 0.0)
         VecF y_vec_;
+
+        /// Sequence of pin x pitches
+        VecF dx_vec_;
+
+        /// Sequence of pin y pitches
+        VecF dy_vec_;
         
         /// Vector of Line objects, representing pin boundaries. This greatly
         /// simplifies the ray trace.

@@ -16,6 +16,10 @@ using std::stringstream;
 
 
 namespace mocc {
+    /**
+     * \todo Simplify the CoreMesh construction by offloading stuff to the other
+     * structure (Lattice, Core, etc.).
+     */
     CoreMesh::CoreMesh(pugi::xml_node &input) {
         // Parse meshes
         for (pugi::xml_node mesh = input.child( "mesh" );
@@ -166,6 +170,7 @@ namespace mocc {
             const Assembly* asy = &core_.at(ilatx, 0);
             const Lattice* lat = &((*asy)[0]);
             for( auto &h: lat->hx_vec() ) {
+                dx_vec_.push_back(h);
                 x_vec_.push_back(h + h_prev);
                 lines_.push_back( Line( Point2(h+h_prev, 0.0), 
                                         Point2(h+h_prev, hy_) ) );
@@ -178,6 +183,7 @@ namespace mocc {
             const Assembly* asy = &core_.at(0, ilaty);
             const Lattice* lat = &((*asy)[0]);
             for( auto &h: lat->hy_vec() ) {
+                dy_vec_.push_back(h);
                 y_vec_.push_back(h + h_prev);
                 lines_.push_back( Line( Point2(0.0, h+h_prev), 
                                         Point2(hx_, h+h_prev) ) );
