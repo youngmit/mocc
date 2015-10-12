@@ -41,7 +41,7 @@ namespace mocc {
 
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, const Point2 &p) {
-            os << "( " << p.x << ", " << p.y << " )";
+            os << "[ " << p.x << ", " << p.y << " ]";
             return os;
         }
 
