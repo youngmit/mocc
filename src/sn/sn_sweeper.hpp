@@ -24,7 +24,7 @@ namespace mocc {
         void initialize();
         void get_pin_flux( int ig, VecF& flux ) const;
 
-        void output( H5File& file ) const;
+        void output( H5::CommonFG *file ) const;
 
         // Override the create_source() method to make an SnSource instead of
         // the regular

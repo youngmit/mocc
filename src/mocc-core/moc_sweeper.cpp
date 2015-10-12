@@ -212,7 +212,7 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper::output( H5File& file ) const {
+    void MoCSweeper::output( H5::CommonFG *file ) const {
         // Get core dimensions from the mesh
         const int nx = mesh_.nx();
         const int ny = mesh_.ny();
@@ -223,11 +223,11 @@ namespace mocc {
         dims.push_back(nx);
         
         // Make a group in the file to store the flux
-        file.mkdir("/flux");
+        file->createGroup("/flux");
         
         // Provide energy group upper bounds
-        file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
-        file.write("/ng", ng_);
+        HDF::Write( file, "/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
+        HDF::Write( file, "/ng", ng_);
         
         std::vector<VecF> flux;
 
@@ -257,7 +257,7 @@ namespace mocc {
             std::stringstream setname;
             setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
         
-            file.write(setname.str(), f, dims);
+            HDF::Write( file, setname.str(), f, dims);
             ig++;
         }
 

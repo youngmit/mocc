@@ -211,8 +211,8 @@ int main(int argc, char* argv[]){
         solver->solve();
 
         // Output stuff
-        H5File outfile("out.h5");
-        solver->output( outfile );
+        HDF::H5File outfile("out.h5");
+        solver->output( outfile.get() );
 
         StopLogFile();
     }

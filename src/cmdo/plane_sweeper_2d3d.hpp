@@ -26,7 +26,7 @@ namespace mocc {
         void get_pin_flux( int ig, VecF &flux ) const;
 
     
-        void output( H5File& file ) const;
+        void output( H5::CommonFG *file ) const;
 
         void homogenize( CoarseData &data ) const {
             

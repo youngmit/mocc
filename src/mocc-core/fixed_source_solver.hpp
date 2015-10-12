@@ -84,7 +84,7 @@ namespace mocc{
             return sweeper_.get();
         }
 
-        void output( H5File& file ) const {
+        void output( H5::CommonFG *file ) const {
             sweeper_->output( file );
             return;
         }

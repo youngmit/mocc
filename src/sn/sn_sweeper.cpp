@@ -247,18 +247,18 @@ namespace mocc {
         return;
     }
 
-    void SnSweeper::output( H5File& file ) const {
+    void SnSweeper::output( H5::CommonFG *file ) const {
         VecI dims;
         dims.push_back(nz_);
         dims.push_back(ny_);
         dims.push_back(nx_);
         
         // Make a group in the file to store the flux
-        file.mkdir("/flux");
+        file->createGroup("/flux");
         
         // Provide energy group upper bounds
-        file.write("/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
-        file.write("/ng", ng_);
+        HDF::Write( file, "/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
+        HDF::Write( file, "/ng", ng_);
         
         for( unsigned int ig=0; ig<ng_; ig++ ) {
             VecF flux;
@@ -270,7 +270,7 @@ namespace mocc {
             std::stringstream setname;
             setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
         
-            file.write(setname.str(), flux, dims);
+            HDF::Write( file, setname.str(), flux, dims);
         }
 
         xs_mesh_->output( file );

@@ -199,9 +199,9 @@ namespace mocc {
         return;
     }
 
-    void XSMeshHomogenized::output( H5File &file ) const {
-        file.mkdir( "/xsmesh" );
-        file.mkdir( "/xsmesh/xstr" );
+    void XSMeshHomogenized::output( H5::CommonFG *file ) const {
+        file->createGroup( "/xsmesh" );
+        file->createGroup( "/xsmesh/xstr" );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());
@@ -216,7 +216,7 @@ namespace mocc {
             }
             std::stringstream setname;
             setname << "/xsmesh/xstr/" << ig;
-            file.write( setname.str(), xstr, d );
+            HDF::Write( file, setname.str(), xstr, d );
         }
         return;
     }

@@ -77,15 +77,15 @@ cout << "MoC/Sn residual: " << residual << endl;
         return;
     }
 
-    void PlaneSweeper_2D3D::output( H5File& file ) const {
+    void PlaneSweeper_2D3D::output( H5::CommonFG *file ) const {
         // We need to be a little careful about how we do output to avoid
         // collisions in the HDF5 tree. For now, lets just output Sn data.
         sn_sweeper_.output( file );
 
         // Write out the correction factors
-        file.mkdir("/alpha_x");
-        file.mkdir("/alpha_y");
-        file.mkdir("/beta");
+        file->createGroup("/alpha_x");
+        file->createGroup("/alpha_y");
+        file->createGroup("/beta");
 
         VecI dims;
         dims.push_back(mesh_.nz());
@@ -105,19 +105,19 @@ cout << "MoC/Sn residual: " << residual << endl;
                 {
                     std::stringstream setname;
                     setname << "/beta/" << g << "_" << a;
-                    file.write( setname.str(), beta, dims );
+                    HDF::Write( file, setname.str(), beta, dims );
                 }
 
                 {
                     std::stringstream setname;
                     setname << "/alpha_x/" << g << "_" << a;
-                    file.write( setname.str(), alpha_x, dims );
+                    HDF::Write( file, setname.str(), alpha_x, dims );
                 }
 
                 {
                     std::stringstream setname;
                     setname << "/alpha_y/" << g << "_" << a;
-                    file.write( setname.str(), alpha_y, dims );
+                    HDF::Write( file, setname.str(), alpha_y, dims );
                 }
             }
         }

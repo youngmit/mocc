@@ -33,7 +33,7 @@ namespace mocc{
         }
         
         // Implement the output interface
-        void output( H5File& file ) const {
+        void output( H5::CommonFG *file ) const {
             VecF k;
             VecF error_k;
             VecF error_psi;
@@ -46,9 +46,9 @@ namespace mocc{
 
             VecI dims(1, convergence_.size());
 
-            file.write("k", k, dims);
-            file.write("error_k", error_k, dims);
-            file.write("error_psi", error_psi, dims);
+            HDF::Write( file, "k", k, dims );
+            HDF::Write( file, "error_k", error_k, dims );
+            HDF::Write( file, "error_psi", error_psi, dims );
 
             fss_.output( file );
         }
