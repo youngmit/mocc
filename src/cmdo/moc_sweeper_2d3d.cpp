@@ -1,6 +1,7 @@
 #include "moc_sweeper_2d3d.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <valarray>
@@ -72,7 +73,7 @@ namespace mocc {
                     // Compute exponentials
                     for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
+                        e_tau( iseg) = 1.0 - exp( -xstr_(ireg) * 
                                 ray.seg_len(iseg) * rstheta );
                     }
     
@@ -184,10 +185,6 @@ namespace mocc {
 
                 // Normalize the flux and sigt values and calculate
                 // correction factors for the current angle/energy
-                for( size_t i=0; i<flux_surf_norm.size(); i++) {
-                    flux_surf_sum[i] /= flux_surf_norm[i];
-                }
-
                 for( size_t i=0; i<flux_vol_norm.size(); i++) {
                     sigt_sum[2*i+0] /= flux_vol_sum[2*i+0];
                     sigt_sum[2*i+1] /= flux_vol_sum[2*i+1];
@@ -206,11 +203,14 @@ namespace mocc {
             flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
         } // planes
     
-    
         this->update_boundary( group );
     
         return;
     }
+
+    /** \page surface_norm Surface Normalization
+     * Surface normalization \todo discuss surface normalization
+     */
 
     void MoCSweeper_2D3D::calculate_corrections( size_t ang, size_t group, 
             ArrayF flux_surf, ArrayF flux_node, ArrayF sigt ) {
@@ -224,7 +224,7 @@ namespace mocc {
         int iang1 = ang;
         int iang2 = ang_quad_.reverse(ang);
         real_t ox = ang_quad_[ang].ox;
-
+        
         Surface surfs[2][4];
         // We know that all of our moc angles are positive in the y direction
         surfs[FW][YL] = Surface::SOUTH;
@@ -244,20 +244,33 @@ namespace mocc {
             surfs[BW][XR] = Surface::EAST;
         }
 
+        // See the Surface Normalization page
+        real_t area[2] = 
+        {
+            std::abs( rays_.spacing( ang )/sin(ang_quad_[ang].alpha) ),
+            std::abs( rays_.spacing( ang )/cos(ang_quad_[ang].alpha) )
+        };
+
         for( size_t ic=0; ic<mesh_.n_pin(); ic++ ) {
-            float xstr = (*sn_xs_mesh_)[ic].xsmactr()[group];
+            auto pos = mesh_.coarse_position(ic);
+
+            real_t area_x = area[0]/mesh_.pin_dx()[pos.x];
+            real_t area_y = area[1]/mesh_.pin_dy()[pos.y];
+
+            real_t xstr = (*sn_xs_mesh_)[ic].xsmactr()[group];
 
             // FW direction
             {
                 real_t psi_xl = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][XL])*2+0];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][XL])*2+0]*area_x;
                 real_t psi_xr = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][XR])*2+0];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][XR])*2+0]*area_x;
                 real_t psi_yl = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][YL])*2+0];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][YL])*2+0]*area_y;
                 real_t psi_yr = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][YR])*2+0];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[FW][YR])*2+0]*area_y;
             
+
                 real_t ax = flux_node[ic*2+0]/(psi_xl + psi_xr);
                 real_t ay = flux_node[ic*2+0]/(psi_yl + psi_yr);
 
@@ -272,13 +285,13 @@ namespace mocc {
             // BW direction
             {
                 real_t psi_xl = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][XL])*2+1];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][XL])*2+1]*area_x;
                 real_t psi_xr = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][XR])*2+1];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][XR])*2+1]*area_x;
                 real_t psi_yl = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][YL])*2+1];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][YL])*2+1]*area_y;
                 real_t psi_yr = 
-                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][YR])*2+1];
+                    flux_surf[mesh_.coarse_surf(ic, surfs[BW][YR])*2+1]*area_y;
 
                 real_t ax = flux_node[ic*2+1]/(psi_xl + psi_xr);
                 real_t ay = flux_node[ic*2+1]/(psi_yl + psi_yr);
