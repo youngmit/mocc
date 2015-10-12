@@ -49,14 +49,8 @@ namespace mocc {
         n_inner_ = int_in;
 
         // Set up the mesh dimensions
-        const VecF& core_x = core_mesh_.pin_hx();
-        for( unsigned int i=0; i<core_x.size()-1; i++ ) {
-            hx_.push_back(core_x[i+1]-core_x[i]);
-        }
-        const VecF& core_y = core_mesh_.pin_hy();
-        for( unsigned int i=0; i<core_y.size()-1; i++ ) {
-            hy_.push_back(core_y[i+1]-core_y[i]);
-        }
+        hx_ = core_mesh_.pin_dx();
+        hy_ = core_mesh_.pin_dy();
         hz_ = core_mesh_.hz();
 
         nx_ = hx_.size();

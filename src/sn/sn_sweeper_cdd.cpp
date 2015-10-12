@@ -10,7 +10,6 @@ namespace mocc {
         SnSweeper( input, mesh ),
         corrections_( nullptr )
     {
-cout << "CDD Sweeper: " << endl;
         if( input.child("data") ) {
             if( input.child("data").attribute("type") ) {
                 std::string data_type = 
@@ -124,7 +123,8 @@ cout << "CDD Sweeper: " << endl;
             bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
             bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
             iang++;
-        }
+        } // angle loop
+
         // Update the boundary condition
         this->update_boundary( group );
 
