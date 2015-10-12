@@ -17,11 +17,17 @@ namespace mocc {
         }
 
         const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;        
-
+    
+        /**
+         * Return the number of solution mesh regions in the Plane
+         */
         size_t n_reg() const {
             return n_reg_;
         }
 
+        /**
+         * Return the number of XS Mesh regions in the Plane
+         */
         size_t n_xsreg() const {
             return n_xsreg_;
         }
