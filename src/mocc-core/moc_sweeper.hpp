@@ -36,9 +36,9 @@ namespace mocc {
 
         void initialize();
 
-        void get_pin_flux( int group, VecF& flux ) const;
+        void get_pin_flux_1g( int group, VecF& flux ) const;
 
-        void output( H5::CommonFG *file ) const;
+        void output( H5::CommonFG *node ) const;
 
         void homogenize( CoarseData &data ) const;
 

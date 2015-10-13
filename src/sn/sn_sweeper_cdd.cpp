@@ -18,12 +18,11 @@ namespace mocc {
                     cout << "Generating default values for correction factors."
                         << endl;
                     my_corrections_.reset( new CorrectionData( n_reg_, 
-                                ang_quad_.ndir(), ng_) );
+                                ang_quad_.ndir(), n_group_) );
                     corrections_ = my_corrections_.get();
                 }
             }
         }
-
     }
 
     // Perform a single sweep as fast as possible with the CDD equations. Don't

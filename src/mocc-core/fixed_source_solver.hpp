@@ -84,10 +84,7 @@ namespace mocc{
             return sweeper_.get();
         }
 
-        void output( H5::CommonFG *file ) const {
-            sweeper_->output( file );
-            return;
-        }
+        void output( H5::CommonFG *node ) const;
     
     private:
         UP_Sweeper_t sweeper_;

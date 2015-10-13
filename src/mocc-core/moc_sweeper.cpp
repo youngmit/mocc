@@ -1,9 +1,11 @@
 #include "moc_sweeper.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 
 #include "error.hpp"
+#include "utils.hpp"
 
 using std::endl;
 using std::cout;
@@ -47,7 +49,7 @@ namespace mocc {
         }
 
         // allocate space to store the boundary conditions
-        boundary_.resize( ng_ );
+        boundary_.resize( n_group_ );
         for( auto &group_rays: boundary_ ) {
             group_rays.resize( mesh_.nz() );
             for( auto &angle_rays: group_rays ) {
@@ -188,7 +190,7 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper::get_pin_flux( int group, VecF& flux ) const {
+    void MoCSweeper::get_pin_flux_1g( int group, VecF& flux ) const {
         flux.resize( mesh_.n_pin() );
         for( auto &f: flux ) {
             f = 0.0;
@@ -212,53 +214,23 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper::output( H5::CommonFG *file ) const {
+    void MoCSweeper::output( H5::CommonFG *node ) const {
         // Get core dimensions from the mesh
-        const int nx = mesh_.nx();
-        const int ny = mesh_.ny();
-        const int nz = mesh_.nz();
-        VecI dims;
-        dims.push_back(nz);
-        dims.push_back(ny);
-        dims.push_back(nx);
+        VecI dims = mesh_.dimensions();
         
         // Make a group in the file to store the flux
-        file->createGroup("/flux");
+        node->createGroup("flux");
         
-        // Provide energy group upper bounds
-        HDF::Write( file, "/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
-        HDF::Write( file, "/ng", ng_);
-        
-        std::vector<VecF> flux;
+        VecF flux = this->get_pin_flux();
+        Normalize( flux.begin(), flux.end() );
 
-        real_t sum = 0.0;
-
-        for( unsigned int ig=0; ig<ng_; ig++ ) {
-            VecF flux_g;
-            this->get_pin_flux(ig, flux_g);
-
-            for( const auto &v: flux_g ) {
-                sum += v;
-            }
-        
-            flux.push_back(flux_g);
-        }
-
-        // Normalize the flux
-        real_t f = mesh_.n_pin() * ng_ / sum;
-        for( auto &flux_1g: flux ) {
-            for( auto &v: flux_1g ) {
-                v *= f;
-            }
-        }
-
-        int ig = 0;
-        for( const auto &f: flux ){
+        auto flux_it = flux.cbegin();
+        for( int ig=0; ig<n_group_; ig++ ){
             std::stringstream setname;
-            setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
+            setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
         
-            HDF::Write( file, setname.str(), f, dims);
-            ig++;
+            flux_it = HDF::Write( node, setname.str(), flux_it,
+                    flux_it+mesh_.n_pin(), dims );
         }
 
         return;

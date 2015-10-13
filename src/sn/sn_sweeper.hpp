@@ -22,9 +22,10 @@ namespace mocc {
         void sweep( int group );
 
         void initialize();
-        void get_pin_flux( int ig, VecF& flux ) const;
 
-        void output( H5::CommonFG *file ) const;
+        void get_pin_flux_1g( int ig, VecF& flux ) const;
+
+        void output( H5::CommonFG *node ) const;
 
         // Override the create_source() method to make an SnSource instead of
         // the regular
@@ -41,6 +42,8 @@ namespace mocc {
         }
 
     protected:
+        const CoreMesh &mesh_;
+
         // Mesh parameters
         int nx_;
         int ny_;
@@ -52,7 +55,6 @@ namespace mocc {
         // Update the boundary conditions 
         void update_boundary( int group );
 
-        const CoreMesh& core_mesh_;
         unsigned int n_inner_;
         AngularQuadrature ang_quad_;
 

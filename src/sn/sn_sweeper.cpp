@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "error.hpp"
+#include "utils.hpp"
 
 using std::cout;
 using std::endl;
@@ -10,7 +11,7 @@ using std::cin;
 
 namespace mocc {
     SnSweeper::SnSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
-        core_mesh_( mesh ),
+        mesh_( mesh ),
         ang_quad_( input.child("ang_quad") ),
         bc_type_( mesh.boundary() ),
         xstr_( mesh.n_pin(), 1 ), 
@@ -19,19 +20,20 @@ namespace mocc {
         // Set up all of the stuff that would normally be done by the
         // TransportSweeper constructor. There is probably a better and more
         // maintainable way to do this; will revisit.
+        core_mesh_ = &mesh;
         xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
         n_reg_ = mesh.n_pin();
-        ng_ = xs_mesh_->n_group();
-        flux_.resize( n_reg_, ng_ );
-        flux_old_.resize( n_reg_, ng_ );
+        n_group_ = xs_mesh_->n_group();
+        flux_.resize( n_reg_, n_group_ );
+        flux_old_.resize( n_reg_, n_group_ );
         vol_.resize( n_reg_, 1 );
 
         flux_1g_.resize( n_reg_, 1 );
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
-        for( auto &pin: core_mesh_ ) {
-            int i = core_mesh_.index_lex( core_mesh_.pin_position(ipin) );
+        for( auto &pin: mesh_ ) {
+            int i = mesh_.index_lex( mesh_.pin_position(ipin) );
             vol_(i) = pin->vol();
             ipin++;
         }
@@ -49,15 +51,15 @@ namespace mocc {
         n_inner_ = int_in;
 
         // Set up the mesh dimensions
-        hx_ = core_mesh_.pin_dx();
-        hy_ = core_mesh_.pin_dy();
-        hz_ = core_mesh_.hz();
+        hx_ = mesh_.pin_dx();
+        hy_ = mesh_.pin_dy();
+        hz_ = mesh_.hz();
 
         nx_ = hx_.size();
         ny_ = hy_.size();
         nz_ = hz_.size();
 
-        bc_in_ = SnBoundary( ng_, ang_quad_.ndir(), nx_, ny_, nz_ );
+        bc_in_ = SnBoundary( n_group_, ang_quad_.ndir(), nx_, ny_, nz_ );
         bc_out_ = SnBoundary( 1, ang_quad_.ndir(), nx_, ny_, nz_ );
 
         return;
@@ -199,7 +201,13 @@ namespace mocc {
     }
 
 
-    void SnSweeper::get_pin_flux( int ig, VecF& flux ) const { 
+    void SnSweeper::get_pin_flux_1g( int ig, VecF& flux ) const { 
+        flux.resize( mesh_.n_pin() );
+
+        for( size_t i=0; i<flux.size(); i++ ) {
+            flux[i] = flux_(i, ig);
+        }
+
         return;
     }
 
@@ -247,33 +255,28 @@ namespace mocc {
         return;
     }
 
-    void SnSweeper::output( H5::CommonFG *file ) const {
-        VecI dims;
-        dims.push_back(nz_);
-        dims.push_back(ny_);
-        dims.push_back(nx_);
+    void SnSweeper::output( H5::CommonFG *node ) const {
+
+cout << "sn sweeper output" << endl;
+        auto dims = mesh_.dimensions();
         
         // Make a group in the file to store the flux
-        file->createGroup("/flux");
+        node->createGroup("flux");
         
-        // Provide energy group upper bounds
-        HDF::Write( file, "/eubounds", xs_mesh_->eubounds(), VecI(1, ng_));
-        HDF::Write( file, "/ng", ng_);
-        
-        for( unsigned int ig=0; ig<ng_; ig++ ) {
-            VecF flux;
-            
-            for( unsigned int ireg=0; ireg<n_reg_; ireg++ ) {
-                flux.push_back( flux_( ireg, ig ) );
-            }
-        
+        VecF flux = this->get_pin_flux();
+        Normalize( flux.begin(), flux.end() );
+
+        auto flux_it = flux.cbegin();
+
+        for( unsigned int ig=0; ig<n_group_; ig++ ) {
             std::stringstream setname;
-            setname << "/flux/" << std::setfill('0') << std::setw(3) << ig+1;
+            setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
         
-            HDF::Write( file, setname.str(), flux, dims);
+            flux_it = HDF::Write( node, setname.str(), flux_it, 
+                    flux_it+mesh_.n_pin(), dims);
         }
 
-        xs_mesh_->output( file );
+        xs_mesh_->output( node );
         return;
     }
 }

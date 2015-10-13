@@ -21,11 +21,12 @@ namespace mocc{
         }
 
         TransportSweeper( const CoreMesh& mesh ):
+            core_mesh_( &mesh ),
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
-            ng_( xs_mesh_->n_group() ),
-            flux_( n_reg_, ng_ ),
-            flux_old_( n_reg_, ng_ ),
+            n_group_( xs_mesh_->n_group() ),
+            flux_( n_reg_, n_group_ ),
+            flux_old_( n_reg_, n_group_ ),
             vol_( n_reg_, 1 ),
             coarse_data_(nullptr)
         {
@@ -49,7 +50,13 @@ namespace mocc{
          * Produce pin-homogenized scalar flux for the specified group and store
          * in the passed vector.
          */
-        virtual void get_pin_flux( int ig, VecF& flux ) const = 0;
+        virtual void get_pin_flux_1g( int ig, VecF& flux ) const = 0;
+
+        /**
+         * Return a vector containing the pin-homogenizes multi-group scalar
+         * flux. The values in the vector are ordered group-major.
+         */
+        VecF get_pin_flux() const;
 
         /**
          * Given the current estimate of a system eigenvalue, calculate the
@@ -100,8 +107,8 @@ namespace mocc{
         }
 
         /// Return the number of energy groups
-        unsigned int n_grp() const {
-            return ng_;
+        unsigned int n_group() const {
+            return n_group_;
         }
 
         /// Assign a CoarseData object to the sweeper, allowing it to store
@@ -140,10 +147,12 @@ namespace mocc{
         virtual void homogenize( CoarseData &data ) const = 0;
 
     protected:
+        const CoreMesh *core_mesh_;
+
         SP_XSMesh_t xs_mesh_;
 
         unsigned int n_reg_;
-        unsigned int ng_;
+        unsigned int n_group_;
 
         const Source* source_;
 

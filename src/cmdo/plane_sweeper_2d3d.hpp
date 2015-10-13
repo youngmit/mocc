@@ -23,8 +23,9 @@ namespace mocc {
 
         void initialize();
 
-        void get_pin_flux( int ig, VecF &flux ) const;
+        void get_pin_flux_1g( int ig, VecF &flux ) const;
 
+        VecF get_pin_flux() const;
     
         void output( H5::CommonFG *file ) const;
 

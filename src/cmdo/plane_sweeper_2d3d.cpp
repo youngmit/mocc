@@ -20,10 +20,10 @@ namespace mocc {
         /// \todo initialize the rest of the data members on the TS base type
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
         n_reg_ = moc_sweeper_.n_reg();
-        ng_ = xs_mesh_->n_group();
+        n_group_ = xs_mesh_->n_group();
 
         corrections_ = CorrectionData( sn_sweeper_.n_reg(), ang_quad_.ndir()/2,
-                ng_ );
+                n_group_ );
 
         sn_sweeper_.set_corrections( &corrections_ );
         const XSMeshHomogenized* sn_xs_mesh = 
@@ -44,7 +44,7 @@ namespace mocc {
 
         // Compute Sn-MoC residual
         VecF moc_flux;
-        moc_sweeper_.get_pin_flux( group, moc_flux );
+        moc_sweeper_.get_pin_flux_1g( group, moc_flux );
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
             residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
@@ -59,8 +59,16 @@ cout << "MoC/Sn residual: " << residual << endl;
         moc_sweeper_.initialize();
     }
 
-    void PlaneSweeper_2D3D::get_pin_flux( int ig, VecF &flux ) const {
-        sn_sweeper_.get_pin_flux( ig, flux );
+    void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, VecF &flux ) const {
+        sn_sweeper_.get_pin_flux_1g( ig, flux );
+    }
+
+    VecF PlaneSweeper_2D3D::get_pin_flux() const {
+        VecF flux( mesh_.n_pin(), 0.0 );
+
+        assert(false);
+
+        return flux;
     }
 
     real_t PlaneSweeper_2D3D::total_fission( bool old ) const {
@@ -78,9 +86,17 @@ cout << "MoC/Sn residual: " << residual << endl;
     }
 
     void PlaneSweeper_2D3D::output( H5::CommonFG *file ) const {
-        // We need to be a little careful about how we do output to avoid
-        // collisions in the HDF5 tree. For now, lets just output Sn data.
-        sn_sweeper_.output( file );
+        // Put the Sn data in its own location
+        {
+            H5::Group g = file->createGroup( "/Sn" );
+            sn_sweeper_.output( &g );
+        }
+
+        // Put the MoC data in its own location
+        {
+            H5::Group g = file->createGroup( "/MoC" );
+            moc_sweeper_.output( &g );
+        }
 
         // Write out the correction factors
         file->createGroup("/alpha_x");
@@ -91,7 +107,7 @@ cout << "MoC/Sn residual: " << residual << endl;
         dims.push_back(mesh_.nz());
         dims.push_back(mesh_.ny());
         dims.push_back(mesh_.nx());
-        for( size_t g=0; g<ng_; g++ ) {
+        for( size_t g=0; g<n_group_; g++ ) {
             for( size_t a=0; a<ang_quad_.ndir_oct()*4; a++ ) {
                 VecF alpha_x( mesh_.n_pin(), 0.0 );
                 VecF alpha_y( mesh_.n_pin(), 0.0 );

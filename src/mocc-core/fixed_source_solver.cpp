@@ -9,7 +9,7 @@ namespace mocc {
         sweeper_( UP_Sweeper_t( TransportSweeperFactory(input, mesh) ) ),
         source_( sweeper_->create_source() ),
         fs_( nullptr ),
-        ng_( sweeper_->n_grp() )
+        ng_( sweeper_->n_group() )
     {
         
         sweeper_->assign_source( source_.get() );
@@ -39,5 +39,16 @@ namespace mocc {
 
             sweeper_->sweep(ig);
         }
+    }
+
+    void FixedSourceSolver::output( H5::CommonFG *node ) const {
+        // Provide energy group upper bounds
+        // We do this here, to prevent collisions between possibly-multiple
+        // sweepers colliding.
+        HDF::Write( node, "ng", sweeper_->n_group() );
+        HDF::Write( node, "eubounds", sweeper_->xs_mesh().eubounds(), 
+                VecI(1, ng_) );
+        sweeper_->output( node );
+        return;
     }
 }

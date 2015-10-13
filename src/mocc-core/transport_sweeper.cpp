@@ -7,7 +7,7 @@ namespace mocc {
         real_t tfis = 0.0;
         const ArrayX& flux = old ? flux_old_: flux_;
         for( auto &xsr: *xs_mesh_ ) {
-            for( unsigned int ig=0; ig<ng_; ig++ ) {
+            for( unsigned int ig=0; ig<n_group_; ig++ ) {
                 real_t xsnf = xsr.xsmacnf()[ig];
                 for (auto &ireg: xsr.reg() ) {
                     tfis += flux(ireg, ig)*vol_(ireg)*xsnf;
@@ -31,5 +31,19 @@ namespace mocc {
             }
         }
         return;
+    }
+
+    VecF TransportSweeper::get_pin_flux() const {
+        VecF flux( core_mesh_->n_pin()*n_group_, 0.0 );
+
+        auto flux_it = flux.begin();
+
+        VecF flux_1g;
+        for( int ig=0; ig<n_group_; ig++ ) {
+            this->get_pin_flux_1g( ig, flux_1g );
+            flux_it = std::copy( flux_1g.begin(), flux_1g.end(), flux_it );
+        }
+
+        return flux;
     }
 }
