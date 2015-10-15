@@ -1,3 +1,4 @@
+#include "sn_current_worker.hpp"
 #include "sn_sweeper_cdd.hpp"
 
 using std::cout;
@@ -25,9 +26,39 @@ namespace mocc {
         }
     }
 
+    void SnSweeper_CDD::sweep( int group ) {
+        // Store the transport cross section somewhere useful
+        for( auto &xsr: *xs_mesh_ ) {
+            real_t xstr = xsr.xsmactr()[group];
+            for( auto &ireg: xsr.reg() ) {
+                xstr_(ireg) = xstr;
+            }
+        }
+        
+        flux_1g_ = flux_.col( group );
+
+        // Perform inner iterations
+        for( unsigned int inner=0; inner<n_inner_; inner++ ) {
+
+            // Set the source (add upscatter and divide by 4PI)
+            source_->self_scatter( group, flux_1g_, q_ );
+
+            if( inner == n_inner_-1 && coarse_data_ ) {
+                this->sweep_std<sn::Current>( group );
+            } else {
+                this->sweep_std<sn::NoCurrent>( group );
+            }
+        }
+        flux_.col( group ) = flux_1g_;
+
+        return;
+    }
+
     // Perform a single sweep as fast as possible with the CDD equations. Don't
     // collect currents or anything.
+    template <typename CurrentWorker>
     void SnSweeper_CDD::sweep_std( int group ) {
+        CurrentWorker cw( coarse_data_, &mesh_ );
         assert( corrections_ );
         flux_1g_.fill(0.0);
 
@@ -113,6 +144,12 @@ namespace mocc {
                         x_flux[ny_*iz + iy] = (psi - gx*psi_lx) / gx;
 						y_flux[nx_*iz + ix] = (psi - gy*psi_ly) / gy;
 						z_flux[nx_*iy + ix] = 2.0*psi - psi_lz;
+
+                        // Do current worker (maybe)
+                        cw.current_work( x_flux[ny_*iz + iy],
+                                         y_flux[nx_*iz + ix],
+                                         z_flux[nx_*iy + ix], i, ang, group );
+
                     }
                 }
             }
@@ -128,10 +165,5 @@ namespace mocc {
         this->update_boundary( group );
 
         return;
-    }
-
-    /// \todo implement current sweep
-    void SnSweeper_CDD::sweep_final( int group ) {
-        sweep_std( group );
     }
 }

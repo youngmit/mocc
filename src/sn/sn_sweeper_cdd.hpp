@@ -13,13 +13,15 @@ namespace mocc {
     public:
         SnSweeper_CDD( const pugi::xml_node &input, const CoreMesh &mesh );
 
+        void sweep( int group );
+
         void set_corrections( CorrectionData *data ) {
             corrections_ = data;
         }
         
     private:
+        template <typename CurrentWorker>
         void sweep_std( int group );
-        void sweep_final( int group );
 
         const CorrectionData *corrections_;
 

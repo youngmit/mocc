@@ -8,6 +8,7 @@
 #include "global_config.hpp"
 #include "mesh.hpp"
 #include "sn_boundary.hpp"
+#include "sn_current_worker.hpp"
 #include "sn_source.hpp"
 #include "transport_sweeper.hpp"
 #include "xs_mesh_homogenized.hpp"
@@ -19,7 +20,7 @@ namespace mocc {
 
         ~SnSweeper() { }
 
-        void sweep( int group );
+        virtual void sweep( int group );
 
         void initialize();
 
@@ -76,8 +77,8 @@ namespace mocc {
         // Outgoing boundary condition. Only difined for one group
         SnBoundary bc_out_;
 
-        virtual void sweep_std( int group );
-        virtual void sweep_final( int group );
+        template <typename CurrentWorker>
+        void sweep_dd( int group );
     };
 
     typedef std::unique_ptr<SnSweeper> UP_SnSweeper_t;

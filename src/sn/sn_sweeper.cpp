@@ -82,14 +82,16 @@ namespace mocc {
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
-
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter( group, flux_1g_, q_ );
 
             if( inner == n_inner_-1 && coarse_data_ ) {
-                this->sweep_final( group );
+                // Wipe out the existing currents
+                coarse_data_->current.col( group ) = 0.0;
+                this->sweep_dd<sn::Current>( group );
+
             } else {
-                this->sweep_std( group );
+                this->sweep_dd<sn::NoCurrent>( group );
             }
         }
         flux_.col( group ) = flux_1g_;
@@ -97,7 +99,9 @@ namespace mocc {
         return;
     }
 
-    void SnSweeper::sweep_std( int group ) {
+    template <typename CurrentWorker>
+    void SnSweeper::sweep_dd( int group ) {
+        CurrentWorker cw( coarse_data_, &mesh_ );
         flux_1g_.fill(0.0);
 
 		ArrayF x_flux(ny_*nz_);
@@ -106,6 +110,10 @@ namespace mocc {
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
+
+            // Configure the current worker for this angle
+            cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+
             real_t wgt = ang.weight * HPI; 
             real_t ox = ang.ox;
             real_t oy = ang.oy;
@@ -148,6 +156,8 @@ namespace mocc {
             y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM );
             z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
 
+            cw.upwind_work( x_flux, y_flux, z_flux, ang, group);
+
             for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                 real_t tz = oz/hz_[iz];
                 for( int iy=stty; iy!=stpy; iy+=ydir ) {
@@ -170,8 +180,15 @@ namespace mocc {
                         x_flux[ny_*iz + iy] = 2.0*psi - x_flux[ny_*iz + iy];
                         y_flux[nx_*iz + ix] = 2.0*psi - y_flux[nx_*iz + ix];
                         z_flux[nx_*iy + ix] = 2.0*psi - z_flux[nx_*iy + ix];
+
+                        // Stash currents (or not, depending on the
+                        // CurrentWorker template parameter)
+                        cw.current_work( x_flux[ny_*iz + iy],
+                                         y_flux[nx_*iz + ix],
+                                         z_flux[nx_*iy + ix], i, ang, group );
                     }
                 }
+
             }
 
             // store the downwind boundary condition
@@ -183,12 +200,6 @@ namespace mocc {
         // Update the boundary condition
         this->update_boundary( group );
 
-        return;
-    }
-
-    /// \todo implement current calculations here
-    void SnSweeper::sweep_final( int group ) {
-        this->sweep_std( group );
         return;
     }
 

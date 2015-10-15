@@ -163,7 +163,9 @@ namespace mocc {
          * Return a vector containing the x-, y-, z-dimensions of the mesh.
          */
         VecI dimensions() const {
-            VecI d = { (unsigned int)nx_, (unsigned int)ny_, (unsigned int)nz_ };
+            VecI d = { (unsigned int)nx_, 
+                       (unsigned int)ny_, 
+                       (unsigned int)nz_ };
             return d;
         }
         
