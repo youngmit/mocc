@@ -217,6 +217,7 @@ namespace mocc {
     void MoCSweeper::output( H5::CommonFG *node ) const {
         // Get core dimensions from the mesh
         VecI dims = mesh_.dimensions();
+        std::reverse( dims.begin(), dims.end() );
         
         // Make a group in the file to store the flux
         node->createGroup("flux");

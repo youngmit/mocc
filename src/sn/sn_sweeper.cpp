@@ -89,7 +89,6 @@ namespace mocc {
                 // Wipe out the existing currents
                 coarse_data_->current.col( group ) = 0.0;
                 this->sweep_dd<sn::Current>( group );
-
             } else {
                 this->sweep_dd<sn::NoCurrent>( group );
             }
@@ -267,9 +266,8 @@ namespace mocc {
     }
 
     void SnSweeper::output( H5::CommonFG *node ) const {
-
-cout << "sn sweeper output" << endl;
         auto dims = mesh_.dimensions();
+        std::reverse( dims.begin(), dims.end() );
         
         // Make a group in the file to store the flux
         node->createGroup("flux");
