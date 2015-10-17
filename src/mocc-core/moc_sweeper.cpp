@@ -21,9 +21,9 @@ namespace mocc {
         mesh_( mesh ),
         ang_quad_( input.child("ang_quad") ),
         rays_( input.child("rays"), ang_quad_, mesh ),
-        xstr_( n_reg_, 1 ),
-        flux_1g_( n_reg_, 1 ),
-        qbar_( n_reg_, 1 ),
+        xstr_( n_reg_ ),
+        flux_1g_( n_reg_ ),
+        qbar_( n_reg_ ),
         bc_type_( mesh_.boundary() )
     {   
         // Make sure we have input from the XML
@@ -43,7 +43,7 @@ namespace mocc {
         for( auto &pin: mesh_ ) {
             const VecF& pin_vols = pin->vols();
             for( auto &v: pin_vols ) {
-                vol_(ireg) = v;
+                vol_[ireg] = v;
                 ireg++;
             }
         }
@@ -92,11 +92,11 @@ namespace mocc {
         for( auto &xsr: *xs_mesh_ ) {
             real_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
-                xstr_(ireg) = xstr;
+                xstr_[ireg] = xstr;
             }
         }
 
-        flux_1g_ = flux_.col( group );
+        flux_1g_ = flux_[ std::slice( group*n_reg_, n_reg_, 1 ) ];
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
@@ -111,7 +111,7 @@ namespace mocc {
             }
         }
 
-        flux_.col( group ) = flux_1g_;
+        flux_[ std::slice( group*n_reg_, n_reg_, 1 ) ] = flux_1g_;
 
         return;
     }
@@ -169,7 +169,7 @@ namespace mocc {
 
     void MoCSweeper::initialize() {
         // There are better ways to do this, but for now, just start with 1.0
-        flux_.fill(1.0);
+        flux_ = 1.0;
 
         // Walk through the boundary conditions and initialize them the 1/4pi
         real_t val = 1.0/FPI;
@@ -203,8 +203,8 @@ namespace mocc {
             int i = mesh_.index_lex(pos);
             real_t v = 0.0;
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
-                v += vol_(ireg);
-                flux[i] += flux_(ireg, group)*vol_(ireg);
+                v += vol_[ireg];
+                flux[i] += flux_[ireg + group*n_reg_]*vol_[ireg];
                 ireg++;
             }
             flux[i] /= v;

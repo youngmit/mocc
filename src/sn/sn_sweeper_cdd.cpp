@@ -31,11 +31,11 @@ namespace mocc {
         for( auto &xsr: *xs_mesh_ ) {
             real_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
-                xstr_(ireg) = xstr;
+                xstr_[ireg] = xstr;
             }
         }
         
-        flux_1g_ = flux_.col( group );
+        flux_1g_ = flux_[std::slice(group*n_reg_, n_reg_, 1)];
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
@@ -49,7 +49,7 @@ namespace mocc {
                 this->sweep_std<sn::NoCurrent>( group );
             }
         }
-        flux_.col( group ) = flux_1g_;
+        flux_[std::slice(group*n_reg_, n_reg_, 1)] = flux_1g_;
 
         return;
     }
@@ -60,7 +60,7 @@ namespace mocc {
     void SnSweeper_CDD::sweep_std( int group ) {
         CurrentWorker cw( coarse_data_, &mesh_ );
         assert( corrections_ );
-        flux_1g_.fill(0.0);
+        flux_1g_ = 0.0;
 
 		ArrayF x_flux(ny_*nz_);
 		ArrayF y_flux(nx_*nz_);
@@ -135,11 +135,11 @@ namespace mocc {
                         real_t gx = ax*b;
                         real_t gy = ay*b;
 
-                        real_t psi = q_(i) + 
+                        real_t psi = q_[i] + 
                             2.0*(tx*psi_lx + ty*psi_ly + tz*psi_lz );
-                        psi /= tx/gx + ty/gy + 2.0*tz + xstr_(i);
+                        psi /= tx/gx + ty/gy + 2.0*tz + xstr_[i];
 
-                        flux_1g_(i) += psi*wgt;
+                        flux_1g_[i] += psi*wgt;
 
                         x_flux[ny_*iz + iy] = (psi - gx*psi_lx) / gx;
 						y_flux[nx_*iz + ix] = (psi - gy*psi_ly) / gy;

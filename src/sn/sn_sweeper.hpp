@@ -63,13 +63,13 @@ namespace mocc {
         std::vector<Boundary> bc_type_;
         
         // Temporary storage for 1-group scalar flux
-        ArrayX flux_1g_;
+        ArrayF flux_1g_;
         
         // Temporary storage of the current-group transport cross section
-        ArrayX xstr_;
+        ArrayF xstr_;
 
         // Single-group isotropic source, should include in-scatter
-        ArrayX q_;
+        ArrayF q_;
 
         // Incomming boundary condition
         SnBoundary bc_in_;
@@ -77,6 +77,10 @@ namespace mocc {
         // Outgoing boundary condition. Only difined for one group
         SnBoundary bc_out_;
 
+        /**
+         * \tparam CurrentWorker the class to use for all of the
+         * current-related work to do during the sweep.
+         */
         template <typename CurrentWorker>
         void sweep_dd( int group );
     };

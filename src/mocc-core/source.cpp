@@ -3,14 +3,19 @@
 #include "error.hpp"
 #include "constants.hpp"
 
+using std::endl;
+using std::cout; 
+
 namespace mocc {
-    Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayX& flux ):
-        xs_mesh_(xs_mesh),
-        ng_(xs_mesh->n_group()),
-        has_external_(false),
-        source_1g_(nreg, 1),
-        flux_(flux)
+    Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayF& flux ):
+        xs_mesh_( xs_mesh ),
+        n_group_( xs_mesh->n_group() ),
+        has_external_( false ),
+        source_1g_( nreg ),
+        flux_( flux ),
+        n_reg_( flux.size()/n_group_ )
     {
+        assert(n_reg_*n_group_ == flux_.size() );
         return;
     }
 
@@ -21,13 +26,13 @@ namespace mocc {
         if( has_external_ ) {
             throw EXCEPT( "No support for external sources yet." );
         } else {
-            source_1g_.fill(0.0);
+            source_1g_ = 0.0;
         }
 
         for( auto &xsr: *xs_mesh_ ) {
             real_t xsch = xsr.xsmacch()[ig];
             for( auto &ireg: xsr.reg() ) {
-                source_1g_(ireg) +=  xsch*fs(ireg);
+                source_1g_[ireg] +=  xsch * fs(ireg);
             }
         }
         return;
@@ -47,8 +52,8 @@ namespace mocc {
                 // routine to have less indirection.
                 if( igg != ig ) {
                     for( auto &ireg: xsr.reg() ) {
-                        real_t scat_src = sc*flux_(ireg, igg);
-                        source_1g_(ireg) += scat_src;
+                        real_t scat_src = sc*flux_[ireg + n_reg_*igg];
+                        source_1g_[ireg] += scat_src;
                     }
                 }
                 igg++;
@@ -60,14 +65,14 @@ namespace mocc {
 
     // This can get away with being const, since we are actually returning the
     // source to the caller. Nothing should get touched internally
-    void Source::self_scatter( size_t ig, ArrayX& flux_1g, 
-            ArrayX& qbar ) const {
+    void Source::self_scatter( size_t ig, ArrayF& flux_1g, 
+            ArrayF& qbar ) const {
         for( auto &xsr: *xs_mesh_ ) {
             const ScatRow& scat_row = xsr.xsmacsc().to(ig);
             real_t xssc = scat_row.from[ig-scat_row.min_g];
             real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
             for ( auto &ireg: xsr.reg() ) {
-                qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
+                qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) * 
                     r_fpi_tr;
             }
         }

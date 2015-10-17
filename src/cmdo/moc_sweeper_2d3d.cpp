@@ -20,7 +20,7 @@ namespace mocc {
     };
 
     void MoCSweeper_2D3D::sweep1g_final( int group ) {
-        flux_1g_.fill(0.0);
+        flux_1g_ = 0.0;
     
         ArrayX e_tau(rays_.max_segments(), 1);
         ArrayX psi1(rays_.max_segments()+1, 1);
@@ -73,7 +73,7 @@ namespace mocc {
                     // Compute exponentials
                     for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        e_tau( iseg) = 1.0 - exp( -xstr_(ireg) * 
+                        e_tau(iseg) = 1.0 - exp( -xstr_[ireg] * 
                                 ray.seg_len(iseg) * rstheta );
                     }
     
@@ -84,10 +84,10 @@ namespace mocc {
                     // Propagate through core geometry
                     for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        real_t psi_diff = (psi1(iseg) - qbar_(ireg)) * 
+                        real_t psi_diff = (psi1(iseg) - qbar_[ireg]) * 
                         e_tau(iseg);
                         psi1(iseg+1) = psi1(iseg) - psi_diff;
-                        flux_1g_(ireg) += psi_diff*wt_v_st;
+                        flux_1g_[ireg] += psi_diff*wt_v_st;
                     }
                     // Store boundary condition
                     boundary_out_[iplane][iang1][bc2] = psi1( ray.nseg() );
@@ -100,10 +100,10 @@ namespace mocc {
                     // Propagate through core geometry
                     for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        real_t psi_diff = (psi2(iseg+1) - qbar_(ireg)) * 
+                        real_t psi_diff = (psi2(iseg+1) - qbar_[ireg]) *
                             e_tau(iseg);
                         psi2(iseg) = psi2(iseg+1) - psi_diff;
-                        flux_1g_(ireg) += psi_diff*wt_v_st;
+                        flux_1g_[ireg] += psi_diff*wt_v_st;
                     }
                     // Store boundary condition
                     boundary_out_[iplane][iang2][bc1] = psi2(0);
@@ -136,10 +136,10 @@ namespace mocc {
                             // Store forward volumetric stuff
                             for( int i=0; i<crd->nseg_fw; i++ ) {
                                 int ireg = ray.seg_index(iseg_fw) + first_reg;
-                                real_t xstr = xstr_(ireg);
+                                real_t xstr = xstr_[ireg];
                                 real_t t = ang.rsintheta * ray.seg_len(iseg_fw);
-                                real_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
-                                    (psi1(iseg_fw)-qbar_(ireg))/xstr;
+                                real_t fluxvol = t * qbar_[ireg] + e_tau(iseg_fw)*
+                                    (psi1(iseg_fw)-qbar_[ireg])/xstr;
                                 flux_vol_sum[cell_fw*2+0] += fluxvol;
                                 flux_vol_norm[cell_fw] += t;
                                 sigt_sum[cell_fw*2+0] += xstr*fluxvol;
@@ -159,11 +159,11 @@ namespace mocc {
                             for( int i=0; i<crd->nseg_bw; i++ ) {
                                 iseg_bw--;
                                 int ireg = ray.seg_index(iseg_bw) + first_reg;
-                                real_t xstr = xstr_(ireg);
+                                real_t xstr = xstr_[ireg];
                                 real_t t = ang.rsintheta * ray.seg_len(iseg_bw);
-                                real_t fluxvol = t * qbar_(ireg) + 
+                                real_t fluxvol = t * qbar_[ireg] + 
                                     e_tau(iseg_bw) * 
-                                    (psi2(iseg_bw+1)-qbar_(ireg))/xstr;
+                                    (psi2(iseg_bw+1)-qbar_[ireg])/xstr;
                                 flux_vol_sum[cell_bw*2+1] += fluxvol;
                                 sigt_sum[cell_bw*2+1] += xstr*fluxvol;
                             }

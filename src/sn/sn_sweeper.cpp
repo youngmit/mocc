@@ -14,8 +14,9 @@ namespace mocc {
         mesh_( mesh ),
         ang_quad_( input.child("ang_quad") ),
         bc_type_( mesh.boundary() ),
-        xstr_( mesh.n_pin(), 1 ), 
-        q_( mesh.n_pin(), 1 )
+        flux_1g_( mesh_.n_pin() ),
+        xstr_( mesh.n_pin() ), 
+        q_( mesh.n_pin() )
     {
         // Set up all of the stuff that would normally be done by the
         // TransportSweeper constructor. There is probably a better and more
@@ -24,17 +25,16 @@ namespace mocc {
         xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
         n_reg_ = mesh.n_pin();
         n_group_ = xs_mesh_->n_group();
-        flux_.resize( n_reg_, n_group_ );
-        flux_old_.resize( n_reg_, n_group_ );
-        vol_.resize( n_reg_, 1 );
+        flux_.resize( n_reg_ * n_group_ );
+        flux_old_.resize( n_reg_ * n_group_ );
+        vol_.resize( n_reg_ );
 
-        flux_1g_.resize( n_reg_, 1 );
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
         for( auto &pin: mesh_ ) {
             int i = mesh_.index_lex( mesh_.pin_position(ipin) );
-            vol_(i) = pin->vol();
+            vol_[i] = pin->vol();
             ipin++;
         }
 
@@ -74,11 +74,11 @@ namespace mocc {
         for( auto &xsr: *xs_mesh_ ) {
             real_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
-                xstr_(ireg) = xstr;
+                xstr_[ireg] = xstr;
             }
         }
         
-        flux_1g_ = flux_.col( group );
+        flux_1g_ = flux_[ std::slice(n_reg_*group, n_reg_, 1) ];
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
@@ -93,7 +93,7 @@ namespace mocc {
                 this->sweep_dd<sn::NoCurrent>( group );
             }
         }
-        flux_.col( group ) = flux_1g_;
+        flux_[ std::slice(n_reg_*group, n_reg_, 1) ] = flux_1g_;
 
         return;
     }
@@ -101,7 +101,7 @@ namespace mocc {
     template <typename CurrentWorker>
     void SnSweeper::sweep_dd( int group ) {
         CurrentWorker cw( coarse_data_, &mesh_ );
-        flux_1g_.fill(0.0);
+        flux_1g_ = 0.0;
 
 		ArrayF x_flux(ny_*nz_);
 		ArrayF y_flux(nx_*nz_);
@@ -170,11 +170,11 @@ namespace mocc {
                         int i = iz*nx_*ny_ + iy*nx_ + ix;
                         real_t tx = ox/hx_[ix];
                         real_t psi = 2.0*(tx*psi_lx + 
-                                           ty*psi_ly + 
-                                           tz*psi_lz) + q_(i);
-                        psi /= 2.0*(tx + ty + tz) + xstr_(i);
+                                          ty*psi_ly + 
+                                          tz*psi_lz) + q_[i];
+                        psi /= 2.0*(tx + ty + tz) + xstr_[i];
 
-                        flux_1g_(i) += psi*wgt;
+                        flux_1g_[i] += psi*wgt;
 
                         x_flux[ny_*iz + iy] = 2.0*psi - x_flux[ny_*iz + iy];
                         y_flux[nx_*iz + ix] = 2.0*psi - y_flux[nx_*iz + ix];
@@ -203,8 +203,8 @@ namespace mocc {
     }
 
     void SnSweeper::initialize() {
-        flux_.fill(1.0);
-        flux_old_.fill(1.0);
+        flux_ = 1.0;
+        flux_old_ = 1.0;
         bc_in_.initialize(1.0/FPI);
         
         return;
@@ -212,10 +212,12 @@ namespace mocc {
 
 
     void SnSweeper::get_pin_flux_1g( int ig, VecF& flux ) const { 
-        flux.resize( mesh_.n_pin() );
+        size_t n = mesh_.n_pin();
+        flux.clear();
 
-        for( size_t i=0; i<flux.size(); i++ ) {
-            flux[i] = flux_(i, ig);
+        ArrayF tmp_f = flux_[std::slice(n*ig, n, 1)];
+        for( const auto &f: tmp_f ) {
+            flux.push_back(f);
         }
 
         return;

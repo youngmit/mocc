@@ -25,9 +25,9 @@ namespace mocc{
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
             n_group_( xs_mesh_->n_group() ),
-            flux_( n_reg_, n_group_ ),
-            flux_old_( n_reg_, n_group_ ),
-            vol_( n_reg_, 1 ),
+            flux_( n_reg_ * n_group_ ),
+            flux_old_( n_reg_ * n_group_ ),
+            vol_( n_reg_ ),
             coarse_data_(nullptr)
         {
             return;
@@ -86,33 +86,45 @@ namespace mocc{
             return n_reg_;
         }
 
-        /// Return a reference to the sweeper's XSMesh
+        /**
+         * Return a reference to the sweeper's XSMesh
+         */
         const XSMesh& xs_mesh() const {
             return *(xs_mesh_.get());
         }
 
-        /// Return a shared pointer to the sweeper's XSMesh. Use with caution
+        /**
+         * Return a shared pointer to the sweeper's XSMesh. Use with caution
+         */
         SP_XSMesh_t get_xs_mesh() {
             return xs_mesh_;
         }
 
-        /// Return a reference to the MG flux
-        const ArrayX& flux() const {
+        /**
+         * Return a reference to the MG flux
+         */
+        const ArrayF& flux() const {
             return flux_;
         }
 
-        /// Subscript and return a specific flux value
+        /** 
+         * Subscript and return a specific flux value
+         */
         const real_t flux( unsigned int ig, unsigned int ireg ) const {
-            return flux_( ireg, ig );
+            return flux_[ ireg + n_group_*ig ];
         }
 
-        /// Return the number of energy groups
+        /**
+         * Return the number of energy groups
+         */
         unsigned int n_group() const {
             return n_group_;
         }
 
-        /// Assign a CoarseData object to the sweeper, allowing it to store
-        /// currents and such.
+        /**
+         * Assign a CoarseData object to the sweeper, allowing it to store
+         * currents and such.
+         */
         virtual void set_coarse_data( CoarseData *cd ) {
             coarse_data_ = cd;
         }
@@ -122,7 +134,7 @@ namespace mocc{
         /// reference. Probably will at some point, we will see. It'll be less
         /// refactoring if I start with an explicit const version and use it
         /// wherever I know I won't need mutability.
-        const ArrayX& cflux() const {
+        const ArrayF& cflux() const {
             return flux_;
         }
 
@@ -157,14 +169,14 @@ namespace mocc{
         const Source* source_;
 
         // Multi-group scalar flux
-        ArrayX flux_;
+        ArrayF flux_;
 
         // Previous value of the MG scalar flux
-        ArrayX flux_old_;
+        ArrayF flux_old_;
 
         // Region volumes. In a 3-D sweeper this is the true volume, while in a
         // 2-D sweeper, this is actually surface area.
-        ArrayX vol_;
+        ArrayF vol_;
 
         // Reference to the CoarseData object that should be used to store
         // coarse mesh values. This is passed in from above.

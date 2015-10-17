@@ -75,13 +75,13 @@ namespace mocc {
         virtual void sweep1g_final( int group );
 
         // Array of one group transport cross sections
-        ArrayX xstr_;
+        ArrayF xstr_;
 
         // Temporary storage for 1-group scalar flux
-        ArrayX flux_1g_;
+        ArrayF flux_1g_;
 
         // One-group, isotropic source, scaled by transport cross section
-        ArrayX qbar_;
+        ArrayF qbar_;
 
         // Number of inner iterations per group sweep
         unsigned int n_inner_;

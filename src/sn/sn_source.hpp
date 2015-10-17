@@ -10,7 +10,7 @@ namespace mocc {
     // sweepers. Could do some template magic at some point, instead.
     class SnSource: public Source {
     public:
-        SnSource( int nreg, const XSMesh *xs_mesh, const ArrayX& flux ):
+        SnSource( int nreg, const XSMesh *xs_mesh, const ArrayF& flux ):
             Source( nreg, xs_mesh, flux )
         {
             return;
@@ -18,14 +18,14 @@ namespace mocc {
         ~SnSource() {
         }
 
-        void self_scatter( size_t ig, ArrayX& flux_1g, 
-                ArrayX& qbar ) const 
+        void self_scatter( size_t ig, ArrayF& flux_1g, 
+                ArrayF& qbar ) const 
         {
             for( auto &xsr: *xs_mesh_ ) {
                 const ScatRow& scat_row = xsr.xsmacsc().to(ig);
                 real_t xssc = scat_row.from[ig-scat_row.min_g];
                 for ( auto &ireg: xsr.reg() ) {
-                    qbar(ireg) = ( source_1g_(ireg) + flux_1g(ireg)*xssc ) * 
+                    qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) * 
                         RFPI;
                 }
             }

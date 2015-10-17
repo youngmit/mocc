@@ -1,5 +1,5 @@
 void MoCSweeper::sweep1g( int group ) {
-    flux_1g_.fill(0.0);
+    flux_1g_ = 0.0;
 
     ArrayX e_tau(rays_.max_segments(), 1);
 
@@ -24,7 +24,7 @@ void MoCSweeper::sweep1g( int group ) {
                 // Compute exponentials
                 for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
-                    e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
+                    e_tau(iseg) = 1.0 - exp( -xstr_[ireg] * 
                             ray.seg_len(iseg) * rstheta );
                 }
 
@@ -37,9 +37,9 @@ void MoCSweeper::sweep1g( int group ) {
                     // Propagate through core geometry
                     for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        real_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
+                        real_t psi_diff = (psi - qbar_[ireg]) * e_tau(iseg);
                         psi -= psi_diff;
-                        flux_1g_(ireg) += psi_diff*wt_v_st;
+                        flux_1g_[ireg] += psi_diff*wt_v_st;
                     }
                     // Store boundary condition
                     boundary_out_[iplane][iang1][bc2] = psi;
@@ -54,9 +54,9 @@ void MoCSweeper::sweep1g( int group ) {
                     // Propagate through core geometry
                     for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                         int ireg = ray.seg_index(iseg) + first_reg;
-                        real_t psi_diff = (psi - qbar_(ireg)) * e_tau(iseg);
+                        real_t psi_diff = (psi - qbar_[ireg]) * e_tau(iseg);
                         psi -= psi_diff;
-                        flux_1g_(ireg) += psi_diff*wt_v_st;
+                        flux_1g_[ireg] += psi_diff*wt_v_st;
                     }
                     // Store boundary condition
                     boundary_out_[iplane][iang2][bc1] = psi;
@@ -78,7 +78,7 @@ void MoCSweeper::sweep1g( int group ) {
 }
 
 void MoCSweeper::sweep1g_final( int group ) {
-    flux_1g_.fill(0.0);
+    flux_1g_ = 0.0;
 
     ArrayX e_tau(rays_.max_segments(), 1);
     ArrayX psi1(rays_.max_segments()+1, 1);
@@ -115,7 +115,7 @@ void MoCSweeper::sweep1g_final( int group ) {
                 // Compute exponentials
                 for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
-                    e_tau(iseg) = 1.0 - exp( -xstr_(ireg) * 
+                    e_tau(iseg) = 1.0 - exp( -xstr_[ireg] * 
                             ray.seg_len(iseg) * rstheta );
                 }
 
@@ -127,10 +127,10 @@ void MoCSweeper::sweep1g_final( int group ) {
                 // Propagate through core geometry
                 for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
-                    real_t psi_diff = (psi1(iseg) - qbar_(ireg)) * 
+                    real_t psi_diff = (psi1(iseg) - qbar_[ireg]) * 
                     e_tau(iseg);
                     psi1(iseg+1) = psi1(iseg) - psi_diff;
-                    flux_1g_(ireg) += psi_diff*wt_v_st;
+                    flux_1g_[ireg] += psi_diff*wt_v_st;
                 }
                 // Store boundary condition
                 boundary_out_[iplane][iang1][bc2] = psi1( ray.nseg() );
@@ -143,10 +143,10 @@ void MoCSweeper::sweep1g_final( int group ) {
                 // Propagate through core geometry
                 for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                     int ireg = ray.seg_index(iseg) + first_reg;
-                    real_t psi_diff = (psi2(iseg+1) - qbar_(ireg)) * 
+                    real_t psi_diff = (psi2(iseg+1) - qbar_[ireg]) * 
                         e_tau(iseg);
                     psi2(iseg) = psi2(iseg+1) - psi_diff;
-                    flux_1g_(ireg) += psi_diff*wt_v_st;
+                    flux_1g_[ireg] += psi_diff*wt_v_st;
                 }
                 // Store boundary condition
                 boundary_out_[iplane][iang2][bc1] = psi2(0);

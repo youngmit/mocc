@@ -5,12 +5,12 @@
 namespace mocc {
     real_t TransportSweeper::total_fission( bool old ) const {
         real_t tfis = 0.0;
-        const ArrayX& flux = old ? flux_old_: flux_;
+        const ArrayF& flux = old ? flux_old_: flux_;
         for( auto &xsr: *xs_mesh_ ) {
             for( unsigned int ig=0; ig<n_group_; ig++ ) {
                 real_t xsnf = xsr.xsmacnf()[ig];
                 for (auto &ireg: xsr.reg() ) {
-                    tfis += flux(ireg, ig)*vol_(ireg)*xsnf;
+                    tfis += flux[ireg + ig*n_reg_]*vol_[ireg]*xsnf;
                 }
             }
         }
@@ -24,9 +24,10 @@ namespace mocc {
         fission_source.fill(0.0);
         for( auto &xsr: *xs_mesh_ ) {
             const auto& xsnf = xsr.xsmacnf();
-            for( size_t ig=0; ig<xs_mesh_->n_group(); ig++ ) {
+            for( size_t ig=0; ig<n_group_; ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
-                    fission_source(ireg) += rkeff*xsnf[ig]*flux_(ireg, ig);
+                    fission_source(ireg) += rkeff * xsnf[ig] * 
+                        flux_[ireg + ig*n_reg_];
                 }
             }
         }
