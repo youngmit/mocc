@@ -45,6 +45,7 @@ namespace mocc {
         // Compute Sn-MoC residual
         VecF moc_flux;
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
+
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
             residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
@@ -80,7 +81,7 @@ cout << "MoC/Sn residual: " << residual << endl;
     }
 
     void PlaneSweeper_2D3D::calc_fission_source( real_t k, 
-            ArrayX &fission_source ) const {
+            ArrayF &fission_source ) const {
         moc_sweeper_.calc_fission_source( k, fission_source );
         return;
     }

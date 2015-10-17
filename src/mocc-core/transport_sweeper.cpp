@@ -18,15 +18,15 @@ namespace mocc {
     }
 
     void TransportSweeper::calc_fission_source( real_t k, 
-            ArrayX& fission_source ) const {
+            ArrayF& fission_source ) const {
 
         real_t rkeff = 1.0/k;
-        fission_source.fill(0.0);
+        fission_source = 0.0;
         for( auto &xsr: *xs_mesh_ ) {
             const auto& xsnf = xsr.xsmacnf();
             for( size_t ig=0; ig<n_group_; ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
-                    fission_source(ireg) += rkeff * xsnf[ig] * 
+                    fission_source[ireg] += rkeff * xsnf[ig] * 
                         flux_[ireg + ig*n_reg_];
                 }
             }

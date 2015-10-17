@@ -44,6 +44,10 @@ namespace mocc {
             source_->self_scatter( group, flux_1g_, q_ );
 
             if( inner == n_inner_-1 && coarse_data_ ) {
+cout << "sn source" << endl;
+for( auto q: q_ ) {
+    cout << q << endl;
+}
                 this->sweep_std<sn::Current>( group );
             } else {
                 this->sweep_std<sn::NoCurrent>( group );

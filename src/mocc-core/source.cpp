@@ -22,7 +22,8 @@ namespace mocc {
     // Multiply the group-independent fission source by chi[ig] to get the
     // fission source into the current group. If an external source is defines,
     // start with that.
-    void Source::fission( const ArrayX& fs, int ig ) {
+    void Source::fission( const ArrayF& fs, int ig ) {
+        assert(fs.size() == n_reg_);
         if( has_external_ ) {
             throw EXCEPT( "No support for external sources yet." );
         } else {
@@ -32,7 +33,7 @@ namespace mocc {
         for( auto &xsr: *xs_mesh_ ) {
             real_t xsch = xsr.xsmacch()[ig];
             for( auto &ireg: xsr.reg() ) {
-                source_1g_[ireg] +=  xsch * fs(ireg);
+                source_1g_[ireg] +=  xsch * fs[ireg];
             }
         }
         return;
@@ -58,7 +59,6 @@ namespace mocc {
                 }
                 igg++;
             }
-
         }
         return;
     }

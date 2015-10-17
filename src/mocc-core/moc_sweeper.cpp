@@ -102,9 +102,16 @@ namespace mocc {
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
             source_->self_scatter( group, flux_1g_, qbar_ );
+
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
+cout << "moc source: " << endl;
+int ireg=0;
+for( auto q: qbar_ ) {
+    cout << q*xstr_[ireg] << endl;    
+    ireg++;
+}
                 this->sweep1g_final( group );
             } else {
                 this->sweep1g( group );

@@ -60,7 +60,7 @@ namespace mocc{
         
         /// Set the group-independent fission source. The group-dependent fission
         /// source is calculated internally by the Source object.
-        void set_fission_source( const ArrayX* fs) {
+        void set_fission_source( const ArrayF* fs) {
             fs_ = fs;
         }
     
@@ -91,7 +91,7 @@ namespace mocc{
         UP_Source_t source_;
         // Pointer to the group-independent fission source. Usually comes from
         // an eigenvalue solver, if present
-        const ArrayX* fs_;
+        const ArrayF* fs_;
         unsigned int ng_;
     };
 }

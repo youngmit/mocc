@@ -14,21 +14,34 @@ namespace mocc {
         virtual ~Source(){
         }
 
-        // Initialize the source with the external source, if it exists, then
-        // add the groups contribution from the multi-group fission source
-        virtual void fission( const ArrayX& fs, int ig );
+        /**
+         * Initialize the source with the external source, if it exists, then
+         * add the groups contribution from the multi-group fission source
+         */
+        virtual void fission( const ArrayF& fs, int ig );
 
-        // Add the contribution from in-scattering from other groups. At some
-        // point, ill play with upscattering iterations, but for now KISS.
+        /**
+         * Add the contribution from in-scattering from other groups. At some
+         * point, ill play with upscattering iterations, but for now KISS.
+         */
         virtual void in_scatter( size_t ig );
 
-        // Add a contribution due to self-scatter within the current group,
-        // returning the final source. This is usually called several times by a
-        // sweeper in its "inner" iterations, and therefore does not mutate the
-        // interal representation of the source, but instead returns the result
-        // to the caller through the qbar argument.
+        /**
+         * Add a contribution due to self-scatter within the current group,
+         * returning the final source. This is usually called several times by a
+         * sweeper in its "inner" iterations, and therefore does not mutate the
+         * interal representation of the source, but instead returns the result
+         * to the caller through the qbar argument.
+         */
         virtual void self_scatter( size_t ig, ArrayF& flux_1g, 
                 ArrayF& qbar ) const;
+
+        /**
+         * Return the number of regions for which the Source is defined.
+         */
+        size_t n_reg() const {
+            return n_reg_;
+        }
 
     protected:
         const XSMesh *xs_mesh_;

@@ -5,9 +5,11 @@
 #include "source.hpp"
 
 namespace mocc {
-    // Slight modification to the original Source type to avoid scaling the
-    // source by the transport cross section, which is unneccesary for the Sn
-    // sweepers. Could do some template magic at some point, instead.
+    /**
+     * Slight modification to the original Source type to avoid scaling the
+     * source by the transport cross section, which is unneccesary for the Sn
+     * sweepers. Could do some template magic at some point instead.
+     */
     class SnSource: public Source {
     public:
         SnSource( int nreg, const XSMesh *xs_mesh, const ArrayF& flux ):
@@ -18,6 +20,11 @@ namespace mocc {
         ~SnSource() {
         }
 
+        /**
+         * Replaces the standard Source::self_scatter() method with one that
+         * does not divide the source by the transport cross section, which is
+         * only needed for the MoC sweeper.
+         */
         void self_scatter( size_t ig, ArrayF& flux_1g, 
                 ArrayF& qbar ) const 
         {

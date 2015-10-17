@@ -49,6 +49,9 @@ namespace mocc {
 
         }
 
+        /**
+         * Create a Source_2D3D object instead of the standard Source class.
+         */
         UP_Source_t create_source() const {
             return UP_Source_t( new Source_2D3D( moc_sweeper_, sn_sweeper_ ) ); 
         }
@@ -57,7 +60,7 @@ namespace mocc {
             return sn_sweeper_.get_homogenized_xsmesh();
         }
 
-        void calc_fission_source( real_t k, ArrayX &fission_source ) const;
+        void calc_fission_source( real_t k, ArrayF &fission_source ) const;
 
         real_t total_fission( bool old ) const;
 

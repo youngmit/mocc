@@ -63,7 +63,7 @@ namespace mocc{
          * group-independent fission source and store in the passed array
          */
         virtual void calc_fission_source( real_t k, 
-                ArrayX& fission_source) const;
+                ArrayF& fission_source) const;
 
         /**
          * Construct and return a source object which conforms to the sweeper.
@@ -101,6 +101,13 @@ namespace mocc{
         }
 
         /**
+         * Return a reference to the CoreMesh
+         */
+        const CoreMesh& mesh() const {
+            return *core_mesh_;
+        }
+
+        /**
          * Return a reference to the MG flux
          */
         const ArrayF& flux() const {
@@ -110,8 +117,8 @@ namespace mocc{
         /** 
          * Subscript and return a specific flux value
          */
-        const real_t flux( unsigned int ig, unsigned int ireg ) const {
-            return flux_[ ireg + n_group_*ig ];
+        const real_t flux( size_t ig, size_t ireg ) const {
+            return flux_[ ireg + n_reg_*ig ];
         }
 
         /**

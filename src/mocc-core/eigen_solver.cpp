@@ -11,8 +11,8 @@ namespace mocc{
     EigenSolver::EigenSolver( const pugi::xml_node &input, 
             const CoreMesh &mesh ):
         fss_( input, mesh ),
-        fission_source_( fss_.n_reg(), 1 ),
-        fission_source_prev_( fss_.n_reg(), 1 )
+        fission_source_( fss_.n_reg() ),
+        fission_source_prev_( fss_.n_reg() )
     {
         if( input.empty() ) {
             Error("No input specified for the eigenvalue solver.");
@@ -98,7 +98,8 @@ namespace mocc{
             // use the old fission source to store the difference between new
             // and old, since we will be filling it with new in the next
             // iteration anyways.
-            error_psi = (fission_source_-fission_source_prev_).matrix().norm();
+            error_psi = std::sqrt(
+                    std::pow(fission_source_-fission_source_prev_, 2).sum() );
 
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k, error_psi) );
