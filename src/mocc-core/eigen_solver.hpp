@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "pugixml.hpp"
 
 #include "eigen_interface.hpp"
@@ -19,6 +21,10 @@ namespace mocc{
         real_t k;
         real_t error_k;
         real_t error_psi;
+        
+        // Stream insertion
+        friend std::ostream& operator<<( std::ostream& os, 
+                ConvergenceCriteria conv);
     };
 
 
@@ -55,7 +61,6 @@ namespace mocc{
 
 
     private:
-        const static int out_w_ = 14;
         FixedSourceSolver fss_;
         
         // Fission source, and previous iterate

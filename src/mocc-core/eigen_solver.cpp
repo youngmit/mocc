@@ -7,6 +7,8 @@
 using std::endl;
 using std::cout;
 
+const static int out_w = 14;
+
 namespace mocc{
     EigenSolver::EigenSolver( const pugi::xml_node &input, 
             const CoreMesh &mesh ):
@@ -81,10 +83,10 @@ namespace mocc{
 
         bool done = false;
 
-        cout << std::setw(out_w_) << "Iter."
-             << std::setw(out_w_) << "k" 
-             << std::setw(out_w_) << "k error"
-             << std::setw(out_w_) << "psi error" << endl;
+        cout << std::setw(out_w) << "Iter."
+             << std::setw(out_w) << "k" 
+             << std::setw(out_w) << "k error"
+             << std::setw(out_w) << "psi error" << endl;
 
         while( !done ) {
 
@@ -130,19 +132,21 @@ namespace mocc{
     }
 
     void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
-            
-        std::ios::fmtflags flags = cout.flags();
-
-        cout << std::setw(out_w_) << iter 
-             << std::setw(out_w_) << std::fixed
-                 << std::setprecision(6) << conv.k
-             << std::setw(out_w_) << std::scientific
-                 << std::setprecision(6) << conv.error_k 
-             << std::setw(out_w_) << std::setiosflags(std::ios::scientific)
-                 << std::setprecision(6) << conv.error_psi
-             << endl;
-
-        cout.flags(flags);
+        cout  << std::setw(out_w) << iter << conv << endl;;
         return;
+    }
+
+    std::ostream& operator<<( std::ostream &os, ConvergenceCriteria conv) {
+        std::ios::fmtflags flags = os.flags();
+
+        os   << std::setw(out_w) << std::fixed
+                 << std::setprecision(10) << conv.k
+             << std::setw(out_w) << std::scientific
+                 << std::setprecision(6) << conv.error_k 
+             << std::setw(out_w) << std::setiosflags(std::ios::scientific)
+                 << std::setprecision(6) << conv.error_psi;
+
+        os.flags(flags);
+        return os;
     }
 };
