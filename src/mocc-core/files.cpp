@@ -1,7 +1,7 @@
 #include "files.hpp"
-#include <string>
-#include <regex>
+
 #include <iostream>
+#include <string>
 #include <string.h>
 
 std::fstream LogFile;
@@ -24,7 +24,7 @@ void StartLogFile(const char* arg){
 	
 	// Actually add the .log
 	strcpy(&logname[pos], ".log");
-	std::cout << logname << std::endl;
+	std::cout << "Logging output to: " << logname << std::endl << std::endl;
 	LogFile.open(logname, std::fstream::out);
 
     delete[] logname;

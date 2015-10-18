@@ -1,5 +1,8 @@
-#include "sn_current_worker.hpp"
 #include "sn_sweeper_cdd.hpp"
+
+#include "files.hpp"
+#include "sn_current_worker.hpp"
+
 
 using std::cout;
 using std::cin;
@@ -11,6 +14,8 @@ namespace mocc {
         SnSweeper( input, mesh ),
         corrections_( nullptr )
     {
+        LogFile << "Constructing a CDD Sn sweeper" << std::endl;
+
         if( input.child("data") ) {
             if( input.child("data").attribute("type") ) {
                 std::string data_type = 
@@ -39,14 +44,13 @@ namespace mocc {
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
-
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter( group, flux_1g_, q_ );
 
             if( inner == n_inner_-1 && coarse_data_ ) {
-                this->sweep_std<sn::Current>( group );
+                this->sweep_cdd<sn::Current>( group );
             } else {
-                this->sweep_std<sn::NoCurrent>( group );
+                this->sweep_cdd<sn::NoCurrent>( group );
             }
         }
         flux_[std::slice(group*n_reg_, n_reg_, 1)] = flux_1g_;
@@ -57,7 +61,7 @@ namespace mocc {
     // Perform a single sweep as fast as possible with the CDD equations. Don't
     // collect currents or anything.
     template <typename CurrentWorker>
-    void SnSweeper_CDD::sweep_std( int group ) {
+    void SnSweeper_CDD::sweep_cdd( int group ) {
         CurrentWorker cw( coarse_data_, &mesh_ );
         assert( corrections_ );
         flux_1g_ = 0.0;

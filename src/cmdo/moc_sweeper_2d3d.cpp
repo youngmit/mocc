@@ -6,6 +6,8 @@
 #include <iostream>
 #include <valarray>
 
+#include "files.hpp"
+
 using std::cout;
 using std::cin;
 using std::endl;
@@ -16,7 +18,7 @@ namespace mocc {
         MoCSweeper( input, mesh ),
         corrections_( nullptr )
     {
-        
+        LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
     };
 
     void MoCSweeper_2D3D::sweep1g_final( int group ) {

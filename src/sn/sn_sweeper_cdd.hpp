@@ -21,7 +21,7 @@ namespace mocc {
         
     private:
         template <typename CurrentWorker>
-        void sweep_std( int group );
+        void sweep_cdd( int group );
 
         const CorrectionData *corrections_;
 

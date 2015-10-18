@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 
+#include "files.hpp"
 #include "error.hpp"
 #include "utils.hpp"
 
@@ -26,6 +27,9 @@ namespace mocc {
         qbar_( n_reg_ ),
         bc_type_( mesh_.boundary() )
     {   
+
+        LogFile << "Constructing a base MoC sweeper" << std::endl;
+
         // Make sure we have input from the XML
         if( input.empty() ) {
             Error("No input specified to initialize MoC sweeper.");

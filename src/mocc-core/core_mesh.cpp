@@ -38,7 +38,8 @@ namespace mocc {
         }
         std::string matLibName = 
             input.child( "material_lib" ).attribute( "path" ).value();
-        cout << "Found material library specification: " << matLibName << endl;
+        LogFile << "Found material library specification: " << matLibName 
+				<< std::endl;
         FileScrubber matLibFile( matLibName.c_str(), "!" );
         mat_lib_ = MaterialLib( matLibFile );
         

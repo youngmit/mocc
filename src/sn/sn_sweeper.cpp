@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "error.hpp"
+#include "files.hpp"
 #include "utils.hpp"
 
 using std::cout;
@@ -18,6 +19,8 @@ namespace mocc {
         xstr_( mesh.n_pin() ), 
         q_( mesh.n_pin() )
     {
+        LogFile << "Constructing a base Sn sweeper" << std::endl;
+
         // Set up all of the stuff that would normally be done by the
         // TransportSweeper constructor. There is probably a better and more
         // maintainable way to do this; will revisit.

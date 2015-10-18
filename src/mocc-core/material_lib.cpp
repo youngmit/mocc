@@ -1,13 +1,14 @@
 #include "material_lib.hpp"
 
+#include <iostream>
 #include <regex>
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <vector>
 
-#include "material.hpp"
 #include "error.hpp"
+#include "files.hpp"
+#include "material.hpp"
 
 using std::stringstream;
 using std::string;
@@ -118,7 +119,8 @@ namespace mocc{
     
     void MaterialLib::assignID(int id, std::string name){
         try {
-            cout << "Mapping material '" << name << "' to ID "  << id << endl;
+            LogFile << "Mapping material '" << name << "' to ID "  << id
+                << std::endl;
             int mat_index = material_names_.at(name);
             assigned_materials_.push_back(lib_materials_[mat_index]);
             material_dense_index_[id] = n_material_;

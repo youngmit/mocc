@@ -7,6 +7,7 @@
 
 #include "constants.hpp"
 #include "error.hpp"
+#include "files.hpp"
 
 using std::cout;
 using std::endl;
@@ -44,6 +45,9 @@ namespace mocc {
             const CoreMesh &mesh ):
     ang_quad_(ang_quad)
     {
+        LogFile << "Building rays" << std::endl;
+
+
         // Make sure we have reasonable input
         if ( input.empty() ) {
             throw EXCEPT("No input privided for ray spacing.");
@@ -62,8 +66,8 @@ namespace mocc {
         real_t hx = mesh.hx();
         real_t hy = mesh.hy();
 
-cout << "Original Angular quadrature " << endl;
-cout << ang_quad_ << endl;
+        LogFile << "Original Angular quadrature " << std::endl;
+        LogFile << ang_quad_ << std::endl;
 
         int iang = 0;
         for (auto ang_it = ang_quad_.octant(1); 
@@ -76,7 +80,8 @@ cout << ang_quad_ << endl;
             Nx += Nx%2+1;
             Ny += Ny%2+1; 
 
-cout << "Total number of rays (Nx/Ny): " << Nx << " " << Ny << endl;
+            LogFile << "Total number of rays (Nx/Ny): " 
+                << Nx << " " << Ny << std::endl;
 
             Nx_.push_back(Nx);
             Ny_.push_back(Ny);
@@ -101,8 +106,8 @@ cout << "Total number of rays (Nx/Ny): " << Nx << " " << Ny << endl;
             spacing_.push_back(spacing_[iang]);
         }
 
-cout << "Modularized Angular quadrature " << endl;
-cout << ang_quad_ << endl;
+        LogFile << "Modularized Angular quadrature " << std::endl;
+        LogFile << ang_quad_ << std::endl;
 
         // Trace rays
         Box core_box = Box(Point2(0.0, 0.0), Point2(hx, hy));
