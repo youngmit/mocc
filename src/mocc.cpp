@@ -32,12 +32,12 @@ int main(int argc, char* argv[]){
 	
     try {
 		std::cout << "                       01001101010011110100001101000011" << std::endl;
-		std::cout << "                         ___  ___ _____  _____  _____ " << std::endl;
-		std::cout << "                         |  \\/  ||  _  |/  __ \\/  __ \\" << std::endl;
-		std::cout << "                         | .  . || | | || /  \\/| /  \\/" << std::endl;
-		std::cout << "                         | |\\/| || | | || |    | |    " << std::endl;
-		std::cout << "                         | |  | |\\ \\_/ /| \\__/\\| \\__/" << std::endl;
-		std::cout << "                         \\_|  |_/ \\___/  \\____/ \\____/" << std::endl;
+		std::cout << "                         ___  ___  _____   _____   _____ " << std::endl;
+		std::cout << "                         |  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
+		std::cout << "                         | .  . | | | | | | /  \\/ | /  \\/" << std::endl;
+		std::cout << "                         | |\\/| | | | | | | |     | |    " << std::endl;
+		std::cout << "                         | |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
+		std::cout << "                         \\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
 		std::cout << std::endl;
 		std::cout << "                       01101101011011110110001101100011 " << std::endl;
 	    std::cout << "Welcome to " << PROG_NAME << "!" << std::endl << std::endl;
