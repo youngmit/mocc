@@ -86,10 +86,6 @@ namespace mocc {
             source_->self_scatter( group, flux_1g_, q_ );
 
             if( inner == n_inner_-1 && coarse_data_ ) {
-cout << "sn source" << endl;
-for( auto q: q_ ) {
-    cout << q << endl;
-}
 
                 // Wipe out the existing currents
                 coarse_data_->current.col( group ) = 0.0;
