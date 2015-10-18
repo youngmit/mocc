@@ -22,11 +22,11 @@ namespace mocc {
         n_xsreg_ = ndiv_x * ndiv_y;
         n_reg_   = ndiv_x * ndiv_y;
 
-        float dx = pitch_x_/ndiv_x;
-        float dy = pitch_y_/ndiv_y;
+        real_t dx = pitch_x_/ndiv_x;
+        real_t dy = pitch_y_/ndiv_y;
 
-        float h_pitch_x = 0.5*pitch_x_;
-        float h_pitch_y = 0.5*pitch_y_;
+        real_t h_pitch_x = 0.5*pitch_x_;
+        real_t h_pitch_y = 0.5*pitch_y_;
 
         for (int i=1; i<ndiv_x; i++) {
             hx_.push_back( i*dx-h_pitch_x );
