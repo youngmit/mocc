@@ -47,7 +47,7 @@ namespace mocc {
         /*
          * Return a const reference to the angle indexed
          */
-        const Angle& operator[]( int iang ) {
+        const Angle& operator[]( int iang ) const {
             return angles_[iang];
         }
 
