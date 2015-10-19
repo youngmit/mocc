@@ -28,7 +28,14 @@ namespace mocc {
         /// computing true ray segment length from 2D projected length.
         real_t rsintheta;
 
-        // Construct using alpha/theta
+        /**
+         * Default constructor makes a nonsense angle. Watch out.
+         */
+        Angle() {}
+
+        /** 
+         * Construct using alpha/theta
+         */
         Angle( real_t alpha, real_t theta, real_t weight ):
             alpha(alpha),
             theta(theta),
@@ -39,7 +46,9 @@ namespace mocc {
             oz = cos(theta);
         }
 
-        // Construct using direction cosines
+        /**
+         * Construct using direction cosines
+         */
         Angle( real_t ox, real_t oy, real_t oz, real_t weight):
             ox(ox), oy(oy), oz(oz), weight(weight)
         {
