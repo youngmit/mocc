@@ -91,7 +91,7 @@ namespace mocc {
         /**
          * Return the ray spacing for the given angle
          */
-        real_t spacing( int iang ) {
+        real_t spacing( int iang ) const {
             return spacing_[iang];
         }
 
