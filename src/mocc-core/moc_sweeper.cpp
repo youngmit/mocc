@@ -4,8 +4,9 @@
 #include <fstream>
 #include <iomanip>
 
-#include "files.hpp"
 #include "error.hpp"
+#include "files.hpp"
+#include "moc_current_worker.hpp"
 #include "utils.hpp"
 
 using std::endl;
@@ -15,7 +16,6 @@ using std::cin;
 mocc::VecF temp;
 
 namespace mocc {
-    
     MoCSweeper::MoCSweeper( const pugi::xml_node& input, 
             const CoreMesh& mesh ):
         TransportSweeper( mesh ),
@@ -110,9 +110,11 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
-                this->sweep1g_final( group );
+                moc::Current cw( coarse_data_, &mesh_ );
+                this->sweep1g( group, cw );
             } else {
-                this->sweep1g( group );
+                moc::NoCurrent cw( coarse_data_, &mesh_ );
+                this->sweep1g( group, cw );
             }
         }
 
@@ -241,6 +243,4 @@ namespace mocc {
 
         return;
     }
-
-#include "moc_kernels.hpp.inc"
 }

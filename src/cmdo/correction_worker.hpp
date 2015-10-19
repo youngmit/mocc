@@ -1,0 +1,179 @@
+#pragma once
+
+#include "angular_quadrature.hpp"
+#include "coarse_data.hpp"
+#include "correction_data.hpp"
+#include "global_config.hpp"
+#include "mesh.hpp"
+#include "moc_current_worker.hpp"
+#include "ray.hpp"
+#include "ray_data.hpp"
+#include "xs_mesh_homogenized.hpp"
+
+namespace mocc {
+    namespace cmdo {
+        /**
+         *
+         * See documentation for \ref moc::NoCurrent for canonical documentation
+         * for each of the methods.
+         */
+        class CurrentCorrections {
+        public:
+            CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh, 
+                    CorrectionData *corrections, const ArrayF &qbar, 
+                    const ArrayF &xstr, const AngularQuadrature &ang_quad, 
+                    const RayData &rays, const XSMeshHomogenized &sn_xs_mesh ):
+                coarse_data_( coarse_data ),
+                mesh_( mesh ),
+                corrections_( corrections ),
+                qbar_( qbar ),
+                xstr_( xstr ),
+                ang_quad_( ang_quad ),
+                rays_( rays ),
+                sn_xs_mesh_( sn_xs_mesh ),
+                surf_sum_( mesh_->n_surf()*2 ),
+                vol_sum_( mesh_->n_pin()*2 ),
+                vol_norm_( mesh_->n_pin() ),
+                sigt_sum_( mesh_->n_pin()*2 )
+            {
+                return;
+            }
+
+            inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
+                    const ArrayF &e_tau, const Ray &ray, int first_reg,
+                    int group ) {
+                size_t cell_fw = ray.cm_cell_fw();
+                size_t cell_bw = ray.cm_cell_bw();
+                size_t surf_fw = ray.cm_surf_fw();
+                size_t surf_bw = ray.cm_surf_bw();
+                size_t iseg_fw = 0;
+                size_t iseg_bw = ray.nseg();
+
+                Normal norm_fw = mesh_->surface_normal( surf_fw );
+                Normal norm_bw = mesh_->surface_normal( surf_bw );
+                coarse_data_->current( surf_fw, group ) += 
+                    psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                coarse_data_->current( surf_bw, group ) -= 
+                    psi2[iseg_bw] * current_weights_[(int)norm_bw];
+
+                surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
+                surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
+
+                auto begin = ray.cm_data().cbegin();
+                auto end = ray.cm_data().cend();
+                for( auto crd = begin; crd != end; ++crd ) {
+                    // Hopefully branch prediction saves me here.
+                    if( crd->fw != Surface::INVALID ) {
+                        // Store forward volumetric stuff
+                        for( int i=0; i<crd->nseg_fw; i++ ) {
+                            int ireg = ray.seg_index(iseg_fw) + first_reg;
+                            real_t xstr = xstr_[ireg];
+                            real_t t = ang_.rsintheta * ray.seg_len(iseg_fw);
+                            real_t fluxvol = t * qbar_[ireg] + e_tau[iseg_fw]*
+                                (psi1[iseg_fw]-qbar_[ireg])/xstr;
+                            vol_sum_[cell_fw*2+0] += fluxvol;
+                            vol_norm_[cell_fw] += t;
+                            sigt_sum_[cell_fw*2+0] += xstr*fluxvol;
+                            iseg_fw++;
+                        }
+                        // Store FW surface stuff
+                        norm_fw = surface_to_normal( crd->fw );
+                        surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
+                        coarse_data_->current( surf_fw, group ) += 
+                            psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                        surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
+                    }
+
+                    if( crd->bw != Surface::INVALID ) {
+                        // Store backward volumetric stuff
+                        for( int i=0; i<crd->nseg_bw; i++ ) {
+                            iseg_bw--;
+                            int ireg = ray.seg_index(iseg_bw) + first_reg;
+                            real_t xstr = xstr_[ireg];
+                            real_t t = ang_.rsintheta * ray.seg_len(iseg_bw);
+                            real_t fluxvol = t * qbar_[ireg] + e_tau[iseg_bw] * 
+                                (psi2[iseg_bw+1]-qbar_[ireg])/xstr;
+                            vol_sum_[cell_bw*2+1] += fluxvol;
+                            sigt_sum_[cell_bw*2+1] += xstr*fluxvol;
+                        }
+                        // Store BW surface stuff
+                        norm_bw = surface_to_normal( crd->bw );
+                        surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
+                        coarse_data_->current( surf_bw, group ) -= 
+                            psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                        surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
+                    }
+
+                    cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
+                    cell_bw = mesh_->coarse_neighbor( cell_bw, (crd)->bw );
+                }
+
+                return;
+            }
+
+            inline void set_angle( Angle ang, real_t spacing ) {
+                ang_ = ang;
+
+                current_weights_[0] = ang.weight * spacing * ang.ox;
+                current_weights_[1] = ang.weight * spacing * ang.oy;
+                current_weights_[2] = ang.weight * spacing * ang.oz;
+
+                /// \todo look into the plane problem. Right now planes are
+                /// specified at the level abouve that angles in the RayData, and
+                /// the sums below are sized to the entire mesh. Maybe make sure
+                /// that these dont get overallocated or move the angles up a
+                /// level so that we can sweep all planes in a given angle, then
+                /// calculate corrections for all planes at once.
+
+                // Zero out all of the flux sum arrays
+                surf_sum_ = 0.0;
+                vol_sum_ = 0.0;
+                vol_norm_ = 0.0;
+                sigt_sum_ = 0.0;
+                
+                return;
+            }
+
+            void post_angle( int iang, int igroup) {
+                // Normalize the flux and sigt values and calculate
+                // correction factors for the current angle/energy
+                for( size_t i=0; i<vol_norm_.size(); i++) {
+                    sigt_sum_[2*i+0] /= vol_sum_[2*i+0];
+                    sigt_sum_[2*i+1] /= vol_sum_[2*i+1];
+                    vol_sum_[2*i+0] /= vol_norm_[i];
+                    vol_sum_[2*i+1] /= vol_norm_[i];
+                }
+
+                calculate_corrections( iang, igroup );
+
+                return;
+            }
+
+        private:
+            CoarseData *coarse_data_;
+            const Mesh *mesh_;
+            CorrectionData *corrections_;
+            const ArrayF &qbar_;
+            const ArrayF &xstr_;
+            const AngularQuadrature &ang_quad_;
+            const RayData &rays_;
+            const XSMeshHomogenized &sn_xs_mesh_;
+            
+            ArrayF surf_sum_;
+            ArrayF vol_sum_;
+            ArrayF vol_norm_;
+            ArrayF sigt_sum_;
+
+            Angle ang_;
+
+            real_t current_weights_[3];
+
+            /** \page surface_norm Surface Normalization
+             * Surface normalization \todo discuss surface normalization
+             */
+            void calculate_corrections( size_t ang, size_t group ); 
+        };
+    }
+}
+
+

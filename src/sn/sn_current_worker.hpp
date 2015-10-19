@@ -8,10 +8,10 @@ namespace mocc {
     namespace sn {
         /**
          * This class is intended to be used as a template parameter for an
-         * SnSweeper sweep kernel (see SnSweeper::sweep_dd() for an example).
-         * When templated on this type, the sweeper kernel will perform current
-         * calculations for the upwind boundary condition and after sweeping
-         * each cell.
+         * SnSweeper sweep kernel (see \ref SnSweeper::sweep_dd() for an
+         * example).  When templated on this type, the sweeper kernel will
+         * perform current calculations for the upwind boundary condition and
+         * after sweeping each cell.
          *
          * \note Unlike in the MoC sweepers, these routines to not calculate
          * area*current. Make sure to remember to multiply by the surface areas
@@ -167,7 +167,7 @@ namespace mocc {
     
         /**
          * This class is intended to be used as a template parameter for an
-         * SnSweeper sweep kernel (see SnSweeper::sweep_dd() for an example).
+         * SnSweeper sweep kernel (see \ref SnSweeper::sweep_dd() for an example).
          * When templated on this type, the sweeper kernel will not perform any
          * extra work related to current calculations, which should speed things
          * up.

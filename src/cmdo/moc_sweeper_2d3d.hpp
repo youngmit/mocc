@@ -9,6 +9,7 @@ namespace mocc {
     public:
         MoCSweeper_2D3D( const pugi::xml_node &input, const CoreMesh &mesh );
 
+        void sweep( int group );
 
         void set_coupling( CorrectionData *data, 
                 const XSMeshHomogenized *xsmesh) {
@@ -17,10 +18,6 @@ namespace mocc {
         }
 
     private:
-        /**
-         * Override the sweep1g_final() routine on tha standard MoCSweeper to
-         * also compute the corrected diamond difference correction factors.
-         */
         void sweep1g_final( int group );
 
         /**
