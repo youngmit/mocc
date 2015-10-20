@@ -15,7 +15,7 @@ namespace mocc {
     
     
         void Write( H5::CommonFG *node, std::string path, VecF data, VecI dims ) {
-            hsize_t *dims_a = new hsize_t(dims.size());
+            hsize_t *dims_a = new hsize_t[dims.size()];
             for ( size_t i=0; i<dims.size(); i++ ) {
                 dims_a[i] = dims[i];
             }
@@ -31,7 +31,7 @@ namespace mocc {
                 throw EXCEPT(msg.str().c_str());
             }
     
-    		delete dims_a;
+    		delete[] dims_a;
             return;
         }
     
