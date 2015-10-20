@@ -22,6 +22,7 @@ typedef std::vector<int> VecSI;
 
 // valarray of floats
 typedef std::valarray<real_t> ArrayF;
+typedef std::slice_array<real_t> SliceF;
 
 
 struct Position {
