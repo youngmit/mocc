@@ -9,9 +9,9 @@
 
 namespace mocc {
     /**
-     * PinMesh is a virtual class, which provides methods for performing ray
-     * tracing and accessing data in common between all types of pin mesh, such
-     * as region volumes, x and y pitch, etc.
+     * \ref PinMesh is a virtual class, which provides methods for performing
+     * ray tracing and accessing data in common between all types of pin mesh,
+     * such as region volumes, x and y pitch, etc.
     */
     class PinMesh {
     public:
@@ -75,6 +75,10 @@ namespace mocc {
                 VecI &reg ) const =0;
 
         /**
+         * Find the pin-local region index corresponding to the point provided.
+         *
+         * \param[in] p the \ref Point2 for which to find the FSR index
+         *
          * Given a point in pin-local coordinates, return the mesh region index
          * in which the point resides
         */
@@ -87,19 +91,19 @@ namespace mocc {
         virtual size_t n_fsrs( unsigned int xsreg ) const =0;
 
     protected:
-    	unsigned int id_;
-        unsigned int n_reg_;
-        unsigned int n_xsreg_;
+    	size_t id_;
+        size_t n_reg_;
+        size_t n_xsreg_;
     	real_t pitch_x_;
     	real_t pitch_y_;
         VecF vol_;
     };
     
     /**
-     * This is a simple struct that contains a const pointer to a PinMesh, along
-     * with a Position describing its location. This is essentially a useful
-     * tuple for returning both values from a lookup function (see
-     * CoreMesh::get_pinmesh() and Plane::get_pinmesh()).
+     * This is a simple struct that contains a const pointer to a \ref PinMesh,
+     * along with a Position describing its location. This is essentially a
+     * useful tuple for returning both values from a lookup function (see
+     * \ref CoreMesh::get_pinmesh() and \ref Plane::get_pinmesh()).
     */ 
     struct PinMeshTuple {
         PinMeshTuple( Position pos, const PinMesh *pm ):

@@ -15,8 +15,6 @@ namespace mocc {
      * dimensionality of the data (space, angle, energy and cardinal direction
      * [X|Y]), instead of using a multidimensional array, we will instead use
      * accessor functions to get the data out of a dense linear representation.
-     *
-     * The factors are stored 
      */
     class CorrectionData {
     public:

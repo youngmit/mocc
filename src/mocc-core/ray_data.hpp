@@ -18,12 +18,12 @@ namespace mocc {
     };
 
     /**
-    * The RayData class is a collection of Ray objects, organized by plane, then
-    * by angle.  Rays are traced only for the set of geometrically-unique planes
-    * as determined by the CoreMesh object used to construct a RayData object.
-    * Since the rays are only intended for use in a 2-D MoC sweeper, only the
-    * first two octants are treated, with octants 3 and 4 being treated by
-    * sweeping the rays backwards.
+    * The \ref RayData class is a collection of \ref Ray objects, organized by
+    * plane, then by angle. Rays are traced only for the set of
+    * geometrically-unique planes as determined by the \ref CoreMesh object used
+    * to construct a \ref RayData object.  Since the rays are only intended for
+    * use in a 2-D MoC sweeper, only the first two octants are treated, with
+    * octants 3 and 4 being treated by sweeping the rays backwards.
     *
     * Boundary condition indexing is somewhat arbitrary, so here's how it goes:
     *
@@ -96,7 +96,7 @@ namespace mocc {
         }
 
         /**
-         * Return the maximum number of segmens spanned by any Ray in the
+         * Return the maximum number of segments spanned by any \ref Ray in the
          * collection. This is useful for defining the size of the scratch
          * space for MoC.
          */
@@ -139,14 +139,15 @@ namespace mocc {
         // Maximum number of ray segments in a single ray
         size_t max_seg_;
         
-        // Perform a volume-correction of the ray segment lengths. This can be
-        // done in two ways: using an angular integral of the ray volumes, or
-        // using an angle-wice correction, which ensures that for each angle,
-        // the ray segment volumes reproduce the region volumes. The first way
-        // is technically more correct, however the latter is useful for
-        // debugging purposes sometimes.
+        /**
+         * Perform a volume-correction of the ray segment lengths. This can be
+         * done in two ways: using an angular integral of the ray volumes, or
+         * using an angle-wice correction, which ensures that for each angle,
+         * the ray segment volumes reproduce the region volumes. The first way
+         * is technically more correct, however the latter is useful for
+         * debugging purposes sometimes.
+         */
         void correct_volume( const CoreMesh& mesh, VolumeCorrection type );
-
     };
 
     typedef std::shared_ptr<RayData> SP_RayData_t;

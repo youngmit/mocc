@@ -10,12 +10,25 @@ namespace mocc {
     typedef std::map<unsigned int, const Material*> MaterialMap;
     typedef std::vector<Material> MaterialVec;
 
-
+    /**
+     * The \ref MaterialLib stores a mapping of \ref Material objects, to be
+     * used in constructing an \ref XSMesh.
+     */
     class MaterialLib{
     public:
-        // Default constructor does nothing
         MaterialLib();
+
+        /**
+         * Construct a \ref MaterialLib using a \ref FileScrubber configured to
+         * parse an "MPACT user cross-section library." This whole approach is
+         * admittedly wonky, but take a look at \ref CoreMesh::CoreMesh() to see
+         * where this gets did.
+         */
         MaterialLib(FileScrubber &input);
+
+        /**
+         * Assign an ID to a material in the library.
+         */
         void assignID(int id, std::string name);
 
         // Return the number of materials in the library

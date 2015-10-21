@@ -6,7 +6,7 @@
 
 namespace mocc {
     /**
-     * Slight modification to the original Source type to avoid scaling the
+     * Slight modification to the original \ref Source type to avoid scaling the
      * source by the transport cross section, which is unneccesary for the Sn
      * sweepers. Could do some template magic at some point instead.
      */

@@ -40,29 +40,29 @@ namespace mocc{
             stringstream inBuf(input.getline());
             inBuf >> n_grp_;
             if(inBuf.fail()){
-                Error("Failed to read number of groups!");
+                throw EXCEPT("Failed to read number of groups!");
             }
             inBuf >> n_material_lib_;
             if(inBuf.fail()){
-                Error("Failed to read number of materials!");
+                throw EXCEPT("Failed to read number of materials!");
             }
         }
     
         // Group boundaries
         {
             stringstream inBuf(input.getline());
-            for( unsigned int i=0; i<n_grp_; i++ ) {
+            for( size_t i=0; i<n_grp_; i++ ) {
                 double bound;
                 inBuf >> bound;
                 g_bounds_.push_back(bound);
                 if( inBuf.fail() ) {
-                    Error("Trouble reading group bounds!");
+                    throw EXCEPT("Trouble reading group bounds!");
                 }
             }
         }
         
         // Read in material data
-        for (unsigned int imat=0; imat<n_material_lib_; imat++){
+        for ( size_t imat=0; imat<n_material_lib_; imat++ ) {
             // Get the name of the material
             line = input.getline();
             
@@ -76,7 +76,7 @@ namespace mocc{
             VecF nuFiss;
             VecF fiss;
             VecF chi;
-            for(unsigned int ig=0; ig<n_grp_; ig++){
+            for( size_t ig=0; ig<n_grp_; ig++ ) {
                 stringstream inBuf(input.getline());
                 double val;
     
@@ -89,16 +89,16 @@ namespace mocc{
                 inBuf >> val;
                 chi.push_back(val);
                 if(inBuf.fail()){
-                    Error("Trouble reading XS data from library!");
+                    throw EXCEPT("Trouble reading XS data from library!");
                 }
             }
     
             // Read in the scattering table
             std::vector<VecF> scatTable;
-            for(unsigned int ig=0; ig<n_grp_; ig++){
-                stringstream inBuf(input.getline());
+            for( size_t ig=0; ig<n_grp_; ig++ ) {
+                stringstream inBuf( input.getline() );
                 VecF scatRow;
-                for(unsigned int igg=0; igg<n_grp_; igg++){
+                for( size_t igg=0; igg<n_grp_; igg++ ){
                     double val;
                     inBuf >> val;
                     scatRow.push_back(val);
@@ -112,7 +112,7 @@ namespace mocc{
             try {
                 material_names_[materialName] = imat;
             } catch(...) {
-                EXCEPT("Failed to add material from library. Duplicate name?");
+                throw EXCEPT("Failed to add material from library. Duplicate name?");
             }
         }
     }
@@ -127,8 +127,7 @@ namespace mocc{
             material_ids_[id] = mat_index;
             n_material_++;
         } catch(std::out_of_range) {
-            Error("Failed to map material to ID. Are you sure you spelled it "
-                    "right?");
+            throw EXCEPT("Failed to map material to ID. Are you sure you spelled it right?");
         }
         return;
     }

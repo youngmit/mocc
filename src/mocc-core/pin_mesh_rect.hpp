@@ -1,13 +1,10 @@
 #pragma once
-#include "pin_mesh_base.hpp"
-
 #include <vector>
 
 #include "pugixml.hpp"
 
 #include "geom.hpp"
-
-
+#include "pin_mesh_base.hpp"
 
 namespace mocc {
     class PinMesh_Rect: public PinMesh{

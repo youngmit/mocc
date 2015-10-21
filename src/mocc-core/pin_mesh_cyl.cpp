@@ -1,16 +1,16 @@
 #include "pin_mesh_cyl.hpp"
 
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <math.h>
 #include <algorithm>
 #include <cassert>
+#include <iostream>
+#include <math.h>
+#include <sstream>
+#include <string>
 
+#include "constants.hpp"
+#include "error.hpp"
 #include "files.hpp"
 #include "global_config.hpp"
-#include "error.hpp"
-#include "constants.hpp"
 
 using std::string;
 using std::stringstream;
@@ -33,7 +33,7 @@ namespace mocc {
     				stringstream msg;
     				msg << "Ran into a problem reading radii for pin ID="
     				    << id_; 
-    				Error(msg.str().c_str());
+    				throw EXCEPT(msg.str().c_str());
     			}
     		}
     		if(!radiiIn.eof()){
@@ -224,12 +224,12 @@ namespace mocc {
         return ps.size()-1;
     }
 
-    // Find the pin-local region index corresponding to the point provided.
-    //
-    // For now, indexing in the cylindrical pins goes from the inside radius
-    // out, and from the positive x axis around azimuthally counter-clockwise.
-    // At some point, I might look into other indexing schemes to try and
-    // achieve better locality and cache performance, but for now KISS.
+    /**
+     * For now, indexing in the cylindrical pins goes from the inside radius
+     * out, and from the positive x axis around azimuthally counter-clockwise.
+     * At some point, I might look into other indexing schemes to try and
+     * achieve better locality and cache performance, but for now KISS.
+     */
     int PinMesh_Cyl::find_reg( Point2 p ) const {
         // Test that the point is inside the pin mesh
         if( (fabs(p.x) > 0.5*pitch_x_) | (fabs(p.y) > 0.5*pitch_y_) ) {

@@ -8,19 +8,19 @@
 
 namespace mocc {
     /**
-     * A Ray stores vectors of segment length and the flat source region index
-     * that each segment is crossing. The FSR indices are represented as an
-     * offset from the first FSR in a given plane, allowing for ray data to be
-     * reused for each instance of a geometrically-unique plane. 
+     * A \ref Ray stores vectors of segment length and the flat source region
+     * index that each segment is crossing. The FSR indices are represented as
+     * an offset from the first FSR in a given plane, allowing for ray data to
+     * be reused for each instance of a geometrically-unique plane. 
     */
     class Ray {
         /**
          * This struct stores data for the "coarse ray trace," or the
          * interaction of a ray with the coarse mesh boundaries. Each entry has
-         * several members, stored in a bitfield. The data on the RayCoarseData
-         * essentially say "move forward/backward" n segments, and deposit
-         * information on the corresponding boundary. If the surface is INVALID,
-         * treat the entry as a no-op.
+         * several members, stored in a bitfield. The data on the \ref
+         * RayCoarseData essentially say "move forward/backward" n segments, and
+         * deposit information on the corresponding boundary. If the surface is
+         * INVALID, treat the entry as a no-op.
          */
         struct RayCoarseData {
             Surface fw: 4; 
@@ -50,37 +50,49 @@ namespace mocc {
             return cm_data_.size();
         }
 
-        // Return a reference to the coarse ray data
+        /**
+         * Return a reference to the coarse ray data
+         */
         const std::vector<RayCoarseData>& cm_data() const {
             return cm_data_;
         }
 
-        // Return the index of the first coarse mesh cell encountered by this
-        // ray in the forward direction
+        /**
+         * Return the index of the first coarse mesh cell encountered by this
+         * ray in the forward direction
+         */
         size_t cm_cell_fw() const {
             return cm_cell_fw_;
         }
 
-        // Return the index of the first coarse mesh cell encountered by this
-        // ray in the backward direction
+        /** 
+         * Return the index of the first coarse mesh cell encountered by this
+         * ray in the backward direction.
+         */
         size_t cm_cell_bw() const {
             return cm_cell_bw_;
         }
         
-        // Return the index of the first coarse mesh surface encountered by this
-        // ray in the forward direction
+        /**
+         * Return the index of the first coarse mesh surface encountered by this
+         * ray in the forward direction
+         */
         size_t cm_surf_fw() const {
             return cm_surf_fw_;
         }
 
-        // Return the index of the first coarse mesh surface encountered by this
-        // ray in the backward direction
+        /**
+         * Return the index of the first coarse mesh surface encountered by this
+         * ray in the backward direction
+         */
         size_t cm_surf_bw() const {
             return cm_surf_bw_;
         }
 
 
-        // Return a reference to the whole vector of segment lengths
+        /**
+         * Return a reference to the whole vector of segment lengths
+         */
         const VecF& seg_len() const {
             return seg_len_;
         }
@@ -89,11 +101,11 @@ namespace mocc {
          * \brief Return a reference to a single segment length.
          *
          * This method is not const, since the segment lengths must be mutable,
-         * so that the RayData object can correct the segment lengths once all
-         * rays have been traced. Its a bit messy... when interacting with the
-         * rays in any other context, the const version should be used. This is
-         * relatively automatic, since the RayData object only exposes each Ray
-         * as a const reference.
+         * so that the \ref RayData object can correct the segment lengths once
+         * all rays have been traced. Its a bit messy... when interacting with
+         * the rays in any other context, the const version should be used. This
+         * is relatively automatic, since the \ref RayData object only exposes
+         * each \ref Ray as a const reference.
          */ 
         real_t& seg_len( int iseg ) {
             return seg_len_[iseg];

@@ -89,7 +89,7 @@ namespace mocc {
          * allows for auxiliary work to be done during the sweep, without
          * affecting runtime performance when not needed. Examples of this are
          * currents for CMFD coupling and correction factors for 2D3D/CDD
-         * coupling. See \ref moc::Current and cmdo::CurrentCorrections
+         * coupling. See \ref moc::Current and \ref cmdo::CurrentCorrections
          * for examples of these.
          */
         template <typename CurrentWorker>
