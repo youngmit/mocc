@@ -40,6 +40,8 @@ namespace mocc {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
         moc_sweeper_.sweep( group );
+
+        sn_sweeper_.get_homogenized_xsmesh()->update( moc_sweeper_.flux() );
         sn_sweeper_.sweep( group );
 
         // Compute Sn-MoC residual
