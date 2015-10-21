@@ -22,26 +22,37 @@ namespace mocc {
             return id_;
         }
 
-        // Return the number of pins along the x dimension
+        /*
+         * Return the number of pins along the x dimension
+         */
         unsigned int nx() const {
             return lattices_[0]->nx();
         }
 
-        // Return the number of pins along the y dimension
+        /**
+         * Return the number of pins along the y dimension
+         */
         unsigned int ny() const {
             return lattices_[0]->ny();
         }
 
-        // Return the number of planes
+        /**
+         * Return the number of planes
+         */
         unsigned int nz() const {
             return nz_;
         }
 
-        // Return the total height of the assembly
+        /**
+         * Return the total height of the indexed plane in the \ref Assembly
+         */
         real_t hz( unsigned int iz ) const {
             return hz_[iz];
         }
 
+        /**
+         * Return a const reference to the vector of plane heights.
+         */
         const VecF& hz() const {
             return hz_;
         }
@@ -61,11 +72,14 @@ namespace mocc {
             return n_reg_;
         }
 
-        // Retutn the total number of XS regions in the assembly
+        // Return the total number of XS regions in the assembly
         unsigned int n_xsreg() const {
             return n_xsreg_;
         }
 
+        /**
+         * Return a reference to the indexed \ref Lattice.
+         */
         const Lattice& operator[](unsigned int iz) const {
             assert( (iz >= 0) & (iz < lattices_.size()) );
             return *lattices_[iz];

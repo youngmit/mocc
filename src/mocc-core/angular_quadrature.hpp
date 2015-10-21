@@ -23,18 +23,21 @@ namespace mocc {
         ~AngularQuadrature() {
         }
 
-        // Return an iterator to the first angle in the quadrature
+        /**
+         * Return an iterator to the first angle in the quadrature
+         */
         std::vector<Angle>::const_iterator begin() const {
             return angles_.cbegin();
         }
 
-        // Return an iterator past the last angle in the quadrature
+        /**
+         * Return an iterator past the last angle in the quadrature
+         */
         std::vector<Angle>:: const_iterator end() const {
             return angles_.cend();
         }
 
         /**
-         * 
          * Return an iterator to the first angle in the given octant. Octants
          * are indexed from 1, following mathematical convention. Also,
          * following convention for container classes, specifying octant 9, is

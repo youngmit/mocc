@@ -17,21 +17,23 @@
 namespace mocc {
     /**
     * The core mesh stores everything needed to represent the physical state
-    * of the system. PinMesh's, MaterialLib's, Pin's, Lattice's
-    * etc. The CoreMesh is then used to perform complex operations like ray
-    * tracing, generation of coarse mesh, etc. A lot of the heavy lifting for
-    * input processing happens in the constructor, and the CoreMesh assumes
-    * ownership of a lot of the structures used to represent the system.
+    * of the system. \ref PinMesh's, \ref MaterialLib's, \ref Pin's, \ref
+    * Lattice's etc. The \ref CoreMesh is then used to perform complex
+    * operations like ray tracing, generation of coarse mesh, etc. A lot of the
+    * heavy lifting for input processing happens in the constructor, and the
+    * CoreMesh assumes ownership of a lot of the structures used to represent
+    * the system.
     *
     * Once the sturctures that are used to define the system in the input file
-    * are parsed in, the CoreMesh determines the set of geometrically-unique
-    * planes, which reduces the memory cost to perform ray tracing considerably.
+    * are parsed in, the \ref CoreMesh determines the set of
+    * geometrically-unique planes, which reduces the memory cost to perform ray
+    * tracing considerably.
     */
     class CoreMesh: public Mesh {
     public:
-        /** Construct a CoreMesh from XML input. This routine is responsible for
-         * parsing many of the tags in the XML document: \<mesh\>, \<pin\>,
-         * \<material_lib\>, \<lattice\>, \<core\>
+        /** Construct a \ref CoreMesh from XML input. This routine is
+         * responsible for parsing many of the tags in the XML document:
+         * \<mesh\>, \<pin\>, \<material_lib\>, \<lattice\>, \<core\>
         */
         CoreMesh( pugi::xml_node &input );
 
@@ -63,28 +65,33 @@ namespace mocc {
         * \brief Obtain a tuple containing the pin position and a reference to the
         * PinMesh that occupies the space at a point, within a given plane.
         *
-        * \param[inout] p  a Point residing in the desired Pin. The location of
-        * the point will be updated to the location of the PinMesh origin. See
-        * the note below.
-        * \param[in] iz the index of the Plane in which to search for the PinMesh.
-        * \param[inout] first_reg still need to accurately define this param
+        * \param[inout] p a \ref Point2 residing in the desired \ref Pin. The
+        * location of the point will be updated to the location of the \ref
+        * PinMesh origin. See the note below.
+        * \param[in] iz the index of the \ref Plane in which to search for the
+        * \ref PinMesh.
+        * \param[inout] first_reg still need to accurately define
+        * this param
         *
         * \todo document thie first_reg parameter. important!
         * 
-        * This routine provides a means by which to locate the PinMesh object
-        * that fills the space in which the passed Point resides. This is useful
-        * during ray tracing to determine the geometry that needs to be traced
-        * through each pin subdomain. See Ray::Ray() for and example of its use.
+        * This routine provides a means by which to locate the \ref PinMesh
+        * object that fills the space in which the passed Point resides. This is
+        * useful during ray tracing to determine the geometry that needs to be
+        * traced through each pin subdomain. See \ref Ray::Ray() for and example
+        * of its use.
         *
-        * \note The Point that is passed in will be modified! The new location
-        * will be the PinMesh origin, in the core-local (global) coordinate
+        * \note The \ref Point2 that is passed in will be modified! The new
+        * location will be the \ref PinMesh origin, in the core-local (global)
+        * coordinate
         * system. This is done because during the ray trace, the original vector
-        * of points coming from CoreMesh::trace() are in core-local
-        * coordinates, while the PinMesh::trace() routine needs its Point(s) to
-        * be defined in pin-local coordinates, since the PinMesh has no idea
-        * where it is in global space. By moving the point to the origin of the
-        * PinMesh (but in core-local coordinates), we can simply offset the ray
-        * points by the new location of \p p to get into pin-local coordinates.
+        * of points coming from \ref CoreMesh::trace() are in core-local
+        * coordinates, while the \ref PinMesh::trace() routine needs its \ref
+        * Point2 (s) to be defined in pin-local coordinates, since the \ref
+        * PinMesh has no idea where it is in global space. By moving the point
+        * to the origin of the \ref PinMesh (but in core-local coordinates), we
+        * can simply offset the ray points by the new location of \p p to get
+        * into pin-local coordinates.
         */
         const PinMeshTuple get_pinmesh( Point2 &p, unsigned int iz, 
                 int &first_reg) const;
@@ -100,28 +107,28 @@ namespace mocc {
         }
 
         /**
-        * Return a const iterator to the first Pin in the CoreMesh.
+        * Return a const iterator to the first \ref Pin in the \ref CoreMesh.
         */
         std::vector<const Pin*>::const_iterator begin_pin() const {
             return core_pins_.cbegin();
         }
 
         /**
-        * Return a const iterator past the last Pin in the CoreMesh.
+        * Return a const iterator past the last \ref Pin in the \ref CoreMesh.
         */
         std::vector<const Pin*>::const_iterator end_pin() const {
             return core_pins_.cend();
         }
 
         /**
-        * Return a const iterator to the first Pin in the CoreMesh.
+        * Return a const iterator to the first \ref Pin in the \ref CoreMesh.
         */
         std::vector<const Pin*>::const_iterator begin() const {
             return core_pins_.cbegin();
         }
 
         /**
-        * Return a const iterator past the last Pin in the CoreMesh.
+        * Return a const iterator past the last \ref Pin in the \ref CoreMesh.
         */
         std::vector<const Pin*>::const_iterator end() const {
             return core_pins_.cend();
@@ -150,11 +157,11 @@ namespace mocc {
         }
 
         /**
-        * Return the 1-D lexicographic index of a Position.
+        * Return the 1-D lexicographic index of a \ref Position.
         *
         * It is often useful to flatten the index space of the entire geometry
         * for, usually to facilitate output to the HDF5 file. This accepts a
-        * Position, which stores x, y, z indices for a Pin in the mesh and
+        * Position, which stores x, y, z indices for a \ref Pin in the mesh and
         * returns a 1-D index. The 1-D index space is ordered lexicographically,
         * meaning in ascending x, then y, then z. Otherwise called "natural"
         * ordering.
@@ -164,7 +171,7 @@ namespace mocc {
         }
         
         /*
-        * Return a Position, indicating the global position of a pin in the
+        * Return a \ref Position, indicating the global position of a pin in the
         * core geometry.
         *
         * At some point it would be nifty to create a custom iterator class that

@@ -92,7 +92,8 @@ namespace mocc {
         // tell it what to do
         XSMesh() {}
 
-        // XSMesh provides its own facility to initialize itself from a CoreMesh
+        // XSMesh provides its own facility to initialize itself from a \ref
+        // CoreMesh
         XSMesh( const CoreMesh& mesh );
 
         // Return the number of energy groups
@@ -127,7 +128,6 @@ namespace mocc {
         }
 
     protected:
-        // list of mesh regions corresponding to each XSMesh region
         size_t ng_;
 
         // Vector of xs mesh regions

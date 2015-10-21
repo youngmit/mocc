@@ -29,13 +29,13 @@ namespace mocc {
     */
 
     /**
-     * This defines a base Mesh type, which provides some basic information. For
-     * now, the mesh is restricted to a structured grid of cells, which in the
-     * case of the derived CoreMesh class are filled with Pin objects, but in
-     * the case of the base Mesh type are more abstract in nature. In lieu of a
-     * standalone coarse mesh (for things like CMFD and 2D/3D), the Mesh itself
-     * provides method for interacting with homogenous regions and their
-     * interface surfaces.
+     * This defines a base \ref Mesh type, which provides some basic
+     * information. For now, the mesh is restricted to a structured grid of
+     * cells, which in the case of the derived \ref CoreMesh class are filled
+     * with \ref Pin objects, but in the case of the base \ref Mesh type are
+     * more abstract in nature. In lieu of a standalone coarse mesh (for things
+     * like CMFD and 2D/3D), the Mesh itself provides method for interacting
+     * with homogenous regions and their interface surfaces.
      *
      * \todo the unit test for Mesh is not really done. Its got some stuff in
      * there for my testing, but it needs some serious work.
@@ -170,21 +170,21 @@ namespace mocc {
         }
         
         /**
-         * Return the coarse cell index given a pin Position. Cell indexing is
-         * natural in x, y z.
+         * Return the coarse cell index given a pin \ref Position. Cell indexing
+         * is natural in x, y z.
         */
         size_t coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
         }
 
         /**
-         * \brief Return the coarse cell index corresponding to the Point2
+         * \brief Return the coarse cell index corresponding to the \ref Point2
          * passed.
          */
         int coarse_cell_point( Point2 p ) const;
 
         /**
-         * Return the Position of a coarse mesh cell index.
+         * Return the \ref Position of a coarse mesh cell index.
         */
         Position coarse_position( size_t cell ) const {
             return Position( 
@@ -233,15 +233,15 @@ namespace mocc {
          * Return the cell index that a point on the boundary of the mesh should
          * be considered within.
          *
-         * This follows the conventions described in
+         * This follows the conventions described in \ref coarseraypage.
          */
         size_t coarse_boundary_cell( Point2 p, int octant ) const;
 
         /**
          * \brief Return the number of surfaces coincident with the passed
-         * Point2 and determine the index(s) of the surface(s) crossed.
+         * \ref Point2 and determine the index(s) of the surface(s) crossed.
          *
-         * \param[in] p the Point2 to check for surface.
+         * \param[in] p the \ref Point2 to check for surface.
          * \param[in] cell the index of a cell that the point should be
          * bordering.
          * \param[out] s and array[2] to store the indices of the surface(s)
@@ -345,7 +345,7 @@ namespace mocc {
         /// Sequence of pin y pitches
         VecF dy_vec_;
         
-        /// Vector of Line objects, representing pin boundaries. This greatly
+        /// Vector of \ref Line objects, representing pin boundaries. This greatly
         /// simplifies the ray trace.
         std::vector<Line> lines_;
 
