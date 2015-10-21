@@ -113,7 +113,6 @@ namespace mocc {
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
-
             // Configure the current worker for this angle
             cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
 

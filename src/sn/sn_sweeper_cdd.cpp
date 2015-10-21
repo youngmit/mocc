@@ -74,6 +74,9 @@ namespace mocc {
 
         int iang = 0;
         for( auto ang: ang_quad_ ) {
+            // Configure the current worker for this angle
+            cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+
             int iang_a = iang % nang_half;
             real_t wgt = ang.weight * HPI; 
             real_t ox = ang.ox;
