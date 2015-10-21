@@ -1,5 +1,6 @@
 #include "xs_mesh_homogenized.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -8,7 +9,6 @@ using std::cin;
 using std::endl;
 
 namespace mocc {
-
     XSMeshHomogenized::XSMeshHomogenized( const CoreMesh& mesh ):
         mesh_( mesh )
     {
@@ -20,7 +20,7 @@ namespace mocc {
         
         int ipin = 0;
         int first_reg = 0;
-        for( auto &pin: mesh_ ) {
+        for( const auto &pin: mesh_ ) {
             // Use the lexicographically-ordered pin index as the xs mesh index.
             // This is to put the indexing in a way that works best for the Sn
             // sweeper as it is implemented now. This is really brittle, and
@@ -35,6 +35,23 @@ namespace mocc {
         }
     }
 
+    /**
+     * Update the XS mesh, incorporating a new estimate of the scalar flux.
+     */
+    void XSMeshHomogenized::update( const ArrayF &flux ) {
+        int ipin = 0;
+        int first_reg = 0;
+        for( const auto &pin: mesh_ ) {
+            int ireg = mesh_.index_lex( mesh_.pin_position(ipin) );
+            int ixsreg = ireg;
+            regions_[ixsreg] = this->homogenize_region_flux( ireg, first_reg, 
+                    *pin, flux);
+
+            ipin++;
+            first_reg += pin->n_reg();
+        }
+        return;
+    }
     
     XSMeshRegion XSMeshHomogenized::homogenize_region( int i, 
             const Pin& pin) const {
@@ -53,16 +70,22 @@ namespace mocc {
         for( size_t ig=0; ig<ng_; ig++ ) {
             int ireg = 0;
             int ixsreg = 0;
+            real_t fvol = 0.0;
             for( auto &mat_id: pin.mat_ids() ) {
                 auto mat = mat_lib.get_material_by_id(mat_id);
-                const ScatRow& scat_row = mat.xssc().to(ig);
+                const ScatteringRow& scat_row = mat.xssc().to(ig);
                 int gmin = scat_row.min_g;
                 int gmax = scat_row.max_g;
+                real_t fsrc = 0.0;
+                for( size_t igg=0; igg<ng_; igg++ ) {
+                    fsrc += mat.xsnf()[igg];
+                }
                 for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
+                    fvol += vols[ireg] * fsrc;
                     xstr[ig] += vols[ireg] * mat.xstr()[ig];
                     xsnf[ig] += vols[ireg] * mat.xsnf()[ig];
                     xskf[ig] += vols[ireg] * mat.xskf()[ig];
-                    xsch[ig] += vols[ireg] * mat.xsch()[ig];
+                    xsch[ig] += vols[ireg] * fsrc * mat.xsch()[ig];
 
                     for( int igg=gmin; igg<=gmax; igg++ ) {
                         scat[ig][igg] += scat_row.from[igg-gmin] * vols[ireg];
@@ -75,7 +98,7 @@ namespace mocc {
             xstr[ig] /= pin.vol();
             xsnf[ig] /= pin.vol();
             xskf[ig] /= pin.vol();
-            xsch[ig] /= pin.vol();
+            xsch[ig] /= fvol;
 
             for( auto &s: scat[ig] ) {
                 s /= pin.vol();
@@ -83,16 +106,18 @@ namespace mocc {
 
         }
 
-        ScatMat scat_mat(scat);
+        ScatteringMatrix scat_mat(scat);
 
         return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
     }
 
-    XSMeshRegion XSMeshHomogenized::homogenize_region( int i, int first_reg,
-            const Pin& pin, const ArrayX &flux ) const {
+    XSMeshRegion XSMeshHomogenized::homogenize_region_flux( int i, 
+            int first_reg, const Pin& pin, const ArrayF &flux ) const {
 
-        // make a list full of the pin index. All FSRs in the pin should be
-        // bound to this XSMesh region.
+        size_t n_reg = mesh_.n_reg();
+
+        // Set the FSRs to be one element, representing the coarse mesh index to
+        // which this \ref XSMeshRegion belongs.
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
         VecF xsnf( ng_, 0.0 );
@@ -113,11 +138,13 @@ namespace mocc {
             for( auto &mat_id: pin.mat_ids() ) {
                 auto mat = mat_lib.get_material_by_id(mat_id);
                 for( size_t ig=0; ig<ng_; ig++ ) {
-                    int ireg = 0; // pin-local region index
+                    int ireg = first_reg; // pin-local region index
+                    int ireg_local = 0;
                     for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
-                        fs[ireg] += mat.xsnf()[ig] * flux(first_reg+ireg, ig) *
-                            vols[ireg];
+                        fs[ireg_local] += mat.xsnf()[ig] * flux[ireg + ig*n_reg] *
+                            vols[ireg_local];
                         ireg++;
+                        ireg_local++;
                     }
                 }
                 ixsreg++;
@@ -129,75 +156,59 @@ namespace mocc {
             fs_sum += v;
         }
 
-
-        real_t fluxvolsum = 0.0;
-        VecF scatsum(ng_, 0.0);
         for( size_t ig=0; ig<ng_; ig++ ) {
-            int ireg = 0; // pin-local region index
+            real_t fluxvolsum = 0.0;
+            VecF scatsum(ng_, 0.0);
+            int ireg = first_reg; // global region index
+            int ireg_local = 0; // pin-local refion index
             int ixsreg = 0;
             for( auto &mat_id: pin.mat_ids() ) {
                 auto mat = mat_lib.get_material_by_id(mat_id);
-                const ScatRow& scat_row = mat.xssc().to(ig);
+                const ScatteringRow& scat_row = mat.xssc().to(ig);
                 int gmin = scat_row.min_g;
                 int gmax = scat_row.max_g;
                 for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
-                    int ireg_global = first_reg + ireg;
-                    real_t v = vols[ireg];
-                    real_t flux_i = flux(ireg_global, ig);
+                    real_t v = vols[ireg_local];
+                    real_t flux_i = flux[ireg + ig*n_reg];
                     fluxvolsum += v * flux_i;
                     xstr[ig] += v * flux_i * mat.xstr()[ig];
                     xsnf[ig] += v * flux_i * mat.xsnf()[ig];
                     xskf[ig] += v * flux_i * mat.xskf()[ig];
-                    xsch[ig] += fs[ireg] * mat.xsch()[ig];
+                    xsch[ig] += fs[ireg_local] * mat.xsch()[ig];
 
-                    for( int igg=gmin; igg<=gmax; igg++ ) {
-                        real_t fluxgg = flux(ireg_global, igg);
+                    for( int igg=0; igg<ng_; igg++ ){
+                        real_t fluxgg = flux[ireg + igg*n_reg];
+                        fluxgg = 1.0;
                         scatsum[igg] += fluxgg * v;
-                        real_t scgg = scat_row.from[igg-gmin];
-                        scat[ig][igg] += scgg * v * fluxgg;
+                        if( (igg >= gmin) && (igg <= gmax) ) {
+                            real_t scgg = scat_row.from[igg-gmin];
+                            scat[ig][igg] += scgg * v * fluxgg;
+                        }
                     }
                     ireg++;
+                    ireg_local++;
                 }
                 ixsreg++;
             }
 
-            for( auto s: scat ) {
-                
+            for( size_t igg=0; igg<ng_; igg++ ) {
+                if( scat[ig][igg] > 0.0 ) {
+                    scat[ig][igg] /= scatsum[igg];
+                }
             }
 
             xstr[ig] /= fluxvolsum;
             xsnf[ig] /= fluxvolsum;
             xskf[ig] /= fluxvolsum;
             xsch[ig] /= fs_sum;
-
         }
 
-        ScatMat scat_mat(scat);
+
+        ScatteringMatrix scat_mat(scat);
 
         return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
     }
            
-
-    /**
-     * Update the XS mesh, incorporating a new estimate of the scalar flux.
-     */
-    void XSMeshHomogenized::update( const ArrayX &flux ) {
-        int ipin = 0;
-        int first_reg = 0;
-        for( auto &pin: mesh_ ) {
-            // Use the naturally-ordered pin index as the xs mesh index.  This
-            // is to put the indexing in a way that works best for the Sn
-            // sweeper as it is implemented now. This is really brittle, and
-            // should be replaced with some sort of Sn Mesh object, which both
-            // the XS Mesh and the Sn sweeper will use to handle indexing.
-            int ireg = mesh_.index_lex( mesh_.pin_position(ipin) );
-            regions_.push_back( this->homogenize_region( ireg, first_reg, 
-                        *pin, flux ) );
-            ipin++;
-            first_reg += pin->n_reg();
-        }
-        return;
-    }
 
     void XSMeshHomogenized::output( H5::CommonFG *file ) const {
         file->createGroup( "/xsmesh" );
@@ -221,4 +232,5 @@ namespace mocc {
         return;
     }
 
+    
 }

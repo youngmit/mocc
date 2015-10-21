@@ -38,7 +38,7 @@ int main() {
 
 
         
-        const mocc::ScatRow& scat_row = mat.xssc().to(ig);
+        const mocc::ScatteringRow& scat_row = mat.xssc().to(ig);
         unsigned int min_g = scat_row.min_g;
         unsigned int max_g = scat_row.max_g;
         for( unsigned int igg=min_g; igg<=max_g; igg++ ) {

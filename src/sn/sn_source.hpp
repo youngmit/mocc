@@ -21,7 +21,7 @@ namespace mocc {
         }
 
         /**
-         * Replaces the standard Source::self_scatter() method with one that
+         * Replaces the standard \ref Source::self_scatter() method with one that
          * does not divide the source by the transport cross section, which is
          * only needed for the MoC sweeper.
          */
@@ -29,7 +29,7 @@ namespace mocc {
                 ArrayF& qbar ) const 
         {
             for( auto &xsr: *xs_mesh_ ) {
-                const ScatRow& scat_row = xsr.xsmacsc().to(ig);
+                const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
                 real_t xssc = scat_row.from[ig-scat_row.min_g];
                 for ( auto &ireg: xsr.reg() ) {
                     qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) * 

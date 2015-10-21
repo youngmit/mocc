@@ -7,6 +7,13 @@
 #include "xs_mesh.hpp"
 
 namespace mocc {
+    /**
+     * This class provides a homogenized version of an \ref XSMesh. At the time
+     * of its conception, it was mostly intended for use with the Sn sweeper and
+     * for future application to CMFD acceleration, so a lot of the code and
+     * documentation make that assumption. If this is generalized much in the
+     * future, make sure to update the docs.
+     */
     class XSMeshHomogenized: public XSMesh {
     public:
         XSMeshHomogenized( const CoreMesh& mesh );
@@ -14,7 +21,7 @@ namespace mocc {
         /**
          * Update homogenized cross sections using the passed flux array
          */
-        void update( const ArrayX &flux );
+        void update( const ArrayF &flux );
 
         /**
          * Generate output of important cross sections on the homogenized mesh
@@ -34,9 +41,24 @@ namespace mocc {
         * \brief Return an XSMeshRegion containing homogenized cross sections
         * from a pin cell. Use the passed scalar flux to perform flux-volume
         * weighting.
+        *
+        * \param i the region in the Sn or coarse mesh that the region should
+        * belong to. Since it is assumed that there is a one-to-one mapping from
+        * the xs mesh to the Sn mesh, the vector of FSRs in the \ref
+        * XSMeshRegion will only contain one element, populated with the value
+        * of \c i.
+        * \param first_reg the region offset into the \c flux array to be used
+        * for this particular pin.
+        * \param pin the pin to homogenize cross sections for.
+        * \param flux the array containing the scalar flux to be used in the
+        * homogenization
+        *
+        * This routine performs a flux-weighted homogenization of the cross
+        * sections in the passed \ref Pin object and returns an \ref
+        * XSMeshRegion object containing the homogenized cross sections.
         */
-        XSMeshRegion homogenize_region( int i, int first_reg, const Pin& pin,
-                const ArrayX &flux ) const;
+        XSMeshRegion homogenize_region_flux( int i, int first_reg, 
+                const Pin& pin, const ArrayF &flux ) const;
     };
 
     typedef std::shared_ptr<XSMeshHomogenized> SP_XSMeshHomogenized_t;

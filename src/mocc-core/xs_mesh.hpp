@@ -26,7 +26,7 @@ namespace mocc {
     public:
         XSMeshRegion(){ }
         XSMeshRegion( const VecI& fsrs, const VecF& xstr, const VecF& xsnf,
-                const VecF& xsch, const VecF& xsf, const ScatMat& xssc ):
+                const VecF& xsch, const VecF& xsf, const ScatteringMatrix& xssc ):
             reg_(fsrs),
             xsmactr_(xstr),
             xsmacnf_(xsnf),
@@ -35,6 +35,10 @@ namespace mocc {
             xsmacsc_(xssc)
         {
             return;
+        }
+
+        size_t n_group() const {
+            return xsmacsc_.n_group();
         }
 
         const real_t* xsmactr() const {
@@ -53,7 +57,7 @@ namespace mocc {
             return xsmacch_.data();
         }
 
-        const ScatMat& xsmacsc() const {
+        const ScatteringMatrix& xsmacsc() const {
             return xsmacsc_;
         }
 
@@ -66,24 +70,7 @@ namespace mocc {
         }
 
         friend std::ostream& operator<<(std::ostream& os, 
-                const XSMeshRegion &xsr ) {
-            os << "Transport: " << std::endl;
-            for( auto v: xsr.xsmactr_ ){
-                os << v << " ";
-            }
-            os << std::endl;
-
-            os << "nu-fission: " << std::endl;
-            for( auto v: xsr.xsmacnf_ ) {
-                os << v << " ";
-            }
-            os << std::endl;
-
-            os << "Scattering matrix:" << std::endl;
-            os << xsr.xsmacsc_ << std::endl;
-
-            return os;
-        }
+                const XSMeshRegion &xsr );
 
     private:
         // List of FSR indices that use this XS mesh region
@@ -96,8 +83,7 @@ namespace mocc {
         VecF xsmacch_;
 
         // Scattering matrix
-        ScatMat xsmacsc_; 
-
+        ScatteringMatrix xsmacsc_; 
     };
 
     class XSMesh: public HasOutput {

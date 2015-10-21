@@ -19,7 +19,7 @@ namespace mocc {
         return;
     }
 
-    // Multiply the group-independent fission source by chi[ig] to get the
+    // Multiply the group-independent fission source by \c chi[ig] to get the
     // fission source into the current group. If an external source is defines,
     // start with that.
     void Source::fission( const ArrayF& fs, int ig ) {
@@ -43,7 +43,7 @@ namespace mocc {
     // groups
     void Source::in_scatter( size_t ig ) {
         for( auto &xsr: *xs_mesh_ ) {
-            const ScatRow& scat_row = xsr.xsmacsc().to(ig);
+            const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
             size_t min_g = scat_row.min_g;
             size_t igg = min_g;
             for( auto sc: scat_row ) {
@@ -68,7 +68,7 @@ namespace mocc {
     void Source::self_scatter( size_t ig, ArrayF& flux_1g, 
             ArrayF& qbar ) const {
         for( auto &xsr: *xs_mesh_ ) {
-            const ScatRow& scat_row = xsr.xsmacsc().to(ig);
+            const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
             real_t xssc = scat_row.from[ig-scat_row.min_g];
             real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
             for ( auto &ireg: xsr.reg() ) {

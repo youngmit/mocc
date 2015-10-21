@@ -54,4 +54,29 @@ namespace mocc {
 
         return;
     }
+
+    std::ostream& operator<<( std::ostream& os, const XSMeshRegion &xsr ) {
+        os << "Transport: " << std::endl;
+        for( auto v: xsr.xsmactr_ ){
+            os << v << " ";
+        }
+        os << std::endl;
+
+        os << "nu-fission: " << std::endl;
+        for( auto v: xsr.xsmacnf_ ) {
+            os << v << " ";
+        }
+        os << std::endl;
+
+        os << "chi: " << std::endl;
+        for( auto v: xsr.xsmacch_ ) {
+            os << v << " ";
+        }
+        os << std::endl;
+
+        os << "Scattering matrix:" << std::endl;
+        os << xsr.xsmacsc_ << std::endl;
+
+        return os;
+    }
 }
