@@ -146,11 +146,12 @@ namespace mocc {
                             2.0*(tx*psi_lx + ty*psi_ly + tz*psi_lz );
                         psi /= tx/gx + ty/gy + 2.0*tz + xstr_[i];
 
-                        flux_1g_[i] += psi*wgt;
 
                         x_flux[ny_*iz + iy] = (psi - gx*psi_lx) / gx;
 						y_flux[nx_*iz + ix] = (psi - gy*psi_ly) / gy;
 						z_flux[nx_*iy + ix] = 2.0*psi - psi_lz;
+
+                        flux_1g_[i] += psi*wgt;
 
                         // Do current worker (maybe)
                         cw.current_work( x_flux[ny_*iz + iy],
