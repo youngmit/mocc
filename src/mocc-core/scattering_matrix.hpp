@@ -25,7 +25,6 @@ namespace mocc {
         const real_t* end() const {
             return from + max_g - min_g + 1;
         }
-
     };
     
     /**
@@ -123,6 +122,24 @@ namespace mocc {
             return rows_.cend();
         }
         
+        /**
+         * \brief Return a 1-D, dense representation of the scattering matrix.
+         *
+         * The returned vector stores all of scattering cross sections as a
+         * \emph row-major ng-by-ng matrix.
+         */
+        VecF as_vector() const {
+            VecF sc(ng_*ng_, 0.0);
+            int ig = 0;
+            for( const auto &row: rows_ ) {
+                for( int igg=row.min_g; igg<=row.max_g; igg++ ) {
+                    sc[ng_*ig + igg] = row[igg];
+                }
+                ig++;
+            }
+            return sc;
+        }
+
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, 
                 const ScatteringMatrix &scat_mat);
