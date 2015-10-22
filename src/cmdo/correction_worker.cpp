@@ -17,7 +17,8 @@ namespace mocc {
             real_t ox = ang_quad_[ang].ox;
             
             Surface surfs[2][4];
-            // We know that all of our moc angles are positive in the y direction
+            // We know that all of our moc angles are positive in the y
+            // direction
             surfs[FW][YL] = Surface::SOUTH;
             surfs[FW][YR] = Surface::NORTH;
             surfs[BW][YL] = Surface::NORTH;
@@ -92,7 +93,7 @@ namespace mocc {
                     corrections_->alpha( ic, iang2, group, Normal::X_NORM ) = ax;
                     corrections_->alpha( ic, iang2, group, Normal::Y_NORM ) = ay;
             
-                    corrections_->beta( ic, iang1, group ) = b;
+                    corrections_->beta( ic, iang2, group ) = b;
                 }
             }
 
