@@ -178,7 +178,6 @@ namespace mocc {
 
                     for( int igg=0; igg<ng_; igg++ ){
                         real_t fluxgg = flux[ireg + igg*n_reg];
-                        fluxgg = 1.0;
                         scatsum[igg] += fluxgg * v;
                         if( (igg >= gmin) && (igg <= gmax) ) {
                             real_t scgg = scat_row.from[igg-gmin];
@@ -213,6 +212,7 @@ namespace mocc {
     void XSMeshHomogenized::output( H5::CommonFG *file ) const {
         file->createGroup( "/xsmesh" );
         file->createGroup( "/xsmesh/xstr" );
+        file->createGroup( "/xsmesh/xsnf" );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());
@@ -220,15 +220,40 @@ namespace mocc {
         for( size_t ig=0; ig<ng_; ig++ ) {
             // Transport cross section
             VecF xstr( this->size(), 0.0 );
+            VecF xsnf( this->size(), 0.0 );
             int i = 0;
             for( auto xsr: regions_ ) {
                 xstr[i] = xsr.xsmactr()[ig];
+                xsnf[i] = xsr.xsmacnf()[ig];
                 i++;
             }
-            std::stringstream setname;
-            setname << "/xsmesh/xstr/" << ig;
-            HDF::Write( file, setname.str(), xstr, d );
+            {
+                std::stringstream setname;
+                setname << "/xsmesh/xstr/" << ig;
+                HDF::Write( file, setname.str(), xstr, d );
+            }
+            {
+                std::stringstream setname;
+                setname << "/xsmesh/xsnf/" << ig;
+                HDF::Write( file, setname.str(), xsnf, d );
+            }
         }
+
+        // scattering matrix
+        VecF scat( regions_.size()*ng_*ng_, 0.0 );
+        auto it = scat.begin();
+        for( const auto &reg: regions_ ){
+            auto reg_scat = reg.xsmacsc().as_vector();
+            std::copy( reg_scat.begin(), reg_scat.end(), it );
+        }
+        VecI dims( 3 );
+        dims[0] = regions_.size();
+        dims[1] = ng_;
+        dims[2] = ng_;
+
+        HDF::Write( file, "/xsmesh/xssc", scat, dims );
+
+
         return;
     }
 
