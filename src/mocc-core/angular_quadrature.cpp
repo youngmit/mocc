@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <iomanip>
 
 #include "error.hpp"
 #include "level_symmetric.hpp"
@@ -50,4 +51,17 @@ namespace mocc {
         }
     }
     
+    std::ostream& operator<<(std::ostream& os, 
+            const AngularQuadrature &angquad) {
+        const int w = 12;
+        os << std::setw(w) << "Alpha"
+           << std::setw(w) << "Theta"
+           << std::setw(w) << "omega x"
+           << std::setw(w) << "omega y"
+           << std::setw(w) << "omega z" << std::endl;
+        for( auto &ang: angquad.angles_ ) {
+            os << ang << std::endl;
+        }
+        return os;
+    }
 }

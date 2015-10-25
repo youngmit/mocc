@@ -156,7 +156,8 @@ namespace mocc {
                         // Do current worker (maybe)
                         cw.current_work( x_flux[ny_*iz + iy],
                                          y_flux[nx_*iz + ix],
-                                         z_flux[nx_*iy + ix], i, ang, group );
+                                         z_flux[nx_*iy + ix],
+                                         i, ang, group );
 
                     }
                 }

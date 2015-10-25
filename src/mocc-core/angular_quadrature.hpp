@@ -77,13 +77,7 @@ namespace mocc {
 
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, 
-                const AngularQuadrature &angquad) {
-            os << "Alpha\tTheta\tomega x   \tomega y   \tomega z" << std::endl;
-            for( auto &ang: angquad.angles_ ) {
-                os << ang << std::endl;
-            }
-            return os;
-        }
+                const AngularQuadrature &angquad);
 
         /**
          * Return the index of the angle reflected across a surface with the

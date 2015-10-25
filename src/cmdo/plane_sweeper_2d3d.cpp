@@ -1,12 +1,16 @@
 #include "plane_sweeper_2d3d.hpp"
 
 #include <cmath>
+#include <iostream>
+#include <iomanip>
 
 #include "error.hpp"
 
 using std::cout;
 using std::endl;
 using std::cin;
+using std::setfill;
+using std::setw;
 
 namespace mocc {
     /// \todo make sure to check the angular quadratures for conformance
@@ -129,13 +133,15 @@ cout << "MoC/Sn residual: " << residual << endl;
 
                 {
                     std::stringstream setname;
-                    setname << "/alpha_x/" << g << "_" << a;
+                    setname << "/alpha_x/" << setfill('0') << setw(3) << g 
+                            << "_"         << setfill('0') << setw(3) << a;
                     HDF::Write( file, setname.str(), alpha_x, dims );
                 }
 
                 {
                     std::stringstream setname;
-                    setname << "/alpha_y/" << g << "_" << a;
+                    setname << "/alpha_y/" << setfill('0') << setw(3) << g 
+                            << "_"         << setfill('0') << setw(3) << a;
                     HDF::Write( file, setname.str(), alpha_y, dims );
                 }
             }

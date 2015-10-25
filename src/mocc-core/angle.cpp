@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <iomanip>
 
 #include "global_config.hpp"
 #include "constants.hpp"
@@ -60,4 +61,15 @@ namespace mocc {
     Angle ModifyAlpha(Angle in, real_t new_alpha) {
         return Angle(new_alpha, in.theta, in.weight);
     }
+
+    std::ostream& operator<<(std::ostream& os, const Angle &ang ) {
+        const int w = 12;
+            os << std::setw(w) << RadToDeg(ang.alpha) 
+               << std::setw(w) << RadToDeg(ang.theta)
+               << std::setw(w) << ang.ox
+               << std::setw(w) << ang.oy
+               << std::setw(w) << ang.oz
+               << std::setw(w) << ang.weight;
+            return os;
+        }
 }

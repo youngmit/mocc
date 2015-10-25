@@ -58,13 +58,7 @@ namespace mocc {
         }
         
         // Provide stream insertion support
-        friend std::ostream& operator<<(std::ostream& os, const Angle &ang ) {
-            os << RadToDeg(ang.alpha) << "\t" << RadToDeg(ang.theta) << "\t"
-               << ang.ox << "   \t" << ang.oy << "   \t" << ang.oz << "   \t"
-               << ang.weight;
-            return os;
-        }
-
+        friend std::ostream& operator<<(std::ostream& os, const Angle &ang );
     };
     
     Angle ToOctant( Angle in, int octant );
