@@ -98,7 +98,9 @@ namespace mocc {
             xstr[ig] /= pin.vol();
             xsnf[ig] /= pin.vol();
             xskf[ig] /= pin.vol();
-            xsch[ig] /= fvol;
+            if( fvol > 0.0 ) {
+                xsch[ig] /= fvol;
+            }
 
             for( auto &s: scat[ig] ) {
                 s /= pin.vol();
@@ -199,9 +201,10 @@ namespace mocc {
             xstr[ig] /= fluxvolsum;
             xsnf[ig] /= fluxvolsum;
             xskf[ig] /= fluxvolsum;
-            xsch[ig] /= fs_sum;
+            if(fs_sum > 0.0) {
+                xsch[ig] /= fs_sum;
+            }
         }
-
 
         ScatteringMatrix scat_mat(scat);
 
@@ -244,7 +247,7 @@ namespace mocc {
         auto it = scat.begin();
         for( const auto &reg: regions_ ){
             auto reg_scat = reg.xsmacsc().as_vector();
-            std::copy( reg_scat.begin(), reg_scat.end(), it );
+            it = std::copy( reg_scat.begin(), reg_scat.end(), it );
         }
         VecI dims( 3 );
         dims[0] = regions_.size();
