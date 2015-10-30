@@ -39,8 +39,8 @@ namespace mocc {
             // See the Surface Normalization page
             real_t area[2] = 
             {
-                std::abs( rays_.spacing( ang )/sin(ang_quad_[ang].alpha) ),
-                std::abs( rays_.spacing( ang )/cos(ang_quad_[ang].alpha) )
+                std::abs( rays_.spacing( ang )/cos(ang_quad_[ang].alpha) ),
+                std::abs( rays_.spacing( ang )/sin(ang_quad_[ang].alpha) )
             };
             
             for( size_t ic=0; ic<mesh_->n_pin(); ic++ ) {
@@ -48,7 +48,7 @@ namespace mocc {
             
                 real_t area_x = area[0]/mesh_->pin_dx()[pos.x];
                 real_t area_y = area[1]/mesh_->pin_dy()[pos.y];
-            
+
                 real_t xstr = sn_xs_mesh_[ic].xsmactr()[group];
             
                 // FW direction
