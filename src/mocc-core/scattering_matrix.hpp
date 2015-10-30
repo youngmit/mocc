@@ -126,7 +126,7 @@ namespace mocc {
          * \brief Return a 1-D, dense representation of the scattering matrix.
          *
          * The returned vector stores all of scattering cross sections as a
-         * \emph row-major ng-by-ng matrix.
+         * row-major ng-by-ng matrix.
          */
         VecF as_vector() const {
             VecF sc(ng_*ng_, 0.0);

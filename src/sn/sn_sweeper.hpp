@@ -71,9 +71,13 @@ namespace mocc {
         SnBoundary bc_out_;
 
         /**
-         * Generic Sn sweep procedure for orthogonal mesh. 
+         * \brief Generic Sn sweep procedure for orthogonal mesh. 
          *
-         * \todo more docs
+         * This routine performs a single, one-group transport sweep with Sn. It
+         * is templated on two parameters to tailor it to different differencing
+         * schemes and current calculation requirements. To see examples of
+         * template parameters, look at \ref sn::CellWorker and \ref
+         * sn::Current.
          */
         template <typename CurrentWorker, typename CellWorker>
         void sweep_1g( int group, CellWorker &cell_worker ) {
