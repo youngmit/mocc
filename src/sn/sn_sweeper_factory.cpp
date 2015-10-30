@@ -5,6 +5,7 @@
 
 #include "error.hpp"
 #include "sn_sweeper_cdd.hpp"
+#include "sn_sweeper_dd.hpp"
 
 namespace mocc {
     UP_SnSweeper_t SnSweeperFactory( const pugi::xml_node &input, 
@@ -18,7 +19,7 @@ namespace mocc {
             << equation << std::endl;
 
         if( equation == "dd") {
-            return UP_SnSweeper_t( new SnSweeper( input, mesh ) );
+            return UP_SnSweeper_t( new SnSweeper_DD( input, mesh ) );
         } else if( equation == "cdd" ) {
             return UP_SnSweeper_t( new SnSweeper_CDD( input, mesh ) );
         } else {

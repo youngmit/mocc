@@ -39,14 +39,6 @@ namespace mocc {
 
         ~CoreMesh();
 
-        
-        /** 
-        * Return a const vector of plane heights
-        */
-        const VecF& hz() const {
-            return hz_vec_;
-        }
-
         /** 
         * Return the number of geometrically-unique planes
         */

@@ -63,8 +63,8 @@ namespace mocc {
         n_planes_ = mesh.n_unique_planes();
 
         // Figure out modular angles and spacings
-        real_t hx = mesh.hx();
-        real_t hy = mesh.hy();
+        real_t hx = mesh.hx_core();
+        real_t hy = mesh.hy_core();
 
         LogFile << "Original Angular quadrature " << std::endl;
         LogFile << ang_quad_ << std::endl;

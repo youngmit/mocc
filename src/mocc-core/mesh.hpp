@@ -118,15 +118,39 @@ namespace mocc {
         /**
         * Return the total core length along the x dimension
         */
-        real_t hx() const {
+        real_t hx_core() const {
             return hx_;
         }
 
         /**
         * Return the total core length along the y dimension
         */
-        real_t hy() const {
+        real_t hy_core() const {
             return hy_;
+        }
+
+        /**
+         * Return the pin/coarse cell thickness in the x dimension at the
+         * specified x position.
+         */
+        inline real_t dx( size_t ix ) const {
+            return dx_vec_[ix];
+        }
+
+        /** 
+         * Return the pin/coarse cell thickness in the y dimension at the
+         * specified y position.
+         */
+        inline real_t dy( size_t iy ) const {
+            return dy_vec_[iy];
+        }
+
+        /**
+         * Return the pin/coarse cell thickness in the z dimension at the 
+         * specified z position.
+         */
+        inline real_t dz( size_t iz ) const {
+            return dz_vec_[iz];
         }
 
         /**
@@ -173,7 +197,7 @@ namespace mocc {
          * Return the coarse cell index given a pin \ref Position. Cell indexing
          * is natural in x, y z.
         */
-        size_t coarse_cell( Position pos ) const {
+        inline size_t coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
         }
 
@@ -344,6 +368,9 @@ namespace mocc {
 
         /// Sequence of pin y pitches
         VecF dy_vec_;
+
+        /// Sequence of plane heights
+        VecF dz_vec_;
         
         /// Vector of \ref Line objects, representing pin boundaries. This greatly
         /// simplifies the ray trace.

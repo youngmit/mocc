@@ -53,17 +53,10 @@ namespace mocc {
         }
         n_inner_ = int_in;
 
-        // Set up the mesh dimensions
-        hx_ = mesh_.pin_dx();
-        hy_ = mesh_.pin_dy();
-        hz_ = mesh_.hz();
-
-        nx_ = hx_.size();
-        ny_ = hy_.size();
-        nz_ = hz_.size();
-
-        bc_in_ = SnBoundary( n_group_, ang_quad_.ndir(), nx_, ny_, nz_ );
-        bc_out_ = SnBoundary( 1, ang_quad_.ndir(), nx_, ny_, nz_ );
+        bc_in_ = SnBoundary( n_group_, ang_quad_.ndir(), mesh_.nx(), 
+                mesh_.ny(), mesh_.nz() );
+        bc_out_ = SnBoundary( 1, ang_quad_.ndir(), mesh_.nx(), mesh_.ny(), 
+                mesh_.nz() );
 
         return;
     }
@@ -71,140 +64,7 @@ namespace mocc {
     void SnSweeper::homogenize( CoarseData &data ) const {
         return;
     }
-
-    void SnSweeper::sweep( int group ) {
-        // Store the transport cross section somewhere useful
-        for( auto &xsr: *xs_mesh_ ) {
-            real_t xstr = xsr.xsmactr()[group];
-            for( auto &ireg: xsr.reg() ) {
-                xstr_[ireg] = xstr;
-            }
-        }
-        
-        flux_1g_ = flux_[ std::slice(n_reg_*group, n_reg_, 1) ];
-
-        // Perform inner iterations
-        for( unsigned int inner=0; inner<n_inner_; inner++ ) {
-            // Set the source (add upscatter and divide by 4PI)
-            source_->self_scatter( group, flux_1g_, q_ );
-
-            if( inner == n_inner_-1 && coarse_data_ ) {
-
-                // Wipe out the existing currents
-                coarse_data_->current.col( group ) = 0.0;
-                this->sweep_dd<sn::Current>( group );
-            } else {
-                this->sweep_dd<sn::NoCurrent>( group );
-            }
-        }
-        flux_[ std::slice(n_reg_*group, n_reg_, 1) ] = flux_1g_;
-
-        return;
-    }
-
-    template <typename CurrentWorker>
-    void SnSweeper::sweep_dd( int group ) {
-        CurrentWorker cw( coarse_data_, &mesh_ );
-        flux_1g_ = 0.0;
-
-		ArrayF x_flux(ny_*nz_);
-		ArrayF y_flux(nx_*nz_);
-		ArrayF z_flux(nx_*ny_);
-
-        int iang = 0;
-        for( auto ang: ang_quad_ ) {
-            // Configure the current worker for this angle
-            cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
-
-            real_t wgt = ang.weight * HPI; 
-            real_t ox = ang.ox;
-            real_t oy = ang.oy;
-            real_t oz = ang.oz;
-
-            // Configure the loop direction. Could template the below for speed
-            // at some point.
-            int sttx = 0;
-            int stpx = nx_;
-            int xdir = 1;
-            if( ox < 0.0 ) {
-                ox = -ox;
-                sttx = nx_-1;
-                stpx = -1;
-                xdir = -1;
-            }
-            
-            int stty = 0;
-            int stpy = ny_;
-            int ydir = 1;
-            if( oy < 0.0 ) {
-                oy = -oy;
-                stty = ny_-1;
-                stpy = -1;
-                ydir = -1;
-            }
-            
-            int sttz = 0;
-            int stpz = nz_;
-            int zdir = 1;
-            if( oz < 0.0 ) {
-                oz = -oz;
-                sttz = nz_-1;
-                stpz = -1;
-                zdir = -1;
-            }
-
-            // initialize upwind condition
-            x_flux = bc_in_.get_face( group, iang, Normal::X_NORM );
-            y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM );
-            z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
-
-            cw.upwind_work( x_flux, y_flux, z_flux, ang, group);
-
-            for( int iz=sttz; iz!=stpz; iz+=zdir ) {
-                real_t tz = oz/hz_[iz];
-                for( int iy=stty; iy!=stpy; iy+=ydir ) {
-                    real_t ty = oy/hy_[iy];
-                    for( int ix=sttx; ix!=stpx; ix+=xdir ) {
-                        // Gross. really need an Sn mesh abstraction
-                        real_t psi_lx = x_flux[ny_*iz + iy];
-                        real_t psi_ly = y_flux[nx_*iz + ix];
-                        real_t psi_lz = z_flux[nx_*iy + ix];
-
-                        int i = iz*nx_*ny_ + iy*nx_ + ix;
-                        real_t tx = ox/hx_[ix];
-                        real_t psi = 2.0*(tx*psi_lx + 
-                                          ty*psi_ly + 
-                                          tz*psi_lz) + q_[i];
-                        psi /= 2.0*(tx + ty + tz) + xstr_[i];
-
-                        flux_1g_[i] += psi*wgt;
-
-                        x_flux[ny_*iz + iy] = 2.0*psi - x_flux[ny_*iz + iy];
-                        y_flux[nx_*iz + ix] = 2.0*psi - y_flux[nx_*iz + ix];
-                        z_flux[nx_*iy + ix] = 2.0*psi - z_flux[nx_*iy + ix];
-
-                        // Stash currents (or not, depending on the
-                        // CurrentWorker template parameter)
-                        cw.current_work( x_flux[ny_*iz + iy],
-                                         y_flux[nx_*iz + ix],
-                                         z_flux[nx_*iy + ix], i, ang, group );
-                    }
-                }
-
-            }
-
-            // store the downwind boundary condition
-            bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
-            bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
-            bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
-            iang++;
-        }
-        // Update the boundary condition
-        this->update_boundary( group );
-
-        return;
-    }
-
+   
     void SnSweeper::initialize() {
         flux_ = 1.0;
         flux_old_ = 1.0;
