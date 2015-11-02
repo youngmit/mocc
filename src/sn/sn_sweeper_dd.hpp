@@ -33,10 +33,10 @@ namespace mocc {
                     real_t &flux_z, real_t q, real_t xstr, size_t i )
             {
                 size_t ix = i % mesh_.nx();
-                real_t tx = angle_.ox/mesh_.dx(ix);
-                real_t psi = 2.0*(tx*flux_x + 
-                                  ty_*flux_y + 
-                                  tz_*flux_z) + q;
+                real_t tx = ox_/mesh_.dx(ix);
+                real_t psi = 2.0*( tx * flux_x + 
+                                   ty_* flux_y + 
+                                   tz_* flux_z ) + q;
                 psi /= 2.0*(tx + ty_ + tz_) + xstr;
 
                 flux_x = 2.0*psi - flux_x;
@@ -45,9 +45,6 @@ namespace mocc {
 
                 return psi;
             }
-        private:
-            real_t tz_;
-            real_t ty_;
         };
 
         CellWorker_DD cell_worker_;
