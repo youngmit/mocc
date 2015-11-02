@@ -85,19 +85,7 @@ namespace mocc {
          */
         unsigned int reflect( unsigned int iang, Normal normal ) const {
             int ioct = iang / ndir_oct_;
-            int new_oct = 0;
-            // Lets be real, im just showing off here...
-            switch(normal) {
-                case Normal::X_NORM:
-                    new_oct = ioct + 1-2*(ioct%2);
-                    break;
-                case Normal::Y_NORM:
-                    new_oct = abs(ioct + 3-(ioct%2)*6) % 4;
-                    break;
-                case Normal::Z_NORM:
-                    new_oct = (ioct+4) % 8;
-                    break;
-            }
+            int new_oct = reflection_[(int)normal][(int)ioct];
 
             return iang + (new_oct - ioct)*ndir_oct_;
         }
@@ -132,6 +120,8 @@ namespace mocc {
             return 0;
         }
     private:
+        static const int reflection_[3][8];
+
         // Enumerated quadrature type
         quad_t type_;
 

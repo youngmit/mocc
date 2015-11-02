@@ -10,6 +10,11 @@
 
 
 namespace mocc {
+
+    const int AngularQuadrature::reflection_[3][8] = { {1,0,3,2,5,4,7,6},
+                                                       {3,2,1,0,7,6,5,4},
+                                                       {4,5,6,7,0,1,2,3} };
+
     AngularQuadrature::AngularQuadrature( const pugi::xml_node &input ) {
         // Make sure we got input
         if( input.empty() ) {
