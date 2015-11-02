@@ -58,7 +58,7 @@ namespace mocc {
                         (moc_flux[i] - sn_sweeper_.flux( group, i ));
         }
         residual = sqrt(residual);
-cout << "MoC/Sn residual: " << residual << endl;
+        cout << "MoC/Sn residual: " << residual << endl;
     }
 
     void PlaneSweeper_2D3D::initialize() {

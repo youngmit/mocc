@@ -1,5 +1,6 @@
 #include "sn_sweeper_cdd.hpp"
 
+#include "error.hpp"
 #include "files.hpp"
 #include "sn_current_worker.hpp"
 
@@ -17,22 +18,35 @@ namespace mocc {
     {
         LogFile << "Constructing a CDD Sn sweeper" << std::endl;
 
-        if( input.child("data") ) {
-            if( input.child("data").attribute("type") ) {
+        if( !input.child("data").empty() ) {
+            LogFile << "Located auxiliary data specification." << std::endl;
+            if( !input.child("data").attribute("type").empty() ) {
                 std::string data_type = 
                     input.child("data").attribute("type").value();
                 if( data_type == "default" ) {
-                    cout << "Generating default values for correction factors."
-                        << endl;
+                    LogFile << "Generating default values for correction "
+                        "factors." << std::endl;
                     my_corrections_.reset( new CorrectionData( n_reg_, 
                                 ang_quad_.ndir(), n_group_) );
-                    corrections_ = my_corrections_.get();
+                    this->set_corrections( my_corrections_.get() );
+                    cout << corrections_->alpha(0,0,0,Normal::X_NORM) << endl;
+                } else {
+                    throw EXCEPT( "Unrecognized data type specified for Sn CDD "
+                            "sweeper." );
                 }
+            } else {
+                throw EXCEPT( "The <data> tag for an Sn sweeper must have a "
+                        "type attrubute." );
             }
         }
     }
 
     void SnSweeper_CDD::sweep( int group ) {
+        // Make sure we have correction factors
+        if( !corrections_ ) {
+            throw EXCEPT( "CDD sweeper doesn't have any correction data. Try "
+                    "adding <data type=\"default\"/> in the input file." );
+        }
         cell_worker_.set_group( group );
 
         // Store the transport cross section somewhere useful

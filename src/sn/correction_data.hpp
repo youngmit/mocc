@@ -35,23 +35,32 @@ namespace mocc {
         {
             return;
         }
+
+        ~CorrectionData() {
+            std::cout << "destroying corrections!" << std::endl;
+        }
             
 
-        real_t& alpha( size_t reg, size_t ang, size_t group, Normal norm ) {
+        inline real_t& alpha( size_t reg, size_t ang, size_t group, 
+                Normal norm )
+        {
             return alpha_[ nreg_*nang_*2*group + nreg_*2*ang + 2*reg + 
                 (int)norm ];
         }
-        const real_t& alpha( size_t reg, size_t ang, size_t group, 
-                Normal norm ) const {
+        
+        inline const real_t alpha( size_t reg, size_t ang, size_t group, 
+                Normal norm ) const
+        {
             return alpha_[ nreg_*nang_*2*group + nreg_*2*ang + 2*reg + 
                 (int)norm ];
         }
 
-        real_t& beta( size_t reg, size_t ang, size_t group ) {
+        inline real_t& beta( size_t reg, size_t ang, size_t group ) {
             return beta_[ nreg_*nang_*group + nreg_*ang + reg ];
         }
 
-        const real_t& beta( size_t reg, size_t ang, size_t group ) const {
+        inline const real_t beta( size_t reg, size_t ang, size_t group ) const
+        {
             return beta_[ nreg_*nang_*group + nreg_*ang + reg ];
         }
 
