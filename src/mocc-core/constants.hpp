@@ -64,6 +64,8 @@ namespace mocc {
     };
 
     std::ostream& operator<<(std::ostream& os, const Surface s );
+    
+    std::ostream& operator<<(std::ostream& os, const Normal n );
 
     Normal surface_to_normal( Surface s );
     

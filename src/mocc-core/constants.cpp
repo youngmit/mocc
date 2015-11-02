@@ -81,6 +81,21 @@ namespace mocc {
         return os;
     }
 
+    std::ostream& operator<<(std::ostream& os, const Normal n ) {
+        switch( n ) {
+            case Normal::X_NORM:
+                os << "X-Normal";
+                break;
+            case Normal::Y_NORM:
+                os << "Y-Normal";
+                break;
+            case Normal::Z_NORM:
+                os << "Z-Normal";
+                break;
+        }
+        return os;
+    }
+
     Normal surface_to_normal( Surface s ) {
         switch( s ) {
             case Surface::EAST:
