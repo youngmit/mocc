@@ -16,7 +16,6 @@ namespace mocc {
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter( group, flux_1g_, q_ );
-
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents
                 coarse_data_->current.col( group ) = 0.0;

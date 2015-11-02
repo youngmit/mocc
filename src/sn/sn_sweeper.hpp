@@ -49,6 +49,9 @@ namespace mocc {
         // Update the boundary conditions 
         void update_boundary( int group );
 
+        // Update the boundary condition for a single outgoing angle
+        void update_boundary( int group, int iang );
+
         unsigned int n_inner_;
         AngularQuadrature ang_quad_;
 
@@ -168,7 +171,8 @@ namespace mocc {
                             // CurrentWorker template parameter)
                             cw.current_work( x_flux[ny*iz + iy],
                                              y_flux[nx*iz + ix],
-                                             z_flux[nx*iy + ix], i, ang, group );
+                                             z_flux[nx*iy + ix],
+                                             i, ang, group );
                         }
                     }
     
@@ -178,6 +182,7 @@ namespace mocc {
                 bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
                 bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
                 bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
+                //this->update_boundary( group, iang );
                 iang++;
             }
             // Update the boundary condition

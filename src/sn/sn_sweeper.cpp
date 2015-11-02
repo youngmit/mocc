@@ -130,6 +130,44 @@ namespace mocc {
         return;
     }
 
+    void SnSweeper::update_boundary( int group, int iang ) {
+        Angle ang = ang_quad_[iang];
+        Surface surf;
+        Normal norm;
+        int iang_refl = 0;
+
+        // X-normal surface
+        norm = Normal::X_NORM;
+        surf = (ang.ox > 0) ? Surface::EAST : Surface::WEST;
+        iang_refl = ang_quad_.reflect( iang, norm );
+        if( bc_type_[(int)surf] == Boundary::REFLECT ) {
+            auto new_bc = bc_out_.get_face( 0, iang, norm );
+            bc_in_.set_face( group, iang_refl, norm, new_bc );
+        } else {
+            bc_in_.zero_face(group, iang_refl, norm);
+        }
+        // Y-normal surface
+        norm = Normal::Y_NORM;
+        surf = (ang.oy > 0) ? Surface::NORTH : Surface::SOUTH;
+        iang_refl = ang_quad_.reflect( iang, norm );
+        if( bc_type_[(int)surf] == Boundary::REFLECT ) {
+            auto new_bc = bc_out_.get_face( 0, iang, norm );
+            bc_in_.set_face(group, iang_refl, norm, new_bc);
+        } else {
+            bc_in_.zero_face(group, iang_refl, norm);
+        }
+        // Z-normal surface
+        norm = Normal::Z_NORM;
+        surf = (ang.oz > 0) ? Surface::TOP : Surface::BOTTOM;
+        iang_refl = ang_quad_.reflect( iang, norm );
+        if( bc_type_[(int)surf] == Boundary::REFLECT ) {
+            auto new_bc = bc_out_.get_face( 0, iang, norm );
+            bc_in_.set_face(group, iang_refl, norm, new_bc );
+        } else {
+            bc_in_.zero_face(group, iang_refl, norm);
+        }
+    }
+
     void SnSweeper::output( H5::CommonFG *node ) const {
         auto dims = mesh_.dimensions();
         std::reverse( dims.begin(), dims.end() );
