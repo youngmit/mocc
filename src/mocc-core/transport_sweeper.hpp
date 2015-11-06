@@ -147,7 +147,7 @@ namespace mocc{
 
         /// Associate the sweeper with a source. This is usually done by
         /// something like the FixedSourceSolver.
-        virtual void assign_source( const Source* source) {
+        virtual void assign_source( Source* source) {
             assert( source != nullptr );
             source_ = source;
         }
@@ -173,7 +173,7 @@ namespace mocc{
         unsigned int n_reg_;
         unsigned int n_group_;
 
-        const Source* source_;
+        Source* source_;
 
         // Multi-group scalar flux
         ArrayF flux_;

@@ -11,18 +11,18 @@
 namespace mocc {
     /**
      * \page coarseraypage Coarse Ray Tracing
-     * Each ray crossing a mesh corner must deposit its information
-     * on one exiting face of the current cell and one entering surface of
-     * the diagonal neighbor. Consistency must be maintained between
-     * coincident rays of different angle, otherwise surface quantities may
-     * end up with non-sensical values. A good example is when current
-     * should be zero in certain symmetric situations. If the corner
-     * crossings are not handled properly, non-zero current could be
-     * calculated because a ray that crosses one face in one direction is
-     * not being cancelled out by its sibling ray in the direction reflected
-     * across that face (for instance if the reflected ray passes instead
-     * through the neighboring coarse mesh surface). This would impart an
-     * artificially non-zero current on both of those faces.
+     * Each ray crossing a mesh corner must deposit its information on one
+     * exiting face of the current cell and one entering surface of the diagonal
+     * neighbor. Consistency must be maintained between coincident rays of
+     * different angle, otherwise surface quantities may end up with
+     * non-sensical values. A good example is when current should be zero in
+     * certain symmetric situations. If the corner crossings are not handled
+     * properly, non-zero current could be calculated because a ray that crosses
+     * one face in one direction is not being cancelled out by its sibling ray
+     * in the direction reflected across that face (for instance if the
+     * reflected ray passes instead through the neighboring coarse mesh
+     * surface). This would impart an artificially non-zero current on both of
+     * those faces.
 
      * \todo include discussion of coarse ray trace peculiarities and
      * conventions.
@@ -39,27 +39,37 @@ namespace mocc {
      *
      * \todo the unit test for Mesh is not really done. Its got some stuff in
      * there for my testing, but it needs some serious work.
-     *
      */
     
     class Mesh {
     public:
         Mesh() { };
+
+        /**
+         * Construct a \ref Mesh using cell boundaries specified externally.
+         */
         Mesh( size_t n_reg, size_t n_xsreg, 
-                size_t nx, size_t ny, size_t nz,
-                VecF &hx, VecF &hy ):
+                VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] ):
             n_reg_( n_reg ),
             n_xsreg_( n_xsreg ),
-            nx_( nx ),
-            ny_( ny ),
-            nz_( nz ),
+            nx_( hx.size() - 1 ),
+            ny_( hy.size() - 1 ),
+            nz_( hz.size() - 1 ),
             x_vec_( hx ),
             y_vec_( hy ),
+            z_vec_( hz ),
             dx_vec_( hx.size()-1 ),
-            dy_vec_( hy.size()-1 )
+            dy_vec_( hy.size()-1 ),
+            dz_vec_( hz.size()-1 ),
+            n_surf_plane_( (nx_+1)*ny_ + (ny_+1)*nx_ + nx_*ny_ )
         {
             assert( std::is_sorted( x_vec_.begin(), x_vec_.end() ) );
             assert( std::is_sorted( y_vec_.begin(), y_vec_.end() ) );
+            assert( std::is_sorted( z_vec_.begin(), z_vec_.end() ) );
+
+            for( int i=0; i<6; i++ ) {
+                bc_.push_back( bc[i] );
+            }
 
             hx_ = x_vec_.back();
             for( auto &xi: x_vec_ ) {
@@ -71,16 +81,22 @@ namespace mocc {
                 lines_.push_back( Line( Point2( 0.0, yi ),
                                         Point2( hx_, yi ) ) );
             }
+            hz_ = z_vec_.back();
+
 
             for( size_t i=1; i<x_vec_.size(); i++ ) {
-                dx_vec_[i] = x_vec_[i] - x_vec_[i-1];
+                dx_vec_[i-1] = x_vec_[i] - x_vec_[i-1];
             }
             for( size_t i=1; i<y_vec_.size(); i++ ) {
-                dy_vec_[i] = y_vec_[i] - y_vec_[i-1];
+                dy_vec_[i-1] = y_vec_[i] - y_vec_[i-1];
+            }
+            for( size_t i=1; i<z_vec_.size(); i++ ) {
+                dz_vec_[i-1] = z_vec_[i] - z_vec_[i-1];
             }
 
-            assert( nx == hx.size()-1 );
-            assert( ny == hy.size()-1 );
+            assert( nx_ == hx.size()-1 );
+            assert( ny_ == hy.size()-1 );
+            assert( nz_ == hz.size()-1 );
             this->prepare_surfaces();
             return;
         }
@@ -113,6 +129,13 @@ namespace mocc {
          */
         size_t nz() const {
             return nz_;
+        }
+
+        /**
+        * \brief Return a vector containing the core boundary conditions.
+        */
+        const std::vector<Boundary>& boundary() const {
+            return bc_;
         }
         
         /**
@@ -191,6 +214,49 @@ namespace mocc {
                        (unsigned int)ny_, 
                        (unsigned int)nz_ };
             return d;
+        }
+
+        /**
+         * \brief Return the lowest coarse cell index in a given plane
+         */
+        size_t plane_cell_begin( size_t plane ) const {
+            return nx_*ny_*plane;
+        }
+
+        /** 
+         * \brief Return the highest coarse cell index in a given plane, plus 1
+         */
+        size_t plane_cell_end( size_t plane ) const {
+            return nx_*ny_*(plane+1);
+        }
+
+        /**
+         * \brief Return the lowest coarse surface index in a given plane
+         */
+        size_t plane_surf_begin( size_t plane ) const {
+            return n_surf_plane_*plane;
+        }
+
+        /**
+         * \brief Return the highest coarse surface index in a given plane, plus
+         * 1
+         */
+        size_t plane_surf_end( size_t plane ) const {
+            return n_surf_plane_*(plane+1);
+        }
+
+        /**
+         * \brief Return the number of coarse cells per plane
+         */
+        size_t n_cell_plane() const {
+            return nx_*ny_;
+        }
+
+        /**
+         * \brief Return the number of surfaces in each plane
+         */
+        size_t n_surf_plane() const {
+            return n_surf_plane_;
         }
         
         /**
@@ -280,8 +346,31 @@ namespace mocc {
          * in the bottom-most plane; the code using the resulting indices is
          * therefore required to offset them to the appropriate plane.
         */
-        int coarse_surf_point( Point2 p, int cell, int (&s)[2] ) 
-            const;
+        int coarse_surf_point( Point2 p, int cell, int (&s)[2] ) const;
+
+        /**
+         * \brief Return an index offset to the zero-th coarse cell in a given
+         * plane.
+         */
+        size_t coarse_cell_offset( size_t plane ) const {
+            return nx_*ny_*plane;
+        }
+
+        /**
+         * \brief Return an index offset to the zero-th coarse surface in a
+         * given plane.
+         *
+         * Plane indexing is wonkier than cell indexing, espectially when
+         * talking about planes, since we need to take into consideration the
+         * surfaces between the planes. Since surface indexing starts with the
+         * bottom-facing Z-normal faces, surface "zero" for any plane is a
+         * surface looking "down" into the plane below. Stuff that wants to
+         * interact with X- and Y-normal faces (e.g. 2-D MoC) should expect
+         * this.
+         */
+        size_t coarse_surf_offset( size_t plane ) const {
+            return n_surf_plane_*plane;
+        }
 
         /**
          * \brief Return the neighboring coarse cell index of the passed cell
@@ -363,6 +452,9 @@ namespace mocc {
         /// List of pin boundaries in the y dimension (starts at 0.0)
         VecF y_vec_;
 
+        /// Sequence of plane boundaries in the z dimension (starts at 0.0)
+        VecF z_vec_;
+
         /// Sequence of pin x pitches
         VecF dx_vec_;
 
@@ -375,6 +467,12 @@ namespace mocc {
         /// Vector of \ref Line objects, representing pin boundaries. This greatly
         /// simplifies the ray trace.
         std::vector<Line> lines_;
+
+        /// Number of surfaces per plane (doesn't consider the top surface)
+        size_t n_surf_plane_;
+
+        /// Boundary condition for each side of the mesh
+        std::vector<Boundary> bc_;
 
     private:
         /// Vector storing densely-packed coarse mesh surface indices for each

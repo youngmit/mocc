@@ -2,17 +2,18 @@
 
 #include "pugixml.hpp"
 
-#include "angular_quadrature.hpp"
-#include "coarse_data.hpp"
-#include "core_mesh.hpp"
-#include "error.hpp"
-#include "global_config.hpp"
-#include "mesh.hpp"
-#include "sn_boundary.hpp"
-#include "sn_current_worker.hpp"
-#include "sn_source.hpp"
-#include "transport_sweeper.hpp"
-#include "xs_mesh_homogenized.hpp"
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/coarse_data.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/global_config.hpp"
+#include "mocc-core/mesh.hpp"
+#include "mocc-core/transport_sweeper.hpp"
+#include "mocc-core/xs_mesh_homogenized.hpp"
+
+#include "sn/sn_boundary.hpp"
+#include "sn/sn_current_worker.hpp"
+#include "sn/sn_source.hpp"
 
 namespace mocc {
     class SnSweeper: public TransportSweeper {
@@ -45,12 +46,6 @@ namespace mocc {
 
     protected:
         const CoreMesh &mesh_;
-
-        // Update the boundary conditions 
-        void update_boundary( int group );
-
-        // Update the boundary condition for a single outgoing angle
-        void update_boundary( int group, int iang );
 
         unsigned int n_inner_;
         AngularQuadrature ang_quad_;
@@ -90,11 +85,11 @@ namespace mocc {
             int nx = mesh_.nx();
             int ny = mesh_.ny();
             int nz = mesh_.nz();
-    
+
     		ArrayF x_flux(ny*nz);
     		ArrayF y_flux(nx*nz);
     		ArrayF z_flux(nx*ny);
-    
+
             int iang = 0;
             for( auto ang: ang_quad_ ) {
                 // Configure the current worker for this angle
@@ -107,8 +102,8 @@ namespace mocc {
                 real_t oy = ang.oy;
                 real_t oz = ang.oz;
     
-                // Configure the loop direction. Could template the below for speed
-                // at some point.
+                // Configure the loop direction. Could template the below for
+                // speed at some point.
                 int sttx = 0;
                 int stpx = nx;
                 int xdir = 1;
@@ -145,7 +140,7 @@ namespace mocc {
                 z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
     
                 cw.upwind_work( x_flux, y_flux, z_flux, ang, group);
-    
+
                 for( int iz=sttz; iz!=stpz; iz+=zdir ) {
                     cell_worker.set_z(iz);
                     for( int iy=stty; iy!=stpy; iy+=ydir ) {
@@ -175,18 +170,17 @@ namespace mocc {
                                              i, ang, group );
                         }
                     }
-    
                 }
     
                 // store the downwind boundary condition
                 bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
                 bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
                 bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
-                //this->update_boundary( group, iang );
+                //bc_in_.update( group, iang, bc_out_ );
                 iang++;
             }
             // Update the boundary condition
-            this->update_boundary( group );
+            bc_in_.update( group, bc_out_ );
     
             return;
         }

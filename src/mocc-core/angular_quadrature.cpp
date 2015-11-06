@@ -5,8 +5,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include "error.hpp"
-#include "level_symmetric.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/level_symmetric.hpp"
 
 
 namespace mocc {
@@ -18,7 +18,7 @@ namespace mocc {
     AngularQuadrature::AngularQuadrature( const pugi::xml_node &input ) {
         // Make sure we got input
         if( input.empty() ) {
-            Error("No input provided for angular quadrature.");
+            throw EXCEPT("No input provided for angular quadrature.");
         }
 
         // Extract the quadrature type
@@ -32,8 +32,8 @@ namespace mocc {
             // Generate angles for octant 1
             angles_ = GenSn( order );
         } else {
-            std::cout << input.attribute("type").value() << std::endl;
-            Error("Unrecognized angular quadrature type specified.");
+            std::cout << "'" << type_str << "'" << std::endl;
+            throw EXCEPT("Unrecognized angular quadrature type specified.");
         }
 
         // Store the number of angles per octant

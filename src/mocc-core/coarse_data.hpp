@@ -19,6 +19,9 @@ namespace mocc {
             flux( nreg, ngroup ),
             old_flux( nreg, ngroup )
         {
+            current = 0.0;
+            flux = 0.0;
+            old_flux = 0.0;
             return;
         }
 

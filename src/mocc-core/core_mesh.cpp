@@ -100,7 +100,9 @@ namespace mocc {
         nx_ = core_.npin_x();
         ny_ = core_.npin_y();
         nz_ = core_.nz();
+        n_surf_plane_ = (nx_+1)*ny_ + (ny_+1)*nx_ + nx_*ny_;
         nasy_ = core_.nasy();
+        bc_ = core_.boundary();
 
         // Calculate the total core dimensions
         hx_ = 0.0;
@@ -215,7 +217,7 @@ namespace mocc {
     }
 
 
-    const PinMeshTuple CoreMesh::get_pinmesh( Point2 &p, unsigned int iz, 
+    const PinMeshTuple CoreMesh::get_pinmesh( Point2 &p, size_t iz, 
             int &first_reg ) const {
         assert( (iz >= 0) & (iz<planes_.size()) );
 
@@ -230,8 +232,8 @@ namespace mocc {
         return PinMeshTuple( pos, planes_[iz].get_pinmesh(p, first_reg) );
     }
 
-    Position CoreMesh::pin_position( unsigned int ipin ) const {
-        Position pos = planes_[0].pin_position( ipin );
+    Position CoreMesh::pin_position( size_t ipin ) const {
+        Position pos = planes_[0].pin_position( ipin % (nx_*ny_) );
         pos.z = ipin/(nx_ * ny_);
         return pos;
     }

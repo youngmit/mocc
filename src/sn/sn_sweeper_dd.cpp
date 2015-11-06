@@ -21,6 +21,7 @@ namespace mocc {
                 coarse_data_->current.col( group ) = 0.0;
                 this->sweep_1g<sn::Current, CellWorker_DD>( group, 
                         cell_worker_ );
+std::cout << coarse_data_->current.col( group ) << std::endl << std::endl;
             } else {
                 this->sweep_1g<sn::NoCurrent, CellWorker_DD>( group, 
                         cell_worker_ );

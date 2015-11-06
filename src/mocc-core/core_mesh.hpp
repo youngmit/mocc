@@ -5,14 +5,14 @@
 
 #include "pugixml.hpp"
 
-#include "mesh.hpp"
-#include "pin_mesh.hpp"
-#include "pin.hpp"
-#include "material_lib.hpp"
-#include "lattice.hpp"
-#include "assembly.hpp"
-#include "core.hpp"
-#include "plane.hpp"
+#include "mocc-core/assembly.hpp"
+#include "mocc-core/core.hpp"
+#include "mocc-core/lattice.hpp"
+#include "mocc-core/material_lib.hpp"
+#include "mocc-core/mesh.hpp"
+#include "mocc-core/plane.hpp"
+#include "mocc-core/pin.hpp"
+#include "mocc-core/pin_mesh.hpp"
 
 namespace mocc {
     /**
@@ -54,8 +54,8 @@ namespace mocc {
         }
 
         /**
-        * \brief Obtain a tuple containing the pin position and a reference to the
-        * PinMesh that occupies the space at a point, within a given plane.
+        * \brief Obtain a tuple containing the pin position and a reference to
+        * the PinMesh that occupies the space at a point, within a given plane.
         *
         * \param[inout] p a \ref Point2 residing in the desired \ref Pin. The
         * location of the point will be updated to the location of the \ref
@@ -85,7 +85,7 @@ namespace mocc {
         * can simply offset the ray points by the new location of \p p to get
         * into pin-local coordinates.
         */
-        const PinMeshTuple get_pinmesh( Point2 &p, unsigned int iz, 
+        const PinMeshTuple get_pinmesh( Point2 &p, size_t iz, 
                 int &first_reg) const;
 
         /**
@@ -136,16 +136,9 @@ namespace mocc {
         /**
         * Return the index of the first FSR within the given plane.
         */
-        unsigned int first_reg_plane( unsigned int iz ) const {
-            assert( (0 <= iz ) & ( iz<nz_ ) );
+        size_t first_reg_plane( size_t iz ) const {
+            assert( (0 <= iz ) & ( iz < nz_ ) );
             return first_reg_plane_[iz];
-        }
-
-        /**
-        * Return a vector containing the core boundary conditions.
-        */
-        std::vector<Boundary> boundary() const {
-            return core_.boundary();
         }
 
         /**
@@ -170,7 +163,14 @@ namespace mocc {
         * can return this, obviating the need to keep track of pin index when
         * iterating over the core.
         */
-        Position pin_position( unsigned int ipin ) const;
+        Position pin_position( size_t ipin ) const;
+
+        /**
+         * \brief Return a const reference to the vector of plane IDs
+         */
+        const VecI& unique_planes() const {
+            return unique_plane_;
+        }
 
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs

@@ -29,7 +29,6 @@ namespace mocc {
                     my_corrections_.reset( new CorrectionData( n_reg_, 
                                 ang_quad_.ndir(), n_group_) );
                     this->set_corrections( my_corrections_.get() );
-                    cout << corrections_->alpha(0,0,0,Normal::X_NORM) << endl;
                 } else {
                     throw EXCEPT( "Unrecognized data type specified for Sn CDD "
                             "sweeper." );
@@ -65,6 +64,8 @@ namespace mocc {
             source_->self_scatter( group, flux_1g_, q_ );
 
             if( inner == n_inner_-1 && coarse_data_ ) {
+                // Wipe out the existing currents
+                coarse_data_->current.col( group ) = 0.0;
                 this->sweep_1g<sn::Current, CellWorker_CDD>( group, 
                         cell_worker_ );
             } else {

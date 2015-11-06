@@ -2,9 +2,9 @@
 
 #include <iomanip>
 
-#include "error.hpp"
-#include "files.hpp"
-#include "utils.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/files.hpp"
+#include "mocc-core/utils.hpp"
 
 using std::cout;
 using std::endl;
@@ -17,7 +17,9 @@ namespace mocc {
         bc_type_( mesh.boundary() ),
         flux_1g_( mesh_.n_pin() ),
         xstr_( mesh.n_pin() ), 
-        q_( mesh.n_pin() )
+        q_( mesh_.n_pin() ),
+        bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
+        bc_out_( 1, ang_quad_, mesh_ )
     {
         LogFile << "Constructing a base Sn sweeper" << std::endl;
 
@@ -49,14 +51,10 @@ namespace mocc {
         // Parse the number of inner iterations
         int int_in = input.attribute("n_inner").as_int(-1);
         if( int_in < 0 ) {
-            throw EXCEPT("Invalid number of inner iterations specified (n_inner).");
+            throw EXCEPT("Invalid number of inner iterations specified " 
+                    "(n_inner).");
         }
         n_inner_ = int_in;
-
-        bc_in_ = SnBoundary( n_group_, ang_quad_.ndir(), mesh_.nx(), 
-                mesh_.ny(), mesh_.nz() );
-        bc_out_ = SnBoundary( 1, ang_quad_.ndir(), mesh_.nx(), mesh_.ny(), 
-                mesh_.nz() );
 
         return;
     }
@@ -84,88 +82,6 @@ namespace mocc {
         }
 
         return;
-    }
-
-    void SnSweeper::update_boundary( int group ) {
-        int iang = 0;
-
-        for( auto &ang: ang_quad_ ) {
-            Surface surf;
-            Normal norm;
-            int iang_refl;
-
-            // X-normal surface
-            norm = Normal::X_NORM;
-            surf = (ang.ox > 0) ? Surface::WEST : Surface::EAST;
-            iang_refl = ang_quad_.reflect( iang, norm );
-            if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-                auto new_bc = bc_out_.get_face( 0, iang_refl, norm );
-                bc_in_.set_face( group, iang, norm, new_bc );
-            } else {
-                bc_in_.zero_face(group, iang, norm);
-            }
-            // Y-normal surface
-            norm = Normal::Y_NORM;
-            surf = (ang.oy > 0) ? Surface::SOUTH : Surface::NORTH;
-            iang_refl = ang_quad_.reflect( iang, norm );
-            if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-                auto new_bc = bc_out_.get_face( 0, iang_refl, norm );
-                bc_in_.set_face(group, iang, norm, new_bc);
-            } else {
-                bc_in_.zero_face(group, iang, norm);
-            }
-            // Z-normal surface
-            norm = Normal::Z_NORM;
-            surf = (ang.oz > 0) ? Surface::BOTTOM : Surface::TOP;
-            iang_refl = ang_quad_.reflect( iang, norm );
-            if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-                auto new_bc = bc_out_.get_face( 0, iang_refl, norm );
-                bc_in_.set_face(group, iang, norm, new_bc );
-            } else {
-                bc_in_.zero_face(group, iang, norm);
-            }
-
-            iang++;
-        }
-        return;
-    }
-
-    void SnSweeper::update_boundary( int group, int iang ) {
-        Angle ang = ang_quad_[iang];
-        Surface surf;
-        Normal norm;
-        int iang_refl = 0;
-
-        // X-normal surface
-        norm = Normal::X_NORM;
-        surf = (ang.ox > 0) ? Surface::EAST : Surface::WEST;
-        iang_refl = ang_quad_.reflect( iang, norm );
-        if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-            auto new_bc = bc_out_.get_face( 0, iang, norm );
-            bc_in_.set_face( group, iang_refl, norm, new_bc );
-        } else {
-            bc_in_.zero_face(group, iang_refl, norm);
-        }
-        // Y-normal surface
-        norm = Normal::Y_NORM;
-        surf = (ang.oy > 0) ? Surface::NORTH : Surface::SOUTH;
-        iang_refl = ang_quad_.reflect( iang, norm );
-        if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-            auto new_bc = bc_out_.get_face( 0, iang, norm );
-            bc_in_.set_face(group, iang_refl, norm, new_bc);
-        } else {
-            bc_in_.zero_face(group, iang_refl, norm);
-        }
-        // Z-normal surface
-        norm = Normal::Z_NORM;
-        surf = (ang.oz > 0) ? Surface::TOP : Surface::BOTTOM;
-        iang_refl = ang_quad_.reflect( iang, norm );
-        if( bc_type_[(int)surf] == Boundary::REFLECT ) {
-            auto new_bc = bc_out_.get_face( 0, iang, norm );
-            bc_in_.set_face(group, iang_refl, norm, new_bc );
-        } else {
-            bc_in_.zero_face(group, iang_refl, norm);
-        }
     }
 
     void SnSweeper::output( H5::CommonFG *node ) const {

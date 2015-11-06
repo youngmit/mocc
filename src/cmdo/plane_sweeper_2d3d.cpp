@@ -13,6 +13,7 @@ using std::setfill;
 using std::setw;
 
 namespace mocc {
+////////////////////////////////////////////////////////////////////////////////
     /// \todo make sure to check the angular quadratures for conformance
     PlaneSweeper_2D3D::PlaneSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
@@ -34,15 +35,22 @@ namespace mocc {
             sn_sweeper_.get_homogenized_xsmesh().get();
         moc_sweeper_.set_coupling( &corrections_, sn_xs_mesh );
 
+        sn_sweeper_.set_ang_quad(ang_quad_);
+
         coarse_data_ = nullptr;
         
         return;
     }
 
+////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::sweep( int group ) {
         if (!coarse_data_) {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
+
+        // Calculate transverse leakage source
+        this->add_tl( group );
+
         moc_sweeper_.sweep( group );
 
         sn_sweeper_.get_homogenized_xsmesh()->update( moc_sweeper_.flux() );
@@ -57,19 +65,22 @@ namespace mocc {
             residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
                         (moc_flux[i] - sn_sweeper_.flux( group, i ));
         }
-        residual = sqrt(residual);
+        residual = sqrt(residual)/mesh_.n_pin();
         cout << "MoC/Sn residual: " << residual << endl;
     }
 
+////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::initialize() {
         sn_sweeper_.initialize();
         moc_sweeper_.initialize();
     }
 
+////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, VecF &flux ) const {
         sn_sweeper_.get_pin_flux_1g( ig, flux );
     }
 
+////////////////////////////////////////////////////////////////////////////////
     VecF PlaneSweeper_2D3D::get_pin_flux() const {
         VecF flux( mesh_.n_pin(), 0.0 );
 
@@ -78,6 +89,7 @@ namespace mocc {
         return flux;
     }
 
+////////////////////////////////////////////////////////////////////////////////
     real_t PlaneSweeper_2D3D::total_fission( bool old ) const {
         // using the MoC for now, but once things start to converge, might want
         // to use Sn, since it should yield the same result at convergence and
@@ -86,12 +98,49 @@ namespace mocc {
         return tfis;
     }
 
+////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::calc_fission_source( real_t k, 
             ArrayF &fission_source ) const {
         moc_sweeper_.calc_fission_source( k, fission_source );
         return;
     }
 
+////////////////////////////////////////////////////////////////////////////////
+    void PlaneSweeper_2D3D::add_tl( size_t group ) {
+cout << "adding tl" << endl;
+        assert( coarse_data_ );
+        ArrayF tl_fsr( 0.0, n_reg_ );
+        
+        int ireg_pin = 0;
+        int ipin = 0;
+        for( const auto &pin: mesh_ ) {
+            Position pos = mesh_.pin_position( ipin );
+            size_t icell = mesh_.coarse_cell( pos );
+            real_t dz = mesh_.dz( pos.z );
+            size_t surf_up = mesh_.coarse_surf( icell, Surface::TOP );
+            size_t surf_down = mesh_.coarse_surf( icell, Surface::BOTTOM );
+            real_t j_up = coarse_data_->current(surf_up, group);
+            real_t j_down = coarse_data_->current(surf_down, group);
+            real_t tl = ( j_down - j_up ) / dz;
+cout << j_up << " " << j_down << " " << tl << endl;
+
+            for( int ir=0; ir<pin->n_reg(); ir++ ) {
+                tl_fsr[ ir+ireg_pin ] = tl;
+//                tl_fsr[ ir+ireg_pin ] = 0.0;
+            }
+            ipin++;
+            ireg_pin += pin->n_reg();
+        }
+        
+        cout << endl;
+//cin.ignore();
+
+        // Can add the TL as an auxiliary source directly to the Source_2D3D,
+        // since it extends the MoC source in the first place
+        source_->auxiliary( tl_fsr );
+    }
+
+////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::output( H5::CommonFG *file ) const {
         // Put the Sn data in its own location
         {

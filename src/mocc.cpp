@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <exception>
 #include <sstream>
+#include <string>
 
 #include "global_config.hpp"
 #include "files.hpp"
@@ -31,16 +32,16 @@ int main(int argc, char* argv[]){
 	}
 	
     try {
-		std::cout << "                         01001101010011110100001101000011" << std::endl;
-		std::cout << "                         ___  ___  _____   _____   _____ " << std::endl;
-		std::cout << "                         |  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
-		std::cout << "                         | .  . | | | | | | /  \\/ | /  \\/" << std::endl;
-		std::cout << "                         | |\\/| | | | | | | |     | |    " << std::endl;
-		std::cout << "                         | |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
-		std::cout << "                         \\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
-		std::cout << std::endl;
-		std::cout << "                         01101101011011110110001101100011 " << std::endl;
-	    std::cout << "Welcome to " << PROG_NAME << "!" << std::endl << std::endl;
+        std::string space = "                         ";
+		std::cout << space << "01001101010011110100001101000011" << std::endl;
+		std::cout << space << " __  __   _____   _____   _____" <<std::endl;
+		std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
+		std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
+		std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
+		std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
+		std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
+		std::cout << space << std::endl;
+		std::cout << space << "01101101011011110110001101100011 " << std::endl;
 
 	    // Spin up the log file. For now, just use the name of the input file.
 	    StartLogFile(argv[1]);

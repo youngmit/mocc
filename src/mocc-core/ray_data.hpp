@@ -46,6 +46,7 @@ namespace mocc {
     */
     class RayData {
         typedef std::vector< std::vector <std::vector<Ray> > > RaySet_t;
+        typedef std::vector< std::vector<Ray> > PlaneRays_t;
     public:
         RayData( const pugi::xml_node &input, 
                  const AngularQuadrature &ang_quad,
@@ -63,6 +64,17 @@ namespace mocc {
          */
         RaySet_t::const_iterator end() const {
             return rays_.cend();
+        }
+
+        /**
+         * Return a const reference to the angular quadratre.
+         *
+         * The internal \ref AngularQuadrature is a modularized form of the one
+         * passed in at construction time, and it is often necessary to retrieve
+         * this modularized quadrature.
+         */
+        const AngularQuadrature &ang_quad() const {
+            return ang_quad_;
         }
 
         /**
@@ -109,6 +121,13 @@ namespace mocc {
          */
         friend std::ostream& operator<<( std::ostream &os, 
                 const RayData &rays );
+
+        /**
+         * \brief Return a const reference to the indexed set of plane rays.
+         */
+        const PlaneRays_t& operator[]( size_t id ) const {
+            return rays_[id];
+        }
     
     private:
         // This starts as a copy of the angular quadrature that is passed in

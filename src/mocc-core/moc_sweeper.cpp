@@ -20,8 +20,11 @@ namespace mocc {
             const CoreMesh& mesh ):
         TransportSweeper( mesh ),
         mesh_( mesh ),
-        ang_quad_( input.child("ang_quad") ),
-        rays_( input.child("rays"), ang_quad_, mesh ),
+        rays_( input.child("rays"),
+               AngularQuadrature(input.child("ang_quad")),
+               mesh 
+             ),
+        ang_quad_( rays_.ang_quad() ),
         xstr_( n_reg_ ),
         flux_1g_( n_reg_ ),
         qbar_( n_reg_ ),
@@ -110,6 +113,8 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
+                // Wipe out the existing currents
+                coarse_data_->current.col( group ) = 0.0;
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
             } else {

@@ -73,7 +73,7 @@ namespace mocc {
         }
 
         
-        const Source* get_sn_source() const {
+        Source* get_sn_source() {
             return &sn_source_;
         }
     private:

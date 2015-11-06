@@ -56,8 +56,9 @@ namespace mocc {
     protected:
         const CoreMesh& mesh_;
 
-        AngularQuadrature ang_quad_;
         RayData rays_;
+
+        AngularQuadrature ang_quad_;
         
         // Boundary condition. ordered by energy, plane, angle, ray
         BCSet_t boundary_;
@@ -100,11 +101,10 @@ namespace mocc {
             ArrayF psi1(rays_.max_segments()+1);
             ArrayF psi2(rays_.max_segments()+1);
         
-            // Wipe out the existing currents
-            coarse_data_->current.col( group ) = 0.0;
-        
             int iplane = 0;
-            for( auto &plane_rays: rays_ ) {
+            for( const auto plane_ray_id: mesh_.unique_planes() ) {
+                cw.set_plane( iplane );
+                auto &plane_rays = rays_[plane_ray_id];
                 int first_reg = mesh_.first_reg_plane(iplane);
                 int iang = 0;
                 // Angles
@@ -174,10 +174,10 @@ namespace mocc {
                 } // angles
                 iplane++;
         
-                // Scale the scalar flux by the volume and add back the source
-                flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
             } // planes
-        
+
+            // Scale the scalar flux by the volume and add back the source
+            flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
         
             this->update_boundary( group );
         

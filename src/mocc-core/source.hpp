@@ -27,6 +27,18 @@ namespace mocc {
         virtual void in_scatter( size_t ig );
 
         /**
+         * \brief Add a one-group auxiliary source
+         * This adds some arbitrary source to the current group. Bear in mind
+         * that the source definitiion starts with the MG fission source, then
+         * contributions get tacked on from there.
+         */
+        void auxiliary( ArrayF aux ) {
+            assert( n_reg_ == aux.size() );
+            source_1g_ += aux;
+        }
+
+        /**
+         * \brief Add self-scatter source
          * Add a contribution due to self-scatter within the current group,
          * returning the final source. This is usually called several times by a
          * sweeper in its "inner" iterations, and therefore does not mutate the
@@ -37,7 +49,7 @@ namespace mocc {
                 ArrayF& qbar ) const;
 
         /**
-         * Return the number of regions for which the Source is defined.
+         * \brief Return the number of regions for which the Source is defined.
          */
         size_t n_reg() const {
             return n_reg_;

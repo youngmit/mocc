@@ -3,15 +3,17 @@
 #include <cassert>
 #include <iostream>
 
-#include "constants.hpp"
-#include "global_config.hpp"
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/constants.hpp"
+#include "mocc-core/global_config.hpp"
+#include "mocc-core/mesh.hpp"
 
 
 namespace mocc {
     class SnBoundary {
     public:
-        SnBoundary() { }
-        SnBoundary( int n_grp, int n_ang , int nx, int ny, int nz);
+        SnBoundary( int n_group, const AngularQuadrature &ang_quad, 
+                const Mesh &mesh );
 
         ArrayF get_face( int grp, int ang, Normal norm ) const {
             int in = (int)norm;
@@ -28,6 +30,9 @@ namespace mocc {
             data_[std::slice(start, size, 1)] = in;
         }
 
+        /**
+         * \brief Apply a zero boundary condition to an entire face.
+         */
         void zero_face( int grp, int ang, Normal norm ) {
             size_t start = group_stride_*grp + ang_stride_*ang + 
                 face_offset_[(int)norm];
@@ -35,16 +40,66 @@ namespace mocc {
             data_[std::slice(start, size, 1)] = 0.0;
         }
 
+        /**
+         * \brief Initialize the boundary condition to a single value.
+         */
         void initialize( real_t val ) {
             data_ = val;
         }
+
+        /**
+         * \brief Return the number of energy groups for which the \ref
+         * SnBoundary is defined.
+         */
+        size_t n_group() const {
+            return n_group_;
+        }
+
+        /** 
+         * Update an incoming boundary condition for all angles of a given group
+         *
+         * \param[in] group the group to update
+         * \param[in] out the outgoing angular flux boundary condition to use
+         * for the update. Should only be allocated to a single group.
+         *
+         * This will perform a loop over all angles in the \ref SnBoundary and
+         * use the passed-in "outgoing" BC to update the state of the "incoming"
+         * BC. This method should be called on the incoming \ref SnBoundary
+         * object and should be passed the outgoing condition. It is assumed
+         * that the outgoing condition is only allocated to a single group.
+         *
+         * This is useful for BC updates when performing a Jacobi-like iteration
+         * in the angle space.
+         */
+        void update( size_t group, const SnBoundary &out );
+        
+        /** 
+         * Update an incoming boundary condition for a single angle of a given
+         * group
+         *
+         * \param[in] group the group to update
+         * \param[in] ang the angle to update
+         * \param[in] out the outgoing angular flux boundary condition to use
+         * for the update. Should only be allocated to a single group.
+         *
+         * This will update the state of the "incoming" BC. This method should
+         * be called on the incoming \ref SnBoundary object and should be passed
+         * the outgoing condition. It is assumed that the outgoing condition is
+         * only allocated to a single group.
+         *
+         * This is useful for BC updates when performing a Gauss-Seidel-lide
+         * iteration in the angle space.
+         */
+        void update( size_t group, size_t ang, const SnBoundary &out );
+
         
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, 
                 const SnBoundary &b );
 
     private:
-        size_t n_grp_;
+        size_t n_group_;
+        AngularQuadrature ang_quad_;
         size_t n_ang_;
         size_t nx_;
         size_t ny_;
@@ -53,6 +108,7 @@ namespace mocc {
         int group_stride_;
         int face_offset_[3];
         int n_face_[3];
+        std::vector<Boundary> bc_;
         ArrayF data_;
     };
 }

@@ -4,7 +4,6 @@ using std::cout;
 using std::endl;
 using std::cin;
 
-
 namespace mocc {
     void Mesh::prepare_surfaces() {
         // number of x-normal surfaces in each y row
@@ -47,12 +46,10 @@ namespace mocc {
                         nx_*ny_ + nxysurf + nx_*iy + ix;
 
                     i++;
-
                 }
             }
             surf_offset += nxysurf + nx_*ny_;
         }
-
         return;
     }
 

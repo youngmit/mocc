@@ -17,24 +17,24 @@ namespace mocc {
          * See documentation for \ref moc::NoCurrent for canonical documentation
          * for each of the methods.
          */
-        class CurrentCorrections {
+        class CurrentCorrections: public moc::Current {
         public:
             CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh, 
                     CorrectionData *corrections, const ArrayF &qbar, 
                     const ArrayF &xstr, const AngularQuadrature &ang_quad, 
                     const RayData &rays, const XSMeshHomogenized &sn_xs_mesh ):
-                coarse_data_( coarse_data ),
-                mesh_( mesh ),
+                moc::Current( coarse_data, mesh ),
                 corrections_( corrections ),
                 qbar_( qbar ),
                 xstr_( xstr ),
                 ang_quad_( ang_quad ),
                 rays_( rays ),
                 sn_xs_mesh_( sn_xs_mesh ),
-                surf_sum_( mesh_->n_surf()*2 ),
-                vol_sum_( mesh_->n_pin()*2 ),
-                vol_norm_( mesh_->n_pin() ),
-                sigt_sum_( mesh_->n_pin()*2 )
+                surf_sum_( mesh_->n_surf_plane()*2 ),
+                vol_sum_( mesh_->n_cell_plane()*2 ),
+                vol_norm_( mesh_->n_cell_plane() ),
+                sigt_sum_( mesh_->n_cell_plane()*2 ),
+                surf_norm_( mesh_->n_surf_plane()*2 )
             {
                 return;
             }
@@ -58,6 +58,8 @@ namespace mocc {
 
                 surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
                 surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
+                surf_norm_[surf_fw*2+0] += 1.0;
+                surf_norm_[surf_bw*2+1] += 1.0;
 
                 auto begin = ray.cm_data().cbegin();
                 auto end = ray.cm_data().cend();
@@ -82,6 +84,7 @@ namespace mocc {
                         coarse_data_->current( surf_fw, group ) += 
                             psi1[iseg_fw] * current_weights_[(int)norm_fw];
                         surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
+                        surf_norm_[surf_fw*2+0] += 1.0;
                     }
 
                     if( crd->bw != Surface::INVALID ) {
@@ -102,6 +105,7 @@ namespace mocc {
                         coarse_data_->current( surf_bw, group ) -= 
                             psi2[iseg_bw] * current_weights_[(int)norm_bw];
                         surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
+                        surf_norm_[surf_bw*2+1] += 1.0;
                     }
 
                     cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
@@ -112,21 +116,12 @@ namespace mocc {
             }
 
             inline void set_angle( Angle ang, real_t spacing ) {
+                moc::Current::set_angle( ang, spacing );
                 ang_ = ang;
-
-                current_weights_[0] = ang.weight * spacing * ang.ox;
-                current_weights_[1] = ang.weight * spacing * ang.oy;
-                current_weights_[2] = ang.weight * spacing * ang.oz;
-
-                /// \todo look into the plane problem. Right now planes are
-                /// specified at the level abouve that angles in the RayData, and
-                /// the sums below are sized to the entire mesh. Maybe make sure
-                /// that these dont get overallocated or move the angles up a
-                /// level so that we can sweep all planes in a given angle, then
-                /// calculate corrections for all planes at once.
 
                 // Zero out all of the flux sum arrays
                 surf_sum_ = 0.0;
+                surf_norm_ = 0.0;
                 vol_sum_ = 0.0;
                 vol_norm_ = 0.0;
                 sigt_sum_ = 0.0;
@@ -134,15 +129,17 @@ namespace mocc {
                 return;
             }
 
-            void post_angle( int iang, int igroup) {
+            void post_angle( int iang, int igroup ) {
                 // Normalize the flux and sigt values and calculate
                 // correction factors for the current angle/energy
-                for( size_t i=0; i<vol_norm_.size(); i++) {
+                for( size_t i=0; i<vol_norm_.size(); i++ ) {
                     sigt_sum_[2*i+0] /= vol_sum_[2*i+0];
                     sigt_sum_[2*i+1] /= vol_sum_[2*i+1];
                     vol_sum_[2*i+0] /= vol_norm_[i];
                     vol_sum_[2*i+1] /= vol_norm_[i];
                 }
+
+                surf_sum_ /= surf_norm_;
 
                 calculate_corrections( iang, igroup );
 
@@ -150,8 +147,6 @@ namespace mocc {
             }
 
         private:
-            CoarseData *coarse_data_;
-            const Mesh *mesh_;
             CorrectionData *corrections_;
             const ArrayF &qbar_;
             const ArrayF &xstr_;
@@ -163,10 +158,9 @@ namespace mocc {
             ArrayF vol_sum_;
             ArrayF vol_norm_;
             ArrayF sigt_sum_;
+            ArrayF surf_norm_;
 
             Angle ang_;
-
-            real_t current_weights_[3];
 
             /** \page surface_norm Surface Normalization
              * Surface normalization \todo discuss surface normalization

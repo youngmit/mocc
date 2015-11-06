@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -43,7 +44,7 @@ namespace mocc {
     RayData::RayData( const pugi::xml_node &input, 
             const AngularQuadrature &ang_quad,
             const CoreMesh &mesh ):
-    ang_quad_(ang_quad)
+        ang_quad_(ang_quad)
     {
         LogFile << "Building rays" << std::endl;
 
@@ -131,6 +132,10 @@ namespace mocc {
                 real_t space = spacing_[iang];
                 real_t space_x = std::abs( space/sin(ang->alpha) );
                 real_t space_y = std::abs( space/cos(ang->alpha) );
+
+                LogFile << "Spacing: " << ang->alpha << space << " " << 
+                    space_x << " " << space_y << std::endl;
+
 
                 std::vector<Ray> rays;
                 // Handle rays entering on the x-normal faces

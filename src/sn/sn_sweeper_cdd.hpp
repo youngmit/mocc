@@ -5,6 +5,7 @@
 #include "pugixml.hpp"
 
 #include "mocc-core/core_mesh.hpp"
+#include "mocc-core/files.hpp"
 
 #include "sn/cell_worker.hpp"
 #include "sn/correction_data.hpp"
@@ -21,8 +22,32 @@ namespace mocc {
          * \brief Associate the sweeper with a set of correction data.
          */
         void set_corrections( const CorrectionData *data ) {
-            corrections_ = data;
-            cell_worker_.set_corrections( data );
+            // only re-assign the corrections if they are not internally
+            // assigned.
+            /** 
+             * \todo It is nice to be able to use default values (0.5) for the
+             * corrections, but doing it this way doubles the memory use, since
+             * the internally-allocated corrections are stored along with those
+             * used by the 2D3D sweeper. There are several ways around this, but
+             * i need to decide which way to go.
+             */
+            if( ( my_corrections_.get() && (data == my_corrections_.get()) ) ||
+                !my_corrections_.get() )
+            {
+                corrections_ = data;
+                cell_worker_.set_corrections( data );
+            } else {
+                LogFile << "CDD sweeper bypassing correction factor assignment "
+                    "since they are internally assigned." << std::endl;
+            }
+        }
+
+        /**
+         * \brief Re-assign the angular quadrature.
+         */
+        void set_ang_quad( AngularQuadrature ang_quad ) {
+            ang_quad_ = ang_quad;
+            return;
         }
         
     private:
@@ -53,19 +78,17 @@ namespace mocc {
                 corrections_ = data;
             }
 
-            inline real_t evaluate(real_t &flux_x, real_t &flux_y, 
+            inline real_t evaluate( real_t &flux_x, real_t &flux_y, 
                     real_t &flux_z, real_t q, real_t xstr, size_t i )
             {
                 size_t ix = i % mesh_.nx();
                 real_t tx = ox_/mesh_.dx(ix);
-
 
                 real_t ax = corrections_->alpha( i, iang_alpha_, group_, 
                         Normal::X_NORM);
                 real_t ay = corrections_->alpha( i, iang_alpha_, group_, 
                         Normal::Y_NORM);
                 real_t b = corrections_->beta( i, iang_alpha_, group_ );
-
 
                 real_t gx = ax*b;
                 real_t gy = ay*b;
@@ -89,7 +112,6 @@ namespace mocc {
             size_t iang_alpha_;
 
             size_t group_;
-
         };
 
         CellWorker_CDD cell_worker_;

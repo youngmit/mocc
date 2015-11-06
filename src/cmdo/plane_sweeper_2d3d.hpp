@@ -37,14 +37,14 @@ namespace mocc {
          * Associate the sweeper with a source. This has to do a little extra
          * work, since the Sn sweeper needs its own source.
          */
-        virtual void assign_source( const Source* source ) {
+        virtual void assign_source( Source* source ) {
             assert( source != nullptr );
             source_ = source;
             moc_sweeper_.assign_source( source );
             /// \todo this static_cast is scary. Maybe think about relaxing the
             /// ownership of the source by FSS and allow the TS to figure out the
             /// types more explicitly...
-            const Source_2D3D * s = static_cast<const Source_2D3D*>(source);
+            Source_2D3D *s = static_cast<Source_2D3D*>(source);
             sn_sweeper_.assign_source( s->get_sn_source() );
 
         }
@@ -60,8 +60,16 @@ namespace mocc {
             return sn_sweeper_.get_homogenized_xsmesh();
         }
 
+        /**
+         * \brief Calculate the group-independent spatial fission source, scaled
+         * by k_eff.
+         */
         void calc_fission_source( real_t k, ArrayF &fission_source ) const;
 
+        /**
+         * \brief Return the total, volume- and energy-integrated fission
+         * source.
+         */
         real_t total_fission( bool old ) const;
 
         /**
@@ -80,6 +88,8 @@ namespace mocc {
         }
 
     private:
+        void add_tl( size_t group );
+
         const CoreMesh& mesh_;
         SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
