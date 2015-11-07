@@ -4,14 +4,15 @@
 
 #include "pugixml.hpp"
 
-#include "angular_quadrature.hpp"
-#include "coarse_data.hpp"
-#include "core_mesh.hpp"
-#include "eigen_interface.hpp"
-#include "ray_data.hpp"
-#include "transport_sweeper.hpp"
-#include "xs_mesh.hpp"
-#include "xs_mesh_homogenized.hpp"
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/coarse_data.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/eigen_interface.hpp"
+#include "mocc-core/exponential.hpp"
+#include "mocc-core/ray_data.hpp"
+#include "mocc-core/transport_sweeper.hpp"
+#include "mocc-core/xs_mesh.hpp"
+#include "mocc-core/xs_mesh_homogenized.hpp"
 
 namespace mocc {
     class MoCSweeper: public TransportSweeper {
@@ -82,6 +83,9 @@ namespace mocc {
         // Update the boundary conditions
         void update_boundary( int group );
 
+        // Exponential table
+        Exponential_Linear exp_;
+
         /**
          * \brief Perform an MoC sweep
          *
@@ -129,7 +133,7 @@ namespace mocc {
                         // Compute exponentials
                         for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            e_tau[iseg] = 1.0 - exp( -xstr_[ireg] * 
+                            e_tau[iseg] = 1.0 - exp_.exp( -xstr_[ireg] * 
                                     ray.seg_len(iseg) * rstheta );
                         }
         

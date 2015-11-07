@@ -38,7 +38,8 @@ namespace mocc {
     public:
         Exponential_Linear():
             max_( -10.0 ),
-            space_( max_/(real_t)N )
+            space_( max_/(real_t)N ),
+            rspace_( 1.0/space_ )
         {
             for( int i=0; i<N; i++ ) {
                 d_[i] = std::exp(i*space_);
@@ -53,13 +54,14 @@ namespace mocc {
         ///\todo store rspace_ instead. profile.
         inline real_t exp( real_t v ) {
             assert((v <= 0.0) && (v > max_));
-            int i = v/space_;
+            int i = v*space_;
             v -= space_*i;
-            return d_[i] + (d_[i+1] - d_[i])*v/space_;
+            return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
         }
     private:
         real_t max_;
         real_t space_;
+        real_t rspace_;
         std::array<real_t, N> d_;
     };
 }
