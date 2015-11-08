@@ -95,5 +95,6 @@ namespace mocc {
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
         CorrectionData corrections_;
+        ArrayF tl_;
     };
 }

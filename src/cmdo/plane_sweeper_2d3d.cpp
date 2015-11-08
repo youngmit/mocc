@@ -20,15 +20,15 @@ namespace mocc {
         mesh_(mesh),
         sn_sweeper_(input.child("sn_sweeper"), mesh),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
-        ang_quad_(moc_sweeper_.get_ang_quad())
+        ang_quad_(moc_sweeper_.get_ang_quad()),
+        corrections_( sn_sweeper_.n_reg(), ang_quad_.ndir()/2,
+                sn_sweeper_.n_group() ),
+        tl_( 0.0, mesh_.n_pin()*sn_sweeper_.n_group() )
     {
         /// \todo initialize the rest of the data members on the TS base type
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
-
-        corrections_ = CorrectionData( sn_sweeper_.n_reg(), ang_quad_.ndir()/2,
-                n_group_ );
 
         sn_sweeper_.set_corrections( &corrections_ );
         const XSMeshHomogenized* sn_xs_mesh = 
@@ -113,6 +113,10 @@ cout << "adding tl" << endl;
         
         int ireg_pin = 0;
         int ipin = 0;
+        
+        size_t n_pin = mesh_.n_pin();
+        ArrayF tl(0.0, n_pin); 
+
         for( const auto &pin: mesh_ ) {
             Position pos = mesh_.pin_position( ipin );
             size_t icell = mesh_.coarse_cell( pos );
@@ -121,16 +125,18 @@ cout << "adding tl" << endl;
             size_t surf_down = mesh_.coarse_surf( icell, Surface::BOTTOM );
             real_t j_up = coarse_data_->current(surf_up, group);
             real_t j_down = coarse_data_->current(surf_down, group);
-            real_t tl = ( j_down - j_up ) / dz;
-cout << j_up << " " << j_down << " " << tl << endl;
+            tl[ipin] = ( j_down - j_up ) / dz;
+cout << j_up << " " << j_down << " " << tl[ipin] << endl;
 
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
-                tl_fsr[ ir+ireg_pin ] = tl;
+                tl_fsr[ ir+ireg_pin ] = tl[ipin];
 //                tl_fsr[ ir+ireg_pin ] = 0.0;
             }
             ipin++;
             ireg_pin += pin->n_reg();
         }
+        
+        tl_[std::slice(n_pin*group, n_pin, 1)] = tl;
         
         cout << endl;
 //cin.ignore();
@@ -153,18 +159,39 @@ cout << j_up << " " << j_down << " " << tl << endl;
             H5::Group g = file->createGroup( "/MoC" );
             moc_sweeper_.output( &g );
         }
+        
+        VecI dims;
+        dims.push_back(mesh_.nz());
+        dims.push_back(mesh_.ny());
+        dims.push_back(mesh_.nx());
+
+
+        // Write out the transverse leakages
+        file->createGroup("/TL");
+        int n_pin = mesh_.n_pin();
+        VecF tl_g( n_pin );
+        for( size_t g=0; g<n_group_; g++ ) {
+            std::stringstream setname;
+            setname << "/TL/" << setfill('0') << setw(3) << g;
+
+            /** \todo this whole thing is a travesty. I really need to get my own
+             * storage stuff set up so i dont have to deal with these copies
+             */
+            const auto tl_slice = tl_[std::slice(g*n_pin, n_pin, 1)];
+            for( int i=0; i<n_pin; i++ ) {
+                tl_g[i] = tl_slice[i];
+            }
+            
+            HDF::Write( file, setname.str(), tl_g, dims );
+        }
 
         // Write out the correction factors
         file->createGroup("/alpha_x");
         file->createGroup("/alpha_y");
         file->createGroup("/beta");
 
-        VecI dims;
-        dims.push_back(mesh_.nz());
-        dims.push_back(mesh_.ny());
-        dims.push_back(mesh_.nx());
         for( size_t g=0; g<n_group_; g++ ) {
-            for( size_t a=0; a<ang_quad_.ndir_oct()*4; a++ ) {
+            for( int a=0; a<ang_quad_.ndir_oct()*4; a++ ) {
                 VecF alpha_x( mesh_.n_pin(), 0.0 );
                 VecF alpha_y( mesh_.n_pin(), 0.0 );
                 VecF beta( mesh_.n_pin(), 0.0 );
