@@ -238,7 +238,7 @@ namespace mocc {
         Normalize( flux.begin(), flux.end() );
 
         auto flux_it = flux.cbegin();
-        for( int ig=0; ig<n_group_; ig++ ){
+        for( size_t ig=0; ig<n_group_; ig++ ){
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
         

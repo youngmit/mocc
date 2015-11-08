@@ -167,8 +167,8 @@ namespace mocc {
             for( auto &mat_id: pin.mat_ids() ) {
                 auto mat = mat_lib.get_material_by_id(mat_id);
                 const ScatteringRow& scat_row = mat.xssc().to(ig);
-                int gmin = scat_row.min_g;
-                int gmax = scat_row.max_g;
+                size_t gmin = scat_row.min_g;
+                size_t gmax = scat_row.max_g;
                 for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
                     real_t v = vols[ireg_local];
                     real_t flux_i = flux[ireg + ig*n_reg];
@@ -178,7 +178,7 @@ namespace mocc {
                     xskf[ig] += v * flux_i * mat.xskf()[ig];
                     xsch[ig] += fs[ireg_local] * mat.xsch()[ig];
 
-                    for( int igg=0; igg<ng_; igg++ ){
+                    for( size_t igg=0; igg<ng_; igg++ ){
                         real_t fluxgg = flux[ireg + igg*n_reg];
                         scatsum[igg] += fluxgg * v;
                         if( (igg >= gmin) && (igg <= gmax) ) {

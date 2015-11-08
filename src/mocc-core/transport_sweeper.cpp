@@ -40,7 +40,7 @@ namespace mocc {
         auto flux_it = flux.begin();
 
         VecF flux_1g;
-        for( int ig=0; ig<n_group_; ig++ ) {
+        for( size_t ig=0; ig<n_group_; ig++ ) {
             this->get_pin_flux_1g( ig, flux_1g );
             flux_it = std::copy( flux_1g.begin(), flux_1g.end(), flux_it );
         }

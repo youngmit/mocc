@@ -11,7 +11,6 @@ std::fstream OutFile;
 // line argument and replacing with '.log'
 void StartLogFile(const char* arg){
     std::string fname = arg;
-	int len = fname.size();
 	size_t pos = fname.rfind(".");
     std::string logname = fname.substr(0, pos);
     logname.append(".log");
