@@ -28,7 +28,7 @@ namespace mocc{
     };
 
 
-    class EigenSolver: public Solver{
+    class EigenSolver: public Solver {
     public:
         EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
         void solve();
