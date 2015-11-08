@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <memory>
 
 #include "constants.hpp"
@@ -33,11 +34,17 @@ namespace mocc {
             alpha_( nreg_*nang_*ngroup_*2, 0.5 ),
             beta_( nreg_*nang_*ngroup_, 1.0 )
         {
+            assert( alpha_.size() > 0 );
+            assert( beta_.size() > 0 );
             return;
         }
 
         ~CorrectionData() {
             std::cout << "destroying corrections!" << std::endl;
+        }
+
+        size_t size() {
+            return alpha_.size();
         }
             
 
