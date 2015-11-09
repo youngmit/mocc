@@ -1,6 +1,8 @@
 #pragma once
 
 #include "pugixml.hpp"
+#include <blitz/array.h>
+
 
 #include "angular_quadrature.hpp"
 #include "correction_data.hpp"
@@ -88,13 +90,13 @@ namespace mocc {
         }
 
     private:
-        void add_tl( size_t group );
+        void add_tl( int group );
 
         const CoreMesh& mesh_;
         SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
         CorrectionData corrections_;
-        ArrayF tl_;
+        blitz::Array<real_t, 2> tl_;
     };
 }

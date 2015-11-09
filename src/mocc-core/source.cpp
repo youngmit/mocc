@@ -1,7 +1,9 @@
 #include "source.hpp"
 
-#include "error.hpp"
-#include "constants.hpp"
+#include <algorithm>
+
+#include "mocc-core/error.hpp"
+#include "mocc-core/constants.hpp"
 
 using std::endl;
 using std::cout; 
@@ -76,6 +78,11 @@ namespace mocc {
                     r_fpi_tr;
             }
         }
+
+        // Check to make sure that the source is positive
+        /*if( std::any_of(qbar.begin(), qbar.end(), [](real_t v){ return v < 0.0; }) ) {
+            throw EXCEPT("Negative source!");
+        }*/
 
         return;
     }

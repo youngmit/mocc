@@ -53,31 +53,5 @@ namespace mocc {
     
             return;
         }
-
-        VecF::const_iterator Write( H5::CommonFG *node, std::string path,
-                VecF::const_iterator first,
-                VecF::const_iterator last,
-                VecI dims ) 
-        {
-            std::vector<hsize_t> dims_a;
-            int n = 1;
-            for ( auto di: dims ) {
-                n *= di;
-                dims_a.push_back(di);
-            }
-            assert( (last-first) == n );
-
-            try {
-                H5::DataSpace space( dims.size(), dims_a.data() );
-                H5::DataSet dataset = node->createDataSet( path, 
-                        H5::PredType::NATIVE_DOUBLE, space );
-                dataset.write( &(*first), H5::PredType::NATIVE_DOUBLE );
-            } catch (...) {
-                std::stringstream msg;
-                msg << "Failed to write dataset: " << path;
-                throw EXCEPT(msg.str().c_str());
-            }
-            return last;
-        }
     }
 }

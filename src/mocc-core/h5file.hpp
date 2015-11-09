@@ -1,9 +1,12 @@
 #pragma once
 
+#include <cassert>
 #include <H5Cpp.h>
 #include <memory>
+#include <sstream>
 #include <string>
 
+#include "error.hpp"
 #include "global_config.hpp"
 
 namespace mocc {
@@ -56,10 +59,32 @@ namespace mocc {
          * \param dims a vector of ints containing the dimensions of the data
          * (see \ref hdf5_dimensions )
          */
-        VecF::const_iterator Write( H5::CommonFG *node, std::string path, 
-                VecF::const_iterator first,
-                VecF::const_iterator last,
-                VecI dims );
+        template<class InputIterator>
+        InputIterator Write( H5::CommonFG *node, std::string path, 
+                InputIterator first, InputIterator last, VecI dims ) {
+            std::vector<hsize_t> dims_a;
+            int n = 1;
+            for ( auto di: dims ) {
+                n *= di;
+                dims_a.push_back(di);
+            }
+
+            VecF d(n);
+            std::copy( first, last, d.begin() );
+            assert( d.size() == n );
+
+            try {
+                H5::DataSpace space( dims.size(), dims_a.data() );
+                H5::DataSet dataset = node->createDataSet( path, 
+                        H5::PredType::NATIVE_DOUBLE, space );
+                dataset.write( d.data(), H5::PredType::NATIVE_DOUBLE );
+            } catch (...) {
+                std::stringstream msg;
+                msg << "Failed to write dataset: " << path;
+                throw EXCEPT(msg.str().c_str());
+            }
+            return last;
+        }
 
         /**
          * This is a very simple wrapper for the HDF5 file class, which
