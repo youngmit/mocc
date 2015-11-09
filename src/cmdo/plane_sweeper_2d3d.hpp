@@ -98,5 +98,8 @@ namespace mocc {
         AngularQuadrature ang_quad_;
         CorrectionData corrections_;
         blitz::Array<real_t, 2> tl_;
+
+        // Sn-MoC residuals by group sweep
+        std::vector<VecF> sn_resid_;
     };
 }

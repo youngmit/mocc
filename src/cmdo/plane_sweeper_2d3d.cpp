@@ -23,7 +23,8 @@ namespace mocc {
         ang_quad_(moc_sweeper_.get_ang_quad()),
         corrections_( sn_sweeper_.n_reg(), ang_quad_.ndir()/2,
                 sn_sweeper_.n_group() ),
-        tl_( sn_sweeper_.n_group(), mesh_.n_pin() )
+        tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
+        sn_resid_( sn_sweeper_.n_group() )
     {
         /// \todo initialize the rest of the data members on the TS base type
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
@@ -66,6 +67,8 @@ namespace mocc {
                         (moc_flux[i] - sn_sweeper_.flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
+        
+        sn_resid_[group].push_back(residual);
         cout << "MoC/Sn residual: " << residual << endl;
     }
 
@@ -158,6 +161,14 @@ namespace mocc {
         dims.push_back(mesh_.ny());
         dims.push_back(mesh_.nx());
 
+        // Write out the Sn-MoC residual convergence
+        file->createGroup("/SnResid");
+        for( size_t g=0; g<n_group_; g++ ) {
+            std::stringstream setname;
+            setname << "/SnResid/" << setfill('0') << setw(3) << g;
+            VecI niter(1, sn_resid_[g].size());
+            HDF::Write( file, setname.str(), sn_resid_[g], niter );
+        }
 
         // Write out the transverse leakages
         file->createGroup("/TL");
