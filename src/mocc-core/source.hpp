@@ -33,7 +33,7 @@ namespace mocc {
          * contributions get tacked on from there.
          */
         void auxiliary( ArrayF aux ) {
-            assert( n_reg_ == aux.size() );
+            assert( source_1g_.size() == aux.size() );
             source_1g_ += aux;
         }
 

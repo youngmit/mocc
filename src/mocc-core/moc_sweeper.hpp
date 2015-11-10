@@ -145,7 +145,7 @@ namespace mocc {
                         for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
                             real_t psi_diff = (psi1[iseg] - qbar_[ireg]) * 
-                            e_tau[iseg];
+                                e_tau[iseg];
                             psi1[iseg+1] = psi1[iseg] - psi_diff;
                             flux_1g_[ireg] += psi_diff*wt_v_st;
                         }
@@ -182,7 +182,7 @@ namespace mocc {
 
             // Scale the scalar flux by the volume and add back the source
             flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
-        
+ 
             this->update_boundary( group );
         
             return;

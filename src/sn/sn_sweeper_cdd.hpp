@@ -101,6 +101,7 @@ namespace mocc {
                 flux_x = (psi - gx*flux_x) / gx;
 	    		flux_y = (psi - gy*flux_y) / gy;
 	    		flux_z = 2.0*psi - flux_z;
+                flux_z = psi; // override DD with FW diff
 
                 return psi;
             }

@@ -17,7 +17,7 @@ namespace mocc {
         flux_( flux ),
         n_reg_( flux.size()/n_group_ )
     {
-        assert(n_reg_*n_group_ == flux_.size() );
+        assert( n_reg_*n_group_ == flux_.size() );
         return;
     }
 
@@ -45,6 +45,9 @@ namespace mocc {
     // groups
     void Source::in_scatter( size_t ig ) {
         for( auto &xsr: *xs_mesh_ ) {
+            if( xsr.reg().size() == 0) {
+                continue;
+            }
             const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
             size_t min_g = scat_row.min_g;
             size_t igg = min_g;

@@ -116,8 +116,6 @@ namespace mocc {
         int ireg_pin = 0;
         int ipin = 0;
         
-        size_t n_pin = mesh_.n_pin();
-
         blitz::Array<real_t, 1> tl_g = tl_(group, blitz::Range::all());
 
         for( const auto &pin: mesh_ ) {
@@ -172,7 +170,6 @@ namespace mocc {
 
         // Write out the transverse leakages
         file->createGroup("/TL");
-        int n_pin = mesh_.n_pin();
         for( size_t g=0; g<n_group_; g++ ) {
             std::stringstream setname;
             setname << "/TL/" << setfill('0') << setw(3) << g;
