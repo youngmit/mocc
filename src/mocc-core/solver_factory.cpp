@@ -1,14 +1,25 @@
 #include "solver_factory.hpp"
 
-#include "error.hpp"
+#include <string>
+
+#include "pugixml.hpp"
+
+#include "mocc-core/error.hpp"
 
 namespace mocc {
     SP_Solver_t SolverFactory( const pugi::xml_node &input,
         const CoreMesh &mesh ){
 
         if( input.empty() ) {
-            Error("No input specified for the solver.");
+            throw EXCEPT("No input specified for the solver.");
         }
-        return std::make_shared<EigenSolver>( input, mesh );
+        std::string type = input.attribute("type").value();
+        if( type == "eigenvalue" ) {
+            return std::make_shared<EigenSolver>( input, mesh );
+        } else if( type == "fixed_source" ) {
+            return std::make_shared<FixedSourceSolver>( input, mesh );
+        } else {
+            throw EXCEPT("Unrecognized solver type.");
+        }
     }
 }

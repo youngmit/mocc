@@ -5,6 +5,18 @@
 #include "transport_sweeper.hpp"
 #include "output_interface.hpp"
 
+/**
+ * \page input Input Specification
+ * \section solver <solver> Tag
+ *
+ * The \c \<solver\> tag specifies the top level solver to use for the problem.
+ * All \c \<solver\> tags must supply at least a \c type attribute to specify
+ * the actual solver type, while each type may require further attributes to
+ * fully specify the solver. Currently supported solver types are:
+ *  - \c eigenvalue An eigenvalue solver
+ *  - \c fixed_source A fixed-source solver
+ */
+
 namespace mocc {
     /**
     * This provides a virtual base type, which shall provide a solve() and

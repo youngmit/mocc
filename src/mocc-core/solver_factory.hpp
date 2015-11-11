@@ -2,8 +2,8 @@
 
 #include "pugixml.hpp"
 
-#include "solver.hpp"
-#include "eigen_solver.hpp"
+#include "mocc-core/eigen_solver.hpp"
+#include "mocc-core/solver.hpp"
 
 namespace mocc {
     /**

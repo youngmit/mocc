@@ -58,7 +58,7 @@ int main(int argc, char* argv[]){
         solver->solve();
 
         // Output stuff
-        HDF::H5File outfile("out.h5");
+        HDF::H5File outfile( "out.h5", "w" );
         solver->output( outfile.get() );
 
         StopLogFile();

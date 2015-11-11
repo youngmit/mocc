@@ -4,13 +4,14 @@
 #include <string>
 #include <iostream>
 
-#include "error.hpp"
-#include "files.hpp"
 #include "pugixml.hpp"
-#include "pin_mesh.hpp"
-#include "file_scrubber.hpp"
-#include "material_lib.hpp"
-#include "angular_quadrature.hpp"
+
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/file_scrubber.hpp"
+#include "mocc-core/files.hpp"
+#include "mocc-core/material_lib.hpp"
+#include "mocc-core/pin_mesh.hpp"
 
 
 using std::cout;
@@ -27,7 +28,9 @@ namespace mocc{
 
         // Make sure this worked
         if( result.status != pugi::status_ok ) {
-            Error("Failed to open a meaningful input file. Are you sure it exists?");
+            std::cout << "XML parse error: " << result.description() 
+                << std::endl;
+            throw EXCEPT("Error encountered in parsing XML file.");
         }
         
         // Generate the core mesh

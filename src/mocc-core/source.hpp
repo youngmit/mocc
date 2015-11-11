@@ -15,8 +15,16 @@ namespace mocc {
         }
 
         /**
-         * Initialize the source with the external source, if it exists, then
-         * add the groups contribution from the multi-group fission source
+         * \brief Initialize the group source.
+         *
+         * If there is an external source specified, initialize to that.
+         * Otherwise, initialize the external source.
+         */
+        virtual void initialize_group( int ig );
+
+        /**
+         * \brief Add the group's contribution from the multi-group fission
+         * source.
          */
         virtual void fission( const ArrayF& fs, int ig );
 
@@ -32,7 +40,7 @@ namespace mocc {
          * that the source definitiion starts with the MG fission source, then
          * contributions get tacked on from there.
          */
-        void auxiliary( ArrayF aux ) {
+        void auxiliary( const ArrayF &aux ) {
             assert( source_1g_.size() == aux.size() );
             source_1g_ += aux;
         }
@@ -55,6 +63,11 @@ namespace mocc {
             return n_reg_;
         }
 
+        /**
+         * \brief Add an external source from an XML node.
+         */
+        void add_external( const pugi::xml_node &input );
+
     protected:
         const XSMesh *xs_mesh_;
         size_t n_group_;
@@ -62,6 +75,9 @@ namespace mocc {
         // This is true if an external source has been specified. For now it's
         // initialized false.
         bool has_external_;
+
+        // The external source, if set
+        ArrayF external_source_;
 
         // Single-group source
         ArrayF source_1g_;

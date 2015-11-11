@@ -1,6 +1,10 @@
 #include "transport_sweeper.hpp"
 
+#include <cmath>
 #include <iostream>
+
+using std::endl;
+using std::cout;
 
 namespace mocc {
     real_t TransportSweeper::total_fission( bool old ) const {
@@ -46,5 +50,14 @@ namespace mocc {
         }
 
         return flux;
+    }
+
+    real_t TransportSweeper::flux_residual() const {
+        real_t r = 0.0;
+        for( size_t i=0; i<flux_.size(); i++ ) {
+            real_t e = flux_[i] - flux_old_[i];
+            r += e*e;
+        }
+        return std::sqrt(r);
     }
 }

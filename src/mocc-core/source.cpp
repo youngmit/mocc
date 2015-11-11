@@ -21,16 +21,19 @@ namespace mocc {
         return;
     }
 
+    void Source::initialize_group( int ig ) {
+        if( has_external_ ) {
+            source_1g_ = external_source_[std::slice(ig*n_reg_, n_reg_, 1)];
+        } else {
+            source_1g_ = 0.0;
+        }
+    }
+
     // Multiply the group-independent fission source by \c chi[ig] to get the
     // fission source into the current group. If an external source is defines,
     // start with that.
     void Source::fission( const ArrayF& fs, int ig ) {
         assert(fs.size() == n_reg_);
-        if( has_external_ ) {
-            throw EXCEPT( "No support for external sources yet." );
-        } else {
-            source_1g_ = 0.0;
-        }
 
         for( auto &xsr: *xs_mesh_ ) {
             real_t xsch = xsr.xsmacch()[ig];
@@ -88,5 +91,32 @@ namespace mocc {
         }*/
 
         return;
+    }
+
+    void Source::add_external( const pugi::xml_node &input ) {
+        // Actual source specification. Pretty limited for now.
+        if( input.empty() ) {
+            throw EXCEPT("Standalone FSS must supply a <source> "
+                    "specification");
+        }
+        std::string srcfname = input.attribute("file").value();
+        HDF::H5File srcfile( srcfname, "r" );
+        VecF src;
+        VecI dims;
+        HDF::Read( srcfile.get(), "/source", src, dims );
+
+        if( dims[0] != n_group_ ) {
+            throw EXCEPT("Wrong group dimensions for source");
+        }
+        if( dims[1] != n_reg_ ) {
+            throw EXCEPT("Wrong regions dimensions for source");
+        }
+
+        external_source_.resize( n_group_*n_reg_ );
+        for( size_t i=0; i<src.size(); i++ ) {
+            external_source_[i] = src[i];
+        }
+
+        has_external_ = true;
     }
 }

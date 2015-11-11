@@ -3,13 +3,13 @@
 #include <memory>
 #include <vector>
 
-#include "coarse_data.hpp"
-#include "eigen_interface.hpp"
-#include "global_config.hpp"
-#include "output_interface.hpp"
-#include "source.hpp"
-#include "xs_mesh.hpp"
-#include "xs_mesh_homogenized.hpp"
+#include "mocc-core/coarse_data.hpp"
+#include "mocc-core/eigen_interface.hpp"
+#include "mocc-core/global_config.hpp"
+#include "mocc-core/output_interface.hpp"
+#include "mocc-core/source.hpp"
+#include "mocc-core/xs_mesh.hpp"
+#include "mocc-core/xs_mesh_homogenized.hpp"
 
 namespace mocc{
     class TransportSweeper: public HasOutput {
@@ -71,7 +71,7 @@ namespace mocc{
          */
         virtual UP_Source_t create_source() const {
             UP_Source_t source( new Source( n_reg_, xs_mesh_.get(), 
-                        this->cflux()) );
+                        this->flux()) );
             return source;
         }
 
@@ -118,6 +118,9 @@ namespace mocc{
          * Subscript and return a specific flux value
          */
         const real_t flux( size_t ig, size_t ireg ) const {
+            assert( ig < n_group_ );
+            assert( ireg < n_reg_ );
+
             return flux_[ ireg + n_reg_*ig ];
         }
 
@@ -136,15 +139,6 @@ namespace mocc{
             coarse_data_ = cd;
         }
 
-        /// Return a const reference to the MG flux. This is the same as the
-        /// above for now, since im not sure if i want to expose a non-const
-        /// reference. Probably will at some point, we will see. It'll be less
-        /// refactoring if I start with an explicit const version and use it
-        /// wherever I know I won't need mutability.
-        const ArrayF& cflux() const {
-            return flux_;
-        }
-
         /// Associate the sweeper with a source. This is usually done by
         /// something like the FixedSourceSolver.
         virtual void assign_source( Source* source) {
@@ -157,6 +151,12 @@ namespace mocc{
             flux_old_ = flux_;
             return;
         }
+
+        /**
+         * Compute a flux residual between the current state of the flux and the
+         * old flux. Defaults to L-2 norm.
+         */
+        virtual real_t flux_residual() const;
 
         /// Compute the total fission source based on the current state of the
         /// flux

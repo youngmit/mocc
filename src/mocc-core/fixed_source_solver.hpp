@@ -100,6 +100,12 @@ namespace mocc{
         // Pointer to the group-independent fission source. Usually comes from
         // an eigenvalue solver, if present
         const ArrayF* fs_;
-        unsigned int ng_;
+        size_t ng_;
+
+        // Stuff that we should only need if we are doing a standalone FS solve
+        bool fixed_source_;
+        ArrayF ext_source_;
+        size_t max_iter_;
+        real_t flux_tol_;
     };
 }

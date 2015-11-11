@@ -71,7 +71,6 @@ namespace mocc {
         return;
     }
 
-
     void SnSweeper::get_pin_flux_1g( int ig, VecF& flux ) const { 
         size_t n = mesh_.n_pin();
         flux.clear();
