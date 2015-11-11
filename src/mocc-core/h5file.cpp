@@ -5,16 +5,26 @@
 
 #include "error.hpp"
 
+using std::cout;
+using std::endl;
+
 namespace mocc {
     namespace HDF {
-        H5File::H5File( std::string fname ):
-            file_( fname, H5F_ACC_TRUNC )
-        {
+        H5File::H5File( std::string fname, std::string access ) {
+            if( access == "w" ) {
+                file_ = H5::H5File( fname, H5F_ACC_TRUNC );
+            } else if( access == "r" ) {
+                file_ = H5::H5File( fname, H5F_ACC_RDONLY );
+            } else {
+                throw EXCEPT( "Invalid file access modality." );
+            }
             return;
         }
     
     
-        void Write( H5::CommonFG *node, std::string path, VecF data, VecI dims ) {
+        void Write( H5::CommonFG *node, std::string path, VecF data,
+                VecI dims )
+        {
             hsize_t *dims_a = new hsize_t[dims.size()];
             for ( size_t i=0; i<dims.size(); i++ ) {
                 dims_a[i] = dims[i];
@@ -52,6 +62,34 @@ namespace mocc {
             }
     
             return;
+        }
+
+        void Read( H5::CommonFG *node, std::string path, VecF &data, 
+                VecI &dims ) {
+            try {
+                H5::DataSet dataset = node->openDataSet( path );
+                H5::DataSpace dataspace = dataset.getSpace();
+                size_t ndim = dataspace.getSimpleExtentNdims();
+                std::vector<hsize_t> my_dims(ndim);
+                dataspace.getSimpleExtentDims( my_dims.data() );
+
+                dims.clear();
+                for( auto n: my_dims ) {
+                    dims.push_back( n );
+                }
+
+                size_t size = 1;
+                for( auto n: dims ) {
+                    size *= n;
+                }
+                data.resize( size );
+
+                dataset.read( data.data(), H5::PredType::NATIVE_DOUBLE );
+            } catch(...) {
+                std::stringstream msg;
+                msg << "Failed to write dataset: " << path;
+                throw EXCEPT(msg.str().c_str());
+            }
         }
     }
 }

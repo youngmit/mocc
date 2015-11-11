@@ -86,6 +86,10 @@ namespace mocc {
             return last;
         }
 
+
+        void Read( H5::CommonFG *node, std::string path, VecF &data, 
+                VecI &dims );
+
         /**
          * This is a very simple wrapper for the HDF5 file class, which
          * essentially just helps with opening a file, given a path, and can
@@ -96,7 +100,18 @@ namespace mocc {
          */
         class H5File {
         public:
-            H5File( std::string fname );
+            /**
+             * \brief Open a new HDF5 file.
+             *
+             * \param fname the path to the file to open
+             * \param access the access modality to use. 
+             *
+             * Current options for \p access  are "r" and "w". If using "r," the
+             * file is opened as-is and no writes can be performed. When using
+             * "w" any existing file is erased and replaced with the data
+             * written.
+             */
+            H5File( std::string fname, std::string access );
             H5::CommonFG* get() {
                 return &file_;
             }
