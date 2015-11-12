@@ -22,7 +22,7 @@ namespace mocc {
          * Write a vector of floats to the HDF5 file at the specified location
          * relative to the H5Group.
          *
-         * \param node the HDF5 file 
+         * \param node the HDF5 file
          * \param path the path to the dataset, relative to \c node. If
          * preceeded by a '/', the path is absolute and will resolve to a
          * location relative to the root of the HDF5 file.
@@ -31,7 +31,7 @@ namespace mocc {
          * \param dims a vector of ints containing the dimensions of the data
          * (see \ref hdf5_dimensions )
          */
-        void Write( H5::CommonFG *node, std::string path, VecF data, 
+        void Write( H5::CommonFG *node, std::string path, VecF data,
                 VecI dims );
 
         /**
@@ -60,7 +60,7 @@ namespace mocc {
          * (see \ref hdf5_dimensions )
          */
         template<class InputIterator>
-        InputIterator Write( H5::CommonFG *node, std::string path, 
+        InputIterator Write( H5::CommonFG *node, std::string path,
                 InputIterator first, InputIterator last, VecI dims ) {
             std::vector<hsize_t> dims_a;
             int n = 1;
@@ -75,7 +75,7 @@ namespace mocc {
 
             try {
                 H5::DataSpace space( dims.size(), dims_a.data() );
-                H5::DataSet dataset = node->createDataSet( path, 
+                H5::DataSet dataset = node->createDataSet( path,
                         H5::PredType::NATIVE_DOUBLE, space );
                 dataset.write( d.data(), H5::PredType::NATIVE_DOUBLE );
             } catch (...) {
@@ -87,7 +87,7 @@ namespace mocc {
         }
 
 
-        void Read( H5::CommonFG *node, std::string path, VecF &data, 
+        void Read( H5::CommonFG *node, std::string path, VecF &data,
                 VecI &dims );
 
         /**
@@ -104,7 +104,7 @@ namespace mocc {
              * \brief Open a new HDF5 file.
              *
              * \param fname the path to the file to open
-             * \param access the access modality to use. 
+             * \param access the access modality to use.
              *
              * Current options for \p access  are "r" and "w". If using "r," the
              * file is opened as-is and no writes can be performed. When using

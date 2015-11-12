@@ -11,7 +11,7 @@ using std::endl;
 using std::cin;
 
 namespace mocc {
-    FixedSourceSolver::FixedSourceSolver( const pugi::xml_node &input, 
+    FixedSourceSolver::FixedSourceSolver( const pugi::xml_node &input,
             const CoreMesh &mesh ) try :
         sweeper_( UP_Sweeper_t( TransportSweeperFactory(input, mesh) ) ),
         source_( sweeper_->create_source() ),
@@ -24,7 +24,7 @@ namespace mocc {
         // is type="fixed_source" do extra stuff.
         if( type == "fixed_source" ) {
             fixed_source_ = true;
-            LogFile << "Using an explicitly-defined fixed source solver" 
+            LogFile << "Using an explicitly-defined fixed source solver"
                 << std::endl;
 
             // Iteration limit
@@ -33,14 +33,14 @@ namespace mocc {
                 throw EXCEPT( "Failed to parse reasonable number of maximum "
                         "iterations." );
             }
-            
+
             // Convergence criterion
             flux_tol_ = input.attribute("flux_tol").as_float(-1.0);
             if( flux_tol_ <= 0.0 ) {
                 throw EXCEPT( "Failed to parse a reasonable flux tolerance." );
             }
 
-            LogFile << "Maximum number of outer iterations: " << max_iter_ << 
+            LogFile << "Maximum number of outer iterations: " << max_iter_ <<
                 std::endl;
             LogFile << "Flux tolerance: " << flux_tol_ << std::endl;
 
@@ -67,7 +67,7 @@ namespace mocc {
             real_t resid = sweeper_->flux_residual();
             cout << iouter << " " << resid << endl;
 
-            if( resid < flux_tol_ ) { 
+            if( resid < flux_tol_ ) {
                 break;
             }
         }
@@ -95,7 +95,7 @@ namespace mocc {
         // We do this here, to prevent collisions between possibly-multiple
         // sweepers colliding.
         HDF::Write( node, "ng", sweeper_->n_group() );
-        HDF::Write( node, "eubounds", sweeper_->xs_mesh().eubounds(), 
+        HDF::Write( node, "eubounds", sweeper_->xs_mesh().eubounds(),
                 VecI(1, ng_) );
         sweeper_->output( node );
         return;

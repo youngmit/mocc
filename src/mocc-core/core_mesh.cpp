@@ -23,38 +23,38 @@ namespace mocc {
     CoreMesh::CoreMesh(pugi::xml_node &input) {
         // Parse meshes
         for (pugi::xml_node mesh = input.child( "mesh" );
-             mesh; 
+             mesh;
              mesh = mesh.next_sibling( "mesh" )) {
-            LogFile << "Parsing new pin mesh: ID=" 
+            LogFile << "Parsing new pin mesh: ID="
             << mesh.attribute( "id" ).value() << endl;
             UP_PinMesh_t pm( PinMeshFactory( mesh ) );
             int id = pm->id();
             pin_meshes_.emplace(id, std::move( pm ) );
         }
- 
+
         // Parse Material Library
         if( input.child( "material_lib" ).empty() ) {
             Error("No material library specified.");
         }
-        std::string matLibName = 
+        std::string matLibName =
             input.child( "material_lib" ).attribute( "path" ).value();
-        LogFile << "Found material library specification: " << matLibName 
-				<< std::endl;
+        LogFile << "Found material library specification: " << matLibName
+                << std::endl;
         FileScrubber matLibFile( matLibName.c_str(), "!" );
         mat_lib_ = MaterialLib( matLibFile );
-        
+
         // Parse material IDs
         for (pugi::xml_node mat = input.child( "material_lib" ).
-                child( "material" ); 
+                child( "material" );
                 mat; mat = mat.next_sibling( "material" )){
             mat_lib_.assignID( mat.attribute( "id" ).as_int(),
                                mat.attribute( "name" ).value() );
         }
-        
+
         // Parse pins
-        for ( pugi::xml_node pin = input.child( "pin" ); pin; 
+        for ( pugi::xml_node pin = input.child( "pin" ); pin;
                 pin = pin.next_sibling( "pin" ) ) {
-            
+
             // Construct the pin and add to the map
             UP_Pin_t pin_p( new Pin( pin, pin_meshes_ ) );
             pins_.emplace( pin_p->id(), std::move(pin_p) );
@@ -175,7 +175,7 @@ namespace mocc {
             for( auto &h: lat->hx_vec() ) {
                 dx_vec_.push_back(h);
                 x_vec_.push_back(h + h_prev);
-                lines_.push_back( Line( Point2(h+h_prev, 0.0), 
+                lines_.push_back( Line( Point2(h+h_prev, 0.0),
                                         Point2(h+h_prev, hy_) ) );
                 h_prev += h;
             }
@@ -188,7 +188,7 @@ namespace mocc {
             for( auto &h: lat->hy_vec() ) {
                 dy_vec_.push_back(h);
                 y_vec_.push_back(h + h_prev);
-                lines_.push_back( Line( Point2(0.0, h+h_prev), 
+                lines_.push_back( Line( Point2(0.0, h+h_prev),
                                         Point2(hx_, h+h_prev) ) );
                 h_prev += h;
             }
@@ -205,7 +205,7 @@ namespace mocc {
             n_xsreg_ += a->n_xsreg();
         }
 
-        
+
         // calculate surface indices
         this->prepare_surfaces();
 
@@ -217,16 +217,16 @@ namespace mocc {
     }
 
 
-    const PinMeshTuple CoreMesh::get_pinmesh( Point2 &p, size_t iz, 
+    const PinMeshTuple CoreMesh::get_pinmesh( Point2 &p, size_t iz,
             int &first_reg ) const {
         assert( (iz >= 0) & (iz<planes_.size()) );
 
         // Locate the Position of the pin
-        unsigned int ix = std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x ) - 
+        unsigned int ix = std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x ) -
             x_vec_.begin() - 1;
         unsigned int iy = std::lower_bound(y_vec_.begin(), y_vec_.end(), p.y ) -
             y_vec_.begin() - 1;
-        
+
         Position pos(ix, iy, iz);
 
         return PinMeshTuple( pos, planes_[iz].get_pinmesh(p, first_reg) );

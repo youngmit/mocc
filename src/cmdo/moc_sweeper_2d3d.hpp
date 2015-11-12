@@ -11,7 +11,7 @@ namespace mocc {
 
         void sweep( int group );
 
-        void set_coupling( CorrectionData *data, 
+        void set_coupling( CorrectionData *data,
                 const XSMeshHomogenized *xsmesh) {
             corrections_ = data;
             sn_xs_mesh_ = xsmesh;

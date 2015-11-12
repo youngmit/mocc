@@ -3,9 +3,9 @@
 #include <algorithm>
 
 namespace mocc{
-    Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch, 
-                       std::vector<VecF> scat): 
-        xssc_(scat) 
+    Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
+                       std::vector<VecF> scat):
+        xssc_(scat)
     {
         xsab_ = xsab;
         xsnf_ = xsnf;
@@ -13,7 +13,7 @@ namespace mocc{
         xsch_ = xsch;
 
         // Normalize chi. Wow. Very precision. Much digits.
-        if( std::any_of(xsch_.begin(), xsch_.end(), 
+        if( std::any_of(xsch_.begin(), xsch_.end(),
                     [](real_t v){return v>0.0;}) ) {
             real_t chi_sum = 0.0;
             for( auto c: xsch_ ) {

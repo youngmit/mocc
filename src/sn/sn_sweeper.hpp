@@ -67,10 +67,10 @@ namespace mocc {
 
         // Boundary condition enumeration
         std::vector<Boundary> bc_type_;
-        
+
         // Temporary storage for 1-group scalar flux
         ArrayF flux_1g_;
-        
+
         // Temporary storage of the current-group transport cross section
         ArrayF xstr_;
 
@@ -84,7 +84,7 @@ namespace mocc {
         SnBoundary bc_out_;
 
         /**
-         * \brief Generic Sn sweep procedure for orthogonal mesh. 
+         * \brief Generic Sn sweep procedure for orthogonal mesh.
          *
          * This routine performs a single, one-group transport sweep with Sn. It
          * is templated on two parameters to tailor it to different differencing
@@ -101,9 +101,9 @@ namespace mocc {
             int ny = mesh_.ny();
             int nz = mesh_.nz();
 
-    		ArrayF x_flux(ny*nz);
-    		ArrayF y_flux(nx*nz);
-    		ArrayF z_flux(nx*ny);
+            ArrayF x_flux(ny*nz);
+            ArrayF y_flux(nx*nz);
+            ArrayF z_flux(nx*ny);
 
             int iang = 0;
             for( auto ang: ang_quad_ ) {
@@ -111,12 +111,12 @@ namespace mocc {
                 cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
 
                 cell_worker.set_angle( iang, ang );
-    
-                real_t wgt = ang.weight * HPI; 
+
+                real_t wgt = ang.weight * HPI;
                 real_t ox = ang.ox;
                 real_t oy = ang.oy;
                 real_t oz = ang.oz;
-    
+
                 // Configure the loop direction. Could template the below for
                 // speed at some point.
                 int sttx = 0;
@@ -128,7 +128,7 @@ namespace mocc {
                     stpx = -1;
                     xdir = -1;
                 }
-                
+
                 int stty = 0;
                 int stpy = ny;
                 int ydir = 1;
@@ -138,7 +138,7 @@ namespace mocc {
                     stpy = -1;
                     ydir = -1;
                 }
-                
+
                 int sttz = 0;
                 int stpz = nz;
                 int zdir = 1;
@@ -148,12 +148,12 @@ namespace mocc {
                     stpz = -1;
                     zdir = -1;
                 }
-    
+
                 // initialize upwind condition
                 x_flux = bc_in_.get_face( group, iang, Normal::X_NORM );
                 y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM );
                 z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
-    
+
                 cw.upwind_work( x_flux, y_flux, z_flux, ang, group);
 
                 for( int iz=sttz; iz!=stpz; iz+=zdir ) {
@@ -165,16 +165,16 @@ namespace mocc {
                             real_t psi_x = x_flux[ny*iz + iy];
                             real_t psi_y = y_flux[nx*iz + ix];
                             real_t psi_z = z_flux[nx*iy + ix];
-    
+
                             int i = mesh_.coarse_cell( Position( ix, iy, iz ) );
-                            
+
                             real_t psi = cell_worker.evaluate( psi_x, psi_y,
                                     psi_z, q_[i], xstr_[i], i );
-    
+
                             x_flux[ny*iz + iy] = psi_x;
                             y_flux[nx*iz + ix] = psi_y;
                             z_flux[nx*iy + ix] = psi_z;
-    
+
                             flux_1g_[i] += psi*wgt;
 
                             // Stash currents (or not, depending on the
@@ -186,7 +186,7 @@ namespace mocc {
                         }
                     }
                 }
-    
+
                 // store the downwind boundary condition
                 bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
                 bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
@@ -196,7 +196,7 @@ namespace mocc {
             }
             // Update the boundary condition
             bc_in_.update( group, bc_out_ );
-    
+
             return;
         }
     };

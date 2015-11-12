@@ -13,11 +13,11 @@ int main() {
 
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "square.xml" );
-    
+
     mocc::CoreMesh mesh( geom_xml );
 
     pugi::xml_document angquad_xml;
-    result = 
+    result =
         angquad_xml.load_string("<ang_quad type=\"ls\" order=\"4\" />");
 
     if ( !result ) {
@@ -48,7 +48,7 @@ int main() {
                     vol[ireg] += ray.seg_len(iseg) * wt_ang;
                 }
             }
-            
+
             iang++;
         }
         for( auto &v: vol ) {
@@ -57,6 +57,6 @@ int main() {
         std::cout << "angle weight sum: " << wsum << std::endl;
     }
 
-    
+
     return 0;
 }

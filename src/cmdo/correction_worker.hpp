@@ -19,9 +19,9 @@ namespace mocc {
          */
         class CurrentCorrections: public moc::Current {
         public:
-            CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh, 
-                    CorrectionData *corrections, const ArrayF &qbar, 
-                    const ArrayF &xstr, const AngularQuadrature &ang_quad, 
+            CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh,
+                    CorrectionData *corrections, const ArrayF &qbar,
+                    const ArrayF &xstr, const AngularQuadrature &ang_quad,
                     const RayData &rays, const XSMeshHomogenized &sn_xs_mesh ):
                 moc::Current( coarse_data, mesh ),
                 corrections_( corrections ),
@@ -51,9 +51,9 @@ namespace mocc {
 
                 Normal norm_fw = mesh_->surface_normal( surf_fw );
                 Normal norm_bw = mesh_->surface_normal( surf_bw );
-                coarse_data_->current( surf_fw, group ) += 
+                coarse_data_->current( surf_fw, group ) +=
                     psi1[iseg_fw] * current_weights_[(int)norm_fw];
-                coarse_data_->current( surf_bw, group ) -= 
+                coarse_data_->current( surf_bw, group ) -=
                     psi2[iseg_bw] * current_weights_[(int)norm_bw];
 
                 surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
@@ -81,7 +81,7 @@ namespace mocc {
                         // Store FW surface stuff
                         norm_fw = surface_to_normal( crd->fw );
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
-                        coarse_data_->current( surf_fw, group ) += 
+                        coarse_data_->current( surf_fw, group ) +=
                             psi1[iseg_fw] * current_weights_[(int)norm_fw];
                         surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
                         surf_norm_[surf_fw*2+0] += 1.0;
@@ -94,7 +94,7 @@ namespace mocc {
                             int ireg = ray.seg_index(iseg_bw) + first_reg;
                             real_t xstr = xstr_[ireg];
                             real_t t = ang_.rsintheta * ray.seg_len(iseg_bw);
-                            real_t fluxvol = t * qbar_[ireg] + e_tau[iseg_bw] * 
+                            real_t fluxvol = t * qbar_[ireg] + e_tau[iseg_bw] *
                                 (psi2[iseg_bw+1]-qbar_[ireg])/xstr;
                             vol_sum_[cell_bw*2+1] += fluxvol;
                             sigt_sum_[cell_bw*2+1] += xstr*fluxvol;
@@ -102,7 +102,7 @@ namespace mocc {
                         // Store BW surface stuff
                         norm_bw = surface_to_normal( crd->bw );
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
-                        coarse_data_->current( surf_bw, group ) -= 
+                        coarse_data_->current( surf_bw, group ) -=
                             psi2[iseg_bw] * current_weights_[(int)norm_bw];
                         surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
                         surf_norm_[surf_bw*2+1] += 1.0;
@@ -125,7 +125,7 @@ namespace mocc {
                 vol_sum_ = 0.0;
                 vol_norm_ = 0.0;
                 sigt_sum_ = 0.0;
-                
+
                 return;
             }
 
@@ -153,7 +153,7 @@ namespace mocc {
             const AngularQuadrature &ang_quad_;
             const RayData &rays_;
             const XSMeshHomogenized &sn_xs_mesh_;
-            
+
             ArrayF surf_sum_;
             ArrayF vol_sum_;
             ArrayF vol_norm_;
@@ -165,7 +165,7 @@ namespace mocc {
             /** \page surface_norm Surface Normalization
              * Surface normalization \todo discuss surface normalization
              */
-            void calculate_corrections( size_t ang, size_t group ); 
+            void calculate_corrections( size_t ang, size_t group );
         };
     }
 }

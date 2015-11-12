@@ -6,7 +6,7 @@ using std::cout;
 using std::endl;
 
 namespace mocc {
-    SnBoundary::SnBoundary( int n_group, const AngularQuadrature &ang_quad, 
+    SnBoundary::SnBoundary( int n_group, const AngularQuadrature &ang_quad,
             const Mesh &mesh ):
         n_group_( n_group ),
         ang_quad_( ang_quad ),

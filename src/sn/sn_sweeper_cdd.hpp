@@ -24,7 +24,7 @@ namespace mocc {
         void set_corrections( const CorrectionData *data ) {
             // only re-assign the corrections if they are not internally
             // assigned.
-            /** 
+            /**
              * \todo It is nice to be able to use default values (0.5) for the
              * corrections, but doing it this way doubles the memory use, since
              * the internally-allocated corrections are stored along with those
@@ -49,7 +49,7 @@ namespace mocc {
             ang_quad_ = ang_quad;
             return;
         }
-        
+
     private:
         /**
          * An extension of \ref sn::CellWorker to propagate flux through an
@@ -73,34 +73,34 @@ namespace mocc {
                 sn::CellWorker::set_angle( iang, angle );
                 iang_alpha_ = iang % (ang_quad_.ndir() / 2);
             }
-            
+
             void set_corrections( const CorrectionData *data ) {
                 corrections_ = data;
             }
 
-            inline real_t evaluate( real_t &flux_x, real_t &flux_y, 
+            inline real_t evaluate( real_t &flux_x, real_t &flux_y,
                     real_t &flux_z, real_t q, real_t xstr, size_t i )
             {
                 size_t ix = i % mesh_.nx();
                 real_t tx = ox_/mesh_.dx(ix);
 
-                real_t ax = corrections_->alpha( i, iang_alpha_, group_, 
+                real_t ax = corrections_->alpha( i, iang_alpha_, group_,
                         Normal::X_NORM);
-                real_t ay = corrections_->alpha( i, iang_alpha_, group_, 
+                real_t ay = corrections_->alpha( i, iang_alpha_, group_,
                         Normal::Y_NORM);
                 real_t b = corrections_->beta( i, iang_alpha_, group_ );
 
                 real_t gx = ax*b;
                 real_t gy = ay*b;
 
-                real_t psi = q + 2.0*(tx * flux_x + 
-                                      ty_* flux_y + 
+                real_t psi = q + 2.0*(tx * flux_x +
+                                      ty_* flux_y +
                                       tz_* flux_z );
                 psi /= tx/gx + ty_/gy + 2.0*tz_ + xstr;
 
                 flux_x = (psi - gx*flux_x) / gx;
-	    		flux_y = (psi - gy*flux_y) / gy;
-	    		flux_z = 2.0*psi - flux_z;
+                flux_y = (psi - gy*flux_y) / gy;
+                flux_z = 2.0*psi - flux_z;
                 flux_z = psi; // override DD with FW diff
 
                 return psi;

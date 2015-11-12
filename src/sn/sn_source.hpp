@@ -25,14 +25,14 @@ namespace mocc {
          * does not divide the source by the transport cross section, which is
          * only needed for the MoC sweeper.
          */
-        void self_scatter( size_t ig, ArrayF& flux_1g, 
-                ArrayF& qbar ) const 
+        void self_scatter( size_t ig, ArrayF& flux_1g,
+                ArrayF& qbar ) const
         {
             for( auto &xsr: *xs_mesh_ ) {
                 const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
                 real_t xssc = scat_row.from[ig-scat_row.min_g];
                 for ( auto &ireg: xsr.reg() ) {
-                    qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) * 
+                    qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) *
                         RFPI;
                 }
             }

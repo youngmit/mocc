@@ -37,7 +37,7 @@ int main() {
         assert(mocc::fp_equiv_ulp( mat.xssc().out(ig), out_scat[ig]) );
 
 
-        
+
         const mocc::ScatteringRow& scat_row = mat.xssc().to(ig);
         unsigned int min_g = scat_row.min_g;
         unsigned int max_g = scat_row.max_g;

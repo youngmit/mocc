@@ -10,7 +10,7 @@ using std::cin;
 using std::endl;
 
 namespace mocc {
-    SnSweeper_CDD::SnSweeper_CDD( const pugi::xml_node &input, 
+    SnSweeper_CDD::SnSweeper_CDD( const pugi::xml_node &input,
             const CoreMesh &mesh):
         SnSweeper( input, mesh ),
         cell_worker_( mesh, ang_quad_ ),
@@ -21,12 +21,12 @@ namespace mocc {
         if( !input.child("data").empty() ) {
             LogFile << "Located auxiliary data specification." << std::endl;
             if( !input.child("data").attribute("type").empty() ) {
-                std::string data_type = 
+                std::string data_type =
                     input.child("data").attribute("type").value();
                 if( data_type == "default" ) {
                     LogFile << "Generating default values for correction "
                         "factors." << std::endl;
-                    my_corrections_.reset( new CorrectionData( n_reg_, 
+                    my_corrections_.reset( new CorrectionData( n_reg_,
                                 ang_quad_.ndir(), n_group_) );
                     this->set_corrections( my_corrections_.get() );
                 } else {
@@ -55,7 +55,7 @@ namespace mocc {
                 xstr_[ireg] = xstr;
             }
         }
-        
+
         flux_1g_ = flux_[std::slice(group*n_reg_, n_reg_, 1)];
 
         // Perform inner iterations
@@ -66,10 +66,10 @@ namespace mocc {
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents
                 coarse_data_->current.col( group ) = 0.0;
-                this->sweep_1g<sn::Current, CellWorker_CDD>( group, 
+                this->sweep_1g<sn::Current, CellWorker_CDD>( group,
                         cell_worker_ );
             } else {
-                this->sweep_1g<sn::NoCurrent, CellWorker_CDD>( group, 
+                this->sweep_1g<sn::NoCurrent, CellWorker_CDD>( group,
                         cell_worker_ );
             }
         }

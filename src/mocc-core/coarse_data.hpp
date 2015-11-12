@@ -10,7 +10,7 @@
 namespace mocc {
     /**
      * CoarseData stores the data needed to do CMFD. Coarse surface currents,
-     * fluxes, etc. 
+     * fluxes, etc.
      */
     struct CoarseData {
     public:

@@ -11,7 +11,7 @@ namespace mocc {
      * A \ref Ray stores vectors of segment length and the flat source region
      * index that each segment is crossing. The FSR indices are represented as
      * an offset from the first FSR in a given plane, allowing for ray data to
-     * be reused for each instance of a geometrically-unique plane. 
+     * be reused for each instance of a geometrically-unique plane.
     */
     class Ray {
         /**
@@ -23,15 +23,15 @@ namespace mocc {
          * INVALID, treat the entry as a no-op.
          */
         struct RayCoarseData {
-            Surface fw: 4; 
-            Surface bw: 4; 
+            Surface fw: 4;
+            Surface bw: 4;
             unsigned int nseg_fw: 8;
             unsigned int nseg_bw: 8;
 
-            friend std::ostream& operator<<(std::ostream& os, 
+            friend std::ostream& operator<<(std::ostream& os,
                     const RayCoarseData rcd ) {
 
-                os << rcd.fw << " " << rcd.nseg_fw << "\t|\t" 
+                os << rcd.fw << " " << rcd.nseg_fw << "\t|\t"
                    << rcd.bw << " " << rcd.nseg_bw;
 
                 return os;
@@ -39,7 +39,7 @@ namespace mocc {
         };
     public:
         /** \brief Construct a ray from two starting points. */
-        Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane, 
+        Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane,
                 const CoreMesh &mesh );
 
         size_t nseg() const {
@@ -65,14 +65,14 @@ namespace mocc {
             return cm_cell_fw_;
         }
 
-        /** 
+        /**
          * Return the index of the first coarse mesh cell encountered by this
          * ray in the backward direction.
          */
         size_t cm_cell_bw() const {
             return cm_cell_bw_;
         }
-        
+
         /**
          * Return the index of the first coarse mesh surface encountered by this
          * ray in the forward direction
@@ -106,7 +106,7 @@ namespace mocc {
          * the rays in any other context, the const version should be used. This
          * is relatively automatic, since the \ref RayData object only exposes
          * each \ref Ray as a const reference.
-         */ 
+         */
         real_t& seg_len( int iseg ) {
             return seg_len_[iseg];
         }
@@ -149,7 +149,7 @@ namespace mocc {
         size_t cm_cell_bw_;
 
         std::vector<RayCoarseData> cm_data_;
-        
+
         // Length of ray segments
         VecF seg_len_;
 

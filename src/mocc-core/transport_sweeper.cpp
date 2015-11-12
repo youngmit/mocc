@@ -21,7 +21,7 @@ namespace mocc {
         return tfis;
     }
 
-    void TransportSweeper::calc_fission_source( real_t k, 
+    void TransportSweeper::calc_fission_source( real_t k,
             ArrayF& fission_source ) const {
 
         real_t rkeff = 1.0/k;
@@ -30,7 +30,7 @@ namespace mocc {
             const auto& xsnf = xsr.xsmacnf();
             for( size_t ig=0; ig<n_group_; ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
-                    fission_source[ireg] += rkeff * xsnf[ig] * 
+                    fission_source[ireg] += rkeff * xsnf[ig] *
                         flux_[ireg + ig*n_reg_];
                 }
             }
@@ -61,5 +61,5 @@ namespace mocc {
         return std::sqrt(r);
     }
 
-    
+
 }

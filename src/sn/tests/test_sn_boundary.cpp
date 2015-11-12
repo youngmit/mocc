@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( testboundary )
 
     // Should be a 4x5x6 mesh with unit cube regions
     Mesh mesh( 120, 120, x, y, z, bc );
-    
+
     pugi::xml_document angquad_xml;
     pugi::xml_parse_result result = angquad_xml.load_string( "<ang_quad type=\"ls\" order=\"4\" />" );
 
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE( testboundary )
         ArrayF face = boundary.get_face( 0, 0, Normal::Z_NORM );
         BOOST_CHECK_EQUAL(face.size(), 4*5);
     }
-    
+
     // Check the update routines. Stash some values in the out boundary, and use
     // them to update the boundary and make sure that the right values come back
     // out.

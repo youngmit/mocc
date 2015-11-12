@@ -64,7 +64,7 @@ namespace mocc {
 
     std::ostream& operator<<(std::ostream& os, const Angle &ang ) {
         const int w = 12;
-            os << std::setw(w) << RadToDeg(ang.alpha) 
+            os << std::setw(w) << RadToDeg(ang.alpha)
                << std::setw(w) << RadToDeg(ang.theta)
                << std::setw(w) << ang.ox
                << std::setw(w) << ang.oy

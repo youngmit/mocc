@@ -14,7 +14,7 @@ using std::endl;
 
 using namespace mocc;
 
-BOOST_AUTO_TEST_CASE( testall ) 
+BOOST_AUTO_TEST_CASE( testall )
 {
     std::string inp = "<ang_quad type=\"ls\" order=\"4\" />";
 
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE( testall )
     pugi::xml_parse_result result = doc.load_string( inp.c_str() );
 
     if (!result) {
-        cout << "failed to parse xml" << endl;   
+        cout << "failed to parse xml" << endl;
     }
 
 
@@ -61,5 +61,5 @@ BOOST_AUTO_TEST_CASE( testall )
     // Test the angle reversal capabilities
     BOOST_CHECK_EQUAL(ang_quad.reverse(1), 7);
     BOOST_CHECK_EQUAL(ang_quad.reverse(11), 5);
-    
+
 }

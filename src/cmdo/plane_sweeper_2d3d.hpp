@@ -28,14 +28,14 @@ namespace mocc {
         void get_pin_flux_1g( int ig, VecF &flux ) const;
 
         VecF get_pin_flux() const;
-    
+
         void output( H5::CommonFG *file ) const;
 
         void homogenize( CoarseData &data ) const {
             throw EXCEPT("Not implemented");
         }
 
-        /** 
+        /**
          * Associate the sweeper with a source. This has to do a little extra
          * work, since the Sn sweeper needs its own source.
          */
@@ -55,7 +55,7 @@ namespace mocc {
          * Create a Source_2D3D object instead of the standard Source class.
          */
         UP_Source_t create_source() const {
-            return UP_Source_t( new Source_2D3D( moc_sweeper_, sn_sweeper_ ) ); 
+            return UP_Source_t( new Source_2D3D( moc_sweeper_, sn_sweeper_ ) );
         }
 
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {

@@ -13,7 +13,7 @@
 namespace mocc {
     class Assembly {
     public:
-        Assembly( const pugi::xml_node &input, 
+        Assembly( const pugi::xml_node &input,
                   const std::map<int, Lattice> &lattices );
 
         ~Assembly();
@@ -56,7 +56,7 @@ namespace mocc {
         const VecF& hz() const {
             return hz_;
         }
-        
+
         // Return the total size of the assembly in the x dimension
         real_t hx() const {
             return hx_;

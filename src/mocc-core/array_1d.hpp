@@ -30,7 +30,7 @@ namespace mocc {
 
         std::vector<T>& data() const {
             return data_;
-        }   
+        }
 
         Array2D& resize( size_t new_d1  ) {
             assert( new_d1 > 0 );

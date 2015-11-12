@@ -69,7 +69,7 @@ namespace mocc {
             return reg_;
         }
 
-        friend std::ostream& operator<<(std::ostream& os, 
+        friend std::ostream& operator<<(std::ostream& os,
                 const XSMeshRegion &xsr );
 
     private:
@@ -83,7 +83,7 @@ namespace mocc {
         VecF xsmacch_;
 
         // Scattering matrix
-        ScatteringMatrix xsmacsc_; 
+        ScatteringMatrix xsmacsc_;
     };
 
     class XSMesh: public HasOutput {
@@ -100,14 +100,14 @@ namespace mocc {
         size_t n_group() const {
             return ng_;
         }
-        
+
         // Iterators to the underlying vector
         const std::vector<XSMeshRegion>::const_iterator begin() const {
             return regions_.cbegin();
         }
 
         const std::vector<XSMeshRegion>::const_iterator end() const {
-            return regions_.cend(); 
+            return regions_.cend();
         }
 
         const XSMeshRegion& operator[]( size_t i ) const {
@@ -121,7 +121,7 @@ namespace mocc {
         const VecF& eubounds() const {
             return eubounds_;
         }
-        
+
         virtual void output( H5::CommonFG *file ) const {
             // Not really implementing for the general XS Mesh type.
             assert(false);

@@ -26,29 +26,29 @@ SP_Solver_t solver;
 SP_CoreMesh_t mesh;
 
 int main(int argc, char* argv[]){
-	// Make sure we have an input file
-	if(argc < 2){
-		Error("No input file specified!");
-	}
-	
+    // Make sure we have an input file
+    if(argc < 2){
+        Error("No input file specified!");
+    }
+
     try {
         std::string space = "                         ";
-		std::cout << space << "01001101010011110100001101000011" << std::endl;
-		std::cout << space << " __  __   _____   _____   _____" <<std::endl;
-		std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
-		std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
-		std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
-		std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
-		std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
-		std::cout << space << std::endl;
-		std::cout << space << "01101101011011110110001101100011 " << std::endl;
+        std::cout << space << "01001101010011110100001101000011" << std::endl;
+        std::cout << space << " __  __   _____   _____   _____" <<std::endl;
+        std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
+        std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
+        std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
+        std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
+        std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
+        std::cout << space << std::endl;
+        std::cout << space << "01101101011011110110001101100011 " << std::endl;
 
-	    // Spin up the log file. For now, just use the name of the input file.
-	    StartLogFile(argv[1]);
-	    
+        // Spin up the log file. For now, just use the name of the input file.
+        StartLogFile(argv[1]);
 
-	    // Parse the input file
-	    InputProc inProc(argv[1]);
+
+        // Parse the input file
+        InputProc inProc(argv[1]);
 
         // Get an SP to the core mesh
         mesh = inProc.core_mesh();

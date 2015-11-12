@@ -25,7 +25,7 @@ namespace mocc { namespace sn {
         {
             return;
         }
-        
+
         /**
          * \brief Configure the \ref CellWorker to sweep cells on the given z
          * position.

@@ -40,7 +40,7 @@ namespace mocc {
      * \todo the unit test for Mesh is not really done. Its got some stuff in
      * there for my testing, but it needs some serious work.
      */
-    
+
     class Mesh {
     public:
         Mesh() { };
@@ -48,7 +48,7 @@ namespace mocc {
         /**
          * Construct a \ref Mesh using cell boundaries specified externally.
          */
-        Mesh( size_t n_reg, size_t n_xsreg, 
+        Mesh( size_t n_reg, size_t n_xsreg,
                 VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] ):
             n_reg_( n_reg ),
             n_xsreg_( n_xsreg ),
@@ -137,7 +137,7 @@ namespace mocc {
         const std::vector<Boundary>& boundary() const {
             return bc_;
         }
-        
+
         /**
         * Return the total core length along the x dimension
         */
@@ -160,7 +160,7 @@ namespace mocc {
             return dx_vec_[ix];
         }
 
-        /** 
+        /**
          * Return the pin/coarse cell thickness in the y dimension at the
          * specified y position.
          */
@@ -169,7 +169,7 @@ namespace mocc {
         }
 
         /**
-         * Return the pin/coarse cell thickness in the z dimension at the 
+         * Return the pin/coarse cell thickness in the z dimension at the
          * specified z position.
          */
         inline real_t dz( size_t iz ) const {
@@ -210,8 +210,8 @@ namespace mocc {
          * Return a vector containing the x-, y-, z-dimensions of the mesh.
          */
         VecI dimensions() const {
-            VecI d = { (unsigned int)nx_, 
-                       (unsigned int)ny_, 
+            VecI d = { (unsigned int)nx_,
+                       (unsigned int)ny_,
                        (unsigned int)nz_ };
             return d;
         }
@@ -223,7 +223,7 @@ namespace mocc {
             return nx_*ny_*plane;
         }
 
-        /** 
+        /**
          * \brief Return the highest coarse cell index in a given plane, plus 1
          */
         size_t plane_cell_end( size_t plane ) const {
@@ -258,7 +258,7 @@ namespace mocc {
         size_t n_surf_plane() const {
             return n_surf_plane_;
         }
-        
+
         /**
          * Return the coarse cell index given a pin \ref Position. Cell indexing
          * is natural in x, y z.
@@ -277,8 +277,8 @@ namespace mocc {
          * Return the \ref Position of a coarse mesh cell index.
         */
         Position coarse_position( size_t cell ) const {
-            return Position( 
-                    cell % nx_, 
+            return Position(
+                    cell % nx_,
                     (cell % (nx_*ny_)) / nx_,
                     cell / (nx_*ny_) );
         }
@@ -287,7 +287,7 @@ namespace mocc {
          * Return a coarse surface index given a cell index and Surface
          * direction. Surface indexing is more complicated than cell indexing,
          * so listen up, dear readers...
-         * 
+         *
          * Imagine that you are in the bottom plane of the mesh. Start by
          * numbering all of the bottom faces of the plane, starting in the lower
          * left, then moving right and up. You will have nx_*ny_ bottom surfaces
@@ -412,11 +412,11 @@ namespace mocc {
             }
             return Normal::Y_NORM;
         }
-        
-        /** 
+
+        /**
          * \brief Trace a ray through the coarse surfaces.
         */
-        void trace( std::vector<Point2> &p ) const; 
+        void trace( std::vector<Point2> &p ) const;
 
     protected:
         /**
@@ -436,7 +436,7 @@ namespace mocc {
         size_t nx_;
         size_t ny_;
         size_t nz_;
-        
+
         /// Total core size in the x dimension
         real_t hx_;
 
@@ -463,7 +463,7 @@ namespace mocc {
 
         /// Sequence of plane heights
         VecF dz_vec_;
-        
+
         /// Vector of \ref Line objects, representing pin boundaries. This greatly
         /// simplifies the ray trace.
         std::vector<Line> lines_;

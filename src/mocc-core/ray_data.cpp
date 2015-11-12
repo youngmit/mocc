@@ -41,7 +41,7 @@ namespace mocc {
      * -# Correct the ray segment lengths to preserve FSR volumes
      *
     */
-    RayData::RayData( const pugi::xml_node &input, 
+    RayData::RayData( const pugi::xml_node &input,
             const AngularQuadrature &ang_quad,
             const CoreMesh &mesh ):
         ang_quad_(ang_quad)
@@ -71,7 +71,7 @@ namespace mocc {
         LogFile << ang_quad_ << std::endl;
 
         int iang = 0;
-        for (auto ang_it = ang_quad_.octant(1); 
+        for (auto ang_it = ang_quad_.octant(1);
                 ang_it != ang_quad_.octant(2); ++ang_it) {
 
             Angle ang = *ang_it;
@@ -79,9 +79,9 @@ namespace mocc {
             int Nx = ceil( hx/opt_spacing*std::abs( sin( ang.alpha ) ) );
             int Ny = ceil( hy/opt_spacing*std::abs( cos( ang.alpha ) ) );
             Nx += Nx%2+1;
-            Ny += Ny%2+1; 
+            Ny += Ny%2+1;
 
-            LogFile << "Total number of rays (Nx/Ny): " 
+            LogFile << "Total number of rays (Nx/Ny): "
                 << Nx << " " << Ny << std::endl;
 
             Nx_.push_back(Nx);
@@ -97,7 +97,7 @@ namespace mocc {
 
             iang++;
         }
-        
+
         // push more Nx, Ny, N, space onto their respective vectors, so we dont
         // have to wory about %'ing by ndir_oct
         for( iang=0; iang<ang_quad_.ndir_oct()*3; iang++ ) {
@@ -133,7 +133,7 @@ namespace mocc {
                 real_t space_x = std::abs( space/sin(ang->alpha) );
                 real_t space_y = std::abs( space/cos(ang->alpha) );
 
-                LogFile << "Spacing: " << ang->alpha << space << " " << 
+                LogFile << "Spacing: " << ang->alpha << space << " " <<
                     space_x << " " << space_y << std::endl;
 
 
@@ -169,7 +169,7 @@ namespace mocc {
                 }
 
                 // Handle rays entering on the y-normal face
-                for ( int iray=0; iray<Nx; iray++ ) { 
+                for ( int iray=0; iray<Nx; iray++ ) {
                     Point2 p1;
                     p1.x = (0.5 + iray)*space_x;
                     p1.y = 0.0;
@@ -201,7 +201,7 @@ namespace mocc {
 
                 // Make sure that there is at least one ray in every FSR. Give a
                 // warning if not.
-                if ( std::any_of(nrayfsr.begin(), nrayfsr.end(), 
+                if ( std::any_of(nrayfsr.begin(), nrayfsr.end(),
                         [](int i){return i==0;}) ) {
                     Warn("No rays passed through at least one FSR. Try finer "
                             "ray spacing or larger regions.");
@@ -223,20 +223,20 @@ namespace mocc {
         this->correct_volume( mesh, FLAT );
     }
 
-    void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type ) 
+    void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )
     {
         switch(type) {
             case FLAT:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
-                    for ( auto ang = ang_quad_.octant(1); 
-                            ang!=ang_quad_.octant(3); ++ang ) 
+                    for ( auto ang = ang_quad_.octant(1);
+                            ang!=ang_quad_.octant(3); ++ang )
                     {
                         VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         real_t space = spacing_[iang];
-                        
+
                         for( auto &ray: rays ) {
                             for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
                             {
@@ -264,7 +264,7 @@ namespace mocc {
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                     int iang=0;
-                    for( auto ang = ang_quad_.octant(1); 
+                    for( auto ang = ang_quad_.octant(1);
                          ang!=ang_quad_.octant(3); ++ang )
                     {
                         std::vector<Ray>& rays = rays_[iplane][iang];
@@ -273,9 +273,9 @@ namespace mocc {
 
                         for( auto &ray: rays ) {
                             for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
-                            { 
+                            {
                                 size_t ireg = ray.seg_index(iseg);
-                                fsr_vol[ireg] += ray.seg_len(iseg) * space * 
+                                fsr_vol[ireg] += ray.seg_len(iseg) * space *
                                     wgt;
                             }
                         }
@@ -283,21 +283,21 @@ namespace mocc {
                     }
                     // Convert fsr_vol into a correction factor
                     for( size_t ireg=0; ireg<mesh.plane(iplane).n_reg();
-                            ireg++ ) 
+                            ireg++ )
                     {
                         fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
                     }
                     // Correct ray lengths to enforce proper FSR volumes
                     iang = 0;
-                    for( auto ang = ang_quad_.octant(1); 
+                    for( auto ang = ang_quad_.octant(1);
                          ang!=ang_quad_.octant(3);
                          ++ang ) {
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         for( auto &ray: rays ){
                             for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
-                            { 
+                            {
                                 size_t ireg = ray.seg_index(iseg);
-                                ray.seg_len(iseg) = ray.seg_len(iseg) * 
+                                ray.seg_len(iseg) = ray.seg_len(iseg) *
                                     fsr_vol[ireg];
                             }
                         }

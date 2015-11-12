@@ -40,7 +40,7 @@ namespace mocc{
          */
         virtual void sweep(int group) = 0;
 
-        /** 
+        /**
          * Initialize the solution variables (scalar, boundary flux, etc.) to
          * reasonable initial guesses.
          */
@@ -62,7 +62,7 @@ namespace mocc{
          * Given the current estimate of a system eigenvalue, calculate the
          * group-independent fission source and store in the passed array
          */
-        virtual void calc_fission_source( real_t k, 
+        virtual void calc_fission_source( real_t k,
                 ArrayF& fission_source) const;
 
         /**
@@ -70,7 +70,7 @@ namespace mocc{
          * For now, default to the MoC Source type
          */
         virtual UP_Source_t create_source() const {
-            UP_Source_t source( new Source( n_reg_, xs_mesh_.get(), 
+            UP_Source_t source( new Source( n_reg_, xs_mesh_.get(),
                         this->flux()) );
             return source;
         }
@@ -81,7 +81,7 @@ namespace mocc{
          * mesh, and there is no need to generate a new one.
          */
         virtual SP_XSMeshHomogenized_t get_homogenized_xsmesh() = 0;
-        
+
         unsigned int n_reg() const {
             return n_reg_;
         }
@@ -114,7 +114,7 @@ namespace mocc{
             return flux_;
         }
 
-        /** 
+        /**
          * Subscript and return a specific flux value
          */
         const real_t flux( size_t ig, size_t ireg ) const {

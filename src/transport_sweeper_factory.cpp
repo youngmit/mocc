@@ -22,7 +22,7 @@ namespace mocc {
             return ts;
         } else if ( type == "2d3d" ) {
             UP_Sweeper_t ts( new PlaneSweeper_2D3D( input.child("sweeper"),
-                        mesh) ); 
+                        mesh) );
             return ts;
         } else {
             throw EXCEPT("Failed to detect a valid sweeper type.");

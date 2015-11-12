@@ -26,7 +26,7 @@ namespace mocc {
             return from + max_g - min_g + 1;
         }
     };
-    
+
     /**
      * This class provides an efficient means by which to store a matrix of
      * scattering cross sections. Generally speaking, scattering matrices tend
@@ -39,7 +39,7 @@ namespace mocc {
     class ScatteringMatrix{
     public:
         ScatteringMatrix():
-            ng_(0) 
+            ng_(0)
         { }
 
         /**
@@ -48,7 +48,7 @@ namespace mocc {
          * densified.
          *
          * \param scat the dense representation of the scattering matrix.
-         * Indexing should be [to group][from group] 
+         * Indexing should be [to group][from group]
          */
         ScatteringMatrix(std::vector<VecF> scat);
 
@@ -72,7 +72,7 @@ namespace mocc {
                             &scat_[pos]) );
                 pos += row.max_g - row.min_g + 1;
             }
-            
+
             return;
         }
 
@@ -105,23 +105,23 @@ namespace mocc {
          * Return the total out-scattering cross section for group ig
          */
         real_t out( unsigned int ig ) const {
-            return out_[ig]; 
+            return out_[ig];
         };
 
-        /** 
+        /**
          * Return iterator to the first scattering row.
          */
         std::vector<ScatteringRow>::const_iterator begin() const {
             return rows_.cbegin();
         }
 
-        /** 
+        /**
          * Return iterator past the last scattering row.
          */
         std::vector<ScatteringRow>::const_iterator end() const {
             return rows_.cend();
         }
-        
+
         /**
          * \brief Return a 1-D, dense representation of the scattering matrix.
          *
@@ -141,7 +141,7 @@ namespace mocc {
         }
 
         // Provide stream insertion support
-        friend std::ostream& operator<<(std::ostream& os, 
+        friend std::ostream& operator<<(std::ostream& os,
                 const ScatteringMatrix &scat_mat);
     private:
         size_t ng_;
@@ -149,5 +149,5 @@ namespace mocc {
         VecF out_;
         std::vector<ScatteringRow> rows_;
     };
-    
+
 }

@@ -40,7 +40,7 @@ namespace mocc {
 
         std::vector<T>& data() const {
             return data_;
-        }   
+        }
 
         Array2D& resize( size_t new_d1 , size_t new_d2 ) {
             assert( new_d1 > 0 & new_d2 > 0 );
@@ -67,7 +67,7 @@ namespace mocc {
         T& operator()( size_t i, size_t j ) {
             return data_[d2_*j + i];
         }
-        
+
         // Full-dimension subscript operation (const)
         const T& operator()( size_t i, size_t j ) const {
             return data_[d2_*j + i];
@@ -105,11 +105,11 @@ namespace mocc {
         }
 
         // Provide stream insertion support
-        friend std::ostream& operator<<(std::ostream& os, 
+        friend std::ostream& operator<<(std::ostream& os,
                 const Array2D &array) {
             for( size_t j=0; j<array.d2(); j++ ) {
                 for( size_t i=0; i<array.d1(); i++ ) {
-                    os << array(i, j) << " ";   
+                    os << array(i, j) << " ";
                 }
                 os << std::endl;
             }

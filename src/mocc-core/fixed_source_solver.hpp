@@ -14,7 +14,7 @@ namespace mocc{
     * fixed source must be provided by some solver above the FSS, in the form of
     * a \ref Source object, however in the future it might be useful to be able
     * to supply a user-defined Source for non-eigenvalue problems.
-    * 
+    *
     * Right now, the FSS is used by the \ref EigenSolver to converge the flux
     * solution for intermediate "fixed" sources for each eigenvalue step.
     */
@@ -27,10 +27,10 @@ namespace mocc{
         * to generate a \ref TransportSweeper.
         */
         FixedSourceSolver( const pugi::xml_node &input, const CoreMesh &mesh );
-    
+
         ~FixedSourceSolver() {
         }
-        
+
         /**
         * For now, there is no actual implementation of this method, since there
         * is no functionality for specifying a user-defined Source. In practice,
@@ -57,7 +57,7 @@ namespace mocc{
         void initialize() {
             sweeper_->initialize();
         }
-        
+
         /**
          * Set the group-independent fission source. The group-dependent fission
          * source is calculated internally by the \ref Source object.
@@ -65,7 +65,7 @@ namespace mocc{
         void set_fission_source( const ArrayF* fs) {
             fs_ = fs;
         }
-    
+
         /**
          * Return the number of flat source regions.
          */
@@ -93,7 +93,7 @@ namespace mocc{
         }
 
         void output( H5::CommonFG *node ) const;
-    
+
     private:
         UP_Sweeper_t sweeper_;
         UP_Source_t source_;

@@ -39,7 +39,7 @@ namespace mocc {
     };
 
     extern const Surface AllSurfaces[6];
-        
+
     enum class Normal {
         X_NORM = 0,
         Y_NORM,
@@ -47,8 +47,8 @@ namespace mocc {
     };
 
     extern const Normal AllNormals[3];
-    
-    
+
+
     // Boundary condition enumeration
     enum class Boundary {
         VACUUM,
@@ -57,16 +57,16 @@ namespace mocc {
         PERIODIC,
         INVALID
     };
-    
+
     enum class TraceDir {
         FW,
         BW
     };
 
     std::ostream& operator<<(std::ostream& os, const Surface s );
-    
+
     std::ostream& operator<<(std::ostream& os, const Normal n );
 
     Normal surface_to_normal( Surface s );
-    
+
 }

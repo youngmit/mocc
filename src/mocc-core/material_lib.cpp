@@ -26,7 +26,7 @@ namespace mocc{
         // do nothing
         return;
     }
-    
+
     MaterialLib::MaterialLib(FileScrubber &input):
         n_material_(0)
     {
@@ -47,7 +47,7 @@ namespace mocc{
                 throw EXCEPT("Failed to read number of materials!");
             }
         }
-    
+
         // Group boundaries
         {
             stringstream inBuf(input.getline());
@@ -60,17 +60,17 @@ namespace mocc{
                 }
             }
         }
-        
+
         // Read in material data
         for ( size_t imat=0; imat<n_material_lib_; imat++ ) {
             // Get the name of the material
             line = input.getline();
-            
+
             regex headExp("^\\s*XSMACRO\\s+([^\\s]+)\\s+([0-9]+)\\s*$");
             smatch results;
             regex_match(line, results, headExp);
             string materialName = results[1].str();
-    
+
             // Read in the non-scattering stuff
             VecF abs;
             VecF nuFiss;
@@ -79,7 +79,7 @@ namespace mocc{
             for( size_t ig=0; ig<n_grp_; ig++ ) {
                 stringstream inBuf(input.getline());
                 double val;
-    
+
                 inBuf >> val;
                 abs.push_back(val);
                 inBuf >> val;
@@ -92,7 +92,7 @@ namespace mocc{
                     throw EXCEPT("Trouble reading XS data from library!");
                 }
             }
-    
+
             // Read in the scattering table
             std::vector<VecF> scatTable;
             for( size_t ig=0; ig<n_grp_; ig++ ) {
@@ -105,9 +105,9 @@ namespace mocc{
                 }
                 scatTable.push_back(scatRow);
             }
-            
+
             // produce a Material object and add it to the library
-            lib_materials_.push_back( 
+            lib_materials_.push_back(
                     Material(abs, nuFiss, fiss, chi, scatTable) );
             try {
                 material_names_[materialName] = imat;
@@ -116,7 +116,7 @@ namespace mocc{
             }
         }
     }
-    
+
     void MaterialLib::assignID(int id, std::string name){
         try {
             LogFile << "Mapping material '" << name << "' to ID "  << id

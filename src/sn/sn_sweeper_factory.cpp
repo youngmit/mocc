@@ -8,14 +8,14 @@
 #include "sn_sweeper_dd.hpp"
 
 namespace mocc {
-    UP_SnSweeper_t SnSweeperFactory( const pugi::xml_node &input, 
+    UP_SnSweeper_t SnSweeperFactory( const pugi::xml_node &input,
             const CoreMesh &mesh ) {
 
         std::string equation = "dd";
         if( input.attribute("equation") ) {
             equation = input.attribute("equation").value();
         }
-        std::cout << "Generating sn sweeper with equation: " 
+        std::cout << "Generating sn sweeper with equation: "
             << equation << std::endl;
 
         if( equation == "dd") {

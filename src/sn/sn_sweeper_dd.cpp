@@ -9,7 +9,7 @@ namespace mocc {
                 xstr_[ireg] = xstr;
             }
         }
-        
+
         flux_1g_ = flux_[ std::slice(n_reg_*group, n_reg_, 1) ];
 
         // Perform inner iterations
@@ -19,11 +19,11 @@ namespace mocc {
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents
                 coarse_data_->current.col( group ) = 0.0;
-                this->sweep_1g<sn::Current, CellWorker_DD>( group, 
+                this->sweep_1g<sn::Current, CellWorker_DD>( group,
                         cell_worker_ );
 std::cout << coarse_data_->current.col( group ) << std::endl << std::endl;
             } else {
-                this->sweep_1g<sn::NoCurrent, CellWorker_DD>( group, 
+                this->sweep_1g<sn::NoCurrent, CellWorker_DD>( group,
                         cell_worker_ );
             }
         }

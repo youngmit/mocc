@@ -8,7 +8,7 @@
 namespace mocc{
     class Material{
     public:
-    	Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch, 
+        Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
                 std::vector<VecF> scat);
         const VecF& xsab() const {
             return xsab_;
@@ -38,16 +38,16 @@ namespace mocc{
          * Return whether the material is fissile.
          */
         bool is_fissile() const {
-            return std::any_of(xsnf_.begin(), xsnf_.end(), 
+            return std::any_of(xsnf_.begin(), xsnf_.end(),
                     [](real_t v){return v>0.0;});
         }
 
     private:
-    	VecF xsab_;
-    	VecF xstr_;
-    	VecF xsnf_;
-    	VecF xsf_;
-    	VecF xsch_;
+        VecF xsab_;
+        VecF xstr_;
+        VecF xsnf_;
+        VecF xsf_;
+        VecF xsch_;
         ScatteringMatrix xssc_;
     };
 }

@@ -15,14 +15,14 @@ using std::cout;
 using std::endl;
 
 namespace mocc {
-    Lattice::Lattice( const pugi::xml_node &input, 
+    Lattice::Lattice( const pugi::xml_node &input,
             const std::map<int, UP_Pin_t> &pins ) {
         // Get lattice ID
         id_ = input.attribute( "id" ).as_int( 0 );
         if ( id_ == 0 ) {
             Error( "Trouble reading lattice ID." );
         }
-        
+
         // Get dimensions
         nx_ = input.attribute( "nx" ).as_int( 0 );
         ny_ = input.attribute( "ny" ).as_int( 0 );

@@ -9,9 +9,9 @@
 namespace mocc {
     class Plane {
     public:
-        Plane(const std::vector<const Lattice*> &lattices, size_t nx, 
+        Plane(const std::vector<const Lattice*> &lattices, size_t nx,
                 size_t ny);
-        
+
         const Lattice& at(size_t ix, size_t iy) const {
             return *(lattices_[ix + nx_*iy]);
         }
@@ -25,14 +25,14 @@ namespace mocc {
          * Pin. The value passed in is incremented by the region offset within
          * the Plane.
          */
-        const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;        
+        const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;
 
         /**
          * \brief Return a const pointer to the \ref PinMesh that is at the
          * passed \ref Position.
          */
         const PinMesh* get_pinmesh( Position pos ) const;
-    
+
         /**
          * Return the number of solution mesh regions in the \ref Plane
          */
@@ -54,7 +54,7 @@ namespace mocc {
             VecF vols;
             for( auto &lat: lattices_ ) {
                 for( auto &pin: *lat ) {
-                    vols.insert(vols.end(), pin->vols().begin(), 
+                    vols.insert(vols.end(), pin->vols().begin(),
                             pin->vols().end());
                 }
             }
@@ -79,7 +79,7 @@ namespace mocc {
 
         size_t n_reg_;
         size_t n_xsreg_;
-        
+
         /**
          * Locations of \ref Lattice interfaces
          */

@@ -8,21 +8,21 @@ using std::string;
 
 namespace mocc {
     void Error(const char* msg) {
-	    cout << "ERROR: " << msg << endl;
-	    exit(EXIT_FAILURE);
+        cout << "ERROR: " << msg << endl;
+        exit(EXIT_FAILURE);
     }
 
 
     void Warn(const char* msg) {
-    	cout << "WARNING: " << msg << endl;
+        cout << "WARNING: " << msg << endl;
     }
-    
+
     void Fail( Exception e ) {
         std::cout << e.what();
         exit(EXIT_FAILURE);
     }
 
-    Exception::Exception( const char* file, int line, const char* func, 
+    Exception::Exception( const char* file, int line, const char* func,
                 const char* msg ):
         file_( file ),
         line_( line ),

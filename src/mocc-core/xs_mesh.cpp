@@ -43,11 +43,11 @@ namespace mocc {
             // This is a bit of a hack until i use Eigen vectors or something
             // homebrew for storing these cross sections. need to add total
             // scattering to absorption to get xstr
-            regions_.emplace_back( fsrs[imat], 
+            regions_.emplace_back( fsrs[imat],
                     mat.xstr(),
-                    mat.xsnf(), 
-                    mat.xsch(), 
-                    mat.xskf(), 
+                    mat.xsnf(),
+                    mat.xsch(),
+                    mat.xskf(),
                     mat.xssc() );
             imat++;
         }

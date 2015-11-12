@@ -7,7 +7,7 @@
 
 namespace mocc {
     PinMesh_Rect::PinMesh_Rect( const pugi::xml_node &input ):
-        PinMesh( input ) 
+        PinMesh( input )
     {
         // Parse the number of x and y divisions
         int ndiv_x = input.child("sub_x").text().as_int(0);
@@ -38,21 +38,21 @@ namespace mocc {
         // Form lines representing the mesh boundaries
 
         for ( auto &xi: hx_ ) {
-            lines_.push_back( Line( Point2(xi, -h_pitch_y), 
+            lines_.push_back( Line( Point2(xi, -h_pitch_y),
                                     Point2(xi,  h_pitch_y) ) );
         }
         for ( auto &yi: hy_ ) {
-            lines_.push_back( Line( Point2(-h_pitch_x, yi), 
+            lines_.push_back( Line( Point2(-h_pitch_x, yi),
                                     Point2( h_pitch_x, yi) ) );
         }
-         
+
         // Determine FSR volumes
         vol_ = VecF(n_reg_, dx*dy);
 
-    	return;
+        return;
     }
 
-    int PinMesh_Rect::trace( Point2 p1, Point2 p2, int first_reg, VecF &s, 
+    int PinMesh_Rect::trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
             VecI &reg ) const {
 
         // Make a vector to store the collision points and add the start and end
@@ -60,10 +60,10 @@ namespace mocc {
         std::vector<Point2> ps;
         ps.push_back(p1);
         ps.push_back(p2);
-        
+
         // Create a line object for the input points to test for collisions with
         Line l(p1, p2);
-        
+
         // Test for collisions with all of the lines in the mesh
         for (auto &li: lines_) {
             Point2 p;
@@ -72,7 +72,7 @@ namespace mocc {
                 ps.push_back(p);
             }
         }
-        
+
         // Sort the points
         std::sort( ps.begin(), ps.end() );
         ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
@@ -80,7 +80,7 @@ namespace mocc {
         // Determine segment lengths and region indices
         for( unsigned int ip=1; ip<ps.size(); ip++ ) {
             s.push_back( ps[ip].distance(ps[ip-1]) );
-            reg.push_back( this->find_reg( Midpoint(ps[ip], ps[ip-1]) ) 
+            reg.push_back( this->find_reg( Midpoint(ps[ip], ps[ip-1]) )
                     + first_reg );
         }
 

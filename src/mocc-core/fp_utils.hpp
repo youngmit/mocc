@@ -4,7 +4,7 @@
 #include "global_config.hpp"
 
 namespace mocc {
-    
+
     namespace fp_utils {
         union float_int {
             float f;
@@ -30,7 +30,7 @@ namespace mocc {
             i2.i = 0x80000000 - i2.i;
         }
 
-        return std::abs(i1.i - i2.i) < 100; 
+        return std::abs(i1.i - i2.i) < 100;
     }
 
     inline bool fp_equiv_ulp(double v1, double v2) {
@@ -46,7 +46,7 @@ namespace mocc {
             i2.i = 0x80000000 - i2.i;
         }
 
-        return std::abs(i1.i - i2.i) < 100; 
+        return std::abs(i1.i - i2.i) < 100;
     }
 
     inline bool fp_equiv_rel(real_t v1, real_t v2) {

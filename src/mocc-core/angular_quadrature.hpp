@@ -76,7 +76,7 @@ namespace mocc {
         void modify_angle( int iang, Angle ang );
 
         // Provide stream insertion support
-        friend std::ostream& operator<<(std::ostream& os, 
+        friend std::ostream& operator<<(std::ostream& os,
                 const AngularQuadrature &angquad);
 
         /**

@@ -16,20 +16,20 @@ using std::cin;
 mocc::VecF temp;
 
 namespace mocc {
-    MoCSweeper::MoCSweeper( const pugi::xml_node& input, 
+    MoCSweeper::MoCSweeper( const pugi::xml_node& input,
             const CoreMesh& mesh ):
         TransportSweeper( mesh ),
         mesh_( mesh ),
         rays_( input.child("rays"),
                AngularQuadrature(input.child("ang_quad")),
-               mesh 
+               mesh
              ),
         ang_quad_( rays_.ang_quad() ),
         xstr_( n_reg_ ),
         flux_1g_( n_reg_ ),
         qbar_( n_reg_ ),
         bc_type_( mesh_.boundary() )
-    {   
+    {
 
         LogFile << "Constructing a base MoC sweeper" << std::endl;
 
@@ -64,7 +64,7 @@ namespace mocc {
                 // little simpler.
                 angle_rays.resize( ang_quad_.ndir_oct()*4 );
                 int iang = 0;
-                for( auto ang_it=ang_quad_.octant(1); 
+                for( auto ang_it=ang_quad_.octant(1);
                         ang_it!=ang_quad_.octant(5); ang_it++ ) {
                     angle_rays[iang].resize(rays_.n_rays(iang));
                     iang++;
@@ -77,7 +77,7 @@ namespace mocc {
             // little simpler.
             angle_rays.resize( ang_quad_.ndir_oct()*4 );
             int iang = 0;
-            for( auto ang_it=ang_quad_.octant(1); 
+            for( auto ang_it=ang_quad_.octant(1);
                     ang_it!=ang_quad_.octant(5); ang_it++ ) {
                 angle_rays[iang].resize(rays_.n_rays(iang));
                 iang++;
@@ -162,7 +162,7 @@ namespace mocc {
                         plane_bcs[iang][ibc] = 0.0;
                     }
                 }
-                
+
                 if( bc_type_[(int)upwind[1]] == Boundary::REFLECT ) {
                     int ang_ref = ang_quad_.reflect(iang, upwind[1]);
                     for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
@@ -220,8 +220,8 @@ namespace mocc {
 
         return;
     }
-    
-    real_t MoCSweeper::set_pin_flux_1g( int group, 
+
+    real_t MoCSweeper::set_pin_flux_1g( int group,
             const VecF &pin_flux)
     {
 
@@ -241,7 +241,7 @@ namespace mocc {
 
             fm_flux /= pin->vol();
             real_t f = pin_flux[i_coarse]/fm_flux;
-            
+
             ireg -= pin->n_reg();
             for( ; ireg<stop; ireg++ ) {
                 flux_[group*n_reg_ + ireg] = flux_[group*n_reg_ + ireg]*f;
@@ -259,10 +259,10 @@ namespace mocc {
         // Get core dimensions from the mesh
         VecI dims = mesh_.dimensions();
         std::reverse( dims.begin(), dims.end() );
-        
+
         // Make a group in the file to store the flux
         node->createGroup("flux");
-        
+
         VecF flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
 
@@ -270,7 +270,7 @@ namespace mocc {
         for( size_t ig=0; ig<n_group_; ig++ ){
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
-        
+
             flux_it = HDF::Write( node, setname.str(), flux_it,
                     flux_it+mesh_.n_pin(), dims );
         }

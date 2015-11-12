@@ -23,10 +23,10 @@ BOOST_AUTO_TEST_CASE( testsimple )
     pugi::xml_parse_result result = geom_xml.load_file( "6x5.xml" );
 
     BOOST_CHECK( result );
-    
+
     mocc::CoreMesh mesh( geom_xml );
     {
-        
+
         // Test a few rays that starts on a corner, ends on a corner and crosses
         // a bunch of corners
         {
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( testsimple )
 
             BOOST_CHECK_EQUAL( ray.nseg(), 12 );
             BOOST_CHECK_EQUAL( ray.ncseg(), 8 );
-            
+
             // all of the segment lengths should be the same. I'm not testing
             // this too much in the general sense, since the tests for the pin
             // meshes should find most of these types of issues.
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE( testsimple )
                 BOOST_CHECK_CLOSE( v, t, 0.00001 );
             }
 
-            std::vector<Surface> fw_surf = 
+            std::vector<Surface> fw_surf =
             {
                 Surface::EAST,
                 Surface::NORTH,
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( testsimple )
                 Surface::NORTH
             };
 
-            std::vector<Surface> bw_surf = 
+            std::vector<Surface> bw_surf =
             {
                 Surface::WEST,
                 Surface::SOUTH,
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( testsimple )
 
         {
             Ray ray( Point2(4.0,0.0), Point2(6.0,2.0), 0, 0, 0, mesh );
-            
+
             BOOST_CHECK_EQUAL( ray.cm_surf_fw(), 89 );
             BOOST_CHECK_EQUAL( ray.cm_cell_fw(), 4 );
             BOOST_CHECK_EQUAL( ray.cm_surf_bw(), 43 );
@@ -116,11 +116,11 @@ BOOST_AUTO_TEST_CASE( testall )
 
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "square.xml" );
-    
+
     mocc::CoreMesh mesh( geom_xml );
 
     pugi::xml_document angquad_xml;
-    result = 
+    result =
         angquad_xml.load_string("<ang_quad type=\"ls\" order=\"4\" />");
     // Make a nasty ray to exercise the coarse indexing
     {

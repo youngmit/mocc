@@ -33,7 +33,7 @@ namespace mocc {
          */
         Angle() {}
 
-        /** 
+        /**
          * Construct using alpha/theta
          */
         Angle( real_t alpha, real_t theta, real_t weight ):
@@ -56,14 +56,14 @@ namespace mocc {
             alpha = acos(ox/sin(theta));
             rsintheta = 1.0/sin(theta);
         }
-        
+
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, const Angle &ang );
     };
-    
+
     Angle ToOctant( Angle in, int octant );
 
     Angle ModifyAlpha ( Angle in, real_t new_alpha );
 
-    
+
 }

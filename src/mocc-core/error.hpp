@@ -12,7 +12,7 @@ namespace mocc {
 
     class Exception: public std::exception {
     public:
-        Exception( const char* file, int line, const char* func, 
+        Exception( const char* file, int line, const char* func,
                 const char* msg );
 
         const char* what() const noexcept;
@@ -25,7 +25,7 @@ namespace mocc {
         std::string print_message_;
     };
 
-    
+
     extern void Fail( Exception e );
 
 

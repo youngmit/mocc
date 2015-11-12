@@ -33,7 +33,7 @@ namespace mocc {
             mesh_(moc.mesh()),
             sn_source_( sn.n_reg(), &(sn.xs_mesh()), sn.flux() )
         {
-            
+
         }
 
         /**
@@ -82,7 +82,7 @@ namespace mocc {
             sn_source_.in_scatter( ig );
         }
 
-        
+
         Source* get_sn_source() {
             return &sn_source_;
         }

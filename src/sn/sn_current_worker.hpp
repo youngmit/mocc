@@ -19,10 +19,10 @@ namespace mocc {
          */
         class Current {
         public:
-            Current( CoarseData *data, const Mesh *mesh ): 
+            Current( CoarseData *data, const Mesh *mesh ):
                 data_( data ),
                 mesh_( mesh )
-            { 
+            {
                 return;
             }
 
@@ -30,7 +30,7 @@ namespace mocc {
              * Store the upwind boundary condition as a contribution to the
              * coarse mesh current.
              */
-            inline void upwind_work( const ArrayF &x, const ArrayF &y, 
+            inline void upwind_work( const ArrayF &x, const ArrayF &y,
                     const ArrayF &z, const Angle &ang, int group ) {
 
                 size_t nx = mesh_->nx();
@@ -65,7 +65,7 @@ namespace mocc {
                         data_->current(surf, group) += ang.ox*x[ny*iz + iy];
                     }
                 }
-                
+
                 // Y-normal
                 for( size_t iz=0; iz<nz; iz++ ) {
                     for( size_t ix=0; ix<nx; ix++ ) {
@@ -85,11 +85,11 @@ namespace mocc {
                         data_->current(surf, group) += ang.oz*z[ny*iy + ix];
                     }
                 }
-                
+
                 return;
             }
 
-            /** 
+            /**
              * Store the downwind surface flux of a single cell as a
              * contribution to the coarse mesh current.
              */
@@ -109,7 +109,7 @@ namespace mocc {
                     size_t surf = mesh_->coarse_surf( i, downwind_y_ );
                     data_->current( surf, group ) += psi_y*ang.oy;
                 }
-                
+
                 // Z-normal
                 {
                     size_t surf = mesh_->coarse_surf( i, downwind_z_ );
@@ -134,7 +134,7 @@ namespace mocc {
                     downwind_z_ = Surface::BOTTOM;
                 }
                 oct = ((oct-1) % 4) + 1;
-                
+
                 upwind_x_ = Surface::WEST;
                 downwind_x_ = Surface::EAST;
                 if( (oct == 2) || (oct == 3) ) {
@@ -148,7 +148,7 @@ namespace mocc {
                     upwind_y_ = Surface::NORTH;
                     downwind_y_ = Surface::SOUTH;
                 }
-                
+
                 return;
             }
 
@@ -164,7 +164,7 @@ namespace mocc {
             Surface downwind_z_;
 
         };
-    
+
         /**
          * This class is intended to be used as a template parameter for an
          * SnSweeper sweep kernel (see \ref SnSweeper::sweep_1g() for an example).
@@ -177,8 +177,8 @@ namespace mocc {
             NoCurrent( CoarseData *data, const Mesh *mesh ) {
                 return;
             }
-            
-            inline void upwind_work( const ArrayF &x, const ArrayF &y, 
+
+            inline void upwind_work( const ArrayF &x, const ArrayF &y,
                     const ArrayF &z, const Angle &ang, int group )
             {
                 return;

@@ -14,7 +14,7 @@ using std::cin;
 using std::endl;
 
 namespace mocc {
-    MoCSweeper_2D3D::MoCSweeper_2D3D( const pugi::xml_node &input, 
+    MoCSweeper_2D3D::MoCSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
         MoCSweeper( input, mesh ),
         corrections_( nullptr )
@@ -43,8 +43,8 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
-                cmdo::CurrentCorrections cw( coarse_data_, &mesh_, 
-                        corrections_, qbar_, xstr_, ang_quad_, rays_, 
+                cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
+                        corrections_, qbar_, xstr_, ang_quad_, rays_,
                         *sn_xs_mesh_ );
                 this->sweep1g( group, cw );
             } else {

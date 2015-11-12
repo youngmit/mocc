@@ -33,13 +33,13 @@ namespace mocc {
 
         // Return the number of materials in the library
         unsigned int n_materials() const {
-            return n_material_; 
+            return n_material_;
         }
 
         // Return the map of materials by ID
         const MaterialVec& materials() const {
             return lib_materials_;
-        } 
+        }
 
         // Return the index of the material given a material ID
         unsigned int get_index_by_id( unsigned int id ) const {
@@ -68,7 +68,7 @@ namespace mocc {
         MaterialVec::const_iterator end() const {
             return assigned_materials_.cend();
         }
-        
+
     private:
         // Vector storing all of the materials in the library.
         MaterialVec lib_materials_;

@@ -19,7 +19,7 @@ namespace mocc {
     class Exponential {
     public:
         Exponential():
-            max_error_( 0.0 ) 
+            max_error_( 0.0 )
         { }
 
         inline virtual real_t exp( real_t v ) {

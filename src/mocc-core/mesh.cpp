@@ -22,27 +22,27 @@ namespace mocc {
                     int cell_offset = i*6;
 
                     surf = Surface::EAST;
-                    coarse_surf_[cell_offset+(int)surf] = surf_offset + 
+                    coarse_surf_[cell_offset+(int)surf] = surf_offset +
                         nxsurf*iy + ix + 1 + nx_*ny_;
 
                     surf = Surface::WEST;
-                    coarse_surf_[cell_offset+(int)surf] = surf_offset + 
+                    coarse_surf_[cell_offset+(int)surf] = surf_offset +
                         nxsurf*iy + ix + nx_*ny_;
 
                     surf = Surface::NORTH;
-                    coarse_surf_[cell_offset+(int)surf] = surf_offset + 
+                    coarse_surf_[cell_offset+(int)surf] = surf_offset +
                         nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*ix + iy + 1;
-                    
+
                     surf = Surface::SOUTH;
-                    coarse_surf_[cell_offset+(int)surf] = surf_offset + 
+                    coarse_surf_[cell_offset+(int)surf] = surf_offset +
                         nxsurf*ny_ + nysurf*ix + iy + nx_*ny_;
 
                     surf = Surface::BOTTOM;
-                    coarse_surf_[cell_offset+(int)surf] = surf_offset + 
+                    coarse_surf_[cell_offset+(int)surf] = surf_offset +
                         nx_*iy + ix;
 
                     surf = Surface::TOP;
-                    coarse_surf_[cell_offset+(int)surf] = surf_offset + 
+                    coarse_surf_[cell_offset+(int)surf] = surf_offset +
                         nx_*ny_ + nxysurf + nx_*iy + ix;
 
                     i++;
@@ -53,8 +53,8 @@ namespace mocc {
         return;
     }
 
-    int Mesh::coarse_surf_point( Point2 p, int cell, int (&s)[2] ) 
-            const 
+    int Mesh::coarse_surf_point( Point2 p, int cell, int (&s)[2] )
+            const
     {
         bool on_x = false;
         bool on_y = false;
@@ -158,14 +158,14 @@ namespace mocc {
             }
 
 
-        
+
 
             /// So to break down the rules
             /// - on the domain boundary, only return the surface normal to the
             /// boundary. This may need to be re-addressed when we start
             /// thinking about spatial decomposition.
             /// - on the interior, go x normal first, then y normal.
-            
+
             // Handle the boundary case
             if( ix == 0 ) {
                 int neighbor = this->coarse_neighbor( cell, corner_y );
@@ -255,7 +255,7 @@ namespace mocc {
                 ps.push_back( intersection );
             }
         }
-        
+
         // Sort the points and remove duplicates
         std::sort(ps.begin(), ps.end());
         ps.erase( std::unique(ps.begin(), ps.end()), ps.end() );
@@ -266,7 +266,7 @@ namespace mocc {
     /// For now, this is a 2D routine. The cell returned is forced into the
     /// zeroth plane
     int Mesh::coarse_cell_point( Point2 p ) const {
-        auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) - 
+        auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) -
             x_vec_.begin() - 1;
         auto iy = std::distance( y_vec_.begin(),
                 std::lower_bound( y_vec_.begin(), y_vec_.end(), p.y ) ) - 1;
@@ -275,10 +275,10 @@ namespace mocc {
         return this->coarse_cell( Position(ix, iy, 0) );
     }
 
-    size_t Mesh::coarse_norm_point( Point2 p, int octant, Surface (&s)[2] ) 
+    size_t Mesh::coarse_norm_point( Point2 p, int octant, Surface (&s)[2] )
             const {
         assert( octant < 5 );
-        
+
         bool on_x = false;
         bool on_y = false;
 

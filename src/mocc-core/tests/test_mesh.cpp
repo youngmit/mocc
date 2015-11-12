@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE( testall )
 {
     // For now, mostly just testing the coarse ray data, since its the easiest
     // to screw up.
-    
+
     // Make a simple mesh, 1.0 cm pitch to keep things simple, 6x5
     mocc::VecF x;
     mocc::VecF y;
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE( testall )
     z.push_back(0.0);
     z.push_back(1.0);
 
-    Boundary bc[6] = 
+    Boundary bc[6] =
     {
         Boundary::REFLECT,
         Boundary::REFLECT,

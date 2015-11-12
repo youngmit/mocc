@@ -6,9 +6,9 @@
 #include "fp_utils.hpp"
 
 namespace mocc {
-    Plane::Plane( const std::vector<const Lattice*> &lattices, 
+    Plane::Plane( const std::vector<const Lattice*> &lattices,
             size_t nx, size_t ny ):
-        lattices_(lattices) 
+        lattices_(lattices)
     {
         assert(lattices.size() == nx*ny);
 
@@ -64,7 +64,7 @@ namespace mocc {
 
     /**
      * \brief Given a Point2 in core-local coordinates, return a const pointer
-     * to the corresponding PinMesh. 
+     * to the corresponding PinMesh.
      * \param[in,out] p a Point2 in core-local coordinates. Will be modified
      * (see below).
      * \param[in,out] first_reg the first FSR index of the Plane. Will be
@@ -101,7 +101,7 @@ namespace mocc {
 
         // Increment the first region index by the starting index of the lattice
         first_reg += first_reg_lattice_[ilat];
-        
+
         // Ask lattice for reference to pin mesh, with modification of first_reg
         const PinMesh *pm = this->at(ix, iy).get_pinmesh(p, first_reg);
 

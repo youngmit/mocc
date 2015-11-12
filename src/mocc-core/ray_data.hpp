@@ -48,7 +48,7 @@ namespace mocc {
         typedef std::vector< std::vector <std::vector<Ray> > > RaySet_t;
         typedef std::vector< std::vector<Ray> > PlaneRays_t;
     public:
-        RayData( const pugi::xml_node &input, 
+        RayData( const pugi::xml_node &input,
                  const AngularQuadrature &ang_quad,
                  const CoreMesh &mesh );
 
@@ -59,7 +59,7 @@ namespace mocc {
             return rays_.cbegin();
         }
 
-        /** 
+        /**
          * Iterator to the end of the ray data (by plane)
          */
         RaySet_t::const_iterator end() const {
@@ -119,7 +119,7 @@ namespace mocc {
         /**
          * Provide stream insertion support.
          */
-        friend std::ostream& operator<<( std::ostream &os, 
+        friend std::ostream& operator<<( std::ostream &os,
                 const RayData &rays );
 
         /**
@@ -128,7 +128,7 @@ namespace mocc {
         const PlaneRays_t& operator[]( size_t id ) const {
             return rays_[id];
         }
-    
+
     private:
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
@@ -157,7 +157,7 @@ namespace mocc {
 
         // Maximum number of ray segments in a single ray
         size_t max_seg_;
-        
+
         /**
          * Perform a volume-correction of the ray segment lengths. This can be
          * done in two ways: using an angular integral of the ray volumes, or

@@ -23,7 +23,7 @@ namespace mocc {
         class CurrentWorker {
         public:
             virtual void post_ray( const ArrayF &psi5, const ArrayF &psi2,
-                    const ArrayF &e_tau, const Ray &ray, int first_reg, 
+                    const ArrayF &e_tau, const Ray &ray, int first_reg,
                     int group) = 0;
 
             virtual void set_angle( Angle ang, real_t spacing ) = 0;
@@ -50,7 +50,7 @@ namespace mocc {
              * is useful for when you need to do something with the angluar
              * flux.
              */
-            inline void post_ray( const ArrayF &psi1, const ArrayF &psi2, 
+            inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
                     const ArrayF &e_tau, const Ray &ray, int first_reg,
                     int group ) {
                 return;
@@ -109,7 +109,7 @@ namespace mocc {
                 current_weights_[2] = ang.weight * spacing * ang.oz;
             }
 
-            inline void post_ray( const ArrayF &psi1, const ArrayF &psi2, 
+            inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
                     const ArrayF &e_tau, const Ray &ray, int first_reg,
                     int group ) {
                 size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
@@ -121,9 +121,9 @@ namespace mocc {
 
                 Normal norm_fw = mesh_->surface_normal( surf_fw );
                 Normal norm_bw = mesh_->surface_normal( surf_bw );
-                coarse_data_->current( surf_fw, group ) += 
+                coarse_data_->current( surf_fw, group ) +=
                     psi1[iseg_fw] * current_weights_[(int)norm_fw];
-                coarse_data_->current( surf_bw, group ) -= 
+                coarse_data_->current( surf_bw, group ) -=
                     psi2[iseg_bw] * current_weights_[(int)norm_bw];
 
                 auto begin = ray.cm_data().cbegin();
@@ -134,7 +134,7 @@ namespace mocc {
                         iseg_fw += crd->nseg_fw;
                         norm_fw = surface_to_normal( crd->fw );
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
-                        coarse_data_->current( surf_fw, group ) += 
+                        coarse_data_->current( surf_fw, group ) +=
                             psi1[iseg_fw] * current_weights_[(int)norm_fw];
                     }
 
@@ -142,7 +142,7 @@ namespace mocc {
                         iseg_bw -= crd->nseg_bw;
                         norm_bw = surface_to_normal( crd->bw );
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
-                        coarse_data_->current( surf_bw, group ) -= 
+                        coarse_data_->current( surf_bw, group ) -=
                             psi2[iseg_bw] * current_weights_[(int)norm_bw];
                     }
 
@@ -166,6 +166,6 @@ namespace mocc {
             int surf_offset_;
         };
 
-        
+
     }
 }

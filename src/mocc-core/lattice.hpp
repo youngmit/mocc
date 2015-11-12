@@ -16,9 +16,9 @@
 namespace mocc {
     class Lattice {
     public:
-        Lattice( const pugi::xml_node &input, 
+        Lattice( const pugi::xml_node &input,
                  const std::map<int, UP_Pin_t> &pins );
-        
+
         unsigned int id() const {
             return id_;
         }
@@ -27,7 +27,7 @@ namespace mocc {
         unsigned int nx() const {
             return nx_;
         }
-        
+
         // Number of pins in the y direction
         unsigned int ny() const {
             return ny_;
@@ -104,7 +104,7 @@ namespace mocc {
         VecF hy_vec_;
         VecF x_vec_;
         VecF y_vec_;
-        
+
         // Array of pins in the lattice
         std::vector<Pin*> pins_;
 

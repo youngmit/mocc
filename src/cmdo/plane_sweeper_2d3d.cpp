@@ -32,14 +32,14 @@ namespace mocc {
         n_group_ = xs_mesh_->n_group();
 
         sn_sweeper_.set_corrections( &corrections_ );
-        const XSMeshHomogenized* sn_xs_mesh = 
+        const XSMeshHomogenized* sn_xs_mesh =
             sn_sweeper_.get_homogenized_xsmesh().get();
         moc_sweeper_.set_coupling( &corrections_, sn_xs_mesh );
 
         sn_sweeper_.set_ang_quad(ang_quad_);
 
         coarse_data_ = nullptr;
-        
+
         return;
     }
 
@@ -70,7 +70,7 @@ namespace mocc {
                         (moc_flux[i] - sn_sweeper_.flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
-        
+
         sn_resid_[group].push_back(residual);
         cout << "MoC/Sn residual: " << residual << endl;
     }
@@ -105,7 +105,7 @@ namespace mocc {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    void PlaneSweeper_2D3D::calc_fission_source( real_t k, 
+    void PlaneSweeper_2D3D::calc_fission_source( real_t k,
             ArrayF &fission_source ) const {
         moc_sweeper_.calc_fission_source( k, fission_source );
         return;
@@ -115,10 +115,10 @@ namespace mocc {
     void PlaneSweeper_2D3D::add_tl( int group ) {
         assert( coarse_data_ );
         ArrayF tl_fsr( 0.0, n_reg_ );
-        
+
         int ireg_pin = 0;
         int ipin = 0;
-        
+
         blitz::Array<real_t, 1> tl_g = tl_(group, blitz::Range::all());
 
         for( const auto &pin: mesh_ ) {
@@ -137,7 +137,7 @@ namespace mocc {
             ipin++;
             ireg_pin += pin->n_reg();
         }
-        
+
         // Can add the TL as an auxiliary source directly to the Source_2D3D,
         // since it extends the MoC source in the first place
         source_->auxiliary( tl_fsr );
@@ -156,7 +156,7 @@ namespace mocc {
             H5::Group g = file->createGroup( "/MoC" );
             moc_sweeper_.output( &g );
         }
-        
+
         VecI dims;
         dims.push_back(mesh_.nz());
         dims.push_back(mesh_.ny());
@@ -178,8 +178,8 @@ namespace mocc {
             setname << "/TL/" << setfill('0') << setw(3) << g;
 
             const auto tl_slice = tl_((int)g, blitz::Range::all());
-            
-            HDF::Write( file, setname.str(), tl_slice.begin(), tl_slice.end(), 
+
+            HDF::Write( file, setname.str(), tl_slice.begin(), tl_slice.end(),
                     dims );
         }
 
@@ -198,7 +198,7 @@ namespace mocc {
                     alpha_y[i] = corrections_.alpha( i, a, g, Normal::Y_NORM );
                     beta[i] = corrections_.beta( i, a, g );
                 }
-                
+
                 {
                     std::stringstream setname;
                     setname << "/beta/" << g << "_" << a;
@@ -207,14 +207,14 @@ namespace mocc {
 
                 {
                     std::stringstream setname;
-                    setname << "/alpha_x/" << setfill('0') << setw(3) << g 
+                    setname << "/alpha_x/" << setfill('0') << setw(3) << g
                             << "_"         << setfill('0') << setw(3) << a;
                     HDF::Write( file, setname.str(), alpha_x, dims );
                 }
 
                 {
                     std::stringstream setname;
-                    setname << "/alpha_y/" << setfill('0') << setw(3) << g 
+                    setname << "/alpha_y/" << setfill('0') << setw(3) << g
                             << "_"         << setfill('0') << setw(3) << a;
                     HDF::Write( file, setname.str(), alpha_y, dims );
                 }

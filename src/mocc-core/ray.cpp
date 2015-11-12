@@ -16,7 +16,7 @@ inline int get_octant( mocc::Point2 p1, mocc::Point2 p2 ) {
 
 
 namespace mocc {
-    /** 
+    /**
      * \param p1 the starting point of the \ref Ray.
      * \param p2 the ending point of the \ref Ray.
      * \param bc1 the boundary condition index corresponding to p1.
@@ -32,7 +32,7 @@ namespace mocc {
      * with the pin cell edges (using \ref CoreMesh::trace()), then the internal
      * surface crossings for each pin (using \ref PinMesh::trace()).
      */
-    Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane, 
+    Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane,
             const CoreMesh &mesh ):
         bc_{bc1, bc2},
         p1_(p1),
@@ -65,7 +65,7 @@ namespace mocc {
                     seg_len_, seg_index_);
 
             cm_nseg.push_back( nseg );
-            
+
             p_prev = *pi;
         }
 
@@ -166,7 +166,7 @@ namespace mocc {
 
         return;
     }
-    
+
     std::ostream& operator<<( std::ostream& os, const Ray &ray ) {
         os << "[" << ray.p1_ << ", " << ray.p2_ << "]";
 

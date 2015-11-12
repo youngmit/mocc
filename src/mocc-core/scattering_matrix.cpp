@@ -55,7 +55,7 @@ namespace mocc {
         return;
     }
 
-    std::ostream& operator<<( std::ostream& os, 
+    std::ostream& operator<<( std::ostream& os,
             const ScatteringMatrix &scat_mat ) {
         for( auto &row: scat_mat.rows_ ) {
             size_t gmin = row.min_g;

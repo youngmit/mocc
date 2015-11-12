@@ -46,19 +46,19 @@ namespace mocc {
         size_t size() {
             return alpha_.size();
         }
-            
 
-        inline real_t& alpha( size_t reg, size_t ang, size_t group, 
+
+        inline real_t& alpha( size_t reg, size_t ang, size_t group,
                 Normal norm )
         {
-            return alpha_[ nreg_*nang_*2*group + nreg_*2*ang + 2*reg + 
+            return alpha_[ nreg_*nang_*2*group + nreg_*2*ang + 2*reg +
                 (int)norm ];
         }
-        
-        inline const real_t alpha( size_t reg, size_t ang, size_t group, 
+
+        inline const real_t alpha( size_t reg, size_t ang, size_t group,
                 Normal norm ) const
         {
-            return alpha_[ nreg_*nang_*2*group + nreg_*2*ang + 2*reg + 
+            return alpha_[ nreg_*nang_*2*group + nreg_*2*ang + 2*reg +
                 (int)norm ];
         }
 

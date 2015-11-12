@@ -16,7 +16,7 @@ namespace mocc {
         ang_quad_( input.child("ang_quad") ),
         bc_type_( mesh.boundary() ),
         flux_1g_( mesh_.n_pin() ),
-        xstr_( mesh.n_pin() ), 
+        xstr_( mesh.n_pin() ),
         q_( mesh_.n_pin() ),
         bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
         bc_out_( 1, ang_quad_, mesh_ )
@@ -51,7 +51,7 @@ namespace mocc {
         // Parse the number of inner iterations
         int int_in = input.attribute("n_inner").as_int(-1);
         if( int_in < 0 ) {
-            throw EXCEPT("Invalid number of inner iterations specified " 
+            throw EXCEPT("Invalid number of inner iterations specified "
                     "(n_inner).");
         }
         n_inner_ = int_in;
@@ -62,16 +62,16 @@ namespace mocc {
     void SnSweeper::homogenize( CoarseData &data ) const {
         return;
     }
-   
+
     void SnSweeper::initialize() {
         flux_ = 1.0;
         flux_old_ = 1.0;
         bc_in_.initialize(1.0/FPI);
-        
+
         return;
     }
 
-    void SnSweeper::get_pin_flux_1g( int ig, VecF& flux ) const { 
+    void SnSweeper::get_pin_flux_1g( int ig, VecF& flux ) const {
         size_t n = mesh_.n_pin();
         flux.clear();
 
@@ -86,10 +86,10 @@ namespace mocc {
     void SnSweeper::output( H5::CommonFG *node ) const {
         auto dims = mesh_.dimensions();
         std::reverse( dims.begin(), dims.end() );
-        
+
         // Make a group in the file to store the flux
         node->createGroup("flux");
-        
+
         VecF flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
 
@@ -98,8 +98,8 @@ namespace mocc {
         for( unsigned int ig=0; ig<n_group_; ig++ ) {
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
-        
-            flux_it = HDF::Write( node, setname.str(), flux_it, 
+
+            flux_it = HDF::Write( node, setname.str(), flux_it,
                     flux_it+mesh_.n_pin(), dims);
         }
 

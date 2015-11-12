@@ -10,7 +10,7 @@ using std::cout;
 const static int out_w = 14;
 
 namespace mocc{
-    EigenSolver::EigenSolver( const pugi::xml_node &input, 
+    EigenSolver::EigenSolver( const pugi::xml_node &input,
             const CoreMesh &mesh ):
         fss_( input, mesh ),
         fission_source_( fss_.n_reg() ),
@@ -51,7 +51,7 @@ namespace mocc{
             // construct the CMFD solver using the mesh from the transport
             // sweeper
             /// \todo rename sweeper() to get_sweeper()
-            cmfd_.reset( new CMFD( (Mesh*)&mesh, 
+            cmfd_.reset( new CMFD( (Mesh*)&mesh,
                         fss_.sweeper_mut()->get_homogenized_xsmesh() ) );
             // Associate the sweeper with the coarse data from the CMFD solver
             CoarseData * const cd = cmfd_->get_data();
@@ -69,7 +69,7 @@ namespace mocc{
         // initialize the fixed source solver and calculation the initial
         // fission source
         fss_.initialize();
-        
+
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
         fission_source_prev_ = fission_source_;
 
@@ -84,7 +84,7 @@ namespace mocc{
         bool done = false;
 
         cout << std::setw(out_w) << "Iter."
-             << std::setw(out_w) << "k" 
+             << std::setw(out_w) << "k"
              << std::setw(out_w) << "k error"
              << std::setw(out_w) << "psi error" << endl;
 
@@ -105,7 +105,7 @@ namespace mocc{
 
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k, error_psi) );
-            
+
             this->print( n_iterations, convergence_.back() );
 
             done = ((error_k < tolerance_k_) & (error_psi < tolerance_psi_)) |
@@ -121,7 +121,7 @@ namespace mocc{
         // Perform a group sweep with the FSS
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
         fss_.step();
-        
+
         // Get the total fission sources
         real_t tfis1 = fss_.sweeper()->total_fission(false);
         real_t tfis2 = fss_.sweeper()->total_fission(true);
@@ -142,7 +142,7 @@ namespace mocc{
         os   << std::setw(out_w) << std::fixed
                  << std::setprecision(10) << conv.k
              << std::setw(out_w) << std::scientific
-                 << std::setprecision(6) << conv.error_k 
+                 << std::setprecision(6) << conv.error_k
              << std::setw(out_w) << std::setiosflags(std::ios::scientific)
                  << std::setprecision(6) << conv.error_psi;
 

@@ -55,8 +55,8 @@ namespace mocc {
             angles_[iang + ioct*ndir_oct_] = ToOctant(ang, ioct+1);
         }
     }
-    
-    std::ostream& operator<<(std::ostream& os, 
+
+    std::ostream& operator<<(std::ostream& os,
             const AngularQuadrature &angquad) {
         const int w = 12;
         os << std::setw(w) << "Alpha"

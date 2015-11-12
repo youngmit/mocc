@@ -33,7 +33,7 @@ namespace mocc {
         {
 
         }
-        
+
         // return the euclidian distance between the point and another point
         real_t distance(Point2 p) {
             return sqrt((x-p.x)*(x-p.x) + (y-p.y)*(y-p.y));
@@ -154,7 +154,7 @@ namespace mocc {
 
     };
 
-    struct Circle { 
+    struct Circle {
         Point2 c;
         real_t r;
         Circle(Point2 c, real_t r): c(c), r(r) { }
@@ -171,8 +171,8 @@ namespace mocc {
     }
 
     // Intersection between a circle and a line segment. Return value carries
-    // the number of valid intersections that were found 
-    // http://mathworld.wolfram.com/Circle-LineIntersection.html 
+    // the number of valid intersections that were found
+    // http://mathworld.wolfram.com/Circle-LineIntersection.html
     inline int Intersect( Line l, Circle circ, Point2 &p1, Point2 &p2 ) {
         int ret = 0;
         real_t u1 = l.p2.x - l.p1.x;
@@ -196,7 +196,7 @@ namespace mocc {
             p1.ok = false;
             p2.ok = false;
             return 0;
-            
+
         } else if ( fp_equiv_rel(discriminant, 0.0) ) {
             // Tangent. Dont bother
             p1.ok = false;
@@ -206,7 +206,7 @@ namespace mocc {
             // Whoopie, we have a couple of points
             p1.ok = true;
             p2.ok = true;
-            
+
             real_t ra = 1.0/a;
             discriminant = sqrt(discriminant);
             real_t t1 = (-b-discriminant)*ra;

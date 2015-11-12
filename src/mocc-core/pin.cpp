@@ -12,10 +12,10 @@
 #include "string_utils.hpp"
 
 namespace mocc {
-    Pin::Pin( const pugi::xml_node &input, 
+    Pin::Pin( const pugi::xml_node &input,
             const std::map<int, UP_PinMesh_t> &meshes ):
         id_( input.attribute("id").as_int( 0 ) )
-    { 
+    {
         // Check ID validity
         if ( id_ == 0 ) {
             Error( "Failed to read pin ID." );

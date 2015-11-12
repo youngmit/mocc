@@ -12,20 +12,20 @@ using std::string;
 using std::stringstream;
 
 namespace mocc {
-    Assembly::Assembly( const pugi::xml_node &input, 
+    Assembly::Assembly( const pugi::xml_node &input,
                         const std::map<int, Lattice> &lattices ) {
         // Parse assembly ID
         id_ = input.attribute("id").as_int(0);
         if (id_ == 0) {
             Error("Invalid assembly ID.");
         }
-        
+
         // Parse number of planes
         nz_ = input.attribute("np").as_int(0);
         if (nz_ == 0) {
             Error("Invalid number of planes (nz) when parsing assembly.");
         }
-        
+
         // Parse plane heights (scalar form)
         bool scalar_hz = false;
         float hz = input.attribute("hz").as_float(0.0f);
@@ -70,7 +70,7 @@ namespace mocc {
                 Error("Incorrect number of lattices specified for assembly.");
             }
         }
-        
+
         // Store lattice dimensions
         hx_ = lattices_[0]->hx();
         hy_ = lattices_[0]->hy();

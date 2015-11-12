@@ -24,7 +24,7 @@ namespace mocc {
         ny_ = 0;
     }
 
-    Core::Core( const pugi::xml_node &input, 
+    Core::Core( const pugi::xml_node &input,
                 const std::map<int, UP_Assembly_t> &assemblies):
         nx_( input.attribute("nx").as_int(0) ),
         ny_( input.attribute("ny").as_int(0) ),
@@ -48,7 +48,7 @@ namespace mocc {
                 throw EXCEPT("Not all boundary conditions properly specified.");
             }
         }
-        
+
         // Read in the assembly IDs
         std::string asy_str = input.child_value();
         std::stringstream inBuf( trim(asy_str) );
@@ -71,7 +71,7 @@ namespace mocc {
                 unsigned int col = ix;
                 int asy_id = asy_vec[iasy++];
                 try {
-                    Assembly* asy_p = 
+                    Assembly* asy_p =
                         assemblies.at( asy_id ).get();
                     assemblies_[row*nx_ + col] = asy_p;
                 } catch(std::out_of_range) {
@@ -92,7 +92,7 @@ namespace mocc {
 
         for( unsigned int i=0; i<nz; i++ ) {
             real_t hz = (*assemblies_.begin())->hz(i);
-            for( auto asy = assemblies_.begin(); 
+            for( auto asy = assemblies_.begin();
                  asy != assemblies_.end(); ++asy ) {
                 if ((*asy)->hz(i) != hz) {
                     Error("Assemblies have incompatible plane heights in "

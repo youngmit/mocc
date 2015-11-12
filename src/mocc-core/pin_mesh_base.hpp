@@ -19,10 +19,10 @@ namespace mocc {
 
         virtual ~PinMesh() {
         }
-    	
+
         unsigned int id() const {
-    		return id_;
-    	}
+            return id_;
+        }
 
         unsigned int n_reg() const {
             return n_reg_;
@@ -62,7 +62,7 @@ namespace mocc {
          * Given an entry and exit point, which should be on the boundary of the
          * pin (in pin-local coordinates), and the index of the first FSR in the
          * pin, append values to the vectors of segment length and corresponding
-         * region index. 
+         * region index.
          *
          *
          * The segment lengths are uncorrected, which is to say that they are
@@ -71,7 +71,7 @@ namespace mocc {
          * guaranteed to return the correct FSR volume. Make sure to correct for
          * this after stracing all of the rays in a given angle.
         */
-        virtual int trace( Point2 p1, Point2 p2, int first_reg, VecF &s, 
+        virtual int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
                 VecI &reg ) const =0;
 
         /**
@@ -91,24 +91,24 @@ namespace mocc {
         virtual size_t n_fsrs( unsigned int xsreg ) const =0;
 
     protected:
-    	size_t id_;
+        size_t id_;
         size_t n_reg_;
         size_t n_xsreg_;
-    	real_t pitch_x_;
-    	real_t pitch_y_;
+        real_t pitch_x_;
+        real_t pitch_y_;
         VecF vol_;
     };
-    
+
     /**
      * This is a simple struct that contains a const pointer to a \ref PinMesh,
      * along with a Position describing its location. This is essentially a
      * useful tuple for returning both values from a lookup function (see
      * \ref CoreMesh::get_pinmesh() and \ref Plane::get_pinmesh()).
-    */ 
+    */
     struct PinMeshTuple {
         PinMeshTuple( Position pos, const PinMesh *pm ):
             position( pos ),
-            pm( pm ) 
+            pm( pm )
         { }
         Position position;
         const PinMesh *pm;

@@ -17,7 +17,7 @@ namespace mocc {
         ng_ = eubounds_.size();
 
         regions_ = std::vector<XSMeshRegion>( mesh_.n_pin() );
-        
+
         int ipin = 0;
         int first_reg = 0;
         for( const auto &pin: mesh_ ) {
@@ -44,7 +44,7 @@ namespace mocc {
         for( const auto &pin: mesh_ ) {
             int ireg = mesh_.index_lex( mesh_.pin_position(ipin) );
             int ixsreg = ireg;
-            regions_[ixsreg] = this->homogenize_region_flux( ireg, first_reg, 
+            regions_[ixsreg] = this->homogenize_region_flux( ireg, first_reg,
                     *pin, flux);
 
             ipin++;
@@ -52,8 +52,8 @@ namespace mocc {
         }
         return;
     }
-    
-    XSMeshRegion XSMeshHomogenized::homogenize_region( int i, 
+
+    XSMeshRegion XSMeshHomogenized::homogenize_region( int i,
             const Pin& pin) const {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
@@ -113,7 +113,7 @@ namespace mocc {
         return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
     }
 
-    XSMeshRegion XSMeshHomogenized::homogenize_region_flux( int i, 
+    XSMeshRegion XSMeshHomogenized::homogenize_region_flux( int i,
             int first_reg, const Pin& pin, const ArrayF &flux ) const {
 
         size_t n_reg = mesh_.n_reg();
@@ -210,7 +210,7 @@ namespace mocc {
 
         return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
     }
-           
+
 
     void XSMeshHomogenized::output( H5::CommonFG *file ) const {
         file->createGroup( "/xsmesh" );
@@ -260,5 +260,5 @@ namespace mocc {
         return;
     }
 
-    
+
 }

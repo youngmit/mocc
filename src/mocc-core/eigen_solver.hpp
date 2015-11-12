@@ -21,9 +21,9 @@ namespace mocc{
         real_t k;
         real_t error_k;
         real_t error_psi;
-        
+
         // Stream insertion
-        friend std::ostream& operator<<( std::ostream& os, 
+        friend std::ostream& operator<<( std::ostream& os,
                 ConvergenceCriteria conv);
     };
 
@@ -33,11 +33,11 @@ namespace mocc{
         EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
         void solve();
         void step();
-        
+
         const TransportSweeper* sweeper() const {
             return fss_.sweeper();
         }
-        
+
         // Implement the output interface
         void output( H5::CommonFG *file ) const {
             VecF k;
@@ -62,7 +62,7 @@ namespace mocc{
 
     private:
         FixedSourceSolver fss_;
-        
+
         // Fission source, and previous iterate
         ArrayF fission_source_;
         ArrayF fission_source_prev_;

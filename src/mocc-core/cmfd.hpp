@@ -17,7 +17,7 @@ namespace mocc {
 
         void project( ArrayX &flux );
 
-        /** 
+        /**
          * Return a pointer to the coarse data. This is used to couple sweepers
          * and other objects that need access to the coarse data to the CMFD
          * solver.

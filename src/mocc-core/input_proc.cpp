@@ -22,17 +22,17 @@ namespace mocc{
     InputProc::InputProc(const char* filename){
         LogFile << "Processing input" << endl;
         LogFile << "Parsing: " << filename << endl;
-        
+
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file( filename );
 
         // Make sure this worked
         if( result.status != pugi::status_ok ) {
-            std::cout << "XML parse error: " << result.description() 
+            std::cout << "XML parse error: " << result.description()
                 << std::endl;
             throw EXCEPT("Error encountered in parsing XML file.");
         }
-        
+
         // Generate the core mesh
         core_mesh_ = std::make_shared<CoreMesh>( doc );
 
@@ -43,7 +43,7 @@ namespace mocc{
         return;
     }
 
-    
+
 
 
 };

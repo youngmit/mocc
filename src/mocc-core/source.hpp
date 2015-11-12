@@ -53,7 +53,7 @@ namespace mocc {
          * interal representation of the source, but instead returns the result
          * to the caller through the qbar argument.
          */
-        virtual void self_scatter( size_t ig, ArrayF& flux_1g, 
+        virtual void self_scatter( size_t ig, ArrayF& flux_1g,
                 ArrayF& qbar ) const;
 
         /**

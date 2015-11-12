@@ -39,7 +39,7 @@ namespace mocc {
 
         ~CoreMesh();
 
-        /** 
+        /**
         * Return the number of geometrically-unique planes
         */
         size_t n_unique_planes() const {
@@ -66,7 +66,7 @@ namespace mocc {
         * this param
         *
         * \todo document thie first_reg parameter. important!
-        * 
+        *
         * This routine provides a means by which to locate the \ref PinMesh
         * object that fills the space in which the passed Point resides. This is
         * useful during ray tracing to determine the geometry that needs to be
@@ -85,7 +85,7 @@ namespace mocc {
         * can simply offset the ray points by the new location of \p p to get
         * into pin-local coordinates.
         */
-        const PinMeshTuple get_pinmesh( Point2 &p, size_t iz, 
+        const PinMeshTuple get_pinmesh( Point2 &p, size_t iz,
                 int &first_reg) const;
 
         /**
@@ -125,7 +125,7 @@ namespace mocc {
         std::vector<const Pin*>::const_iterator end() const {
             return core_pins_.cend();
         }
-        
+
         /**
         * Return a const reference to the material library.
         */
@@ -154,7 +154,7 @@ namespace mocc {
         unsigned int index_lex( Position pos ) const {
             return pos.x + pos.y*nx_ + pos.z*nx_*ny_;
         }
-        
+
         /*
         * Return a \ref Position, indicating the global position of a pin in the
         * core geometry.
@@ -200,7 +200,7 @@ namespace mocc {
 
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
-        
+
         // List of plane heights
         VecF hz_vec_;
 
@@ -218,7 +218,7 @@ namespace mocc {
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
 
-        
+
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

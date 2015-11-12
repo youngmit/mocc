@@ -15,7 +15,7 @@ namespace mocc {
     class Core {
     public:
         Core();
-        Core( const pugi::xml_node &input, 
+        Core( const pugi::xml_node &input,
               const std::map<int, UP_Assembly_t> &assemblies);
         ~Core();
 
@@ -73,7 +73,7 @@ namespace mocc {
         // Core dimensions (in assemblies)
         unsigned int nx_;
         unsigned int ny_;
-        
+
         // Core dimensions (in pins)
         unsigned int npinx_;
         unsigned int npiny_;

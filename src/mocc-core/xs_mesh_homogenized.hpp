@@ -29,15 +29,15 @@ namespace mocc {
         void output( H5::CommonFG *file ) const;
     private:
         const CoreMesh& mesh_;
-        
-        /** 
+
+        /**
         * \brief Return an XSMeshRegion containing homogenized cross sections
         * from a pin cell. No flux wieghting is performed, only volume
         * weighting.
         */
         XSMeshRegion homogenize_region( int i, const Pin& pin ) const;
-        
-        /** 
+
+        /**
         * \brief Return an XSMeshRegion containing homogenized cross sections
         * from a pin cell. Use the passed scalar flux to perform flux-volume
         * weighting.
@@ -57,7 +57,7 @@ namespace mocc {
         * sections in the passed \ref Pin object and returns an \ref
         * XSMeshRegion object containing the homogenized cross sections.
         */
-        XSMeshRegion homogenize_region_flux( int i, int first_reg, 
+        XSMeshRegion homogenize_region_flux( int i, int first_reg,
                 const Pin& pin, const ArrayF &flux ) const;
     };
 

@@ -15,8 +15,8 @@ namespace {
         0.174077655955702, 0.161575000000000, 0.149071198499989};
 
     mocc::real_t w_unique[] = {
-        1.0, 
-        1.0/3.0, 
+        1.0,
+        1.0/3.0,
         0.1761262, 0.1572071,
         0.1209876, 0.0907408, 0.0925925,
         0.0893043, 0.0725281, 0.0450455, 0.0539274,
@@ -27,7 +27,7 @@ namespace {
 
     int w_offset[] = {0, 1, 2, 4, 7, 11, 16, 23};
 
-    int w_map[] = { 
+    int w_map[] = {
         1,
         1, 1, 1,
         1, 2, 2, 1, 2, 1,
@@ -60,7 +60,7 @@ std::vector<mocc::Angle> GenSn( int order ){
     mocc::VecF mu;
     mu.push_back(mu_base[n-1]);
     if( order > 2) {
-        const mocc::real_t delta_mu = 2.0 * ( 1.0 - 
+        const mocc::real_t delta_mu = 2.0 * ( 1.0 -
                 3.0*(mu[0]*mu[0]) ) / (mocc::real_t)(order-2);
         for (int i=1; i<n; i++) {
             mu.push_back( sqrt(mu[0]*mu[0] + i*delta_mu) );
@@ -79,7 +79,7 @@ std::vector<mocc::Angle> GenSn( int order ){
     int k=0;
     for( int i=0; i<n; i++ ) {
         for( int j=0; j<=i; j++ ) {
-            mocc::Angle angle( mu[i-j],   
+            mocc::Angle angle( mu[i-j],
                                mu[j],
                                mu[n-i-1],
                                weights[map[k]-1]);

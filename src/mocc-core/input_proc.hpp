@@ -18,7 +18,7 @@ namespace mocc{
         * Given the filename of an XML document, parses the document into a tree
         * structure, then uses it to generate a CoreMesh and top-level Solver.
         */
-    	InputProc(const char* filename);
+        InputProc(const char* filename);
 
         /**
         * Return a shared pointer to the CoreMesh.

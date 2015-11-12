@@ -6,7 +6,7 @@
 #include "mocc-core/constants.hpp"
 
 using std::endl;
-using std::cout; 
+using std::cout;
 
 namespace mocc {
     Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayF& flux ):
@@ -74,14 +74,14 @@ namespace mocc {
 
     // This can get away with being const, since we are actually returning the
     // source to the caller. Nothing should get touched internally
-    void Source::self_scatter( size_t ig, ArrayF& flux_1g, 
+    void Source::self_scatter( size_t ig, ArrayF& flux_1g,
             ArrayF& qbar ) const {
         for( auto &xsr: *xs_mesh_ ) {
             const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
             real_t xssc = scat_row.from[ig-scat_row.min_g];
             real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
             for ( auto &ireg: xsr.reg() ) {
-                qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) * 
+                qbar[ireg] = ( source_1g_[ireg] + flux_1g[ireg]*xssc ) *
                     r_fpi_tr;
             }
         }
