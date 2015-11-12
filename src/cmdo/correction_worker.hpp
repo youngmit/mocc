@@ -22,13 +22,12 @@ namespace mocc {
             CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh,
                     CorrectionData *corrections, const ArrayF &qbar,
                     const ArrayF &xstr, const AngularQuadrature &ang_quad,
-                    const RayData &rays, const XSMeshHomogenized &sn_xs_mesh ):
+                    const XSMeshHomogenized &sn_xs_mesh ):
                 moc::Current( coarse_data, mesh ),
                 corrections_( corrections ),
                 qbar_( qbar ),
                 xstr_( xstr ),
                 ang_quad_( ang_quad ),
-                rays_( rays ),
                 sn_xs_mesh_( sn_xs_mesh ),
                 surf_sum_( mesh_->n_surf_plane()*2 ),
                 vol_sum_( mesh_->n_cell_plane()*2 ),
@@ -151,7 +150,6 @@ namespace mocc {
             const ArrayF &qbar_;
             const ArrayF &xstr_;
             const AngularQuadrature &ang_quad_;
-            const RayData &rays_;
             const XSMeshHomogenized &sn_xs_mesh_;
 
             ArrayF surf_sum_;

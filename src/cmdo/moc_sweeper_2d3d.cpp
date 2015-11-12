@@ -44,8 +44,7 @@ namespace mocc {
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
                 cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
-                        corrections_, qbar_, xstr_, ang_quad_, rays_,
-                        *sn_xs_mesh_ );
+                        corrections_, qbar_, xstr_, ang_quad_, *sn_xs_mesh_ );
                 this->sweep1g( group, cw );
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );

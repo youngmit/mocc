@@ -59,8 +59,6 @@ namespace mocc {
 
             for( size_t ic=0; ic<mesh_->n_cell_plane(); ic++ )
             {
-                auto pos = mesh_->coarse_position(ic);
-
                 real_t xstr = sn_xs_mesh_[ic].xsmactr()[group];
 
                 // FW direction
