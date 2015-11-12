@@ -40,6 +40,8 @@ namespace mocc {
 
         coarse_data_ = nullptr;
 
+        this->parse_options( input );
+
         return;
     }
 
@@ -52,9 +54,11 @@ namespace mocc {
         sn_sweeper_.get_homogenized_xsmesh()->update( moc_sweeper_.flux() );
         sn_sweeper_.sweep( group );
 
-        VecF sn_flux;
-        sn_sweeper_.get_pin_flux_1g( group, sn_flux );
-        moc_sweeper_.set_pin_flux_1g( group, sn_flux );
+        if( do_snproject_ ) {
+            VecF sn_flux;
+            sn_sweeper_.get_pin_flux_1g( group, sn_flux );
+            moc_sweeper_.set_pin_flux_1g( group, sn_flux );
+        }
         // Calculate transverse leakage source
         //this->add_tl( group );
 
@@ -222,9 +226,23 @@ namespace mocc {
         }
     }
 
-    void PlaneSweeper_2D3D::project_sn( int group ) {
-        // for now doing a pretty stupid implementation. Get the pin flux from
-        // moc, compare to Sn flux, go back through and adjust
-        return;
+////////////////////////////////////////////////////////////////////////////////
+    // At some point it might be nice to make the options const and initialized
+    // them in the initializer list, then just check for validity later. This if
+    // fine for now.
+    void PlaneSweeper_2D3D::parse_options( const pugi::xml_node &input ) {
+        // Set defaults for everything
+        do_snproject_ = true;
+
+
+        // Override with entries in the input node
+        if( !input.attribute("sn_project").empty() ) {
+            do_snproject_ = input.attribute("sn_project").as_bool();
+        }
+
+        LogFile << "2D3D Sweeper options:" << std::endl;
+        LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
+
+
     }
 }

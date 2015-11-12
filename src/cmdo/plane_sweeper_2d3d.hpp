@@ -95,8 +95,12 @@ namespace mocc {
         }
 
     private:
+        // Parse the various options from the XML
+        void parse_options( const pugi::xml_node &input );
+        // Calculate transverse leakage based on the state of the coarse_data_
+        // and apply to the MoC sweeper's source.
         void add_tl( int group );
-        void project_sn( int group );
+
 
         const CoreMesh& mesh_;
         SnSweeper_CDD sn_sweeper_;
@@ -107,5 +111,8 @@ namespace mocc {
 
         // Sn-MoC residuals by group sweep
         std::vector<VecF> sn_resid_;
+
+        // Options! Buttons and knobs!!!
+        bool do_snproject_;
     };
 }
