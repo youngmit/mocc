@@ -49,13 +49,16 @@ namespace mocc {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
 
-        // Calculate transverse leakage source
-        this->add_tl( group );
-
-        moc_sweeper_.sweep( group );
-
         sn_sweeper_.get_homogenized_xsmesh()->update( moc_sweeper_.flux() );
         sn_sweeper_.sweep( group );
+
+        VecF sn_flux;
+        sn_sweeper_.get_pin_flux_1g( group, sn_flux );
+        moc_sweeper_.set_pin_flux_1g( group, sn_flux );
+        // Calculate transverse leakage source
+        //this->add_tl( group );
+
+        moc_sweeper_.sweep( group );
 
         // Compute Sn-MoC residual
         VecF moc_flux;
@@ -174,9 +177,6 @@ namespace mocc {
             std::stringstream setname;
             setname << "/TL/" << setfill('0') << setw(3) << g;
 
-            /** \todo this whole thing is a travesty. I really need to get my own
-             * storage stuff set up so i dont have to deal with these copies
-             */
             const auto tl_slice = tl_((int)g, blitz::Range::all());
             
             HDF::Write( file, setname.str(), tl_slice.begin(), tl_slice.end(), 
@@ -220,5 +220,11 @@ namespace mocc {
                 }
             }
         }
+    }
+
+    void PlaneSweeper_2D3D::project_sn( int group ) {
+        // for now doing a pretty stupid implementation. Get the pin flux from
+        // moc, compare to Sn flux, go back through and adjust
+        return;
     }
 }

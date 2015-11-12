@@ -17,22 +17,22 @@ inline int get_octant( mocc::Point2 p1, mocc::Point2 p2 ) {
 
 namespace mocc {
     /** 
-     * \param p1 the starting point of the Ray.
-     * \param p2 the ending point of the Ray.
+     * \param p1 the starting point of the \ref Ray.
+     * \param p2 the ending point of the \ref Ray.
      * \param bc1 the boundary condition index corresponding to p1.
      * \param bc2 the boundary condition index corresponding to p2.
-     * \param iz the index of the geometry to trace. This can be any Z index
-     * that contains the geometrically-unique place that we are generating ray
-     * data for.
+     * \param iplane the index of the geometry to trace. This corresponds to an
+     * index in the \ref CoreMesh of unique geometries, which does not
+     * necessarily correspond to a physical location.
      * \param mesh a reference to the CoreMesh to trace.
      *
-     * A Ray is defined by two Point2 structs, specifying the beginning and end
-     * of a ray, on the boundary of the problem. Given these two points, all of
-     * the segments of the ray are determined by first finding intersections
-     * with the pin cell edges (using CoreMesh::trace()), then the internal
-     * surface crossings for each pin (using PinMesh::trace()).
+     * A Ray is defined by two \ref Point2 structs, specifying the beginning and
+     * end of a ray, on the boundary of the problem. Given these two points, all
+     * of the segments of the ray are determined by first finding intersections
+     * with the pin cell edges (using \ref CoreMesh::trace()), then the internal
+     * surface crossings for each pin (using \ref PinMesh::trace()).
      */
-    Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iz, 
+    Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane, 
             const CoreMesh &mesh ):
         bc_{bc1, bc2},
         p1_(p1),
@@ -59,7 +59,7 @@ namespace mocc {
             auto pin_p = Midpoint(*pi, p_prev);
 
             int first_reg = 0;
-            const PinMeshTuple pmt = mesh.get_pinmesh(pin_p, iz, first_reg);
+            const PinMeshTuple pmt = mesh.get_pinmesh(pin_p, iplane, first_reg);
 
             int nseg = pmt.pm->trace(p_prev-pin_p, *pi-pin_p, first_reg,
                     seg_len_, seg_index_);
@@ -72,9 +72,9 @@ namespace mocc {
         // Figure out the coarse mesh data for the ray. Start with the starting
         // cells and surfaces.
         /** \todo Think about moving some of this logic into the Mesh itself.
-         * Have the Mesh::trace() method also insert instances of the
-         * RayCoarseData struct into a passed vector. Not sure if the best idea,
-         * but might be really neat.
+         * Have the \ref Mesh::trace() method also insert instances of the
+         * \ref RayCoarseData struct into a passed vector. Not sure if the best
+         * idea, but might be really neat.
          */
         size_t ns = 0;
         Surface s[2];

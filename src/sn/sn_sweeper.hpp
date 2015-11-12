@@ -44,6 +44,21 @@ namespace mocc {
             return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
         }
 
+        /**
+         * Just copy the flux across, since no homogenization is necessary.
+         */
+        real_t set_pin_flux_1g( int group, const VecF &pin_flux ) {
+            real_t resid = 0.0;
+            size_t i = 0;
+            for( auto &v: pin_flux ) {
+                real_t e = flux_[group*n_reg_ + i] - v;
+                resid += e*e;
+                flux_[group*n_reg_ + i] = v;
+                i++;
+            }
+            return std::sqrt(resid);
+        }
+
     protected:
         const CoreMesh &mesh_;
 

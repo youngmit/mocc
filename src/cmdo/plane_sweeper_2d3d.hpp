@@ -32,7 +32,7 @@ namespace mocc {
         void output( H5::CommonFG *file ) const;
 
         void homogenize( CoarseData &data ) const {
-            
+            throw EXCEPT("Not implemented");
         }
 
         /** 
@@ -89,8 +89,14 @@ namespace mocc {
             sn_sweeper_.set_coarse_data( cd );
         }
 
+        real_t set_pin_flux_1g( int group, const VecF &pin_flux ) {
+            throw EXCEPT("Not Implemented");
+            return 0.0;
+        }
+
     private:
         void add_tl( int group );
+        void project_sn( int group );
 
         const CoreMesh& mesh_;
         SnSweeper_CDD sn_sweeper_;

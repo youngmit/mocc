@@ -158,12 +158,21 @@ namespace mocc{
          */
         virtual real_t flux_residual() const;
 
-        /// Compute the total fission source based on the current state of the
-        /// flux
+        /**
+         * Compute the total fission source based on the current state of the
+         * flux
+         */
         virtual real_t total_fission( bool old=false ) const;
 
-        /// Homogenize flux and group constants to a CoarseData object
+        /**
+         * Homogenize flux and group constants to a CoarseData object
+         */
         virtual void homogenize( CoarseData &data ) const = 0;
+
+        /**
+         * \brief Project a pin-mesh flux to the fine mesh. Return the residual.
+         */
+        virtual real_t set_pin_flux_1g( int group, const VecF &pin_flux ) = 0;
 
     protected:
         const CoreMesh *core_mesh_;

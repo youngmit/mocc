@@ -41,7 +41,9 @@ namespace mocc {
 
         void output( H5::CommonFG *node ) const;
 
-        void homogenize( CoarseData &data ) const;
+        void homogenize( CoarseData &data ) const {
+            throw EXCEPT("Not Implemented");
+        }
 
         /**
          * Return a copy of the sweeper's angular quadrature.
@@ -54,6 +56,8 @@ namespace mocc {
             return SP_XSMeshHomogenized_t( 
                     new XSMeshHomogenized( mesh_ ) );
         }
+
+        real_t set_pin_flux_1g( int group, const VecF &pin_flux );
     protected:
         const CoreMesh& mesh_;
 

@@ -39,7 +39,7 @@ namespace mocc {
         };
     public:
         /** \brief Construct a ray from two starting points. */
-        Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iz, 
+        Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane, 
                 const CoreMesh &mesh );
 
         size_t nseg() const {
@@ -51,7 +51,7 @@ namespace mocc {
         }
 
         /**
-         * Return a reference to the coarse ray data
+         * \brief Return a reference to the coarse ray data
          */
         const std::vector<RayCoarseData>& cm_data() const {
             return cm_data_;

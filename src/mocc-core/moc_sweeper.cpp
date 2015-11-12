@@ -197,11 +197,6 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper::homogenize( CoarseData &data ) const {
-        
-        return;
-    }
-
     void MoCSweeper::get_pin_flux_1g( int group, VecF& flux ) const {
         flux.resize( mesh_.n_pin() );
         for( auto &f: flux ) {
@@ -224,6 +219,40 @@ namespace mocc {
         }
 
         return;
+    }
+    
+    real_t MoCSweeper::set_pin_flux_1g( int group, 
+            const VecF &pin_flux)
+    {
+
+        VecF fm_flux;
+        this->get_pin_flux_1g( group, fm_flux );
+        real_t resid = 0.0;
+        size_t ipin = 0;
+        size_t ireg = 0;
+        for( const auto &pin: mesh_ ) {
+            size_t i_coarse = mesh_.index_lex( mesh_.pin_position(ipin) );
+            real_t fm_flux = 0.0;
+
+            size_t stop = ireg+pin->n_reg();
+            for( ; ireg<stop; ireg++ ) {
+                fm_flux += vol_[ireg]*flux_[group*n_reg_ + ireg];
+            }
+
+            fm_flux /= pin->vol();
+            real_t f = pin_flux[i_coarse]/fm_flux;
+            
+            ireg -= pin->n_reg();
+            for( ; ireg<stop; ireg++ ) {
+                flux_[group*n_reg_ + ireg] = flux_[group*n_reg_ + ireg]*f;
+            }
+
+
+
+            real_t e = fm_flux - pin_flux[i_coarse];
+            resid += e*e;
+        }
+        return std::sqrt(resid);
     }
 
     void MoCSweeper::output( H5::CommonFG *node ) const {
