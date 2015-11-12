@@ -37,6 +37,16 @@ namespace mocc {
         }
 
         /**
+         * Replace the standard group initializer with a call to the base type
+         * and the Sn source inside.
+         */
+        void initialize_group( int group ) {
+            Source::initialize_group( group );
+            sn_source_.initialize_group( group );
+            return;
+        }
+
+        /**
          * Replaces the standard fission source calculation with a delecation to
          * the base Source::fission() routine for MoC, a homogenization of the
          * FM fission source to the Sn mesh, and a call to Source::fission() on
