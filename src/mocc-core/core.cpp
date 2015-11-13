@@ -127,8 +127,8 @@ namespace mocc {
     Core::~Core() {
     }
 
-    Core ParseCores( const pugi::xml_node &input, 
-            const std::mat<int, UP_Assembly_t> assemblies ) {
+    Core ParseCore( const pugi::xml_node &input, 
+            const std::map<int, UP_Assembly_t> &assemblies ) {
         Core core;
         int n_core_enabled = 0;
         for( auto core_xml = input.child("core"); core_xml;
@@ -138,7 +138,7 @@ namespace mocc {
                 core_enabled = core_xml.attribute("enabled").as_bool();
             }
             if( core_enabled ) {
-                core = Core(core_xml, assemblies_);
+                core = Core(core_xml, assemblies);
                 n_core_enabled++;
             }
         }
