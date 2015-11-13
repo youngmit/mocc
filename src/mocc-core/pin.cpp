@@ -18,16 +18,16 @@ namespace mocc {
     {
         // Check ID validity
         if ( id_ == 0 ) {
-            Error( "Failed to read pin ID." );
+            throw EXCEPT( "Failed to read pin ID." );
         }
 
         // Get pin mesh ID
         mesh_id_ = input.attribute( "mesh" ).as_int( 0 );
         if ( mesh_id_ == 0 ) {
-            Error( "Failed to read pin mesh ID." );
+            throw EXCEPT( "Failed to read pin mesh ID." );
         }
         if ( meshes.count( mesh_id_ ) == 0 ) {
-            Error( "Invalid pin mesh ID." );
+            throw EXCEPT( "Invalid pin mesh ID." );
         }
 
         pin_mesh_ = meshes.at(mesh_id_).get();
@@ -44,11 +44,25 @@ namespace mocc {
             mat_IDs_.push_back( mat_id );
         }
         if( inBuf.fail() ){
-            Error( "Trouble reading material IDs in pin definition." );
+            throw EXCEPT( "Trouble reading material IDs in pin definition." );
         }
 
         if ( mat_IDs_.size() != pin_mesh_->n_xsreg() ) {
-            Error( "Wrong number of materials specified in pin definition" );
+            throw EXCEPT( "Wrong number of materials specified in pin "
+                    "definition" );
         }
+    }
+
+    std::map<int, UP_Pin_t> ParsePins( const pugi::xml_node &input, 
+            const std::map<int, UP_PinMesh_t> &meshes ) {
+        std::map<int, UP_Pin_t> pins;
+        for ( auto pin = input.child( "pin" ); pin;
+                pin = pin.next_sibling( "pin" ) )
+        {
+            // Construct the pin and add to the map
+            UP_Pin_t pin_p( new Pin( pin, meshes ) );
+            pins.emplace( pin_p->id(), std::move(pin_p) );
+        }
+        return pins;
     }
 }

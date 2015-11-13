@@ -2,8 +2,10 @@
 #include <map>
 #include <string>
 
-#include "global_config.hpp"
+#include "pugixml.hpp"
+
 #include "file_scrubber.hpp"
+#include "global_config.hpp"
 #include "material.hpp"
 
 namespace mocc {
@@ -25,6 +27,8 @@ namespace mocc {
          * where this gets did.
          */
         MaterialLib(FileScrubber &input);
+
+        MaterialLib( const pugi::xml_node &input );
 
         /**
          * Assign an ID to a material in the library.

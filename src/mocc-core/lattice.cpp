@@ -153,4 +153,17 @@ namespace mocc {
         first_reg += first_reg_pin_[i];
         return &this->at(ix, iy).mesh();
     }
+
+    std::map<int, UP_Lattice_t> ParseLattices( const pugi::xml_node &input, 
+            const std::map<int, UP_Pin_t> &pins ) {
+        std::map<int, UP_Lattice_t> lattices;
+        for ( pugi::xml_node lat = input.child( "lattice" ); lat;
+                lat = lat.next_sibling( "lattice" )) {
+            Lattice lattice( lat, pins );
+            lattices.emplace( lattice.id(), 
+                    UP_Lattice_t( new Lattice(lat, pins) ) );
+        }
+
+        return lattices;
+    }
 }

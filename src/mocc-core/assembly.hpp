@@ -14,7 +14,7 @@ namespace mocc {
     class Assembly {
     public:
         Assembly( const pugi::xml_node &input,
-                  const std::map<int, Lattice> &lattices );
+                  const std::map<int, UP_Lattice_t> &lattices );
 
         ~Assembly();
 
@@ -93,11 +93,15 @@ namespace mocc {
         real_t hx_;
         real_t hy_;
 
-        unsigned int n_reg_;
-        unsigned int n_xsreg_;
+        size_t n_reg_;
+        size_t n_xsreg_;
 
         std::vector<const Lattice*> lattices_;
     };
 
     typedef std::unique_ptr<Assembly> UP_Assembly_t;
+
+    
+    std::map<int, UP_Assembly_t> ParseAssemblies( const pugi::xml_node &input, 
+            const std::map<int, UP_Lattice_t> lattices );
 }

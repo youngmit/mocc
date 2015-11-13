@@ -127,4 +127,31 @@ namespace mocc {
     Core::~Core() {
     }
 
+    Core ParseCores( const pugi::xml_node &input, 
+            const std::mat<int, UP_Assembly_t> assemblies ) {
+        Core core;
+        int n_core_enabled = 0;
+        for( auto core_xml = input.child("core"); core_xml;
+                core_xml = core_xml.next_sibling("core") ) {
+            bool core_enabled = true;
+            if( !core_xml.attribute("enabled").empty() ) {
+                core_enabled = core_xml.attribute("enabled").as_bool();
+            }
+            if( core_enabled ) {
+                core = Core(core_xml, assemblies_);
+                n_core_enabled++;
+            }
+        }
+
+        if( n_core_enabled == 0 ) {
+            throw EXCEPT("No enabled core specifications.");
+        }
+
+        if( n_core_enabled > 1 ) {
+            throw EXCEPT("More than one enabled core specification found. Tell "
+                    "me which one to use");
+        }
+
+        return core;
+    }
 }

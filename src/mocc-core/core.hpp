@@ -89,4 +89,7 @@ namespace mocc {
         // boundary conditions
         std::vector<Boundary> bc_;
     };
+
+    Core ParseCores( const pugi::xml_node &input, 
+            const std::mat<int, UP_Assembly_t> assemblies );
 }

@@ -183,7 +183,7 @@ namespace mocc {
         std::map<int, UP_Pin_t> pins_;
 
         // Map of lattice objects
-        std::map<int, Lattice> lattices_;
+        std::map<int, UP_Lattice_t> lattices_;
 
         // Map of assembly objects
         std::map<int, UP_Assembly_t> assemblies_;

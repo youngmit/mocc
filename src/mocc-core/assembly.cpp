@@ -13,17 +13,19 @@ using std::stringstream;
 
 namespace mocc {
     Assembly::Assembly( const pugi::xml_node &input,
-                        const std::map<int, Lattice> &lattices ) {
+            const std::map<int, UP_Lattice_t> &lattices )
+    {
         // Parse assembly ID
         id_ = input.attribute("id").as_int(0);
         if (id_ == 0) {
-            Error("Invalid assembly ID.");
+            throw EXCEPT("Invalid assembly ID.");
         }
 
         // Parse number of planes
         nz_ = input.attribute("np").as_int(0);
         if (nz_ == 0) {
-            Error("Invalid number of planes (nz) when parsing assembly.");
+            throw EXCEPT("Invalid number of planes (nz) when parsing "
+                    "assembly.");
         }
 
         // Parse plane heights (scalar form)
@@ -39,7 +41,7 @@ namespace mocc {
         if ( auto hz_in = input.child("hz") ){
             if ( scalar_hz ) {
                 // hz is over-defined
-                Error("Plane heights are over-specified for assembly.");
+                throw EXCEPT("Plane heights are over-specified for assembly.");
             }
             string hzs = hz_in.child_value();
             stringstream hzstream(hzs);
@@ -61,13 +63,14 @@ namespace mocc {
                 int lat_id;
                 inBuf >> lat_id;
                 if ( lattices.count(lat_id) > 0 ) {
-                    lattices_.push_back( &(lattices.at(lat_id)) );
+                    lattices_.push_back( lattices.at(lat_id).get() );
                 } else {
-                    Error("Unrecognized lattice ID in assembly.");
+                    throw EXCEPT("Unrecognized lattice ID in assembly.");
                 }
             }
             if( lattices_.size() != nz_ ) {
-                Error("Incorrect number of lattices specified for assembly.");
+                throw EXCEPT("Incorrect number of lattices specified for "
+                        "assembly.");
             }
         }
 
@@ -88,5 +91,18 @@ namespace mocc {
 
     Assembly::~Assembly(){
         return;
+    }
+
+    std::map<int, UP_Assembly_t> ParseAssemblies( const pugi::xml_node &input, 
+            const std::map<int, UP_Lattice_t> lattices ) {
+        std::map<int, UP_Assembly_t> assemblies;
+
+        for( pugi::xml_node asy = input.child("assembly"); asy;
+                asy = asy.next_sibling("assembly") ) {
+            UP_Assembly_t asy_p( new Assembly( asy, lattices ) );
+            assemblies.emplace( asy_p->id(), std::move(asy_p) );
+        }
+
+        return assemblies;
     }
 }

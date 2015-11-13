@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "error.hpp"
+#include "files.hpp"
 
 namespace mocc {
     // Determine which type of pin to create from an XML object, produce a mesh
@@ -30,5 +31,20 @@ namespace mocc {
         }
 
         return pm;
+    }
+
+    std::map<int, UP_PinMesh_t> ParsePinMeshes( const pugi::xml_node &input ) {
+        std::map<int, UP_PinMesh_t> pin_meshes;
+        for (pugi::xml_node mesh = input.child( "mesh" );
+                mesh; mesh = mesh.next_sibling( "mesh" ))
+        {
+            LogFile << "Parsing new pin mesh: ID="
+            << mesh.attribute( "id" ).value() << std::endl;
+            UP_PinMesh_t pm( PinMeshFactory( mesh ) );
+            int id = pm->id();
+            pin_meshes.emplace(id, std::move( pm ) );
+        }
+
+        return pin_meshes;
     }
 }

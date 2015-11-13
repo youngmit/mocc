@@ -58,4 +58,11 @@ namespace mocc {
 
     typedef std::shared_ptr<Pin> SP_Pin_t;
     typedef std::unique_ptr<Pin> UP_Pin_t;
+
+    /**
+     * \brief Given an XML node containing one or more \<pin\> tags, parse the
+     * \ref Pin entries into a map.
+     */
+    std::map<int, UP_Pin_t> ParsePins( const pugi::xml_node &input, 
+            const std::map<int, UP_PinMesh_t> &meshes );
 }

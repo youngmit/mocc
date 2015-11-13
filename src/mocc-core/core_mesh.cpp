@@ -1,12 +1,12 @@
 #include "core_mesh.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <algorithm>
 
-#include "files.hpp"
 #include "error.hpp"
+#include "files.hpp"
 #include "string_utils.hpp"
 
 
@@ -22,80 +22,22 @@ namespace mocc {
      */
     CoreMesh::CoreMesh(pugi::xml_node &input) {
         // Parse meshes
-        for (pugi::xml_node mesh = input.child( "mesh" );
-             mesh;
-             mesh = mesh.next_sibling( "mesh" )) {
-            LogFile << "Parsing new pin mesh: ID="
-            << mesh.attribute( "id" ).value() << endl;
-            UP_PinMesh_t pm( PinMeshFactory( mesh ) );
-            int id = pm->id();
-            pin_meshes_.emplace(id, std::move( pm ) );
-        }
+        pin_meshes_ = ParsePinMeshes( input );
 
         // Parse Material Library
-        if( input.child( "material_lib" ).empty() ) {
-            Error("No material library specified.");
-        }
-        std::string matLibName =
-            input.child( "material_lib" ).attribute( "path" ).value();
-        LogFile << "Found material library specification: " << matLibName
-                << std::endl;
-        FileScrubber matLibFile( matLibName.c_str(), "!" );
-        mat_lib_ = MaterialLib( matLibFile );
-
-        // Parse material IDs
-        for (pugi::xml_node mat = input.child( "material_lib" ).
-                child( "material" );
-                mat; mat = mat.next_sibling( "material" )){
-            mat_lib_.assignID( mat.attribute( "id" ).as_int(),
-                               mat.attribute( "name" ).value() );
-        }
+        mat_lib_ = MaterialLib( input.child("material_lib") );
 
         // Parse pins
-        for ( pugi::xml_node pin = input.child( "pin" ); pin;
-                pin = pin.next_sibling( "pin" ) ) {
-
-            // Construct the pin and add to the map
-            UP_Pin_t pin_p( new Pin( pin, pin_meshes_ ) );
-            pins_.emplace( pin_p->id(), std::move(pin_p) );
-        }
+        pins_ = ParsePins( input, pin_meshes_ ); 
 
         // Parse lattices
-        for ( pugi::xml_node lat = input.child( "lattice" ); lat;
-                lat = lat.next_sibling( "lattice" )) {
-            Lattice lattice( lat, pins_ );
-            lattices_.emplace( lattice.id(), lattice );
-        }
+        lattices_ = ParseLattices( input, pins_ );
 
         // Parse assemblies
-        for( pugi::xml_node asy = input.child("assembly"); asy;
-                asy = asy.next_sibling("assembly") ) {
-            UP_Assembly_t asy_p( new Assembly( asy, lattices_ ) );
-            assemblies_.emplace( asy_p->id(), std::move(asy_p) );
-        }
+        assemblies_ = ParseAssemblies( input, lattices_ );
 
         // Parse core
-        int n_core_enabled = 0;
-        for( pugi::xml_node core_xml = input.child("core"); core_xml;
-                core_xml = core_xml.next_sibling("core") ) {
-            bool core_enabled = true;
-            if( !core_xml.attribute("enabled").empty() ) {
-                core_enabled = core_xml.attribute("enabled").as_bool();
-            }
-            if( core_enabled ) {
-                core_ = Core(core_xml, assemblies_);
-                n_core_enabled++;
-            }
-        }
-
-        if( n_core_enabled == 0 ) {
-            Error("No enabled core specifications.");
-        }
-
-        if( n_core_enabled > 1 ) {
-            Error("More than one enabled core specification found. Tell me "
-                    "which one to use");
-        }
+        core_ = ParseCore( input, assemblies_ );
 
         nx_ = core_.npin_x();
         ny_ = core_.npin_y();
