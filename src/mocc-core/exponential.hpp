@@ -7,7 +7,7 @@
 
 #include "mocc-core/global_config.hpp"
 
-const int N = 5000;
+const int N = 100000;
 
 namespace mocc {
     /**
@@ -37,29 +37,29 @@ namespace mocc {
     class Exponential_Linear: public Exponential {
     public:
         Exponential_Linear():
-            max_( -10.0 ),
-            space_( max_/(real_t)N ),
+            min_( -10.0 ),
+            space_( -min_/(real_t)(N-1)),
             rspace_( 1.0/space_ )
         {
             for( int i=0; i<N; i++ ) {
-                d_[i] = std::exp(i*space_);
+                d_[i] = std::exp(min_+i*space_);
             }
+
             for( int i=0; i<N-1; i++ ) {
-                real_t x = space_*(0.5+i);
+                real_t x = min_+space_*(0.5+i);
                 real_t err = std::abs(this->exp(x) - std::exp(x));
                 max_error_ = std::max( max_error_, err );
             }
         }
 
-        ///\todo store rspace_ instead. profile.
         inline real_t exp( real_t v ) {
-            assert((v <= 0.0) && (v > max_));
-            int i = v*space_;
-            v -= space_*i;
+            assert((v < 0.0) && (v >= min_));
+            int i = (v-min_)*rspace_;
+            v -= space_*i+min_;
             return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
         }
     private:
-        real_t max_;
+        real_t min_;
         real_t space_;
         real_t rspace_;
         std::array<real_t, N> d_;

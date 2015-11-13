@@ -1,6 +1,7 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
 
+#include <cmath>
 #include <iostream>
 
 #include "mocc-core/exponential.hpp"
@@ -13,8 +14,15 @@ BOOST_AUTO_TEST_CASE( testall )
 {
 
     Exponential_Linear exp;
-    BOOST_CHECK_EQUAL( exp.exp(0.0), 1.0 );
-    BOOST_CHECK_EQUAL( exp.exp(-1.0), 0.36787944117144233 );
-    BOOST_CHECK_EQUAL( exp.exp(-0.314), 0.7305190281594249 );
     cout << "Max error: " << exp.max_error() << endl;
+
+    real_t max_err = 0.0;
+    for( real_t x=-10.0; x<0.0; x+=0.1 ) {
+        real_t exp_t = exp.exp(x);
+        real_t exp_r = std::exp(x);
+        max_err = std::max(max_err, std::abs(exp_r - exp_t));
+        BOOST_CHECK( std::abs(exp_r - exp_t) < 1e-9 );
+    }
+
+    cout << "max_err: " << max_err << endl;
 }
