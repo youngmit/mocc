@@ -41,6 +41,7 @@ namespace mocc {
                 source_1g_[ireg] +=  xsch * fs[ireg];
             }
         }
+
         return;
     }
 
@@ -92,6 +93,11 @@ namespace mocc {
         }*/
 
         return;
+    }
+
+    void Source::auxiliary( const ArrayF &aux ) {
+        assert( source_1g_.size() == aux.size() );
+        source_1g_ += aux;
     }
 
     void Source::add_external( const pugi::xml_node &input ) {

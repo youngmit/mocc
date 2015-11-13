@@ -63,7 +63,7 @@ namespace mocc {
         }
 
         /**
-         * \breif Return the position of a pin, given its index.
+         * \brief Return the position of a pin, given its index.
          */
         Position pin_position( size_t ipin ) const;
 

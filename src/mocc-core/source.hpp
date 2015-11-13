@@ -40,10 +40,7 @@ namespace mocc {
          * that the source definitiion starts with the MG fission source, then
          * contributions get tacked on from there.
          */
-        void auxiliary( const ArrayF &aux ) {
-            assert( source_1g_.size() == aux.size() );
-            source_1g_ += aux;
-        }
+        void auxiliary( const ArrayF &aux );
 
         /**
          * \brief Add self-scatter source
@@ -67,6 +64,12 @@ namespace mocc {
          * \brief Add an external source from an XML node.
          */
         void add_external( const pugi::xml_node &input );
+
+        void print() {
+            for( auto v: source_1g_ ) {
+                std::cout << v << std::endl;
+            }
+        }
 
     protected:
         const XSMesh *xs_mesh_;

@@ -247,10 +247,9 @@ namespace mocc {
                 flux_[group*n_reg_ + ireg] = flux_[group*n_reg_ + ireg]*f;
             }
 
-
-
             real_t e = fm_flux - pin_flux[i_coarse];
             resid += e*e;
+            ipin++;
         }
         return std::sqrt(resid);
     }
