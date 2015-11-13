@@ -60,7 +60,7 @@ namespace mocc {
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
         // Calculate transverse leakage source
-        //this->add_tl( group );
+        this->add_tl( group );
 
         moc_sweeper_.sweep( group );
 

@@ -56,10 +56,9 @@ namespace mocc {
             // y-normal faces and vice versa.
             // we are currently using a ray count-based normalization. so the
             // above doesnt really apply
-
             for( size_t ic=0; ic<mesh_->n_cell_plane(); ic++ )
             {
-                real_t xstr = sn_xs_mesh_[ic].xsmactr()[group];
+                real_t xstr = sn_xs_mesh_[ic+cell_offset_].xsmactr()[group];
 
                 // FW direction
                 {

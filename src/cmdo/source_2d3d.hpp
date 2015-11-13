@@ -58,6 +58,7 @@ namespace mocc {
          */
         void fission( const ArrayF &fs, int ig ) {
             assert( fs.size() == n_reg_ );
+
             Source::fission( fs, ig );
 
             // We need to homogenize the fission source to the Sn mesh
@@ -74,6 +75,7 @@ namespace mocc {
                 sn_fs[ireg] /= pin->vol();
                 ipin++;
             }
+
             sn_source_.fission( sn_fs, ig );
         }
 
