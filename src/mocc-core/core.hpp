@@ -34,37 +34,58 @@ namespace mocc {
             return assemblies_;
         }
 
-        // Return the number of assemblies along X direction
+        /**
+         * Return the number of assemblies along X direction
+         */
         int nx() const {
             return nx_;
         }
 
-        // Return the number of assemblies along Y direction
+        /**
+         * Return the number of assemblies along Y direction
+         */
         int ny() const {
             return ny_;
         }
 
-        // Return the total number of assemblies in the core
+        /**
+         * Return the total number of assemblies in the core
+         */
         int nasy() const {
             return assemblies_.size();
         }
 
-        // Return the number of pins along the X direction
+        /**
+         * Return the number of pins along the X direction
+         */
         int npin_x() const {
             return npinx_;
         }
 
-        // Return the number of pins along the Y direction
+        /**
+         * Return the number of pins along the Y direction
+         */
         int npin_y() const {
             return npiny_;
         }
 
-        // Return the number of planes in the core
+        /**
+         * Return the number of planes in the core
+         */
         int nz() const {
             return assemblies_[0]->nz();
         }
 
-        // Return the boundary condition array
+        /**
+         * Return the plane heights
+         */
+        const VecF& dz() const {
+            return assemblies_.front()->dz();
+        }
+
+        /**
+         * Return the boundary condition array
+         */
         std::vector<Boundary> boundary() const {
             return bc_;
         }

@@ -40,7 +40,6 @@ namespace mocc {
      * \todo the unit test for Mesh is not really done. Its got some stuff in
      * there for my testing, but it needs some serious work.
      */
-
     class Mesh {
     public:
         Mesh() { };

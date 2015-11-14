@@ -136,7 +136,7 @@ namespace mocc {
             }
         }
 
-        dz_vec_ = assemblies_.begin()->second->hz();
+        dz_vec_ = core_.dz();
 
         // Add up the number of regions and XS regions in the entire problem
         // geometry

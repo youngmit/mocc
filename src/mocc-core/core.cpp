@@ -58,8 +58,8 @@ namespace mocc {
             inBuf >> id;
             asy_vec.push_back( id );
             if (inBuf.fail()) {
-                Error("Trouble reading assembly IDs in core specification.");
-            }
+                throw EXCEPT("Trouble reading assembly IDs in core "
+                        "specification."); }
         }
         // Store references to the assemblies in a 2D array. Make sure to flip
         // the y-index to get it into lower-left origin
@@ -75,8 +75,8 @@ namespace mocc {
                         assemblies.at( asy_id ).get();
                     assemblies_[row*nx_ + col] = asy_p;
                 } catch(std::out_of_range) {
-                    Error("Failed to locate assembly in core specification.");
-                }
+                    throw EXCEPT("Failed to locate assembly in core "
+                            "specification."); }
             }
         }
 
@@ -86,17 +86,17 @@ namespace mocc {
         unsigned int nz = (*assemblies_.begin())->nz();
         for (auto asy = assemblies_.begin(); asy != assemblies_.end(); ++asy) {
             if ( (*asy)->nz() != nz ) {
-                Error("Assemblies in the core have incompatible numbers of "
-                        "planes."); }
+                throw EXCEPT("Assemblies in the core have incompatible numbers "
+                        "of planes."); }
         }
 
         for( unsigned int i=0; i<nz; i++ ) {
-            real_t hz = (*assemblies_.begin())->hz(i);
+            real_t dz = (*assemblies_.begin())->dz(i);
             for( auto asy = assemblies_.begin();
                  asy != assemblies_.end(); ++asy ) {
-                if ((*asy)->hz(i) != hz) {
-                    Error("Assemblies have incompatible plane heights in "
-                            "core.");
+                if ((*asy)->dz(i) != dz) {
+                    throw EXCEPT("Assemblies have incompatible plane heights "
+                            "in core.");
                 }
             }
         }

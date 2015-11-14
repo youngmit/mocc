@@ -10,6 +10,8 @@
 
 using std::string;
 using std::stringstream;
+using std::endl;
+using std::cout;
 
 namespace mocc {
     Assembly::Assembly( const pugi::xml_node &input,
@@ -34,7 +36,7 @@ namespace mocc {
         if (hz > 0.0f) {
             scalar_hz = true;
             // Fill the hz vector with all entries the same.
-            hz_ = VecF(nz_, hz);
+            dz_ = VecF(nz_, hz);
         }
 
         // Parse plane heights (array form)
@@ -49,10 +51,9 @@ namespace mocc {
             while( !hzstream.eof() ) {
                 real_t hzi;
                 hzstream >> hzi;
-                hz_.push_back(hzi);
-                std::reverse( hz_.begin(), hz_.end() );
+                dz_.push_back(hzi);
+                std::reverse( dz_.begin(), dz_.end() );
             }
-
         }
 
         // Parse lattice IDs

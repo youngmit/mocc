@@ -46,15 +46,15 @@ namespace mocc {
         /**
          * Return the total height of the indexed plane in the \ref Assembly
          */
-        real_t hz( unsigned int iz ) const {
-            return hz_[iz];
+        real_t dz( unsigned int iz ) const {
+            return dz_[iz];
         }
 
         /**
          * Return a const reference to the vector of plane heights.
          */
-        const VecF& hz() const {
-            return hz_;
+        const VecF& dz() const {
+            return dz_;
         }
 
         // Return the total size of the assembly in the x dimension
@@ -88,7 +88,7 @@ namespace mocc {
     private:
         unsigned int id_;
         unsigned int nz_;
-        VecF hz_;
+        VecF dz_;
 
         real_t hx_;
         real_t hy_;
