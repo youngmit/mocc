@@ -7,7 +7,7 @@
 
 #include "mocc-core/global_config.hpp"
 
-const int N = 100000;
+const int N = 10000;
 
 namespace mocc {
     /**
@@ -53,7 +53,11 @@ namespace mocc {
         }
 
         inline real_t exp( real_t v ) {
-            assert((v < 0.0) && (v >= min_));
+            assert((v < 0.0));
+            if( v < min_ ) {
+                std::cout << "Big exponential argument: " << v << std::endl;
+                return std::exp(v);
+            }
             int i = (v-min_)*rspace_;
             v -= space_*i+min_;
             return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
