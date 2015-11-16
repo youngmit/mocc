@@ -172,6 +172,12 @@ namespace mocc {
             return unique_plane_;
         }
 
+        /**
+         * \breif Print the contents of the mesh to the passed stream.
+         */
+        friend std::ostream& operator<<( std::ostream &os, 
+                const CoreMesh &mesh);
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;

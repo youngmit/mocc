@@ -115,6 +115,7 @@ namespace mocc {
             const Assembly* asy = &core_.at(ilatx, 0);
             const Lattice* lat = &((*asy)[0]);
             for( auto &h: lat->hx_vec() ) {
+
                 dx_vec_.push_back(h);
                 x_vec_.push_back(h + h_prev);
                 lines_.push_back( Line( Point2(h+h_prev, 0.0),
@@ -178,6 +179,23 @@ namespace mocc {
         Position pos = planes_[0].pin_position( ipin % (nx_*ny_) );
         pos.z = ipin/(nx_ * ny_);
         return pos;
+    }
+
+    std::ostream& operator<<( std::ostream &os, const CoreMesh &mesh ) {
+        os << "Mesh X Pitches:" << std::endl;
+        for ( auto v: mesh.dx_vec_ ) {
+            os << v << std::endl;
+        }
+        os << "Mesh Y Pitches:" << std::endl;
+        for ( auto v: mesh.dy_vec_ ) {
+            os << v << std::endl;
+        }
+        os << "Mesh Z Pitches:" << std::endl;
+        for ( auto v: mesh.dz_vec_ ) {
+            os << v << std::endl;
+        }
+
+        return os;
     }
 
 }
