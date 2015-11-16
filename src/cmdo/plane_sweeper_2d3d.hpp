@@ -44,8 +44,8 @@ namespace mocc {
             source_ = source;
             moc_sweeper_.assign_source( source );
             /// \todo this static_cast is scary. Maybe think about relaxing the
-            /// ownership of the source by FSS and allow the TS to figure out the
-            /// types more explicitly...
+            /// ownership of the source by FSS and allow the TS to figure out
+            /// the types more explicitly...
             Source_2D3D *s = static_cast<Source_2D3D*>(source);
             sn_sweeper_.assign_source( s->get_sn_source() );
 

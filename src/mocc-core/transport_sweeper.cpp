@@ -27,7 +27,7 @@ namespace mocc {
         real_t rkeff = 1.0/k;
         fission_source = 0.0;
         for( auto &xsr: *xs_mesh_ ) {
-            const auto& xsnf = xsr.xsmacnf();
+            const auto &xsnf = xsr.xsmacnf();
             for( size_t ig=0; ig<n_group_; ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
                     fission_source[ireg] += rkeff * xsnf[ig] *
