@@ -46,9 +46,6 @@ namespace mocc {
             const CoreMesh &mesh ):
         ang_quad_(ang_quad)
     {
-        LogFile << "Building rays" << std::endl;
-
-
         // Make sure we have reasonable input
         if ( input.empty() ) {
             throw EXCEPT("No input privided for ray spacing.");
@@ -133,7 +130,7 @@ namespace mocc {
                 real_t space_x = std::abs( space/sin(ang->alpha) );
                 real_t space_y = std::abs( space/cos(ang->alpha) );
 
-                LogFile << "Spacing: " << ang->alpha << space << " " <<
+                LogFile << "Spacing: " << ang->alpha << " " << space << " " <<
                     space_x << " " << space_y << std::endl;
 
 
