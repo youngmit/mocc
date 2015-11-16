@@ -4,13 +4,13 @@
 #include <sstream>
 #include <string>
 
-#include "global_config.hpp"
-#include "files.hpp"
-#include "input_proc.hpp"
-#include "core_mesh.hpp"
-#include "error.hpp"
-#include "h5file.hpp"
-#include "transport_sweeper.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/files.hpp"
+#include "mocc-core/global_config.hpp"
+#include "mocc-core/h5file.hpp"
+#include "mocc-core/input_proc.hpp"
+#include "mocc-core/transport_sweeper.hpp"
 
 
 using std::cout;
@@ -52,6 +52,7 @@ int main(int argc, char* argv[]){
 
         // Get an SP to the core mesh
         mesh = inProc.core_mesh();
+        LogFile << *mesh << endl;
 
         // Pull a shared pointer to the top-level solver and make it go
         solver = inProc.solver();
