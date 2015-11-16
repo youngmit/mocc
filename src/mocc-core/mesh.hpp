@@ -48,58 +48,8 @@ namespace mocc {
          * Construct a \ref Mesh using cell boundaries specified externally.
          */
         Mesh( size_t n_reg, size_t n_xsreg,
-                VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] ):
-            n_reg_( n_reg ),
-            n_xsreg_( n_xsreg ),
-            nx_( hx.size() - 1 ),
-            ny_( hy.size() - 1 ),
-            nz_( hz.size() - 1 ),
-            x_vec_( hx ),
-            y_vec_( hy ),
-            z_vec_( hz ),
-            dx_vec_( hx.size()-1 ),
-            dy_vec_( hy.size()-1 ),
-            dz_vec_( hz.size()-1 ),
-            n_surf_plane_( (nx_+1)*ny_ + (ny_+1)*nx_ + nx_*ny_ )
-        {
-            assert( std::is_sorted( x_vec_.begin(), x_vec_.end() ) );
-            assert( std::is_sorted( y_vec_.begin(), y_vec_.end() ) );
-            assert( std::is_sorted( z_vec_.begin(), z_vec_.end() ) );
-
-            for( int i=0; i<6; i++ ) {
-                bc_.push_back( bc[i] );
-            }
-
-            hx_ = x_vec_.back();
-            for( auto &xi: x_vec_ ) {
-                lines_.push_back( Line( Point2( xi, 0.0 ),
-                                        Point2( xi, hx_ ) ) );
-            }
-            hy_ = y_vec_.back();
-            for( auto &yi: y_vec_ ) {
-                lines_.push_back( Line( Point2( 0.0, yi ),
-                                        Point2( hx_, yi ) ) );
-            }
-            hz_ = z_vec_.back();
-
-
-            for( size_t i=1; i<x_vec_.size(); i++ ) {
-                dx_vec_[i-1] = x_vec_[i] - x_vec_[i-1];
-            }
-            for( size_t i=1; i<y_vec_.size(); i++ ) {
-                dy_vec_[i-1] = y_vec_[i] - y_vec_[i-1];
-            }
-            for( size_t i=1; i<z_vec_.size(); i++ ) {
-                dz_vec_[i-1] = z_vec_[i] - z_vec_[i-1];
-            }
-
-            assert( nx_ == hx.size()-1 );
-            assert( ny_ == hy.size()-1 );
-            assert( nz_ == hz.size()-1 );
-            this->prepare_surfaces();
-            return;
-        }
-
+                VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] );
+        
         /**
          * Return the total number of regions in the computational mesh. This is
          * not neccessarily the number of pins. For a MoC/CoreMesh this is the
@@ -369,6 +319,29 @@ namespace mocc {
          */
         size_t coarse_surf_offset( size_t plane ) const {
             return n_surf_plane_*plane;
+        }
+
+        /**
+         * \brief Return the surface area of the indexed cell and direction.
+         */
+        real_t coarse_area( size_t cell, Surface surf ) const {
+            auto pos = this->coarse_position( cell );
+            switch( surf ) {
+                case( Surface::EAST ):
+                    return dy_vec_[pos.y] * dz_vec_[pos.z];
+                case( Surface::WEST ):
+                    return dy_vec_[pos.y] * dz_vec_[pos.z];
+                case( Surface::NORTH ):
+                    return dx_vec_[pos.x] * dz_vec_[pos.z];
+                case( Surface::SOUTH ):
+                    return dx_vec_[pos.x] * dz_vec_[pos.z];
+                case( Surface::TOP ):
+                    return dx_vec_[pos.x] * dy_vec_[pos.y];
+                case( Surface::BOTTOM ):
+                    return dx_vec_[pos.x] * dy_vec_[pos.y];
+                default:
+                    return -1;
+            }
         }
 
         /**
