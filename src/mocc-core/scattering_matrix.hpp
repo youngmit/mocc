@@ -56,8 +56,10 @@ namespace mocc {
             return rows_[ig];
         }
 
-        // Copy constructor. Need this in order to produce valid raw pointers to
-        // the scattering rows.
+        /**
+         * Copy constructor. Need this in order to produce valid raw pointers to
+         * the scattering rows.
+         */
         ScatteringMatrix( const ScatteringMatrix &other ):
             ng_( other.ng_ ),
             scat_( other.scat_ ),
@@ -85,11 +87,20 @@ namespace mocc {
 
                 int pos = 0;
                 for( auto &row: rhs ) {
-                    rows_.push_back( ScatteringRow(row.min_g, row.max_g, &scat_[pos]) );
+                    rows_.push_back( ScatteringRow(row.min_g, row.max_g, 
+                                &scat_[pos]) );
                     pos += row.max_g - row.min_g + 1;
                 }
             }
             return *this;
+        }
+
+        /**
+         * \brief Return the self-scattering cross section for the indicated
+         * group.
+         */
+        real_t self_scat( int group ) const {
+            return rows_[group][group];
         }
 
         /**
