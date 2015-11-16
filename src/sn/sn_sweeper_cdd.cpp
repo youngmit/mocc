@@ -74,7 +74,6 @@ namespace mocc {
             }
         }
         flux_[std::slice(group*n_reg_, n_reg_, 1)] = flux_1g_;
-
         return;
     }
 }

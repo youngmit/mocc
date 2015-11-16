@@ -36,6 +36,12 @@ namespace mocc {
                 size_t nx = mesh_->nx();
                 size_t ny = mesh_->ny();
                 size_t nz = mesh_->nz();
+                
+                real_t w = ang.weight * HPI;
+
+                real_t ox = ang.ox*w;
+                real_t oy = ang.oy*w;
+                real_t oz = ang.oz*w;
 
                 // Configure the upwind directions based on the angle
                 size_t ixx = 0;
@@ -62,7 +68,7 @@ namespace mocc {
                         Position pos( ixx, iy, iz );
                         size_t i = mesh_->coarse_cell( pos );
                         size_t surf = mesh_->coarse_surf( i, upwind_x_ );
-                        data_->current(surf, group) += ang.ox*x[ny*iz + iy];
+                        data_->current(surf, group) += ox*x[ny*iz + iy];
                     }
                 }
 
@@ -72,7 +78,7 @@ namespace mocc {
                         Position pos( ix, iyy, iz );
                         size_t i = mesh_->coarse_cell( pos );
                         size_t surf = mesh_->coarse_surf( i, upwind_y_ );
-                        data_->current(surf, group) += ang.oy*y[nx*iz + ix];
+                        data_->current(surf, group) += oy*y[nx*iz + ix];
                     }
                 }
 
@@ -82,7 +88,7 @@ namespace mocc {
                         Position pos( ix, iy, izz );
                         size_t i = mesh_->coarse_cell( pos );
                         size_t surf = mesh_->coarse_surf( i, upwind_z_ );
-                        data_->current(surf, group) += ang.oz*z[ny*iy + ix];
+                        data_->current(surf, group) += oz*z[ny*iy + ix];
                     }
                 }
 
@@ -94,26 +100,33 @@ namespace mocc {
              * contribution to the coarse mesh current.
              */
             inline void current_work( real_t psi_x, real_t psi_y, real_t psi_z,
-                    size_t i, Angle &ang, int group ) {
+                    size_t i, Angle &ang, int group )
+            {
+                real_t w = ang.weight * HPI;
+
+                real_t ox = ang.ox*w;
+                real_t oy = ang.oy*w;
+                real_t oz = ang.oz*w;
+
                 // Watch out; we are assuming a direct mapping from the Sn mesh
                 // index to the CM index.
 
                 // X-normal
                 {
                     size_t surf = mesh_->coarse_surf( i, downwind_x_ );
-                    data_->current( surf, group ) += psi_x*ang.ox;
+                    data_->current( surf, group ) += psi_x*ox;
                 }
 
                 // Y-normal
                 {
                     size_t surf = mesh_->coarse_surf( i, downwind_y_ );
-                    data_->current( surf, group ) += psi_y*ang.oy;
+                    data_->current( surf, group ) += psi_y*oy;
                 }
 
                 // Z-normal
                 {
                     size_t surf = mesh_->coarse_surf( i, downwind_z_ );
-                    data_->current( surf, group ) += psi_z*ang.oz;
+                    data_->current( surf, group ) += psi_z*oz;
                 }
 
                 return;
