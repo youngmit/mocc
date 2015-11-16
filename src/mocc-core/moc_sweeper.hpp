@@ -58,6 +58,8 @@ namespace mocc {
         }
 
         real_t set_pin_flux_1g( int group, const VecF &pin_flux );
+
+        void check_balance( int group ) const;
     protected:
         const CoreMesh& mesh_;
 

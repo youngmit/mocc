@@ -117,6 +117,9 @@ namespace mocc {
                 coarse_data_->current.col( group ) = 0.0;
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
+                this->check_balance( group );
+                cout << "MoC currents:" << endl;
+                cout << coarse_data_->current.col(group) << endl;
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
@@ -252,6 +255,54 @@ namespace mocc {
             ipin++;
         }
         return std::sqrt(resid);
+    }
+
+    void MoCSweeper::check_balance( int group ) const {
+        ArrayF b(0.0, mesh_.n_pin());
+
+        // Get the removal cross section in a nice format
+        ArrayF xsrm(0.0, n_reg_);
+        for( auto &xsr: *xs_mesh_ ) {
+            real_t rm = xsr.xsmacrm()[group];
+            for( auto &ireg: xsr.reg() ) {
+                xsrm[ireg] = rm;
+            }
+        }
+
+        int ipin = 0;
+        int ireg = 0;
+        for( const auto pin: mesh_ ) {
+            int icell = mesh_.coarse_cell(mesh_.pin_position(ipin));
+
+            for( int ireg_pin=0; ireg_pin<pin->n_reg(); ireg_pin++ ) {
+                b[icell] -= flux_1g_[ireg + n_reg_*group]*vol_[ireg]*xsrm[ireg];
+                b[icell] += (*source_)[ireg]*vol_[ireg];
+                ireg++;
+            }
+
+            // Current
+            b -= coarse_data_->current(
+                    mesh_.coarse_surf(icell, Surface::EAST), group );
+            b -= coarse_data_->current(
+                    mesh_.coarse_surf(icell, Surface::NORTH), group );
+            b -= coarse_data_->current(
+                    mesh_.coarse_surf(icell, Surface::TOP), group );
+            b += coarse_data_->current(
+                    mesh_.coarse_surf(icell, Surface::WEST), group );
+            b += coarse_data_->current(
+                    mesh_.coarse_surf(icell, Surface::SOUTH), group );
+            b += coarse_data_->current(
+                    mesh_.coarse_surf(icell, Surface::BOTTOM), group );
+
+            ipin++;
+        }
+
+        cout << "MoC cell balance:" << endl;
+        for( auto v: b ) {
+            cout << v << endl;
+        }
+
+        return;
     }
 
     void MoCSweeper::output( H5::CommonFG *node ) const {
