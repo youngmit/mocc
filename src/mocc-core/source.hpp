@@ -65,10 +65,30 @@ namespace mocc {
          */
         void add_external( const pugi::xml_node &input );
 
-        void print() {
-            for( auto v: source_1g_ ) {
+        /**
+         * \brief Return the source for the indexed cell for the current state of the
+         * source.
+         *
+         * This will never include self-scatter. It will only have contributions
+         * that have been added thus far.
+         */
+        real_t operator[]( size_t i ) const {
+            return source_1g_[i];
+        }
+
+        /**
+         * \copydoc Source::operator[]
+         */
+        real_t& operator[]( size_t i ) {
+            return source_1g_[i];
+        }
+
+
+        friend std::ostream& operator<<(std::ostream &os, const Source &src) {
+            for( auto v: src.source_1g_ ) {
                 std::cout << v << std::endl;
             }
+            return os;
         }
 
     protected:
