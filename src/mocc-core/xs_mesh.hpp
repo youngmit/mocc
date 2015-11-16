@@ -32,8 +32,12 @@ namespace mocc {
             xsmacnf_(xsnf),
             xsmackf_(xsf),
             xsmacch_(xsch),
-            xsmacsc_(xssc)
+            xsmacsc_(xssc),
+            xsmacrm_(xstr.size())
         {
+            for( size_t ig=0; ig<xstr.size(); ig++ ) {
+                xsmacrm_[ig] = xstr[ig] - xssc.self_scat(ig);
+            }
             return;
         }
 
@@ -55,6 +59,10 @@ namespace mocc {
 
         const real_t* xsmacch() const {
             return xsmacch_.data();
+        }
+
+        const real_t* xsmacrm() const {
+            return xsmacrm_.data();
         }
 
         const ScatteringMatrix& xsmacsc() const {
@@ -84,6 +92,8 @@ namespace mocc {
 
         // Scattering matrix
         ScatteringMatrix xsmacsc_;
+
+        VecF xsmacrm_;
     };
 
     class XSMesh: public HasOutput {
@@ -95,7 +105,7 @@ namespace mocc {
         // XSMesh provides its own facility to initialize itself from a \ref
         // CoreMesh
         XSMesh( const CoreMesh& mesh );
-
+        
         // Return the number of energy groups
         size_t n_group() const {
             return ng_;

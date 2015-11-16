@@ -74,6 +74,12 @@ namespace mocc {
         }
         os << std::endl;
 
+        os << "removal: " << std::endl;
+        for( auto v: xsr.xsmacrm_ ) {
+            os << v << " ";
+        }
+        os << std::endl;
+
         os << "Scattering matrix:" << std::endl;
         os << xsr.xsmacsc_ << std::endl;
 
