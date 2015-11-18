@@ -19,85 +19,122 @@ namespace mocc {
         Lattice( const pugi::xml_node &input,
                  const std::map<int, UP_Pin_t> &pins );
 
-        unsigned int id() const {
+        size_t id() const {
             return id_;
         }
 
-        // Number of pins in the x direction
-        unsigned int nx() const {
+        /**
+         * \brief Number of pins in the x direction
+         */
+        size_t nx() const {
             return nx_;
         }
 
-        // Number of pins in the y direction
-        unsigned int ny() const {
+        /**
+         * \brief Number of pins in the y direction
+         */
+        size_t ny() const {
             return ny_;
         }
 
-        // Total number of pins in the lattice
-        unsigned int n_pin() const {
+        /**
+         * \brief Total number of pins in the lattice
+         */
+        size_t n_pin() const {
             return pins_.size();
         }
 
-        // Return the size of the lattice along the x dimension
+        /**
+         * \brief Return the size of the lattice along the x dimension
+         */
         real_t hx() const {
             return hx_;
         }
 
-        // Return the size of the lattice along the y dimension
+        /**
+         * \brief Return the size of the lattice along the y dimension
+         */
         real_t hy() const {
             return hy_;
         }
 
-        const Pin& at( unsigned int x, unsigned int y ) const {
+        /**
+         * \brief Return a const reference to the \ref Pin located at the given
+         * location of the \ref Lattice.
+         */
+        const Pin& at( size_t x, size_t y ) const {
             assert( (0 <= x) & (x < nx_) );
             assert( (0 <= y) & (y < ny_) );
             return *pins_[y*nx_ + x];
         }
 
-        // Return an iterator to the first Pin* in the lattice
+        /**
+         * \brief Return an iterator to the first \ref Pin* in the \ref Lattice
+         */
         std::vector<Pin*>::const_iterator begin() const {
             return pins_.cbegin();
         }
 
-        // Return an iterator past the last Pin* in the lattice
+        /**
+         * \brief Return an iterator past the last Pin* in the lattice
+         */
         std::vector<Pin*>::const_iterator end() const {
             return pins_.cend();
         }
 
-        // Return a const reference to the underlying hx_vec_ array
+        /**
+         * \brief Return a const reference to the underlying hx_vec_ array
+         */
         const VecF& hx_vec() const {
             return hx_vec_;
         }
 
-        // Return a const reference to the underlying hy_vec_ array
+        /**
+         * \brief Return a const reference to the underlying hy_vec_ array
+         */
         const VecF& hy_vec() const {
             return hy_vec_;
         }
 
-        // Return the total number of regions in the lattice
-        unsigned int n_reg() const {
+        /**
+         * \brief Return the total number of regions in the lattice
+         */
+        size_t n_reg() const {
             return n_reg_;
         }
 
-        // Return the total number of XS regions in the lattice
-        unsigned int n_xsreg() const {
+        /**
+         * \brief Return the total number of XS regions in the lattice
+         */
+        size_t n_xsreg() const {
             return n_xsreg_;
         }
 
-        // Return a const reference to the Pin Mesh object located at the
-        // provided point and increment the passed in first_reg by the pin's
-        // first-region offset. These calls are chained from the CoreMesh ->
-        // Plane -> Lattice, with each level in the geometrical heirarchy moving
-        // the point to the appropriate local coordinates and offsetting the
-        // first_reg value.
+        /**
+         * Return a const reference to the Pin Mesh object located at the
+         * provided point and increment the passed in first_reg by the pin's
+         * first-region offset. These calls are chained from the CoreMesh ->
+         * Plane -> Lattice, with each level in the geometrical hierarchy moving
+         * the point to the appropriate local coordinates and offsetting the
+         * first_reg value.
+         */
         const PinMesh* get_pinmesh( Point2 &p, int &first_reg ) const;
 
+        /**
+         * \brief Return whether the current \ref Lattice and the passed \ref
+         * Lattice reference are \ref Assembly compatible.
+         *
+         * \ref Assembly compatible means that the two \ref Lattice's can be
+         * stacked atop each other and their pin boundaries will line up.
+         */
+        bool compatible( const Lattice &other ) const;
+
     private:
-        unsigned int id_;
-        unsigned int nx_;
-        unsigned int ny_;
-        unsigned int n_reg_;
-        unsigned int n_xsreg_;
+        size_t id_;
+        size_t nx_;
+        size_t ny_;
+        size_t n_reg_;
+        size_t n_xsreg_;
         real_t hx_;
         real_t hy_;
         VecF hx_vec_;

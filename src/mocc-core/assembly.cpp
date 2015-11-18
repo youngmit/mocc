@@ -79,6 +79,13 @@ namespace mocc {
         hx_ = lattices_[0]->hx();
         hy_ = lattices_[0]->hy();
 
+        // Make sure that all of the lattices are the same size
+        for( const auto& lat: lattices_ ) {
+            if( !lat->compatible( *lattices_[0] ) ) {
+                throw EXCEPT("Lattices in Assembly are not compatible.");
+            }
+        }
+
         // Store the total numver of FSRs and XS regions in the assembly
         n_reg_   = 0;
         n_xsreg_ = 0;
@@ -99,7 +106,8 @@ namespace mocc {
         std::map<int, UP_Assembly_t> assemblies;
 
         for( pugi::xml_node asy = input.child("assembly"); asy;
-                asy = asy.next_sibling("assembly") ) {
+                asy = asy.next_sibling("assembly") )
+        {
             UP_Assembly_t asy_p( new Assembly( asy, lattices ) );
             assemblies.emplace( asy_p->id(), std::move(asy_p) );
         }

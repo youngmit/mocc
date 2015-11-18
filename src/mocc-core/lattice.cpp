@@ -1,5 +1,6 @@
 #include "lattice.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -165,5 +166,40 @@ namespace mocc {
         }
 
         return lattices;
+    }
+
+    bool Lattice::compatible( const Lattice &other ) const {
+        if( hx_ != other.hx_ ) {
+cout << "hx " << hx_ << " " << other.hx_ << endl;
+            return false;
+        }
+        if( hy_ != other.hy_ ) {
+cout << "hy" << endl;
+            return false;
+        }
+        
+        if( nx_ != other.nx_ ) {
+cout << "nx" << endl;
+            return false;
+        }
+        if( ny_ != other.ny_ ) {
+cout << "ny" << endl;
+            return false;
+        }
+
+        if( !std::equal( hx_vec_.begin(), hx_vec_.end(), 
+                    other.hx_vec_.begin() ) )
+        {
+cout << "hx_vec" << endl;
+            return false;
+        }
+        
+        if( !std::equal( hy_vec_.begin(), hy_vec_.end(), 
+                    other.hy_vec_.begin() ) )
+        {
+cout << "hy_vec" << endl;
+            return false;
+        }
+        return true;
     }
 }
