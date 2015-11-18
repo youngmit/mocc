@@ -37,6 +37,21 @@ namespace mocc {
         return;
     }
 
+    Exception::Exception( const char* file, int line, const char* func,
+                const std::string &msg ):
+        file_( file ),
+        line_( line ),
+        func_( func ),
+        message_( msg )
+    {
+        std::stringstream ret;
+        ret << file_ << ":" << line_ << " in " << func_ << endl;
+        ret << message_ << std::endl;
+        print_message_ = ret.str();
+
+        return;
+    }
+
 
     const char* Exception::what() const noexcept {
         return print_message_.c_str();

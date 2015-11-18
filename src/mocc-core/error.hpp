@@ -14,6 +14,8 @@ namespace mocc {
     public:
         Exception( const char* file, int line, const char* func,
                 const char* msg );
+        Exception( const char* file, int line, const char* func,
+                const std::string &msg );
 
         const char* what() const noexcept;
 
