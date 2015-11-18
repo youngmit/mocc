@@ -173,7 +173,7 @@ namespace mocc {
         }
 
         /**
-         * \breif Print the contents of the mesh to the passed stream.
+         * \brief Print the contents of the mesh to the passed stream.
          */
         friend std::ostream& operator<<( std::ostream &os, 
                 const CoreMesh &mesh);

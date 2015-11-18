@@ -183,16 +183,28 @@ namespace mocc {
 
     std::ostream& operator<<( std::ostream &os, const CoreMesh &mesh ) {
         os << "Mesh X Pitches:" << std::endl;
-        for ( auto v: mesh.dx_vec_ ) {
+        for( auto v: mesh.dx_vec_ ) {
             os << v << std::endl;
         }
+        os << std::endl;
+
         os << "Mesh Y Pitches:" << std::endl;
-        for ( auto v: mesh.dy_vec_ ) {
+        for( auto v: mesh.dy_vec_ ) {
             os << v << std::endl;
         }
+        os << std::endl;
+
         os << "Mesh Z Pitches:" << std::endl;
-        for ( auto v: mesh.dz_vec_ ) {
+        for( auto v: mesh.dz_vec_ ) {
             os << v << std::endl;
+        }
+        os << std::endl;
+
+        os << "Pin Meshes: " << std::endl;
+        for( const auto& pm: mesh.pin_meshes_ ) {
+            os << "Mesh ID: " << pm.first << endl;
+            os << *(pm.second) << std::endl;
+            os << std::endl;
         }
 
         return os;
