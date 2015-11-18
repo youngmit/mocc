@@ -12,11 +12,13 @@ namespace mocc {
         // Parse the number of x and y divisions
         int ndiv_x = input.child("sub_x").text().as_int(0);
         if (ndiv_x < 1) {
-            Error("Failed to read valid number of X divisions in rect pin mesh.");
+            throw EXCEPT("Failed to read valid number of X divisions in rect "
+                    "pin mesh.");
         }
         int ndiv_y = input.child("sub_y").text().as_int(0);
         if (ndiv_y < 1) {
-            Error("Failed to read valid number of Y divisions in rect pin mesh.");
+            throw EXCEPT("Failed to read valid number of Y divisions in rect "
+                    "pin mesh.");
         }
 
         n_xsreg_ = ndiv_x * ndiv_y;
@@ -118,5 +120,12 @@ namespace mocc {
         unsigned int ireg = (hx_.size()+1)*iy + ix;
         assert(ireg < n_reg_);
         return ireg;
+    }
+
+    void PinMesh_Rect::print( std::ostream &os ) const {
+        PinMesh::print( os );
+        os << std::endl;
+        os << "Type: Rectangular";
+        return;
     }
 }

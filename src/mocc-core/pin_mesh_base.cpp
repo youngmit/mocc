@@ -38,4 +38,13 @@ namespace mocc {
 
         return;
     }
+
+    void PinMesh::print( std::ostream &os ) const {
+        os << "ID: " << id_ << std::endl;
+        os << "X Pitch: " << pitch_x_ << std::endl;
+        os << "Y Pitch: " << pitch_y_ << std::endl;
+        os << "# of Regions: " << n_reg_ << std::endl;
+        os << "# of XS Regions: " << n_xsreg_;
+        return;
+    }
 }

@@ -27,6 +27,8 @@ namespace mocc {
             return n;
         }
 
+        void print( std::ostream &os ) const;
+
     private:
         // Radii of material rings
         std::vector<real_t> xs_radii_;

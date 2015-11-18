@@ -48,13 +48,13 @@ namespace mocc {
                     stringstream msg;
                     msg << "Pin radii do not appear to be ordered for pin ID="
                         << id_;
-                    Error(msg.str().c_str());
+                    throw EXCEPT(msg.str());
                 }
             }
 
             // Make sure the last radius is smaller than a half-pitch
             if(xs_radii_.back() > pitch_x_*0.5){
-                Error("Largest radius is too big!");
+                throw EXCEPT("Largest radius is too big!");
             }
 
             n_xsreg_ = xs_radii_.size() + 1;
@@ -68,20 +68,21 @@ namespace mocc {
             int azi;
             inBuf >> azi;
             if(inBuf.fail()){
-                Error("Improper input to azimuthal subdivisions!");
+                throw EXCEPT("Improper input to azimuthal subdivisions!");
             }
             sub_azi_.push_back(azi);
 
             // For now im only supporting one entry (same azi for all rings).
             if(sub_azi_.size() > 1){
-                Error("Only supporting on azi type for now.");
+                throw EXCEPT("Only supporting on azi type for now.");
             }
 
             // Make sure that the azimuthal division is even and <=8. One of
             // these days, ill solve the more general problem of any number of
             // azis.
             if( (sub_azi_[0]%2 != 0) | (sub_azi_[0] > 8) ) {
-                Error("Only supporting even azimuthal subdivisions <=8.");
+                throw EXCEPT("Only supporting even azimuthal subdivisions "
+                        "<=8.");
             }
         }
 
@@ -95,9 +96,10 @@ namespace mocc {
 
                 if(inBuf.fail()){
                     stringstream msg;
-                    msg << "Ran into a problem reading radial subdivisions for pin ID="
+                    msg << "Ran into a problem reading radial subdivisions for "
+                        "pin ID= "
                         << id_;
-                    Error(msg.str().c_str());
+                    throw EXCEPT(msg.str());
                 }
             }
             if(!inBuf.eof()){
@@ -108,7 +110,7 @@ namespace mocc {
 
             // Make sure we have the same number of radial subdivs as rings
             if(sub_rad_.size() != n_xsreg_ - 1){
-                Error("Wrong number of radial subdivisions specified.");
+                throw EXCEPT("Wrong number of radial subdivisions specified.");
             }
         }
 
@@ -258,5 +260,12 @@ namespace mocc {
         assert( (0 <= ireg) & (ireg < n_reg_ ) );
 
         return ireg;
+    }
+
+    void PinMesh_Cyl::print( std::ostream &os ) const {
+        PinMesh::print( os );
+        os << std::endl;
+        os << "Type: Cylindrical";
+        return;
     }
 }

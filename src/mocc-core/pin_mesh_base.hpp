@@ -90,6 +90,25 @@ namespace mocc {
         */
         virtual size_t n_fsrs( unsigned int xsreg ) const =0;
 
+        /**
+         * \brief Insert hte \ref PinMesh into the passed ostream.
+         *
+         * This is useful to be able to use \c operator<< on a polymorphic \ref
+         * PinMesh and have it work as expected.
+         */
+        virtual void print( std::ostream &os ) const;
+
+        /**
+         * \brief Provide stream insertion support.
+         *
+         * Calls the \ref PinMesh::print() routine, which is virtual, allowing
+         * for polymorphism.
+         */
+        friend std::ostream& operator<<( std::ostream &os, const PinMesh& pm ) {
+            pm.print( os );
+            return os;
+        }
+
     protected:
         size_t id_;
         size_t n_reg_;

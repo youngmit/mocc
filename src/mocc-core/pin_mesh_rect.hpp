@@ -18,6 +18,8 @@ namespace mocc {
         size_t n_fsrs( unsigned int xsreg ) const {
             return 1;
         }
+
+        void print( std::ostream &os ) const;
     private:
         VecF hx_;
         VecF hy_;
