@@ -117,9 +117,9 @@ namespace mocc {
                 coarse_data_->current.col( group ) = 0.0;
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
-                this->check_balance( group );
-                cout << "MoC currents:" << endl;
-                cout << coarse_data_->current.col(group) << endl;
+//                this->check_balance( group );
+//                cout << "MoC currents:" << endl;
+//                cout << coarse_data_->current.col(group) << endl;
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );

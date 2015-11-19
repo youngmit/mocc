@@ -1,6 +1,7 @@
+#include <exception>
 #include <iostream>
 #include <iomanip>
-#include <exception>
+#include <omp.h>
 #include <sstream>
 #include <string>
 
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]){
     }
 
     try {
+        auto time_begin = omp_get_wtime();
         std::string space = "                         ";
         std::cout << space << "01001101010011110100001101000011" << std::endl;
         std::cout << space << " __  __   _____   _____   _____" <<std::endl;
@@ -45,6 +47,15 @@ int main(int argc, char* argv[]){
 
         // Spin up the log file. For now, just use the name of the input file.
         StartLogFile(argv[1]);
+
+#pragma omp parallel
+        {
+#pragma omp master
+            {
+                LogFile << "Running with " << omp_get_num_threads() << " treads" 
+                    << std::endl;
+            }
+        }
 
 
         // Parse the input file
@@ -61,6 +72,10 @@ int main(int argc, char* argv[]){
         // Output stuff
         HDF::H5File outfile( "out.h5", "w" );
         solver->output( outfile.get() );
+
+        auto time_end = omp_get_wtime();
+        std::cout << "Time: " << time_end - time_begin << " sec" << endl;
+        LogFile   << "Time: " << time_end - time_begin << " sec" << endl;
 
         StopLogFile();
     }
