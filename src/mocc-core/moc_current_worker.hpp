@@ -104,51 +104,57 @@ namespace mocc {
             }
 
             inline void set_angle( Angle ang, real_t spacing ) {
-                current_weights_[0] = ang.weight * spacing * ang.ox;
-                current_weights_[1] = ang.weight * spacing * ang.oy;
-                current_weights_[2] = ang.weight * spacing * ang.oz;
+#pragma omp single 
+                {
+                    current_weights_[0] = ang.weight * spacing * ang.ox;
+                    current_weights_[1] = ang.weight * spacing * ang.oy;
+                    current_weights_[2] = ang.weight * spacing * ang.oz;
+                }
             }
 
             inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
                     const ArrayF &e_tau, const Ray &ray, int first_reg,
                     int group ) {
-                size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
-                size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
-                size_t surf_fw = ray.cm_surf_fw()+surf_offset_;
-                size_t surf_bw = ray.cm_surf_bw()+surf_offset_;
-                size_t iseg_fw = 0;
-                size_t iseg_bw = ray.nseg();
+#pragma omp critical
+                {
+                    size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
+                    size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
+                    size_t surf_fw = ray.cm_surf_fw()+surf_offset_;
+                    size_t surf_bw = ray.cm_surf_bw()+surf_offset_;
+                    size_t iseg_fw = 0;
+                    size_t iseg_bw = ray.nseg();
 
-                Normal norm_fw = mesh_->surface_normal( surf_fw );
-                Normal norm_bw = mesh_->surface_normal( surf_bw );
-                coarse_data_->current( surf_fw, group ) +=
-                    psi1[iseg_fw] * current_weights_[(int)norm_fw];
-                coarse_data_->current( surf_bw, group ) -=
-                    psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                    Normal norm_fw = mesh_->surface_normal( surf_fw );
+                    Normal norm_bw = mesh_->surface_normal( surf_bw );
+                    coarse_data_->current( surf_fw, group ) +=
+                        psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                    coarse_data_->current( surf_bw, group ) -=
+                        psi2[iseg_bw] * current_weights_[(int)norm_bw];
 
-                auto begin = ray.cm_data().cbegin();
-                auto end = ray.cm_data().cend();
-                for( auto crd = begin; crd != end; ++crd ) {
-                    // Hopefully branch prediction saves me here.
-                    if( crd->fw != Surface::INVALID ) {
-                        iseg_fw += crd->nseg_fw;
-                        norm_fw = surface_to_normal( crd->fw );
-                        surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
-                        coarse_data_->current( surf_fw, group ) +=
-                            psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                    auto begin = ray.cm_data().cbegin();
+                    auto end = ray.cm_data().cend();
+                    for( auto crd = begin; crd != end; ++crd ) {
+                        // Hopefully branch prediction saves me here.
+                        if( crd->fw != Surface::INVALID ) {
+                            iseg_fw += crd->nseg_fw;
+                            norm_fw = surface_to_normal( crd->fw );
+                            surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
+                            coarse_data_->current( surf_fw, group ) +=
+                                psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                        }
+
+                        if( crd->bw != Surface::INVALID ) {
+                            iseg_bw -= crd->nseg_bw;
+                            norm_bw = surface_to_normal( crd->bw );
+                            surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
+                            coarse_data_->current( surf_bw, group ) -=
+                                psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                        }
+
+                        cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
+                        cell_bw = mesh_->coarse_neighbor( cell_bw, (crd)->bw );
                     }
-
-                    if( crd->bw != Surface::INVALID ) {
-                        iseg_bw -= crd->nseg_bw;
-                        norm_bw = surface_to_normal( crd->bw );
-                        surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
-                        coarse_data_->current( surf_bw, group ) -=
-                            psi2[iseg_bw] * current_weights_[(int)norm_bw];
-                    }
-
-                    cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
-                    cell_bw = mesh_->coarse_neighbor( cell_bw, (crd)->bw );
-                }
+                } // OMP Critical
                 return;
             }
 

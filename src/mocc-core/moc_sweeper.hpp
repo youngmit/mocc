@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <omp.h>
 
 #include "pugixml.hpp"
 
@@ -107,9 +108,12 @@ namespace mocc {
         void sweep1g( int group, CurrentWorker &cw ) {
             flux_1g_ = 0.0;
 
+#pragma omp parallel default(shared)
+            {
             ArrayF e_tau(rays_.max_segments());
             ArrayF psi1(rays_.max_segments()+1);
             ArrayF psi2(rays_.max_segments()+1);
+            ArrayF t_flux(n_reg_);
 
             int iplane = 0;
             for( const auto plane_ray_id: mesh_.unique_planes() ) {
@@ -131,8 +135,10 @@ namespace mocc {
                     real_t wt_v_st = ang.weight * rays_.spacing(iang) *
                         stheta * PI;
 
-                    int iray = 0;
-                    for( auto &ray: ang_rays ) {
+#pragma omp for
+                    for( int iray=0; iray<(int)ang_rays.size(); iray++ ) {
+                        const auto& ray = ang_rays[iray];
+
                         int bc1 = ray.bc(0);
                         int bc2 = ray.bc(1);
 
@@ -153,7 +159,7 @@ namespace mocc {
                             real_t psi_diff = (psi1[iseg] - qbar_[ireg]) *
                                 e_tau[iseg];
                             psi1[iseg+1] = psi1[iseg] - psi_diff;
-                            flux_1g_[ireg] += psi_diff*wt_v_st;
+                            t_flux[ireg] += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
                         boundary_out_[iplane][iang1][bc2] = psi1[ ray.nseg() ];
@@ -169,15 +175,13 @@ namespace mocc {
                             real_t psi_diff = (psi2[iseg+1] - qbar_[ireg]) *
                                 e_tau[iseg];
                             psi2[iseg] = psi2[iseg+1] - psi_diff;
-                            flux_1g_[ireg] += psi_diff*wt_v_st;
+                            t_flux[ireg] += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
                         boundary_out_[iplane][iang2][bc1] = psi2[0];
 
                         // Stash currents
                         cw.post_ray( psi1, psi2, e_tau, ray, first_reg, group );
-
-                        iray++;
                     } // Rays
                     cw.post_angle( iang, group );
                     iang++;
@@ -186,10 +190,22 @@ namespace mocc {
 
             } // planes
 
+#pragma omp barrier
+#pragma omp critical
+            {
+                for( size_t i=0; i<n_reg_; i++ ) {
+                    flux_1g_[i] += t_flux[i];
+                }
+            }
+#pragma omp barrier
             // Scale the scalar flux by the volume and add back the source
-            flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
+#pragma omp single
+            {
+                flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
+            }
 
             this->update_boundary( group );
+            }
 
             return;
         }

@@ -41,6 +41,8 @@ namespace mocc {
             inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
                     const ArrayF &e_tau, const Ray &ray, int first_reg,
                     int group ) {
+#pragma omp critical
+            {
                 size_t cell_fw = ray.cm_cell_fw();
                 size_t cell_bw = ray.cm_cell_bw();
                 size_t surf_fw = ray.cm_surf_fw();
@@ -110,7 +112,7 @@ namespace mocc {
                     cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
                     cell_bw = mesh_->coarse_neighbor( cell_bw, (crd)->bw );
                 }
-
+            }
                 return;
             }
 
@@ -125,10 +127,13 @@ namespace mocc {
                 vol_norm_ = 0.0;
                 sigt_sum_ = 0.0;
 
+#pragma omp barrier
                 return;
             }
 
             void post_angle( int iang, int igroup ) {
+#pragma omp single
+            {
                 // Normalize the flux and sigt values and calculate
                 // correction factors for the current angle/energy
                 for( size_t i=0; i<vol_norm_.size(); i++ ) {
@@ -141,7 +146,8 @@ namespace mocc {
                 surf_sum_ /= surf_norm_;
 
                 calculate_corrections( iang, igroup );
-
+            }
+#pragma omp barrier
                 return;
             }
 
