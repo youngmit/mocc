@@ -59,8 +59,11 @@ namespace mocc {
             sn_sweeper_.get_pin_flux_1g( group, sn_flux );
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
+
         // Calculate transverse leakage source
-        this->add_tl( group );
+        if( do_tl_ ) {
+            this->add_tl( group );
+        }
 
         moc_sweeper_.sweep( group );
 
@@ -233,11 +236,15 @@ namespace mocc {
     void PlaneSweeper_2D3D::parse_options( const pugi::xml_node &input ) {
         // Set defaults for everything
         do_snproject_ = true;
+        do_tl_ = true;
 
 
         // Override with entries in the input node
         if( !input.attribute("sn_project").empty() ) {
             do_snproject_ = input.attribute("sn_project").as_bool();
+        }
+        if( !input.attribute("tl").empty() ) {
+            do_tl_ = input.attribute("tl").as_bool();
         }
 
         LogFile << "2D3D Sweeper options:" << std::endl;

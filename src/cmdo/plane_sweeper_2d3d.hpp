@@ -114,5 +114,6 @@ namespace mocc {
 
         // Options! Buttons and knobs!!!
         bool do_snproject_;
+        bool do_tl_;
     };
 }
