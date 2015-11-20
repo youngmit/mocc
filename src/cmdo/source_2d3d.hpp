@@ -28,7 +28,7 @@ namespace mocc {
      */
     class Source_2D3D: public Source {
     public:
-        Source_2D3D( const MoCSweeper_2D3D &moc, const SnSweeper_CDD &sn ):
+        Source_2D3D( const MoCSweeper_2D3D &moc, const SnSweeper &sn ):
             Source( moc.n_reg(), &(moc.xs_mesh()), moc.flux() ),
             mesh_(moc.mesh()),
             sn_source_( sn.n_reg(), &(sn.xs_mesh()), sn.flux() )

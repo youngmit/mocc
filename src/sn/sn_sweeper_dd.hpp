@@ -5,7 +5,7 @@
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
 
-namespace mocc {
+namespace mocc { namespace sn {
     class SnSweeper_DD: public SnSweeper {
     public:
         SnSweeper_DD( const pugi::xml_node& input, const CoreMesh& mesh ):
@@ -49,4 +49,4 @@ namespace mocc {
 
         CellWorker_DD cell_worker_;
     };
-}
+} }

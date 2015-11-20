@@ -1,6 +1,6 @@
 #include "sn_sweeper_dd.hpp"
 
-namespace mocc {
+namespace mocc { namespace sn {
     void SnSweeper_DD::sweep( int group ) {
         // Store the transport cross section somewhere useful
         for( auto &xsr: *xs_mesh_ ) {
@@ -13,7 +13,7 @@ namespace mocc {
         flux_1g_ = flux_[ std::slice(n_reg_*group, n_reg_, 1) ];
 
         // Perform inner iterations
-        for( unsigned int inner=0; inner<n_inner_; inner++ ) {
+        for( size_t inner=0; inner<n_inner_; inner++ ) {
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter( group, flux_1g_, q_ );
             if( inner == n_inner_-1 && coarse_data_ ) {
@@ -31,4 +31,4 @@ std::cout << coarse_data_->current.col( group ) << std::endl << std::endl;
 
         return;
     }
-}
+} }

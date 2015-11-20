@@ -102,7 +102,7 @@ namespace mocc {
 
 
         const CoreMesh& mesh_;
-        SnSweeper_CDD sn_sweeper_;
+        sn::SnSweeper_CDD<sn::CellWorker_CDD_DD> sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
         CorrectionData corrections_;
