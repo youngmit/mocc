@@ -88,9 +88,17 @@ namespace mocc {
         }
 
         // Check to make sure that the source is positive
-        /*if( std::any_of(qbar.begin(), qbar.end(), [](real_t v){ return v < 0.0; }) ) {
-            throw EXCEPT("Negative source!");
-        }*/
+        bool any = false;
+        for( size_t i=0; i<qbar.size(); i++ ) {
+            if(qbar[i] < 0.0 ) {
+                any = true;
+                std::cout << i << " " << ig << " : " << qbar[i] << std::endl;
+                qbar[i] = 0.0;
+            }
+        }
+        if( any ) {
+          //  throw EXCEPT("Negative source!");
+        }
 
         return;
     }
