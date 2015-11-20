@@ -48,7 +48,6 @@ namespace mocc {
             /// the types more explicitly...
             Source_2D3D *s = static_cast<Source_2D3D*>(source);
             sn_sweeper_.assign_source( s->get_sn_source() );
-
         }
 
         /**
@@ -115,5 +114,7 @@ namespace mocc {
         // Options! Buttons and knobs!!!
         bool do_snproject_;
         bool do_tl_;
+        int n_inactive_moc_;
+        int i_outer_;
     };
 }

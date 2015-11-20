@@ -24,7 +24,8 @@ namespace mocc {
         corrections_( sn_sweeper_.n_reg(), ang_quad_.ndir()/2,
                 sn_sweeper_.n_group() ),
         tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
-        sn_resid_( sn_sweeper_.n_group() )
+        sn_resid_( sn_sweeper_.n_group() ),
+        i_outer_( 0 )
     {
         /// \todo initialize the rest of the data members on the TS base type
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
@@ -47,8 +48,13 @@ namespace mocc {
 
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::sweep( int group ) {
-        if (!coarse_data_) {
+        if( !coarse_data_ ) {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
+        }
+
+        /// \todo do something less brittle
+        if( group == 0 ) {
+            i_outer_++;
         }
 
         sn_sweeper_.get_homogenized_xsmesh()->update( moc_sweeper_.flux() );
@@ -65,7 +71,9 @@ namespace mocc {
             this->add_tl( group );
         }
 
-        moc_sweeper_.sweep( group );
+        if( i_outer_ > n_inactive_moc_ ) {
+            moc_sweeper_.sweep( group );
+        }
 
         // Compute Sn-MoC residual
         VecF moc_flux;
@@ -237,7 +245,7 @@ namespace mocc {
         // Set defaults for everything
         do_snproject_ = true;
         do_tl_ = true;
-
+        n_inactive_moc_ = 0;
 
         // Override with entries in the input node
         if( !input.attribute("sn_project").empty() ) {
@@ -246,9 +254,15 @@ namespace mocc {
         if( !input.attribute("tl").empty() ) {
             do_tl_ = input.attribute("tl").as_bool();
         }
+        if( !input.attribute("inactive_moc").empty() ) {
+            n_inactive_moc_ = input.attribute("inactive_moc").as_int();
+        }
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
+        LogFile << "    Transversd Leakage: " << do_snproject_ << std::endl;
+        LogFile << "    Inactive MoC Outer Iterations: " 
+            << n_inactive_moc_ << std::endl;
 
 
     }
