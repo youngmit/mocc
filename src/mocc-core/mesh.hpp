@@ -35,7 +35,7 @@ namespace mocc {
      * with \ref Pin objects, but in the case of the base \ref Mesh type are
      * more abstract in nature. In lieu of a standalone coarse mesh (for things
      * like CMFD and 2D/3D), the Mesh itself provides method for interacting
-     * with homogenous regions and their interface surfaces.
+     * with homogeneous regions and their interface surfaces.
      *
      * \todo the unit test for Mesh is not really done. Its got some stuff in
      * there for my testing, but it needs some serious work.
@@ -45,36 +45,38 @@ namespace mocc {
         Mesh() { };
 
         /**
-         * Construct a \ref Mesh using cell boundaries specified externally.
+         * \brief Construct a \ref Mesh using cell boundaries specified
+         * externally.
          */
         Mesh( size_t n_reg, size_t n_xsreg,
                 VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] );
         
         /**
-         * Return the total number of regions in the computational mesh. This is
-         * not neccessarily the number of pins. For a MoC/CoreMesh this is the
-         * number of flat source regions.
+         * \brief Return the total number of regions in the computational mesh.
+         * 
+         * This is not necessarily the number of pins. For a MoC/CoreMesh this
+         * is the number of flat source regions.
          */
         size_t n_reg() const {
             return n_reg_;
         }
 
         /**
-         * Return the number of pins along the X dimension
+         * \brief Return the number of pins along the X dimension
          */
         size_t nx() const {
             return nx_;
         }
 
         /**
-         * Return the number of pins along the Y dimension
+         * \brief Return the number of pins along the Y dimension
          */
         size_t ny() const {
             return ny_;
         }
 
         /**
-         * Return the number of planes in the Z dimension
+         * \brief Return the number of planes in the Z dimension
          */
         size_t nz() const {
             return nz_;
@@ -88,21 +90,21 @@ namespace mocc {
         }
 
         /**
-        * Return the total core length along the x dimension
+        * \brief Return the total core length along the x dimension
         */
         real_t hx_core() const {
             return hx_;
         }
 
         /**
-        * Return the total core length along the y dimension
+        * \brief Return the total core length along the y dimension
         */
         real_t hy_core() const {
             return hy_;
         }
 
         /**
-         * Return the pin/coarse cell thickness in the x dimension at the
+         * \brief Return the pin/coarse cell thickness in the x dimension at the
          * specified x position.
          */
         inline real_t dx( size_t ix ) const {
@@ -110,7 +112,7 @@ namespace mocc {
         }
 
         /**
-         * Return the pin/coarse cell thickness in the y dimension at the
+         * \brief Return the pin/coarse cell thickness in the y dimension at the
          * specified y position.
          */
         inline real_t dy( size_t iy ) const {
@@ -118,7 +120,7 @@ namespace mocc {
         }
 
         /**
-         * Return the pin/coarse cell thickness in the z dimension at the
+         * \brief Return the pin/coarse cell thickness in the z dimension at the
          * specified z position.
          */
         inline real_t dz( size_t iz ) const {
@@ -126,37 +128,39 @@ namespace mocc {
         }
 
         /**
-        * Return the pin boundary locations along the x dimension
+        * \brief Return the pin boundary locations along the x dimension
         */
         const VecF& pin_dx() const {
             return dx_vec_;
         }
 
         /**
-        * Return the pin boundary locations along the y dimension
+        * \brief Return the pin boundary locations along the y dimension
         */
         const VecF& pin_dy() const {
             return dy_vec_;
         }
 
         /**
-         * Return the total number of pin regions in the mesh. This includes
-         * plane separations. This is essentially the number of coarse mesh
-         * regions.
+         * \brief Return the total number of pin regions in the mesh. 
+         *
+         * This includes plane separations. This is essentially the number of
+         * coarse mesh regions.
          */
         size_t n_pin() const {
             return nx_*ny_*nz_;
         }
 
         /**
-         * Return the number of coarse surfaces.
+         * \brief Return the number of coarse surfaces.
          */
         size_t n_surf() const {
             return (nx_+1)*ny_*nz_ + (ny_+1)*nx_*nz_ + (nz_+1)*nx_*ny_;
         }
 
         /**
-         * Return a vector containing the x-, y-, z-dimensions of the mesh.
+         * \brief Return a vector containing the x-, y-, z-dimensions of the
+         * mesh.
          */
         VecI dimensions() const {
             VecI d = { (unsigned int)nx_,
@@ -209,8 +213,9 @@ namespace mocc {
         }
 
         /**
-         * Return the coarse cell index given a pin \ref Position. Cell indexing
-         * is natural in x, y z.
+         * \brief Return the coarse cell index given a pin \ref Position.
+         * 
+         * Cell indexing is natural in x, y z.
         */
         inline size_t coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
@@ -223,7 +228,7 @@ namespace mocc {
         int coarse_cell_point( Point2 p ) const;
 
         /**
-         * Return the \ref Position of a coarse mesh cell index.
+         * \brief Return the \ref Position of a coarse mesh cell index.
         */
         Position coarse_position( size_t cell ) const {
             return Position(
@@ -233,9 +238,11 @@ namespace mocc {
         }
 
         /**
-         * Return a coarse surface index given a cell index and Surface
-         * direction. Surface indexing is more complicated than cell indexing,
-         * so listen up, dear readers...
+         * \brief Return a coarse surface index given a cell index and Surface
+         * direction.
+         *
+         * Surface indexing is more complicated than cell indexing, so listen
+         * up, dear readers...
          *
          * Imagine that you are in the bottom plane of the mesh. Start by
          * numbering all of the bottom faces of the plane, starting in the lower
@@ -256,8 +263,9 @@ namespace mocc {
         }
 
         /**
-         * Determine the surface of a coarse cell that a point is on. If the
-         * point is on a corner, things get weird. Read on...
+         * \brief Determine the surface of a coarse cell that a point is on.
+         *
+         * If the point is on a corner, things get weird. Read on...
          *
          * This is useful for performing the coarse ray trace, and has to
          * consider a number of concerns related to current and surface flux
@@ -269,8 +277,8 @@ namespace mocc {
         size_t coarse_norm_point( Point2 p, int octant, Surface (&s)[2] ) const;
 
         /**
-         * Return the cell index that a point on the boundary of the mesh should
-         * be considered within.
+         * \brief Return the cell index that a point on the boundary of the mesh
+         * should be considered within.
          *
          * This follows the conventions described in \ref coarseraypage.
          */
