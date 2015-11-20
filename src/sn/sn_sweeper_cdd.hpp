@@ -88,7 +88,7 @@ namespace mocc { namespace sn {
 
             flux_x = (psi - gx*flux_x) / gx;
             flux_y = (psi - gy*flux_y) / gy;
-            flux_z = psi;
+            flux_z = 2.0*psi - flux_z;
 
             return psi;
         }

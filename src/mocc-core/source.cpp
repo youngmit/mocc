@@ -92,8 +92,8 @@ namespace mocc {
         for( size_t i=0; i<qbar.size(); i++ ) {
             if(qbar[i] < 0.0 ) {
                 any = true;
-                std::cout << i << " " << ig << " : " << qbar[i] << std::endl;
-                qbar[i] = 0.0;
+//                std::cout << i << " " << ig << " : " << qbar[i] << std::endl;
+//                qbar[i] = 0.0;
             }
         }
         if( any ) {
