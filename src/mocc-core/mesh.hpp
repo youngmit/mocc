@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "constants.hpp"
+#include "error.hpp"
 #include "geom.hpp"
 #include "global_config.hpp"
 
@@ -42,6 +43,8 @@ namespace mocc {
      */
     class Mesh {
     public:
+        typedef std::array< std::array< Boundary, 3 >, 2 > BCArray_t;
+
         Mesh() { };
 
         /**
@@ -87,6 +90,30 @@ namespace mocc {
         */
         const std::vector<Boundary>& boundary() const {
             return bc_;
+        }
+
+        /**
+         * \brief Return a nifty array of the boundary conditions, organized by
+         * normal direction and sense.
+         *
+         * This returns a 2-dimensional array of the boundary conditions,
+         * organized in such a way that makes BC determination for a given
+         * normal direction and directional sense. For example \c
+         * bc[Normal::X_NORM][0] would give the boundary condition on the west
+         * bounday, \c bc[Normal::Z_NORM][1] would give the boundary condition
+         * on the top.
+         */
+        BCArray_t boundary_array() const {
+            BCArray_t bc;
+
+            bc[(int)Normal::X_NORM][0] = bc_[(int)Surface::WEST];
+            bc[(int)Normal::X_NORM][1] = bc_[(int)Surface::EAST];
+            bc[(int)Normal::Y_NORM][0] = bc_[(int)Surface::SOUTH];
+            bc[(int)Normal::Y_NORM][1] = bc_[(int)Surface::NORTH];
+            bc[(int)Normal::Z_NORM][0] = bc_[(int)Surface::BOTTOM];
+            bc[(int)Normal::Z_NORM][1] = bc_[(int)Surface::TOP];
+
+            return bc;
         }
 
         /**
@@ -139,6 +166,36 @@ namespace mocc {
         */
         const VecF& pin_dy() const {
             return dy_vec_;
+        }
+
+        size_t coarse_volume( size_t cell ) const {
+            return vol_[cell];
+        }
+
+        /**
+         * \brief Return the cell thickness in the direction indicated.
+         *
+         * \param cell the index of the cell
+         * \param norm the \ref Normal direction
+         *
+         * Given a cell index and a \ref Normal, returns the thickness of the
+         * indexed cell in the specified direction. For instance, if \ref
+         * Normal::X_NORM is passed, this returns the thickness of the indexed
+         * cell in the x direction.
+         *
+         */
+        real_t cell_thickness( size_t cell, Normal norm ) const {
+            auto pos = this->coarse_position( cell );
+            real_t h;
+            switch( norm ) {
+            case Normal::X_NORM:
+                h = dx_vec_[pos.x];
+            case Normal::Y_NORM:
+                h = dy_vec_[pos.y];
+            case Normal::Z_NORM:
+                h = dz_vec_[pos.z];
+            }
+            return h;
         }
 
         /**
@@ -306,6 +363,92 @@ namespace mocc {
         int coarse_surf_point( Point2 p, int cell, int (&s)[2] ) const;
 
         /**
+         * \brief Return the coarse cell indices straddling the surface
+         * indicated.
+         *
+         * \param surf the index of the coarse surface to find neighboring
+         * cells.
+         *
+         * \note The cells are always given in the order of increasing
+         * position. This makes it easy to tell which cell is to the "right"
+         * of the other. The first cell in the pair is always "left" of the
+         * surface and the second is always "right." Positive current always
+         * flows "right."
+         *
+         */
+        std::pair<int, int> coarse_neigh_cells( size_t surf ) const {
+            std::pair<int, int> cells;
+
+            switch( this->surface_normal(surf) ) {
+            case Normal::X_NORM:
+                {
+                    // iz and iy are the cell positions, ix is the surface
+                    // position.
+                    size_t iz = surf / n_surf_plane_;
+                    surf -= iz*n_surf_plane_;
+                    size_t iy = (surf - nx_*ny_) / (nx_+1);
+                    size_t ix = (surf - nx_*ny_) % (nx_+1);
+
+                    if( ix > 0 ) {
+                        cells.first = this->coarse_cell(Position(ix-1, iy, iz));
+                    } else {
+                        cells.first = -1;
+                    }
+                    if( ix < nx_ ) {
+                        cells.second = this->coarse_cell(Position(ix, iy, iz));
+                    } else {
+                        cells.second = -1;
+                    }
+                }
+                break;
+            case Normal::Y_NORM:
+                {
+                    // iz and ix are the cell positions, iy is the surface
+                    // position.
+                    size_t iz = surf / n_surf_plane_;
+                    surf -= iz*n_surf_plane_;
+                    surf -= nx_*ny_ + (nx_+1)*ny_;
+                    size_t iy = surf % (ny_+1);
+                    size_t ix = surf / (ny_+1);
+
+                    if( iy > 0 ) {
+                        cells.first = this->coarse_cell(Position(ix, iy-1, iz));
+                    } else {
+                        cells.first = -1;
+                    }
+                    if( iy < ny_ ) {
+                        cells.second = this->coarse_cell(Position(ix, iy, iz));
+                    } else {
+                        cells.second = -1;
+                    }
+                }
+                break;
+            case Normal::Z_NORM:
+                {
+                    // ix and iy are the cell positions, iz is the surface
+                    // position.
+                    size_t iz = surf / n_surf_plane_;
+                    surf -= iz*n_surf_plane_;
+                    size_t iy = surf / nx_;
+                    size_t ix = surf % nx_;
+
+                    if( iz > 0 ) {
+                        cells.first = this->coarse_cell(Position(ix, iy, iz-1));
+                    } else {
+                        cells.first = -1;
+                    }
+                    if( iz < nz_ ) {
+                        cells.second = this->coarse_cell(Position(ix, iy, iz));
+                    } else {
+                        cells.second = -1;
+                    }
+                }
+                break;
+            }
+        return cells;
+        }
+
+        /**
          * \brief Return an index offset to the zero-th coarse cell in a given
          * plane.
          */
@@ -329,6 +472,20 @@ namespace mocc {
             return n_surf_plane_*plane;
         }
 
+        /**
+         * \brief Return the surface index between two cells.
+         */
+        std::pair< size_t, Surface > coarse_interface( size_t cell1, size_t cell2 ) const {
+            // Stupid search
+            for( auto is: AllSurfaces ) {
+                if( this->coarse_neighbor( cell1, is ) == (int)cell2 ) {
+                    return std::pair< size_t, Surface >( 
+                            this->coarse_surf( cell1, is ), is );
+                }
+            }
+
+            throw EXCEPT("Cells do not appear to be neighbors");
+        }
         /**
          * \brief Return the surface area of the indexed cell and direction.
          */
@@ -356,24 +513,49 @@ namespace mocc {
          * \brief Return the neighboring coarse cell index of the passed cell
          * index in the passed direction.
          *
-         * \todo Handle the case where the neighbor doesnt exist.
+         * If the neighbor is out of bounds, return -1;
          */
         int coarse_neighbor( size_t cell, Surface surf) const {
+            auto pos = this->coarse_position( cell );
             switch( surf ) {
                 case Surface::NORTH:
-                    return cell + nx_;
+                    if( pos.y < ny_ ) {
+                        return cell + nx_;
+                    } else {
+                        return -1;
+                    }
                 case Surface::SOUTH:
-                    return cell - nx_;
+                    if( pos.y > 0 ) {
+                        return cell - nx_;
+                    } else {
+                        return -1;
+                    }
                 case Surface::EAST:
-                    return cell + 1;
+                    if( pos.x < nx_ ) {
+                        return cell + 1;
+                    } else {
+                        return -1;
+                    }
                 case Surface::WEST:
-                    return cell - 1;
+                    if( pos.x > 0 ) {
+                        return cell - 1;
+                    } else {
+                        return -1;
+                    }
                 case Surface::TOP:
-                    return cell + nx_*ny_;
+                    if( pos.z < nz_ ) {
+                        return cell + nx_*ny_;
+                    } else {
+                        return -1;
+                    }
                 case Surface::BOTTOM:
-                    return cell - nx_*ny_;
+                    if( pos.z < 0 ) {
+                        return cell - nx_*ny_;
+                    } else {
+                        return -1;
+                    }
                 default:
-                    return -1;
+                    return -5;
             }
         }
 
@@ -384,10 +566,10 @@ namespace mocc {
             // Number of surfaces per plane
             size_t nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
 
-            if( surface % nsurfz < nx_*ny_ ) {
+            if( (surface % nsurfz) < nx_*ny_ ) {
                 return Normal::Z_NORM;
             }
-            if( surface % nsurfz < nx_*ny_ + (nx_+1)*ny_ ) {
+            if( (surface % nsurfz) < (nx_*ny_ + (nx_+1)*ny_) ) {
                 return Normal::X_NORM;
             }
             return Normal::Y_NORM;
@@ -443,6 +625,9 @@ namespace mocc {
 
         /// Sequence of plane heights
         VecF dz_vec_;
+
+        /// Coarse cell volumes
+        VecF vol_;
 
         /// Vector of \ref Line objects, representing pin boundaries. This greatly
         /// simplifies the ray trace.

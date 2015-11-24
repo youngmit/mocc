@@ -30,10 +30,9 @@ namespace mocc {
         xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
         n_reg_ = mesh.n_pin();
         n_group_ = xs_mesh_->n_group();
-        flux_.resize( n_reg_ * n_group_ );
-        flux_old_.resize( n_reg_ * n_group_ );
+        flux_.resize( n_reg_, n_group_ );
+        flux_old_.resize( n_reg_, n_group_ );
         vol_.resize( n_reg_ );
-
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
@@ -75,7 +74,7 @@ namespace mocc {
         size_t n = mesh_.n_pin();
         flux.clear();
 
-        ArrayF tmp_f = flux_[std::slice(n*ig, n, 1)];
+        auto tmp_f = flux_(blitz::Range::all(), ig);
         for( const auto &f: tmp_f ) {
             flux.push_back(f);
         }
@@ -138,7 +137,7 @@ namespace mocc {
             b += (*source_)[icell]*vol_[icell];
 
             // Internal removal
-            b -= flux_1g_[icell + n_reg_*group] * 
+            b -= flux_1g_(icell) * 
                 (*xs_mesh_)[icell].xsmacrm()[group] * vol_[icell];
 
             cout << "Cell balance: " << b << endl;

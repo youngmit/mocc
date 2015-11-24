@@ -33,7 +33,7 @@ namespace mocc {
             }
         }
 
-        flux_1g_ = flux_[ std::slice( group*n_reg_, n_reg_, 1 ) ];
+        flux_1g_ = flux_( blitz::Range::all(), (int)group );
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
@@ -52,7 +52,7 @@ namespace mocc {
             }
         }
 
-        flux_[ std::slice( group*n_reg_, n_reg_, 1 ) ] = flux_1g_;
+        flux_( blitz::Range::all(), group ) = flux_1g_;
 
         return;
     }

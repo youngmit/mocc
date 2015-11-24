@@ -129,7 +129,7 @@ namespace mocc {
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::add_tl( int group ) {
         assert( coarse_data_ );
-        ArrayF tl_fsr( 0.0, n_reg_ );
+        ArrayB1 tl_fsr( n_reg_ );
 
         int ireg_pin = 0;
         int ipin = 0;
@@ -147,7 +147,7 @@ namespace mocc {
             tl_g(ipin) = ( j_down - j_up ) / dz;
 
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
-                tl_fsr[ ir+ireg_pin ] = tl_g(ipin);
+                tl_fsr( ir+ireg_pin ) = tl_g(ipin);
             }
             ipin++;
             ireg_pin += pin->n_reg();

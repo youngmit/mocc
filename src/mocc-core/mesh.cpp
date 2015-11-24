@@ -18,6 +18,7 @@ namespace mocc {
         dx_vec_( hx.size()-1 ),
         dy_vec_( hy.size()-1 ),
         dz_vec_( hz.size()-1 ),
+        vol_( nx_*ny_*nz_ ),
         n_surf_plane_( (nx_+1)*ny_ + (ny_+1)*nx_ + nx_*ny_ )
     {
         assert( std::is_sorted( x_vec_.begin(), x_vec_.end() ) );
@@ -49,6 +50,11 @@ namespace mocc {
         }
         for( size_t i=1; i<z_vec_.size(); i++ ) {
             dz_vec_[i-1] = z_vec_[i] - z_vec_[i-1];
+        }
+
+        for( size_t i=0; i<this->n_pin(); i++ ) {
+            auto pos = this->coarse_position( i );
+            vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
         }
 
         assert( nx_ == hx.size()-1 );

@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 
+#include <blitz/array.h>
+
 #include "arrays.hpp"
 #include "eigen_interface.hpp"
 #include "global_config.hpp"
@@ -26,8 +28,8 @@ namespace mocc {
         }
 
         ArrayX current;
-        ArrayX flux;
-        ArrayX old_flux;
+        blitz::Array<real_t, 2> flux;
+        blitz::Array<real_t, 2> old_flux;
     };
 
     typedef std::shared_ptr<CoarseData> SP_CoarseData_t;

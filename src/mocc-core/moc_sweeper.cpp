@@ -103,7 +103,7 @@ namespace mocc {
             }
         }
 
-        flux_1g_ = flux_[ std::slice( group*n_reg_, n_reg_, 1 ) ];
+        flux_1g_ = flux_( blitz::Range::all(), group );
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
@@ -126,7 +126,7 @@ namespace mocc {
             }
         }
 
-        flux_[ std::slice( group*n_reg_, n_reg_, 1 ) ] = flux_1g_;
+        flux_( blitz::Range::all(), group ) = flux_1g_;
 
         return;
     }
@@ -214,7 +214,7 @@ namespace mocc {
             real_t v = 0.0;
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 v += vol_[ireg];
-                flux[i] += flux_[ireg + group*n_reg_]*vol_[ireg];
+                flux[i] += flux_(ireg, group)*vol_[ireg];
                 ireg++;
             }
             flux[i] /= v;
@@ -232,14 +232,14 @@ namespace mocc {
         this->get_pin_flux_1g( group, fm_flux );
         real_t resid = 0.0;
         size_t ipin = 0;
-        size_t ireg = 0;
+        int ireg = 0;
         for( const auto &pin: mesh_ ) {
             size_t i_coarse = mesh_.index_lex( mesh_.pin_position(ipin) );
             real_t fm_flux = 0.0;
 
             size_t stop = ireg+pin->n_reg();
             for( ; ireg<stop; ireg++ ) {
-                fm_flux += vol_[ireg]*flux_[group*n_reg_ + ireg];
+                fm_flux += vol_[ireg]*flux_(ireg, group);
             }
 
             fm_flux /= pin->vol();
@@ -247,7 +247,7 @@ namespace mocc {
 
             ireg -= pin->n_reg();
             for( ; ireg<stop; ireg++ ) {
-                flux_[group*n_reg_ + ireg] = flux_[group*n_reg_ + ireg]*f;
+                flux_(ireg, group) = flux_(ireg, group) * f;
             }
 
             real_t e = fm_flux - pin_flux[i_coarse];
@@ -275,7 +275,7 @@ namespace mocc {
             int icell = mesh_.coarse_cell(mesh_.pin_position(ipin));
 
             for( int ireg_pin=0; ireg_pin<pin->n_reg(); ireg_pin++ ) {
-                b[icell] -= flux_1g_[ireg + n_reg_*group]*vol_[ireg]*xsrm[ireg];
+                b[icell] -= flux_1g_(ireg, group)*vol_[ireg]*xsrm[ireg];
                 b[icell] += (*source_)[ireg]*vol_[ireg];
                 ireg++;
             }

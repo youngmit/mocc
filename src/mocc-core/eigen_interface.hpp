@@ -14,6 +14,13 @@ typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> Ma
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixX;
 #endif
 
+#ifdef FORCE_SINGLE
+typedef Eigen::VectorXf VectorX;
+#else
+typedef Eigen::VectorXd VectorX;
+#endif
+
+
 /**
  * This typedef provides easy access to the Eigen Array class, templated to the
  * appropriate floating point data type, and to use column-major ordering.

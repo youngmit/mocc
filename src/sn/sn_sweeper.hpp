@@ -3,6 +3,7 @@
 #include "pugixml.hpp"
 
 #include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/blitz_typedefs.hpp"
 #include "mocc-core/coarse_data.hpp"
 #include "mocc-core/core_mesh.hpp"
 #include "mocc-core/error.hpp"
@@ -51,9 +52,9 @@ namespace mocc {
             real_t resid = 0.0;
             size_t i = 0;
             for( auto &v: pin_flux ) {
-                real_t e = flux_[group*n_reg_ + i] - v;
+                real_t e = flux_(1, group) - v;
                 resid += e*e;
-                flux_[group*n_reg_ + i] = v;
+                flux_((int)i, (int)group) = v;
                 i++;
             }
             return std::sqrt(resid);
@@ -74,7 +75,7 @@ namespace mocc {
         std::vector<Boundary> bc_type_;
 
         // Temporary storage for 1-group scalar flux
-        ArrayF flux_1g_;
+        ArrayB1 flux_1g_;
 
         // Temporary storage of the current-group transport cross section
         ArrayF xstr_;

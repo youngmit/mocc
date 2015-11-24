@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "mocc-core/blitz_typedefs.hpp"
 #include "mocc-core/coarse_data.hpp"
 #include "mocc-core/eigen_interface.hpp"
 #include "mocc-core/global_config.hpp"
@@ -25,8 +26,8 @@ namespace mocc{
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
             n_group_( xs_mesh_->n_group() ),
-            flux_( n_reg_ * n_group_ ),
-            flux_old_( n_reg_ * n_group_ ),
+            flux_( n_reg_, n_group_ ),
+            flux_old_( n_reg_, n_group_ ),
             vol_( n_reg_ ),
             coarse_data_(nullptr)
         {
@@ -51,6 +52,13 @@ namespace mocc{
          * in the passed vector.
          */
         virtual void get_pin_flux_1g( int ig, VecF& flux ) const = 0;
+        
+        /**
+         * Return a reference to the MG flux
+         */
+        const ArrayB2& flux() const {
+            return flux_;
+        }
 
         /**
          * Return a vector containing the pin-homogenizes multi-group scalar
@@ -108,20 +116,13 @@ namespace mocc{
         }
 
         /**
-         * Return a reference to the MG flux
-         */
-        const ArrayF& flux() const {
-            return flux_;
-        }
-
-        /**
          * Subscript and return a specific flux value
          */
-        const real_t flux( size_t ig, size_t ireg ) const {
+        real_t flux( int ig, int ireg ) const {
             assert( ig < n_group_ );
             assert( ireg < n_reg_ );
 
-            return flux_[ ireg + n_reg_*ig ];
+            return flux_( ireg, ig );
         }
 
         /**
@@ -185,10 +186,10 @@ namespace mocc{
         Source* source_;
 
         // Multi-group scalar flux
-        ArrayF flux_;
+        ArrayB2 flux_;
 
         // Previous value of the MG scalar flux
-        ArrayF flux_old_;
+        ArrayB2 flux_old_;
 
         // Region volumes. In a 3-D sweeper this is the true volume, while in a
         // 2-D sweeper, this is actually surface area.

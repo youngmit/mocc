@@ -202,41 +202,45 @@ namespace mocc { namespace sn {
         }
         
         void sweep( int group ) {
-        // Make sure we have correction factors
-        if( !corrections_ ) {
-            throw EXCEPT( "CDD sweeper doesn't have any correction data. Try "
-                    "adding <data type=\"default\"/> in the input file." );
-        }
-        cell_worker_.set_group( group );
-
-        // Store the transport cross section somewhere useful
-        for( auto &xsr: *xs_mesh_ ) {
-            real_t xstr = xsr.xsmactr()[group];
-            for( auto &ireg: xsr.reg() ) {
-                xstr_[ireg] = xstr;
+            // Make sure we have correction factors
+            if( !corrections_ ) {
+                throw EXCEPT( "CDD sweeper doesn't have any correction data. "
+                        "Try adding <data type=\"default\"/> in the input file."
+                        );
             }
-        }
+            cell_worker_.set_group( group );
 
-        flux_1g_ = flux_[std::slice(group*n_reg_, n_reg_, 1)];
-
-        // Perform inner iterations
-        for( unsigned int inner=0; inner<n_inner_; inner++ ) {
-            // Set the source (add upscatter and divide by 4PI)
-            source_->self_scatter( group, flux_1g_, q_ );
-
-            if( inner == n_inner_-1 && coarse_data_ ) {
-                // Wipe out the existing currents
-                coarse_data_->current.col( group ) = 0.0;
-                this->sweep_1g<sn::Current, CellWorker_CDD>( group,
-                        cell_worker_ );
-            } else {
-                this->sweep_1g<sn::NoCurrent, CellWorker_CDD>( group,
-                        cell_worker_ );
+            // Store the transport cross section somewhere useful
+            for( auto &xsr: *xs_mesh_ ) {
+                real_t xstr = xsr.xsmactr()[group];
+                for( auto &ireg: xsr.reg() ) {
+                    xstr_[ireg] = xstr;
+                }
             }
+
+            // For now this is doing a copy. At some point it might be nice to
+            // handle as a reference slice.
+            flux_1g_ = flux_(blitz::Range::all(), group);
+
+            // Perform inner iterations
+            for( unsigned int inner=0; inner<n_inner_; inner++ ) {
+                // Set the source (add upscatter and divide by 4PI)
+                source_->self_scatter( group, flux_1g_, q_ );
+
+                if( inner == n_inner_-1 && coarse_data_ ) {
+                    // Wipe out the existing currents
+                    coarse_data_->current.col( group ) = 0.0;
+                    this->sweep_1g<sn::Current, CellWorker_CDD>( group,
+                            cell_worker_ );
+                } else {
+                    this->sweep_1g<sn::NoCurrent, CellWorker_CDD>( group,
+                            cell_worker_ );
+                }
+            }
+
+            flux_( blitz::Range::all(), group ) = flux_1g_;
+            return;
         }
-        flux_[std::slice(group*n_reg_, n_reg_, 1)] = flux_1g_;
-        return;
-    }
 
     private:
         Worker cell_worker_;

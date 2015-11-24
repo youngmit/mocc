@@ -2,18 +2,21 @@
 
 #include <memory>
 
+#include <Eigen/Sparse>
+
 #include "coarse_data.hpp"
 #include "eigen_interface.hpp"
 #include "global_config.hpp"
 #include "mesh.hpp"
+#include "source.hpp"
 #include "xs_mesh_homogenized.hpp"
 
 namespace mocc {
     class CMFD {
     public:
-        CMFD( Mesh *mesh, SP_XSMeshHomogenized_t xsmesh );
+        CMFD( const Mesh *mesh, SP_XSMeshHomogenized_t xsmesh );
 
-        void solve();
+        void solve( real_t &k, const ArrayB2 &flux );
 
         void project( ArrayX &flux );
 
@@ -26,9 +29,21 @@ namespace mocc {
             return &coarse_data_;
         }
     private:
-        Mesh* mesh_;
+        // Private methods
+        void solve_1g( int group );
+
+        // PRivate data
+        const Mesh* mesh_;
         SP_XSMeshHomogenized_t xsmesh_;
         CoarseData coarse_data_;
+
+        // Source vector
+        Eigen::VectorXd b_;
+
+        Source source_; 
+
+        // One-group sparse matrix
+        Eigen::SparseMatrix<real_t> m_;
     };
     typedef std::unique_ptr<CMFD> UP_CMFD_t;
 }

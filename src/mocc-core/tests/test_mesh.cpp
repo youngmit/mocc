@@ -35,6 +35,7 @@ BOOST_AUTO_TEST_CASE( testall )
 
     z.push_back(0.0);
     z.push_back(1.0);
+    z.push_back(3.0);
 
     Boundary bc[6] =
     {
@@ -60,4 +61,53 @@ BOOST_AUTO_TEST_CASE( testall )
     BOOST_CHECK_EQUAL( mesh.coarse_boundary_cell(Point2(3.5, 0.0), 1), 3 );
     BOOST_CHECK_EQUAL( mesh.coarse_boundary_cell(Point2(5.0, 0.0), 1), 5 );
 
+
+    // Test surface normals
+    BOOST_CHECK_EQUAL( mesh.surface_normal(30), Normal::X_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(47), Normal::X_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(57), Normal::X_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(64), Normal::X_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(58), Normal::X_NORM );
+
+    BOOST_CHECK_EQUAL( mesh.surface_normal(69), Normal::Y_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(100), Normal::Y_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(65), Normal::Y_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(95), Normal::Y_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(74), Normal::Y_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(70), Normal::Y_NORM );
+
+    BOOST_CHECK_EQUAL( mesh.surface_normal(0), Normal::Z_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(29), Normal::Z_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(14), Normal::Z_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(101), Normal::Z_NORM );
+    BOOST_CHECK_EQUAL( mesh.surface_normal(129), Normal::Z_NORM );
+
+    // Test cells straddling surfaces
+    // X normals
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(53).first,  19);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(53).second, 20);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(37).first, -1);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(37).second, 6);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(64).first, 29);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(64).second, -1);
+
+    // Y normals
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(65).first, -1 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(65).second, 0);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(100).first, 29 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(100).second, -1);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(80).first, 14 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(80).second, 20);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(83).first, -1 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(83).second, 3);
+
+    // Z normals
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(0).first, -1 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(0).second, 0 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(29).first, -1 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(29).second, 29 );
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(115).first, 14);
+    BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(115).second, 44 );
+
+    
 }

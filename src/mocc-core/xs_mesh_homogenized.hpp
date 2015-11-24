@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "blitz_typedefs.hpp"
 #include "eigen_interface.hpp"
 #include "h5file.hpp"
 #include "xs_mesh.hpp"
@@ -21,7 +22,7 @@ namespace mocc {
         /**
          * Update homogenized cross sections using the passed flux array
          */
-        void update( const ArrayF &flux );
+        void update( const ArrayB2 &flux );
 
         /**
          * Generate output of important cross sections on the homogenized mesh
@@ -58,7 +59,7 @@ namespace mocc {
         * XSMeshRegion object containing the homogenized cross sections.
         */
         XSMeshRegion homogenize_region_flux( int i, int first_reg,
-                const Pin& pin, const ArrayF &flux ) const;
+                const Pin& pin, const ArrayB2 &flux ) const;
     };
 
     typedef std::shared_ptr<XSMeshHomogenized> SP_XSMeshHomogenized_t;

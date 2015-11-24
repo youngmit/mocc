@@ -76,7 +76,7 @@ namespace mocc {
         ArrayF xstr_;
 
         // Temporary storage for 1-group scalar flux
-        ArrayF flux_1g_;
+        ArrayB1 flux_1g_;
 
         // One-group, isotropic source, scaled by transport cross section
         ArrayF qbar_;
@@ -194,14 +194,15 @@ namespace mocc {
 #pragma omp critical
             {
                 for( size_t i=0; i<n_reg_; i++ ) {
-                    flux_1g_[i] += t_flux[i];
+                    flux_1g_[(int)i] += t_flux[i];
                 }
             }
 #pragma omp barrier
             // Scale the scalar flux by the volume and add back the source
 #pragma omp single
+            for( int i=0; i<(int)n_reg_; i++)
             {
-                flux_1g_ = flux_1g_/(xstr_*vol_) + qbar_*FPI;
+                flux_1g_[i] = flux_1g_[i]/(xstr_[i]*vol_[i]) + qbar_[i]*FPI;
             }
 
             this->update_boundary( group );

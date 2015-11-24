@@ -38,7 +38,7 @@ namespace mocc {
     /**
      * Update the XS mesh, incorporating a new estimate of the scalar flux.
      */
-    void XSMeshHomogenized::update( const ArrayF &flux ) {
+    void XSMeshHomogenized::update( const ArrayB2 &flux ) {
         int ipin = 0;
         int first_reg = 0;
         for( const auto &pin: mesh_ ) {
@@ -114,7 +114,7 @@ namespace mocc {
     }
 
     XSMeshRegion XSMeshHomogenized::homogenize_region_flux( int i,
-            int first_reg, const Pin& pin, const ArrayF &flux ) const {
+            int first_reg, const Pin& pin, const ArrayB2 &flux ) const {
 
         size_t n_reg = mesh_.n_reg();
 
@@ -143,7 +143,7 @@ namespace mocc {
                     int ireg = first_reg; // pin-local region index
                     int ireg_local = 0;
                     for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
-                        fs[ireg_local] += mat.xsnf()[ig] * flux[ireg + ig*n_reg] *
+                        fs[ireg_local] += mat.xsnf()[ig] * flux(ireg, (int)ig) *
                             vols[ireg_local];
                         ireg++;
                         ireg_local++;
@@ -171,7 +171,7 @@ namespace mocc {
                 size_t gmax = scat_row.max_g;
                 for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
                     real_t v = vols[ireg_local];
-                    real_t flux_i = flux[ireg + ig*n_reg];
+                    real_t flux_i = flux(ireg, (int)ig);
                     fluxvolsum += v * flux_i;
                     xstr[ig] += v * flux_i * mat.xstr()[ig];
                     xsnf[ig] += v * flux_i * mat.xsnf()[ig];
@@ -179,7 +179,7 @@ namespace mocc {
                     xsch[ig] += fs[ireg_local] * mat.xsch()[ig];
 
                     for( size_t igg=0; igg<ng_; igg++ ){
-                        real_t fluxgg = flux[ireg + igg*n_reg];
+                        real_t fluxgg = flux(ireg, (int)igg);
                         scatsum[igg] += fluxgg * v;
                         if( (igg >= gmin) && (igg <= gmax) ) {
                             real_t scgg = scat_row.from[igg-gmin];

@@ -10,7 +10,7 @@ namespace mocc { namespace sn {
             }
         }
 
-        flux_1g_ = flux_[ std::slice(n_reg_*group, n_reg_, 1) ];
+        flux_1g_ = flux_(blitz::Range::all(), group);
 
         // Perform inner iterations
         for( size_t inner=0; inner<n_inner_; inner++ ) {
@@ -26,7 +26,7 @@ namespace mocc { namespace sn {
                         cell_worker_ );
             }
         }
-        flux_[ std::slice(n_reg_*group, n_reg_, 1) ] = flux_1g_;
+        flux_(blitz::Range::all(), group) = flux_1g_;
 
         return;
     }

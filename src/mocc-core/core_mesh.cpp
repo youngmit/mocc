@@ -139,6 +139,21 @@ namespace mocc {
 
         dz_vec_ = core_.dz();
 
+        // Coarse mesh volumes.
+        /**
+         * \todo Really need to clean up \ref Mesh and \ref CoreMesh
+         * construction. The data members of the base \ref Mesh class should
+         * really be initialized by the Mesh class itself. Its hard to know the
+         * necessary data to pass to the Mesh constructor before parsing the
+         * core first. Going to have to come up with something.
+         */
+
+        vol_ = VecF( this->n_pin() );
+        for( size_t i=0; i<this->n_pin(); i++ ) {
+            auto pos = this->coarse_position( i );
+            vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
+        }
+
         // Add up the number of regions and XS regions in the entire problem
         // geometry
         n_reg_   = 0;

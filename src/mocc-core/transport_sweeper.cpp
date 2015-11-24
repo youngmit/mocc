@@ -9,12 +9,12 @@ using std::cout;
 namespace mocc {
     real_t TransportSweeper::total_fission( bool old ) const {
         real_t tfis = 0.0;
-        const ArrayF& flux = old ? flux_old_: flux_;
+        const auto &flux = old ? flux_old_: flux_;
         for( auto &xsr: *xs_mesh_ ) {
             for( unsigned int ig=0; ig<n_group_; ig++ ) {
                 real_t xsnf = xsr.xsmacnf()[ig];
                 for (auto &ireg: xsr.reg() ) {
-                    tfis += flux[ireg + ig*n_reg_]*vol_[ireg]*xsnf;
+                    tfis += flux((int)ireg, (int)ig)*vol_[ireg]*xsnf;
                 }
             }
         }
@@ -31,7 +31,7 @@ namespace mocc {
             for( size_t ig=0; ig<n_group_; ig++ ) {
                 for( auto &ireg: xsr.reg() ) {
                     fission_source[ireg] += rkeff * xsnf[ig] *
-                        flux_[ireg + ig*n_reg_];
+                        flux_((int)ireg, (int)ig);
                 }
             }
         }
@@ -54,9 +54,14 @@ namespace mocc {
 
     real_t TransportSweeper::flux_residual() const {
         real_t r = 0.0;
-        for( size_t i=0; i<flux_.size(); i++ ) {
-            real_t e = flux_[i] - flux_old_[i];
+        auto it = flux_.begin();
+        auto it_old = flux_.begin();
+        auto end = flux_.end();
+        while( it != end ) {
+            real_t e = *it - *it_old;
             r += e*e;
+            ++it;
+            ++it_old;
         }
         return std::sqrt(r);
     }

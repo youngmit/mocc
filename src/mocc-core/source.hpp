@@ -2,14 +2,17 @@
 
 #include <iostream>
 
-#include "eigen_interface.hpp"
+#include <blitz/array.h>
 
+#include "blitz_typedefs.hpp"
+#include "eigen_interface.hpp"
+#include "global_config.hpp"
 #include "xs_mesh.hpp"
 
 namespace mocc {
     class Source {
     public:
-        Source( int nreg, const XSMesh* xs_mesh, const ArrayF& flux );
+        Source( int nreg, const XSMesh* xs_mesh, const ArrayB2& flux );
 
         virtual ~Source(){
         }
@@ -40,7 +43,7 @@ namespace mocc {
          * that the source definitiion starts with the MG fission source, then
          * contributions get tacked on from there.
          */
-        void auxiliary( const ArrayF &aux );
+        void auxiliary( const ArrayB1 &aux );
 
         /**
          * \brief Add self-scatter source
@@ -49,8 +52,13 @@ namespace mocc {
          * sweeper in its "inner" iterations, and therefore does not mutate the
          * interal representation of the source, but instead returns the result
          * to the caller through the qbar argument.
+         *
+         * Have to pass flux_1g in for now, because it is assumed to be updated
+         * in the sweeper inner iterations outside of the MG flux array. At some
+         * point, it might be prudent to update it in-place, at which point,
+         * this flux_1g argument here would be superfluous.
          */
-        virtual void self_scatter( size_t ig, ArrayF& flux_1g,
+        virtual void self_scatter( size_t ig, const ArrayB1& flux_1g,
                 ArrayF& qbar ) const;
 
         /**
@@ -85,9 +93,7 @@ namespace mocc {
 
 
         friend std::ostream& operator<<(std::ostream &os, const Source &src) {
-            for( auto v: src.source_1g_ ) {
-                std::cout << v << std::endl;
-            }
+            std::cout << src.source_1g_ << std::endl;
             return os;
         }
 
@@ -100,14 +106,15 @@ namespace mocc {
         bool has_external_;
 
         // The external source, if set
-        ArrayF external_source_;
+        ArrayB2 external_source_;
 
-        // Single-group source
-        ArrayF source_1g_;
+        // Single-group source. We use the Eigen storage class so that it can be
+        // used directly as a source vector in a linear system.
+        VectorX source_1g_;
 
         // Reference to the MG flux variable. Need this to do scattering
         // contributions, etc.
-        const ArrayF& flux_;
+        const ArrayB2& flux_;
 
         size_t n_reg_;
     };
