@@ -71,7 +71,7 @@ namespace mocc {
 
             VecF d(n);
             std::copy( first, last, d.begin() );
-            assert( d.size() == n );
+            assert( (int)d.size() == n );
 
             try {
                 H5::DataSpace space( dims.size(), dims_a.data() );
