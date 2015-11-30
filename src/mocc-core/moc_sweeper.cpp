@@ -117,8 +117,6 @@ namespace mocc {
                 coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
-                this->check_balance( group );
-                cin.ignore();
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
