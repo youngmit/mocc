@@ -45,8 +45,8 @@ namespace mocc {
             {
                 size_t cell_fw = ray.cm_cell_fw();
                 size_t cell_bw = ray.cm_cell_bw();
-                size_t surf_fw = ray.cm_surf_fw();
-                size_t surf_bw = ray.cm_surf_bw();
+                int surf_fw = ray.cm_surf_fw();
+                int surf_bw = ray.cm_surf_bw();
                 size_t iseg_fw = 0;
                 size_t iseg_bw = ray.nseg();
 

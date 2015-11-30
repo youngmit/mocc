@@ -28,9 +28,11 @@ namespace mocc {
         i_outer_( 0 )
     {
         /// \todo initialize the rest of the data members on the TS base type
+        core_mesh_ = &mesh;
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
+        flux_.reference(moc_sweeper_.flux());
 
         sn_sweeper_.set_corrections( &corrections_ );
         const XSMeshHomogenized* sn_xs_mesh =
@@ -38,6 +40,8 @@ namespace mocc {
         moc_sweeper_.set_coupling( &corrections_, sn_xs_mesh );
 
         sn_sweeper_.set_ang_quad(ang_quad_);
+
+        sn_sweeper_.get_homogenized_xsmesh()->set_flux( flux_ );
 
         coarse_data_ = nullptr;
 
@@ -57,11 +61,11 @@ namespace mocc {
             i_outer_++;
         }
 
-        sn_sweeper_.get_homogenized_xsmesh()->update( moc_sweeper_.flux() );
+        sn_sweeper_.get_homogenized_xsmesh()->update( );
         sn_sweeper_.sweep( group );
 
         if( do_snproject_ ) {
-            VecF sn_flux;
+            ArrayB1 sn_flux;
             sn_sweeper_.get_pin_flux_1g( group, sn_flux );
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
@@ -76,13 +80,13 @@ namespace mocc {
         }
 
         // Compute Sn-MoC residual
-        VecF moc_flux;
+        ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
 
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
-            residual += (moc_flux[i] - sn_sweeper_.flux( group, i )) *
-                        (moc_flux[i] - sn_sweeper_.flux( group, i ));
+            residual += (moc_flux(i) - sn_sweeper_.flux( group, i )) *
+                        (moc_flux(i) - sn_sweeper_.flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
@@ -97,16 +101,16 @@ namespace mocc {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, VecF &flux ) const {
+    void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, ArrayB1 &flux ) const {
         sn_sweeper_.get_pin_flux_1g( ig, flux );
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    VecF PlaneSweeper_2D3D::get_pin_flux() const {
-        VecF flux( mesh_.n_pin(), 0.0 );
+    ArrayB2 PlaneSweeper_2D3D::get_pin_flux() const {
+        ArrayB2 flux( mesh_.n_pin(), 0.0 );
 
-        assert(false);
-
+        throw EXCEPT("Don't use this for now...");
+        
         return flux;
     }
 
@@ -140,8 +144,8 @@ namespace mocc {
             Position pos = mesh_.pin_position( ipin );
             size_t icell = mesh_.coarse_cell( pos );
             real_t dz = mesh_.dz( pos.z );
-            size_t surf_up = mesh_.coarse_surf( icell, Surface::TOP );
-            size_t surf_down = mesh_.coarse_surf( icell, Surface::BOTTOM );
+            int surf_up = mesh_.coarse_surf( icell, Surface::TOP );
+            int surf_down = mesh_.coarse_surf( icell, Surface::BOTTOM );
             real_t j_up = coarse_data_->current(surf_up, group);
             real_t j_down = coarse_data_->current(surf_down, group);
             tl_g(ipin) = ( j_down - j_up ) / dz;

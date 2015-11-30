@@ -21,6 +21,7 @@ BOOST_AUTO_TEST_CASE( testall )
         real_t exp_t = exp.exp(x);
         real_t exp_r = std::exp(x);
         max_err = std::max(max_err, std::abs(exp_r - exp_t));
+        cout << x << " " << exp_r << " " << exp_t << endl;
         BOOST_CHECK( std::abs(exp_r - exp_t) < 1e-9 );
     }
 

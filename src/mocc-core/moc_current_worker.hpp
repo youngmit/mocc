@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include "angle.hpp"
 #include "constants.hpp"
 #include "global_config.hpp"
@@ -31,6 +33,8 @@ namespace mocc {
             virtual void post_angle( int iang, int igroup ) = 0;
 
             virtual void set_plane( int iplane ) = 0;
+
+            virtual void post_sweep( int igroup ) = 0;
         };
 
         /**
@@ -73,6 +77,10 @@ namespace mocc {
             inline void set_plane( int iplane ) {
                 return;
             }
+
+            inline void post_sweep( int igroup ) {
+                return;
+            }
         };
 
         /**
@@ -106,10 +114,18 @@ namespace mocc {
             inline void set_angle( Angle ang, real_t spacing ) {
 #pragma omp single 
                 {
-                    current_weights_[0] = ang.weight * spacing * ang.ox;
-                    current_weights_[1] = ang.weight * spacing * ang.oy;
-                    current_weights_[2] = ang.weight * spacing * ang.oz;
+                    // Scale the angle weight to sum to 4*PI
+                    real_t w = ang.weight * PI;
+                    // Multiply by dz so that we conform to the actual coarse
+                    // mesh area.
+                    real_t dz = mesh_->dz(plane_);
+
+                    current_weights_[0] = w * ang.ox *
+                        spacing/std::abs( std::cos(ang.alpha) ) *  dz;
+                    current_weights_[1] = w * ang.oy *
+                        spacing/std::abs( std::sin(ang.alpha) ) *  dz;
                 }
+#pragma omp barrier
             }
 
             inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
@@ -117,19 +133,21 @@ namespace mocc {
                     int group ) {
 #pragma omp critical
                 {
+                    ArrayB1 current = 
+                        coarse_data_->current(blitz::Range::all(), group);
                     size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
                     size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
-                    size_t surf_fw = ray.cm_surf_fw()+surf_offset_;
-                    size_t surf_bw = ray.cm_surf_bw()+surf_offset_;
+                    int surf_fw = ray.cm_surf_fw()+surf_offset_;
+                    int surf_bw = ray.cm_surf_bw()+surf_offset_;
                     size_t iseg_fw = 0;
                     size_t iseg_bw = ray.nseg();
 
                     Normal norm_fw = mesh_->surface_normal( surf_fw );
                     Normal norm_bw = mesh_->surface_normal( surf_bw );
-                    coarse_data_->current( surf_fw, group ) +=
-                        psi1[iseg_fw] * current_weights_[(int)norm_fw];
-                    coarse_data_->current( surf_bw, group ) -=
-                        psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                    current( surf_fw ) += psi1[iseg_fw] *
+                        current_weights_[(int)norm_fw];
+                    current( surf_bw ) -= psi2[iseg_bw] *
+                        current_weights_[(int)norm_bw];
 
                     auto begin = ray.cm_data().cbegin();
                     auto end = ray.cm_data().cend();
@@ -139,16 +157,16 @@ namespace mocc {
                             iseg_fw += crd->nseg_fw;
                             norm_fw = surface_to_normal( crd->fw );
                             surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
-                            coarse_data_->current( surf_fw, group ) +=
-                                psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                            current( surf_fw ) += psi1[iseg_fw] *
+                                 current_weights_[(int)norm_fw];
                         }
 
                         if( crd->bw != Surface::INVALID ) {
                             iseg_bw -= crd->nseg_bw;
                             norm_bw = surface_to_normal( crd->bw );
                             surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
-                            coarse_data_->current( surf_bw, group ) -=
-                                psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                            current( surf_bw ) -= psi2[iseg_bw] *
+                                current_weights_[(int)norm_bw];
                         }
 
                         cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
@@ -162,10 +180,29 @@ namespace mocc {
                 return;
             };
 
+            inline void post_sweep( int igroup ) {
+#pragma omp single
+                {
+                    ArrayB1 current = 
+                        coarse_data_->current( blitz::Range::all(), igroup );
+                    // Normalize the surface currents
+                    for( size_t plane=0; plane<mesh_->nz(); plane++ ) {
+                        for( auto surf=mesh_->plane_surf_xy_begin(plane); 
+                                surf!=mesh_->plane_surf_end(plane); 
+                                ++surf ) 
+                        {
+                            real_t area = mesh_->coarse_area(surf);
+                            current(surf) /= area;
+                        }
+                    }
+                }
+                return;
+            }
+
         protected:
             CoarseData *coarse_data_;
             const Mesh *mesh_;
-            real_t current_weights_[3];
+            real_t current_weights_[2];
 
             int plane_;
             int cell_offset_;

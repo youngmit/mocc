@@ -114,12 +114,11 @@ namespace mocc {
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents
-                coarse_data_->current.col( group ) = 0.0;
+                coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
-//                this->check_balance( group );
-//                cout << "MoC currents:" << endl;
-//                cout << coarse_data_->current.col(group) << endl;
+                this->check_balance( group );
+                cin.ignore();
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
@@ -183,6 +182,10 @@ namespace mocc {
     }
 
     void MoCSweeper::initialize() {
+        // Set the flux on the coarse mesh
+        if( coarse_data_ ) {
+            coarse_data_->flux = 1.0;
+        }
         // There are better ways to do this, but for now, just start with 1.0
         flux_ = 1.0;
 
@@ -200,8 +203,8 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper::get_pin_flux_1g( int group, VecF& flux ) const {
-        flux.resize( mesh_.n_pin() );
+    void MoCSweeper::get_pin_flux_1g( int group, ArrayB1 &flux ) const {
+        assert(flux.size() == mesh_.n_pin() );
         for( auto &f: flux ) {
             f = 0.0;
         }
@@ -214,10 +217,10 @@ namespace mocc {
             real_t v = 0.0;
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 v += vol_[ireg];
-                flux[i] += flux_(ireg, group)*vol_[ireg];
+                flux(i) += flux_(ireg, group)*vol_[ireg];
                 ireg++;
             }
-            flux[i] /= v;
+            flux(i) /= v;
             ipin++;
         }
 
@@ -225,11 +228,9 @@ namespace mocc {
     }
 
     real_t MoCSweeper::set_pin_flux_1g( int group,
-            const VecF &pin_flux)
+            const ArrayB1 &pin_flux)
     {
 
-        VecF fm_flux;
-        this->get_pin_flux_1g( group, fm_flux );
         real_t resid = 0.0;
         size_t ipin = 0;
         int ireg = 0;
@@ -237,20 +238,20 @@ namespace mocc {
             size_t i_coarse = mesh_.index_lex( mesh_.pin_position(ipin) );
             real_t fm_flux = 0.0;
 
-            size_t stop = ireg+pin->n_reg();
+            int stop = ireg+pin->n_reg();
             for( ; ireg<stop; ireg++ ) {
                 fm_flux += vol_[ireg]*flux_(ireg, group);
             }
 
             fm_flux /= pin->vol();
-            real_t f = pin_flux[i_coarse]/fm_flux;
+            real_t f = pin_flux(i_coarse)/fm_flux;
 
             ireg -= pin->n_reg();
             for( ; ireg<stop; ireg++ ) {
                 flux_(ireg, group) = flux_(ireg, group) * f;
             }
 
-            real_t e = fm_flux - pin_flux[i_coarse];
+            real_t e = fm_flux - pin_flux(i_coarse);
             resid += e*e;
             ipin++;
         }
@@ -269,31 +270,35 @@ namespace mocc {
             }
         }
 
+        ArrayB1 current_1g = coarse_data_->current(blitz::Range::all(), group);
+
         int ipin = 0;
         int ireg = 0;
         for( const auto pin: mesh_ ) {
             int icell = mesh_.coarse_cell(mesh_.pin_position(ipin));
+            real_t bi = 0.0;
 
             for( int ireg_pin=0; ireg_pin<pin->n_reg(); ireg_pin++ ) {
-                b[icell] -= flux_1g_(ireg, group)*vol_[ireg]*xsrm[ireg];
-                b[icell] += (*source_)[ireg]*vol_[ireg];
+                bi -= flux_(ireg, group)*vol_[ireg]*xsrm[ireg];
+                bi += (*source_)[ireg]*vol_[ireg];
                 ireg++;
             }
 
             // Current
-            b -= coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::EAST), group );
-            b -= coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::NORTH), group );
-            b -= coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::TOP), group );
-            b += coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::WEST), group );
-            b += coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::SOUTH), group );
-            b += coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::BOTTOM), group );
+            bi -= current_1g( mesh_.coarse_surf(icell, Surface::EAST) ) *
+                mesh_.coarse_area(icell, Surface::EAST);
+            bi -= current_1g( mesh_.coarse_surf(icell, Surface::NORTH) ) *
+                mesh_.coarse_area(icell, Surface::NORTH);
+            bi -= current_1g( mesh_.coarse_surf(icell, Surface::TOP) ) *
+                mesh_.coarse_area(icell, Surface::TOP);
+            bi += current_1g( mesh_.coarse_surf(icell, Surface::WEST) ) *
+                mesh_.coarse_area(icell, Surface::WEST);
+            bi += current_1g( mesh_.coarse_surf(icell, Surface::SOUTH) ) *
+                mesh_.coarse_area(icell, Surface::SOUTH);
+            bi += current_1g( mesh_.coarse_surf(icell, Surface::BOTTOM) ) *
+                mesh_.coarse_area(icell, Surface::BOTTOM);
 
+            b[icell] = bi;
             ipin++;
         }
 
@@ -313,16 +318,16 @@ namespace mocc {
         // Make a group in the file to store the flux
         node->createGroup("flux");
 
-        VecF flux = this->get_pin_flux();
+        ArrayB2 flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
 
-        auto flux_it = flux.cbegin();
         for( size_t ig=0; ig<n_group_; ig++ ){
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
 
-            flux_it = HDF::Write( node, setname.str(), flux_it,
-                    flux_it+mesh_.n_pin(), dims );
+            ArrayB1 flux_1g = flux(blitz::Range::all(), ig);
+            HDF::Write( node, setname.str(), flux_1g.begin(),
+                    flux_1g.end(), dims );
         }
 
         return;

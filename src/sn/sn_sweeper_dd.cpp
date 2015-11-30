@@ -18,7 +18,7 @@ namespace mocc { namespace sn {
             source_->self_scatter( group, flux_1g_, q_ );
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents
-                coarse_data_->current.col( group ) = 0.0;
+                coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                 this->sweep_1g<sn::Current, CellWorker_DD>( group,
                         cell_worker_ );
             } else {

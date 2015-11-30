@@ -6,6 +6,7 @@
 #include <blitz/array.h>
 
 #include "arrays.hpp"
+#include "blitz_typedefs.hpp"
 #include "eigen_interface.hpp"
 #include "global_config.hpp"
 
@@ -27,9 +28,9 @@ namespace mocc {
             return;
         }
 
-        ArrayX current;
-        blitz::Array<real_t, 2> flux;
-        blitz::Array<real_t, 2> old_flux;
+        ArrayB2 current;
+        ArrayB2 flux;
+        ArrayB2 old_flux;
     };
 
     typedef std::shared_ptr<CoarseData> SP_CoarseData_t;

@@ -10,7 +10,8 @@ using std::endl;
 
 namespace mocc {
     XSMeshHomogenized::XSMeshHomogenized( const CoreMesh& mesh ):
-        mesh_( mesh )
+        mesh_( mesh ),
+        flux_( nullptr )
     {
         // Set up the non-xs part of the xs mesh
         eubounds_ = mesh_.mat_lib().g_bounds();
@@ -38,14 +39,20 @@ namespace mocc {
     /**
      * Update the XS mesh, incorporating a new estimate of the scalar flux.
      */
-    void XSMeshHomogenized::update( const ArrayB2 &flux ) {
+    void XSMeshHomogenized::update( ) {
+        if( !flux_ ) {
+            // no update needed if doing volume-weighted cross sections
+            return;
+        } else {
+            assert(flux_->extent(0) == (int)mesh_.n_reg());
+        }
         int ipin = 0;
         int first_reg = 0;
         for( const auto &pin: mesh_ ) {
             int ireg = mesh_.index_lex( mesh_.pin_position(ipin) );
             int ixsreg = ireg;
             regions_[ixsreg] = this->homogenize_region_flux( ireg, first_reg,
-                    *pin, flux);
+                    *pin);
 
             ipin++;
             first_reg += pin->n_reg();
@@ -114,9 +121,10 @@ namespace mocc {
     }
 
     XSMeshRegion XSMeshHomogenized::homogenize_region_flux( int i,
-            int first_reg, const Pin& pin, const ArrayB2 &flux ) const {
-
-        size_t n_reg = mesh_.n_reg();
+            int first_reg, const Pin& pin ) const {
+        assert(flux_);
+        // Extract a reference to the flux array.
+        const ArrayB2 flux = *flux_;
 
         // Set the FSRs to be one element, representing the coarse mesh index to
         // which this \ref XSMeshRegion belongs.

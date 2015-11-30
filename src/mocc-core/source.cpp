@@ -29,6 +29,7 @@ namespace mocc {
         } else {
             source_1g_.fill(0.0);
         }
+        return;
     }
 
     // Multiply the group-independent fission source by \c chi[ig] to get the
@@ -84,9 +85,7 @@ namespace mocc {
             real_t xssc = scat_row.from[ig-scat_row.min_g];
             real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
             for ( auto &ireg: xsr.reg() ) {
-                //qbar[ireg] = ( source_1g_[ireg] + flux_1g[(int)ireg]*xssc ) *
-                //    r_fpi_tr;
-                qbar[ireg] = ( flux_1g((int)ireg)*xssc ) *
+                qbar[ireg] = ( source_1g_[ireg] + flux_1g((int)ireg)*xssc ) *
                     r_fpi_tr;
             }
         }

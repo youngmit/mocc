@@ -22,7 +22,22 @@ namespace mocc {
         /**
          * Update homogenized cross sections using the passed flux array
          */
-        void update( const ArrayB2 &flux );
+        void update();
+
+        /**
+         * \brief Associate the homogenized cross-section mesh with a flux array
+         * for flux-volume weighting.
+         *
+         * This associates the internal \c flux_ pointer with a fine mesh flux
+         * array for use in the \ref XSMeshHomogenized::update() method. If no
+         * flux has been associated when \ref update() is called, the update is
+         * skipped, preserving the volume-weighted cross sections, which are
+         * calculated at construction time.
+         */
+        void set_flux( const ArrayB2 &flux ) {
+            assert( flux.extent(0) == (int)mesh_.n_reg() );
+            flux_ = &flux;
+        }
 
         /**
          * Generate output of important cross sections on the homogenized mesh
@@ -30,6 +45,10 @@ namespace mocc {
         void output( H5::CommonFG *file ) const;
     private:
         const CoreMesh& mesh_;
+
+        // Possibly-associated flux for homogenization.
+        const ArrayB2 *flux_;
+        
 
         /**
         * \brief Return an XSMeshRegion containing homogenized cross sections
@@ -59,7 +78,7 @@ namespace mocc {
         * XSMeshRegion object containing the homogenized cross sections.
         */
         XSMeshRegion homogenize_region_flux( int i, int first_reg,
-                const Pin& pin, const ArrayB2 &flux ) const;
+                const Pin& pin ) const;
     };
 
     typedef std::shared_ptr<XSMeshHomogenized> SP_XSMeshHomogenized_t;

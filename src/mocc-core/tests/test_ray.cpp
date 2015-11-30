@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE( testsimple )
                 Surface::NORTH,
                 Surface::EAST,
                 Surface::NORTH,
-                Surface::WEST,
+                Surface::EAST,
                 Surface::NORTH
             };
 

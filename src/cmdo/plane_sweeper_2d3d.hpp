@@ -25,9 +25,14 @@ namespace mocc {
 
         void initialize();
 
-        void get_pin_flux_1g( int ig, VecF &flux ) const;
+        void get_pin_flux_1g( int ig, ArrayB1 &flux ) const;
 
-        VecF get_pin_flux() const;
+        ArrayB2 get_pin_flux() const;
+
+        real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
+            throw EXCEPT("Not Implemented");
+            return 0.0;
+        }
 
         void output( H5::CommonFG *file ) const;
 
@@ -87,12 +92,7 @@ namespace mocc {
             moc_sweeper_.set_coarse_data( cd );
             sn_sweeper_.set_coarse_data( cd );
         }
-
-        real_t set_pin_flux_1g( int group, const VecF &pin_flux ) {
-            throw EXCEPT("Not Implemented");
-            return 0.0;
-        }
-
+        
     private:
         // Parse the various options from the XML
         void parse_options( const pugi::xml_node &input );
@@ -106,7 +106,7 @@ namespace mocc {
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
         CorrectionData corrections_;
-        blitz::Array<real_t, 2> tl_;
+        ArrayB2 tl_;
 
         // Sn-MoC residuals by group sweep
         std::vector<VecF> sn_resid_;

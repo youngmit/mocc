@@ -1,8 +1,9 @@
 #pragma once
 
+#include "coarse_data.hpp"
+#include "constants.hpp"
 #include "global_config.hpp"
 #include "mesh.hpp"
-#include "coarse_data.hpp"
 
 namespace mocc {
     namespace sn {
@@ -67,7 +68,7 @@ namespace mocc {
                     for( size_t iy=0; iy<ny; iy++ ) {
                         Position pos( ixx, iy, iz );
                         size_t i = mesh_->coarse_cell( pos );
-                        size_t surf = mesh_->coarse_surf( i, upwind_x_ );
+                        int surf = mesh_->coarse_surf( i, upwind_x_ );
                         data_->current(surf, group) += ox*x[ny*iz + iy];
                     }
                 }
@@ -77,7 +78,7 @@ namespace mocc {
                     for( size_t ix=0; ix<nx; ix++ ) {
                         Position pos( ix, iyy, iz );
                         size_t i = mesh_->coarse_cell( pos );
-                        size_t surf = mesh_->coarse_surf( i, upwind_y_ );
+                        int surf = mesh_->coarse_surf( i, upwind_y_ );
                         data_->current(surf, group) += oy*y[nx*iz + ix];
                     }
                 }
@@ -87,7 +88,7 @@ namespace mocc {
                     for( size_t ix=0; ix<nx; ix++ ) {
                         Position pos( ix, iy, izz );
                         size_t i = mesh_->coarse_cell( pos );
-                        size_t surf = mesh_->coarse_surf( i, upwind_z_ );
+                        int surf = mesh_->coarse_surf( i, upwind_z_ );
                         data_->current(surf, group) += oz*z[ny*iy + ix];
                     }
                 }
@@ -113,19 +114,19 @@ namespace mocc {
 
                 // X-normal
                 {
-                    size_t surf = mesh_->coarse_surf( i, downwind_x_ );
+                    int surf = mesh_->coarse_surf( i, downwind_x_ );
                     data_->current( surf, group ) += psi_x*ox;
                 }
 
                 // Y-normal
                 {
-                    size_t surf = mesh_->coarse_surf( i, downwind_y_ );
+                    int surf = mesh_->coarse_surf( i, downwind_y_ );
                     data_->current( surf, group ) += psi_y*oy;
                 }
 
                 // Z-normal
                 {
-                    size_t surf = mesh_->coarse_surf( i, downwind_z_ );
+                    int surf = mesh_->coarse_surf( i, downwind_z_ );
                     data_->current( surf, group ) += psi_z*oz;
                 }
 

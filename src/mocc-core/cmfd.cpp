@@ -1,6 +1,10 @@
 #include "cmfd.hpp"
 
+#include <cmath>
+#include <iomanip>
 #include <vector>
+
+#include "pugixml.hpp"
 
 #include "mocc-core/error.hpp"
 #include "mocc-core/global_config.hpp"
@@ -8,21 +12,31 @@
 typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;
 
+using std::cout;
+using std::endl;
+using std::cin;
+
 namespace mocc {
-    CMFD::CMFD( const Mesh *mesh, SP_XSMeshHomogenized_t xsmesh):
+    CMFD::CMFD( const pugi::xml_node &input, const Mesh *mesh, 
+            SP_XSMeshHomogenized_t xsmesh):
         mesh_(mesh),
         xsmesh_( xsmesh ),
-        coarse_data_( mesh->n_pin(), mesh->n_surf(), xsmesh->n_group() ),
-        b_( mesh->n_pin() ),
-        source_( mesh->n_pin(), xsmesh_.get(), coarse_data_.flux )
+        n_cell_( mesh->n_pin() ),
+        coarse_data_( n_cell_, mesh->n_surf(), xsmesh->n_group() ),
+        fs_( n_cell_ ),
+        fs_old_( n_cell_ ),
+        source_( n_cell_, xsmesh_.get(), coarse_data_.flux ),
+        m_( xsmesh->n_group(), Eigen::SparseMatrix<real_t>(n_cell_, n_cell_) ),
+        k_tol_( 1.0e-4 ),
+        psi_tol_( 1.0e-4 ),
+        max_iter_( 100 )
     {
         // Set up the structure of the matrix
-        size_t n_cell = mesh_->n_pin();
         std::vector< T > structure;
-        for( size_t i=0; i<n_cell; i++ ) {
+        for( int i=0; i<n_cell_; i++ ) {
             structure.push_back( T(i, i, 1.0) );
             for( auto d: AllSurfaces ) {
-                size_t n = mesh_->coarse_neighbor( i, d );
+                int n = mesh_->coarse_neighbor( i, d );
                 if( n >= 0 ) {
                     // Defining both, though i could do this a little more
                     // efficiently.
@@ -31,8 +45,38 @@ namespace mocc {
                 }
             }
         }
-        m_.setFromTriplets( structure.begin(), structure.end() );
-        m_.makeCompressed();
+        for( auto &m: m_ ) {
+            m.setFromTriplets( structure.begin(), structure.end() );
+            m.makeCompressed();
+        }
+
+        // Parse options from the XML, if present
+        if( !input.empty() ) {
+            // Eigenvalue tolerance
+            if( !input.attribute("k_tol").empty() ) {
+                k_tol_ = input.attribute("k_tol").as_float(-1.0);
+                if( k_tol_ <= 0.0 ) {
+                    throw EXCEPT("K tolerance is invalid.");
+                }
+            }
+
+            // Fission source tolerance
+            if( !input.attribute("psi_tol").empty() ) {
+                psi_tol_ = input.attribute("psi_tol").as_float(-1.0);
+                if( psi_tol_ <= 0.0 ) {
+                    throw EXCEPT("Psi tolerance is invalid.");
+                }
+            }
+            
+            // Max iterations
+            if( !input.attribute("max_iter").empty() ) {
+                max_iter_ = input.attribute("max_iter").as_int(-1);
+                if( max_iter_ < 0 ) {
+                    throw EXCEPT("Max iterations invalid.");
+                }
+            }
+
+        }
         return;
     }
 
@@ -44,16 +88,52 @@ namespace mocc {
         }
 
         // Update homogenized cross sections
-        xsmesh_->update( flux );
+        xsmesh_->update();
         int ng = xsmesh_->n_group();
 
-        real_t k_old = k;
-        while( true ) {
-            // Compute fission source
-            
+        // Set up the linear systems
+        this->setup_solve();
 
-            for( int group=0; group<ng; group++ ) {
+        real_t k_old = k;
+        real_t tfis = this->total_fission();
+
+        int iter = 0;
+        while( true ) {
+            iter++;
+            // Compute fission source
+            fs_old_ = fs_;
+            this->fission_source( k );
+            real_t tfis_old = tfis;
             
+            for( int group=0; group<ng; group++ ) {
+                source_.initialize_group( group );
+                source_.fission( fs_, group );
+                source_.in_scatter( group );
+                source_.scale( mesh_->coarse_volume() );
+
+                this->solve_1g( group );
+            }
+
+            tfis = this->total_fission();
+            k_old = k;
+            k = k * tfis/tfis_old;
+
+            // Convergence check
+            real_t psi_err = 0.0;
+            for( int i=0; i<(int)fs_.size(); i++ ) {
+                real_t e = fs_[i] - fs_old_[i];
+                psi_err += e*e;
+            }
+            psi_err = std::sqrt(psi_err);
+            
+            std::ios::fmtflags flags = cout.flags();
+            std::cout << "CMFD K error: " << std::setprecision(12) << k << " " 
+                << std::abs(k-k_old) << std::endl;
+            cout.flags(flags);
+
+            if( ((std::abs(k-k_old) < k_tol_) && 
+                (psi_err < psi_tol_)) || (iter > max_iter_) ) {
+                break;
             }
         }
 
@@ -61,107 +141,170 @@ namespace mocc {
     }
 
     void CMFD::solve_1g( int group ) {
+        // Not sure exactly how expensive this is. Maybe it would be better to
+        // store a collection of BiCGSTAB objects rather than/along with the
+        // matrices?
+        Eigen::BiCGSTAB< Eigen::SparseMatrix<real_t> > solver;
+        solver.compute(m_[group]);
+        VectorX x = solver.solve(source_.get());
+
+        // Store the result of the LS solution onto the CoarseData
+        ArrayB1 flux_1g = coarse_data_.flux( blitz::Range::all(), group );
+        for( int i=0; i<n_cell_; i++ ) {
+            flux_1g(i) = x[i];
+        }
+
+        return;
+    }
+
+    void CMFD::fission_source( real_t k ) {
+        int ng = xsmesh_->n_group();
+
+        real_t r_keff = 1.0/k;
+        fs_ = 0.0;
+        for( int i=0; i<n_cell_; i++ ) {
+            for( int ig=0; ig<ng; ig++ ) {
+                real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
+                fs_[i] += r_keff*xsnf*coarse_data_.flux(i, ig);
+            }
+        }
+        return;
+    }
+
+    real_t CMFD::total_fission() {
+        int ng = xsmesh_->n_group();
+        
+        real_t f = 0.0;
+
+        for( int i=0; i<n_cell_; i++ ) {
+            for( int ig=0; ig<ng; ig++ ) {
+                real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
+                f += xsnf*coarse_data_.flux(i, ig);
+            }
+        }
+
+        return f;
+    }
+
+    void CMFD::setup_solve() {
         const auto bc = mesh_->boundary_array();
         // Construct the system matrix
         size_t n_surf = mesh_->n_surf();
-        size_t n_cell = mesh_->n_pin();
-        //
-        // Diffusion coefficients
-        VecF d_coeff( 0.0, mesh_->n_pin() );
-        for( size_t i=0; i<mesh_->n_pin(); i++ ) {
-            d_coeff[i] = 1.0/(3.0*(*xsmesh_)[i].xsmactr()[group]);
-        }
-
-        // Surface diffusivity (d_tilde) and non-linear correction coefficient
-        // (d_hat)
-        // There are lots of options to optimize this, mostly algebraic
-        // simplifications, but this is very conformal to the canonical
-        // formulations of CMFD found in the literature. If this starts taking
-        // too much time, optimize.
-        VecF d_tilde( n_surf, 0.0 );
-        VecF d_hat( n_surf, 0.0 );
-        for( size_t is=0; is<n_surf; is++ ) {
-            auto cells = mesh_->coarse_neigh_cells(is);
-            Normal norm = mesh_->surface_normal(is);
-
-            real_t diffusivity_1;
-            if( cells.first > -1 ) {
-                // Real neighbor
-                diffusivity_1 = d_coeff[cells.first] / 
-                    mesh_->cell_thickness(cells.first, norm);
-            } else {
-                // Boundary surface
-                switch( bc[(int)norm][0] ) {
-                    case Boundary::REFLECT:
-                        diffusivity_1 = 0.5;
-                        break;
-                    case Boundary::VACUUM:
-                        diffusivity_1 = 0.0;
-                        break;
-                    default:
-                        throw EXCEPT("Unsupported boundary type.");
-                }
+        int group = 0;
+        for( auto &m: m_ ) {
+            // Diffusion coefficients
+            VecF d_coeff( n_cell_ );
+            for( int i=0; i<n_cell_; i++ ) {
+                d_coeff[i] = 1.0/(3.0*(*xsmesh_)[i].xsmactr()[group]);
             }
 
-            real_t diffusivity_2;
-            if( cells.second > -1 ) {
-                // Real neighbor
-                diffusivity_2 = d_coeff[cells.second] / 
-                    mesh_->cell_thickness(cells.second, norm);
-            } else {
-                // Boundary surface
-                switch( bc[(int)norm][0] ) {
-                    case Boundary::REFLECT:
-                        diffusivity_2 = 0.5;
-                        break;
-                    case Boundary::VACUUM:
-                        diffusivity_2 = 0.0;
-                        break;
-                    default:
-                        throw EXCEPT("Unsupported boundary type.");
-                }
-            }
+            // Surface diffusivity (d_tilde) and non-linear correction
+            // coefficient (d_hat)
+            // There are lots of options to optimize this, mostly algebraic
+            // simplifications, but this is very conformal to the canonical
+            // formulations of CMFD found in the literature. If this starts
+            // taking too much time, optimize.
+            ArrayB1 d_tilde( n_surf );
+            ArrayB1 d_hat( n_surf );
+            for( int is=0; is<(int)n_surf; is++ ) {
+                auto cells = mesh_->coarse_neigh_cells(is);
+                Normal norm = mesh_->surface_normal(is);
 
-            d_tilde[is] = 2.0*diffusivity_1*diffusivity_2 / 
-                (diffusivity_1 + diffusivity_2);
-
-            real_t j = coarse_data_.current( is, group );
-            real_t flux_l = coarse_data_.flux(cells.first, group);
-            real_t flux_r = coarse_data_.flux(cells.second, group);
-            d_hat[is] = ( j - d_tilde[is]*(flux_r - flux_l)) / 
-                (flux_l + flux_r);
-        }
-
-        // put values into the matrix. Optimal access patterns in sparce matrix
-        // representations are not obvious, so the best way is to iterate
-        // through the matrix linearly and act according to the indices (i.e.
-        // row/col) that we get for each coefficient.
-        for( int k=0; k<m_.outerSize(); k++ ) {
-            for( M::InnerIterator it(m_, k); it; ++it ) {
-                auto i = it.row();
-                auto j = it.col();
-                if( i == j ) {
-                    // Diagonal element
-                    real_t xsrm = (*xsmesh_)[i].xsmacrm()[group];
-                    real_t v = mesh_->coarse_volume( i ) * xsrm;
-                    for( auto is: AllSurfaces ) {
-                        size_t surf = mesh_->coarse_surf( i, is );
-                        real_t a = mesh_->coarse_area( i, is );
-                        v += a*(d_tilde[surf] + d_hat[surf]);
-                    }
-                    it.valueRef() = v;
+                real_t diffusivity_1;
+                if( cells.first > -1 ) {
+                    // Real neighbor
+                    diffusivity_1 = d_coeff[cells.first] / 
+                        mesh_->cell_thickness(cells.first, norm);
                 } else {
-                    // off-diagonal element
-                    auto pair = mesh_->coarse_interface(i, j);
-                    real_t a = mesh_->coarse_area( i, pair.second );
-                    size_t surf = pair.first;
-                    it.valueRef() = a*(d_hat[surf] - d_tilde[surf]);
+                    // Boundary surface
+                    switch( bc[(int)norm][0] ) {
+                        case Boundary::REFLECT:
+                            diffusivity_1 = 0.0;
+                            break;
+                        case Boundary::VACUUM:
+                            diffusivity_1 = 0.5;
+                            break;
+                        default:
+                            throw EXCEPT("Unsupported boundary type.");
+                    }
                 }
-            }
-        }
 
-        Eigen::BiCGSTAB< Eigen::SparseMatrix<real_t> > solver;
-        solver.compute(m_);
-        VectorX x = solver.solve(b_);
+                real_t diffusivity_2;
+                if( cells.second > -1 ) {
+                    // Real neighbor
+                    diffusivity_2 = d_coeff[cells.second] / 
+                        mesh_->cell_thickness(cells.second, norm);
+                } else {
+                    // Boundary surface
+                    switch( bc[(int)norm][1] ) {
+                        case Boundary::REFLECT:
+                            diffusivity_2 = 0.0;
+                            break;
+                        case Boundary::VACUUM:
+                            diffusivity_2 = 0.5;
+                            break;
+                        default:
+                            throw EXCEPT("Unsupported boundary type.");
+                    }
+                }
+
+                d_tilde(is) = diffusivity_1*diffusivity_2 / 
+                    (diffusivity_1 + diffusivity_2);
+
+                real_t j = coarse_data_.current( is, group );
+                real_t flux_l = coarse_data_.flux(cells.first, group);
+                real_t flux_r = coarse_data_.flux(cells.second, group);
+                d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) / 
+                    (flux_l + flux_r);
+            }
+
+            // put values into the matrix. Optimal access patterns in sparse
+            // matrix representations are not obvious, so the best way is to
+            // iterate through the matrix linearly and act according to the
+            // indices (i.e.  row/col) that we get for each coefficient.
+            for( int k=0; k<m.outerSize(); k++ ) {
+                for( M::InnerIterator it(m, k); it; ++it ) {
+                    auto i = it.row();
+                    auto j = it.col();
+                    if( i == j ) {
+                        // Diagonal element
+                        real_t xsrm = (*xsmesh_)[i].xsmacrm()[group];
+                        real_t v = mesh_->coarse_volume( i ) * xsrm;
+                        for( auto is: AllSurfaces ) {
+                            size_t surf = mesh_->coarse_surf( i, is );
+                            real_t a = mesh_->coarse_area( i, is );
+                            // Switch sign of D-hat if necessary
+                            real_t d_hat_ij = d_hat(surf);
+                            if( (is == Surface::WEST) ||
+                                (is == Surface::SOUTH) || 
+                                (is == Surface::BOTTOM) )
+                            {
+                                d_hat_ij = -d_hat_ij;
+                            }
+
+                            v += a*(d_tilde(surf) + d_hat_ij);
+                        }
+                        it.valueRef() = v;
+                    } else {
+                        // off-diagonal element
+                        auto pair = mesh_->coarse_interface(i, j);
+                        real_t a = mesh_->coarse_area( i, pair.second );
+                        size_t surf = pair.first;
+                        real_t d_hat_ij = d_hat(surf);
+                        // Switch sign of D-hat if necessary
+                        if( (pair.second == Surface::WEST) ||
+                            (pair.second == Surface::SOUTH) || 
+                            (pair.second == Surface::BOTTOM) )
+                        {
+                            d_hat_ij = -d_hat_ij;
+                        }
+
+                        it.valueRef() = a*(d_hat_ij - d_tilde(surf));
+                    }
+                }
+            } // matrix element loop
+            group++;
+        } // group loop
+        return;
     }
 }

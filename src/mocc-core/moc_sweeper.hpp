@@ -38,7 +38,9 @@ namespace mocc {
 
         void initialize();
 
-        void get_pin_flux_1g( int group, VecF& flux ) const;
+        void get_pin_flux_1g( int group, ArrayB1& flux ) const;
+
+        real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux );
 
         void output( H5::CommonFG *node ) const;
 
@@ -54,13 +56,13 @@ namespace mocc {
         }
 
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
-            return SP_XSMeshHomogenized_t(
-                    new XSMeshHomogenized( mesh_ ) );
+            auto xsm = SP_XSMeshHomogenized_t( new XSMeshHomogenized( mesh_ ) );
+            xsm->set_flux(flux_);
+            return xsm;
         }
 
-        real_t set_pin_flux_1g( int group, const VecF &pin_flux );
-
         void check_balance( int group ) const;
+
     protected:
         const CoreMesh& mesh_;
 
@@ -91,7 +93,7 @@ namespace mocc {
         void update_boundary( int group );
 
         // Exponential table
-        Exponential_Linear exp_;
+        Exponential exp_;
 
         /**
          * \brief Perform an MoC sweep
@@ -187,14 +189,14 @@ namespace mocc {
                     iang++;
                 } // angles
                 iplane++;
-
             } // planes
 
 #pragma omp barrier
 #pragma omp critical
             {
-                for( size_t i=0; i<n_reg_; i++ ) {
-                    flux_1g_[(int)i] += t_flux[i];
+                /// \todo make an array operation after refactoring out valarray
+                for( int i=0; i<(int)n_reg_; i++ ) {
+                    flux_1g_(i) += t_flux[i];
                 }
             }
 #pragma omp barrier
@@ -202,8 +204,10 @@ namespace mocc {
 #pragma omp single
             for( int i=0; i<(int)n_reg_; i++)
             {
-                flux_1g_[i] = flux_1g_[i]/(xstr_[i]*vol_[i]) + qbar_[i]*FPI;
+                flux_1g_(i) = flux_1g_(i)/(xstr_[i]*vol_[i]) + qbar_[i]*FPI;
             }
+
+            cw.post_sweep( group );
 
             this->update_boundary( group );
             }

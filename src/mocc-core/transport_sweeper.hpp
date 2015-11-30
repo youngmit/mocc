@@ -48,23 +48,51 @@ namespace mocc{
         virtual void initialize() = 0;
 
         /**
+         * Return a vector containing the pin-homogenizes multi-group scalar
+         * flux. The values in the vector are ordered group-major.
+         */
+        ArrayB2 get_pin_flux() const;
+
+        /**
          * Produce pin-homogenized scalar flux for the specified group and store
          * in the passed vector.
          */
-        virtual void get_pin_flux_1g( int ig, VecF& flux ) const = 0;
+        virtual void get_pin_flux_1g( int ig, ArrayB1& flux ) const = 0;
+
+        /**
+         * \brief Project a single-group pin mesh-homogenized flux to the fine
+         * mesh. Return the residual.
+         */
+        virtual real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux )
+            = 0;
+
+        /** 
+         * \brief Project a multi-group pin mesh-homogenized flux to the fine
+         * mesh. Return the residual.
+         */
+        real_t set_pin_flux( const ArrayB2 &pin_flux ) {
+            real_t e = 0.0;
+            for( int ig=0; ig<(int)n_group_; ig++) {
+                ArrayB1 flux_1g = pin_flux(blitz::Range::all(), ig);
+                real_t e_g = this->set_pin_flux_1g( ig, flux_1g );
+                e += e_g*e_g;
+            }
+            return std::sqrt( e );
+        }
         
         /**
-         * Return a reference to the MG flux
+         * Return a const reference to the MG flux
          */
         const ArrayB2& flux() const {
             return flux_;
         }
-
+        
         /**
-         * Return a vector containing the pin-homogenizes multi-group scalar
-         * flux. The values in the vector are ordered group-major.
+         * Return a reference to the MG flux
          */
-        VecF get_pin_flux() const;
+        ArrayB2& flux() {
+            return flux_;
+        }
 
         /**
          * Given the current estimate of a system eigenvalue, calculate the
@@ -119,8 +147,8 @@ namespace mocc{
          * Subscript and return a specific flux value
          */
         real_t flux( int ig, int ireg ) const {
-            assert( ig < n_group_ );
-            assert( ireg < n_reg_ );
+            assert( ig < (int)n_group_ );
+            assert( ireg < (int)n_reg_ );
 
             return flux_( ireg, ig );
         }
@@ -169,11 +197,6 @@ namespace mocc{
          * Homogenize flux and group constants to a CoarseData object
          */
         virtual void homogenize( CoarseData &data ) const = 0;
-
-        /**
-         * \brief Project a pin-mesh flux to the fine mesh. Return the residual.
-         */
-        virtual real_t set_pin_flux_1g( int group, const VecF &pin_flux ) = 0;
 
     protected:
         const CoreMesh *core_mesh_;

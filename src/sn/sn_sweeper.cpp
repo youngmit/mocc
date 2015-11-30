@@ -70,14 +70,10 @@ namespace mocc {
         return;
     }
 
-    void SnSweeper::get_pin_flux_1g( int ig, VecF& flux ) const {
-        size_t n = mesh_.n_pin();
-        flux.clear();
+    void SnSweeper::get_pin_flux_1g( int ig, ArrayB1& flux ) const {
+        assert( flux.size() == n_reg_ );
 
-        auto tmp_f = flux_(blitz::Range::all(), ig);
-        for( const auto &f: tmp_f ) {
-            flux.push_back(f);
-        }
+        flux = flux_(blitz::Range::all(), ig);
 
         return;
     }
@@ -89,17 +85,17 @@ namespace mocc {
         // Make a group in the file to store the flux
         node->createGroup("flux");
 
-        VecF flux = this->get_pin_flux();
+        ArrayB2 flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
-
-        auto flux_it = flux.cbegin();
 
         for( unsigned int ig=0; ig<n_group_; ig++ ) {
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
 
-            flux_it = HDF::Write( node, setname.str(), flux_it,
-                    flux_it+mesh_.n_pin(), dims);
+            ArrayB1 flux_1g = flux(blitz::Range::all(), ig);
+
+            HDF::Write( node, setname.str(), flux_1g.begin(), flux_1g.end(), 
+                    dims);
         }
 
         xs_mesh_->output( node );

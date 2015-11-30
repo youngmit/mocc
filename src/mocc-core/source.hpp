@@ -74,8 +74,22 @@ namespace mocc {
         void add_external( const pugi::xml_node &input );
 
         /**
-         * \brief Return the source for the indexed cell for the current state of the
-         * source.
+         * \brief Scale the source by some weighting values.
+         *
+         * Use this if the client code desires a total source [n] for each
+         * region, rather than a specific source [nn/cm-3]. Make sure to use
+         * this right before using the source, after adding all contributions.
+         */
+        void scale( const VecF &v ) {
+            assert( v.size() == n_reg_ );
+            for( int i=0; i<(int)n_reg_; i++ ) {
+                source_1g_(i) *= v[i];
+            }
+        }
+
+        /**
+         * \brief Return the source for the indexed cell for the current state
+         * of the source.
          *
          * This will never include self-scatter. It will only have contributions
          * that have been added thus far.
@@ -91,6 +105,12 @@ namespace mocc {
             return source_1g_[i];
         }
 
+        /**
+         * \brief Return a const reference to the actual 1G source.
+         */
+        const VectorX& get() const {
+            return source_1g_;
+        }
 
         friend std::ostream& operator<<(std::ostream &os, const Source &src) {
             std::cout << src.source_1g_ << std::endl;

@@ -229,7 +229,9 @@ namespace mocc { namespace sn {
 
                 if( inner == n_inner_-1 && coarse_data_ ) {
                     // Wipe out the existing currents
-                    coarse_data_->current.col( group ) = 0.0;
+                    /// \todo get away from having to manually specify template
+                    /// parameters here.
+                    coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                     this->sweep_1g<sn::Current, CellWorker_CDD>( group,
                             cell_worker_ );
                 } else {

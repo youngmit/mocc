@@ -27,7 +27,7 @@ namespace mocc {
 
         void initialize();
 
-        void get_pin_flux_1g( int ig, VecF& flux ) const;
+        void get_pin_flux_1g( int ig, ArrayB1& flux ) const;
 
         void output( H5::CommonFG *node ) const;
 
@@ -39,16 +39,12 @@ namespace mocc {
             return source;
         }
 
-        void homogenize( CoarseData &data ) const;
-
-        SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
-            return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
-        }
-
         /**
          * Just copy the flux across, since no homogenization is necessary.
          */
-        real_t set_pin_flux_1g( int group, const VecF &pin_flux ) {
+        real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
+            assert( pin_flux.size() == n_reg_ );
+
             real_t resid = 0.0;
             size_t i = 0;
             for( auto &v: pin_flux ) {
@@ -58,6 +54,12 @@ namespace mocc {
                 i++;
             }
             return std::sqrt(resid);
+        }
+
+        void homogenize( CoarseData &data ) const;
+
+        SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
+            return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
         }
 
         /**
@@ -181,7 +183,7 @@ namespace mocc {
                             y_flux[nx*iz + ix] = psi_y;
                             z_flux[nx*iy + ix] = psi_z;
 
-                            flux_1g_[i] += psi*wgt;
+                            flux_1g_(i) += psi*wgt;
 
                             // Stash currents (or not, depending on the
                             // CurrentWorker template parameter)

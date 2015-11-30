@@ -75,8 +75,8 @@ namespace mocc {
 
             int Nx = ceil( hx/opt_spacing*std::abs( sin( ang.alpha ) ) );
             int Ny = ceil( hy/opt_spacing*std::abs( cos( ang.alpha ) ) );
-            Nx += Nx%2+1;
-            Ny += Ny%2+1;
+            //Nx += Nx%2+1;
+            //Ny += Ny%2+1;
 
             LogFile << "Total number of rays (Nx/Ny): "
                 << Nx << " " << Ny << std::endl;

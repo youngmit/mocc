@@ -38,15 +38,15 @@ namespace mocc {
         return;
     }
 
-    VecF TransportSweeper::get_pin_flux() const {
-        VecF flux( core_mesh_->n_pin()*n_group_, 0.0 );
+    ArrayB2 TransportSweeper::get_pin_flux() const {
+        assert( core_mesh_ );
+        ArrayB2 flux( core_mesh_->n_pin(), n_group_ );
 
         auto flux_it = flux.begin();
 
-        VecF flux_1g;
         for( size_t ig=0; ig<n_group_; ig++ ) {
+            ArrayB1 flux_1g( flux(blitz::Range::all(), ig) );
             this->get_pin_flux_1g( ig, flux_1g );
-            flux_it = std::copy( flux_1g.begin(), flux_1g.end(), flux_it );
         }
 
         return flux;

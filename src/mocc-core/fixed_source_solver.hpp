@@ -85,10 +85,10 @@ namespace mocc{
         }
 
         /**
-         * Return a mutable pointer to the the \ref TransportSweeper. Use with
+         * Return a pointer to the the \ref TransportSweeper. Use with
          * care.
          */
-        TransportSweeper* sweeper_mut() {
+        TransportSweeper* sweeper() {
             return sweeper_.get();
         }
 

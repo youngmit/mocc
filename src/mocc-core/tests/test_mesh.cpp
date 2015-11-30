@@ -19,9 +19,6 @@ using namespace mocc;
 
 BOOST_AUTO_TEST_CASE( testall )
 {
-    // For now, mostly just testing the coarse ray data, since its the easiest
-    // to screw up.
-
     // Make a simple mesh, 1.0 cm pitch to keep things simple, 6x5
     mocc::VecF x;
     mocc::VecF y;
@@ -110,4 +107,47 @@ BOOST_AUTO_TEST_CASE( testall )
     BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(115).second, 44 );
 
     
+}
+
+
+// Test a more irregular mesh. make sure the volume and area stuff comes out
+// okay.
+BOOST_AUTO_TEST_CASE( test_irregular )
+{
+    // Make a simple mesh, 1.0 cm pitch to keep things simple, 6x5
+    mocc::VecF x = {0.0, 1.0, 2.0, 2.5, 3.0, 4.0, 5.0};
+    mocc::VecF y = {0.0, 1.0, 2.0, 3.5, 4.0, 4.5, 7.0};
+    mocc::VecF z;
+
+    z.push_back(0.0);
+    z.push_back(1.0);
+    z.push_back(3.0);
+
+    Boundary bc[6] =
+    {
+        Boundary::REFLECT,
+        Boundary::REFLECT,
+        Boundary::REFLECT,
+        Boundary::REFLECT,
+        Boundary::REFLECT,
+        Boundary::REFLECT
+    };
+
+    mocc::Mesh mesh( 30, 30, x, y, z, bc );
+
+    BOOST_CHECK_EQUAL( mesh.coarse_area(78), 1.0 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(83), 1.0 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(87), 1.0 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(91), 1.0 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(93), 0.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(95), 0.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(71), 2.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(77), 2.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(64), 0.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(60), 0.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(14), 0.75 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(31), 2.5 );
+    BOOST_CHECK_EQUAL( mesh.coarse_area(32), 1.25 );
+
+
 }
