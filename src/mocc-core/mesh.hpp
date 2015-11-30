@@ -16,7 +16,7 @@ namespace mocc {
      * exiting face of the current cell and one entering surface of the diagonal
      * neighbor. Consistency must be maintained between coincident rays of
      * different angle, otherwise surface quantities may end up with
-     * non-sensical values. A good example is when current should be zero in
+     * nonsensical values. A good example is when current should be zero in
      * certain symmetric situations. If the corner crossings are not handled
      * properly, non-zero current could be calculated because a ray that crosses
      * one face in one direction is not being cancelled out by its sibling ray
@@ -168,8 +168,12 @@ namespace mocc {
             return dy_vec_;
         }
 
-        size_t coarse_volume( size_t cell ) const {
+        real_t coarse_volume( size_t cell ) const {
             return vol_[cell];
+        }
+
+        const VecF& coarse_volume() const {
+            return vol_;
         }
 
         /**
@@ -254,6 +258,17 @@ namespace mocc {
         size_t plane_surf_end( size_t plane ) const {
             return n_surf_plane_*(plane+1);
         }
+        
+        /**
+         * \brief Return the lowest coarse surface index of the x- and y-normal
+         * surfaces in a given plane.
+         *
+         * Iterating from here to \ref plane_surf_end() is safe, since the x/y
+         * surfaces are guaranteed contiguous.
+         */
+        size_t plane_surf_xy_begin( size_t plane ) const {
+            return n_surf_plane_*plane + nx_*ny_;
+        }
 
         /**
          * \brief Return the number of coarse cells per plane
@@ -313,7 +328,7 @@ namespace mocc {
          * indexed. Move up to the next plane above you and repeat the process,
          * keeping in mind that the surfaces below you already have numbers.
         */
-        size_t coarse_surf( size_t i, Surface surf ) const {
+        int coarse_surf( size_t i, Surface surf ) const {
             assert( i >= 0 );
             assert( i < this->n_pin() );
             return coarse_surf_[i*6+(int)surf];
@@ -475,7 +490,8 @@ namespace mocc {
         /**
          * \brief Return the surface index between two cells.
          */
-        std::pair< size_t, Surface > coarse_interface( size_t cell1, size_t cell2 ) const {
+        std::pair< size_t, Surface > coarse_interface( size_t cell1, 
+                size_t cell2 ) const {
             // Stupid search
             for( auto is: AllSurfaces ) {
                 if( this->coarse_neighbor( cell1, is ) == (int)cell2 ) {
@@ -510,6 +526,51 @@ namespace mocc {
         }
 
         /**
+         * \brief Return the surface area of the indexed coarse surface.
+         */
+        real_t coarse_area( size_t surf ) const {
+            real_t area;
+            switch( this->surface_normal(surf) ) {
+            case Normal::X_NORM:
+                {
+                    // iz and iy are the cell positions, ix is the surface
+                    // position.
+                    size_t iz = surf / n_surf_plane_;
+                    surf -= iz*n_surf_plane_;
+                    size_t iy = (surf - nx_*ny_) / (nx_+1);
+
+                    area = dy_vec_[iy] * dz_vec_[iz];
+                }
+                break;
+            case Normal::Y_NORM:
+                {
+                    // iz and ix are the cell positions, iy is the surface
+                    // position.
+                    size_t iz = surf / n_surf_plane_;
+                    surf -= iz*n_surf_plane_;
+                    surf -= nx_*ny_ + (nx_+1)*ny_;
+                    size_t ix = surf / (ny_+1);
+
+                    area = dx_vec_[ix] * dz_vec_[iz]; 
+                }
+                break;
+            case Normal::Z_NORM:
+                {
+                    // ix and iy are the cell positions, iz is the surface
+                    // position.
+                    size_t iz = surf / n_surf_plane_;
+                    surf -= iz*n_surf_plane_;
+                    size_t iy = surf / nx_;
+                    size_t ix = surf % nx_;
+
+                    area = dx_vec_[ix] * dy_vec_[iy];
+                }
+                break;
+            }
+            return area;
+        }
+
+        /**
          * \brief Return the neighboring coarse cell index of the passed cell
          * index in the passed direction.
          *
@@ -519,7 +580,7 @@ namespace mocc {
             auto pos = this->coarse_position( cell );
             switch( surf ) {
                 case Surface::NORTH:
-                    if( pos.y < ny_ ) {
+                    if( pos.y < ny_-1 ) {
                         return cell + nx_;
                     } else {
                         return -1;
@@ -531,7 +592,7 @@ namespace mocc {
                         return -1;
                     }
                 case Surface::EAST:
-                    if( pos.x < nx_ ) {
+                    if( pos.x < nx_-1 ) {
                         return cell + 1;
                     } else {
                         return -1;
@@ -543,13 +604,13 @@ namespace mocc {
                         return -1;
                     }
                 case Surface::TOP:
-                    if( pos.z < nz_ ) {
+                    if( pos.z < nz_-1 ) {
                         return cell + nx_*ny_;
                     } else {
                         return -1;
                     }
                 case Surface::BOTTOM:
-                    if( pos.z < 0 ) {
+                    if( pos.z > 0 ) {
                         return cell - nx_*ny_;
                     } else {
                         return -1;
