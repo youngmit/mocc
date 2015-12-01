@@ -1,3 +1,5 @@
+#undef __STRICT_ANSI__
+#undef _REENT_ONLY
 #include <iostream>
 #include <string>
 #include <cassert>

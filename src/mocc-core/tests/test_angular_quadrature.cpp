@@ -1,3 +1,6 @@
+#undef __STRICT_ANSI__
+#undef _REENT_ONLY
+#include <stdlib.h>
 #include <string>
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
