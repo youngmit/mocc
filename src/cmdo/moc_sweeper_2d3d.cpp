@@ -43,8 +43,10 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
+                this->zero_current( group );
                 cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
-                        corrections_, qbar_, xstr_, ang_quad_, *sn_xs_mesh_ );
+                        corrections_, qbar_, xstr_, ang_quad_, *sn_xs_mesh_,
+                        rays_ );
                 this->sweep1g( group, cw );
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );

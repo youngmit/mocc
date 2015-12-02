@@ -22,7 +22,7 @@ namespace mocc {
             CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh,
                     CorrectionData *corrections, const ArrayF &qbar,
                     const ArrayF &xstr, const AngularQuadrature &ang_quad,
-                    const XSMeshHomogenized &sn_xs_mesh ):
+                    const XSMeshHomogenized &sn_xs_mesh, const RayData &rays ):
                 moc::Current( coarse_data, mesh ),
                 corrections_( corrections ),
                 qbar_( qbar ),
@@ -33,7 +33,8 @@ namespace mocc {
                 vol_sum_( mesh_->n_cell_plane()*2 ),
                 vol_norm_( mesh_->n_cell_plane() ),
                 sigt_sum_( mesh_->n_cell_plane()*2 ),
-                surf_norm_( mesh_->n_surf_plane()*2 )
+                surf_norm_( mesh_->n_surf_plane()*2 ),
+				rays_( rays )
             {
                 return;
             }
@@ -142,8 +143,9 @@ namespace mocc {
                     vol_sum_[2*i+0] /= vol_norm_[i];
                     vol_sum_[2*i+1] /= vol_norm_[i];
                 }
-
-                surf_sum_ /= surf_norm_;
+                
+                // Doing area-based normalization
+                //surf_sum_ /= surf_norm_;
 
                 calculate_corrections( iang, igroup );
             }
@@ -165,6 +167,8 @@ namespace mocc {
             ArrayF surf_norm_;
 
             Angle ang_;
+
+			const RayData &rays_;
 
             /** \page surface_norm Surface Normalization
              * Surface normalization \todo discuss surface normalization
