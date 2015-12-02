@@ -155,13 +155,13 @@ namespace mocc {
         return &this->at(ix, iy).mesh();
     }
 
-    std::map<int, UP_Lattice_t> ParseLattices( const pugi::xml_node &input, 
+    std::map<int, UP_Lattice_t> ParseLattices( const pugi::xml_node &input,
             const std::map<int, UP_Pin_t> &pins ) {
         std::map<int, UP_Lattice_t> lattices;
         for ( pugi::xml_node lat = input.child( "lattice" ); lat;
                 lat = lat.next_sibling( "lattice" )) {
             Lattice lattice( lat, pins );
-            lattices.emplace( lattice.id(), 
+            lattices.emplace( lattice.id(),
                     UP_Lattice_t( new Lattice(lat, pins) ) );
         }
 
@@ -177,7 +177,7 @@ cout << "hx " << hx_ << " " << other.hx_ << endl;
 cout << "hy" << endl;
             return false;
         }
-        
+
         if( nx_ != other.nx_ ) {
 cout << "nx" << endl;
             return false;
@@ -187,14 +187,14 @@ cout << "ny" << endl;
             return false;
         }
 
-        if( !std::equal( hx_vec_.begin(), hx_vec_.end(), 
+        if( !std::equal( hx_vec_.begin(), hx_vec_.end(),
                     other.hx_vec_.begin() ) )
         {
 cout << "hx_vec" << endl;
             return false;
         }
-        
-        if( !std::equal( hy_vec_.begin(), hy_vec_.end(), 
+
+        if( !std::equal( hy_vec_.begin(), hy_vec_.end(),
                     other.hy_vec_.begin() ) )
         {
 cout << "hy_vec" << endl;

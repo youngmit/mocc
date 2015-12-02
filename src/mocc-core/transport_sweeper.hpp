@@ -66,7 +66,7 @@ namespace mocc{
         virtual real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux )
             = 0;
 
-        /** 
+        /**
          * \brief Project a multi-group pin mesh-homogenized flux to the fine
          * mesh. Return the residual.
          */
@@ -79,14 +79,14 @@ namespace mocc{
             }
             return std::sqrt( e );
         }
-        
+
         /**
          * Return a const reference to the MG flux
          */
         const ArrayB2& flux() const {
             return flux_;
         }
-        
+
         /**
          * Return a reference to the MG flux
          */

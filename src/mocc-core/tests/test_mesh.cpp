@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( testall )
     BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(115).first, 14);
     BOOST_CHECK_EQUAL( mesh.coarse_neigh_cells(115).second, 44 );
 
-    
+
 }
 
 

@@ -112,7 +112,7 @@ namespace mocc {
             }
 
             inline void set_angle( Angle ang, real_t spacing ) {
-#pragma omp single 
+#pragma omp single
                 {
                     // Scale the angle weight to sum to 4*PI
                     real_t w = ang.weight * PI;
@@ -133,7 +133,7 @@ namespace mocc {
                     int group ) {
 #pragma omp critical
                 {
-                    ArrayB1 current = 
+                    ArrayB1 current =
                         coarse_data_->current(blitz::Range::all(), group);
                     size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
                     size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
@@ -183,13 +183,13 @@ namespace mocc {
             inline void post_sweep( int igroup ) {
 #pragma omp single
                 {
-                    ArrayB1 current = 
+                    ArrayB1 current =
                         coarse_data_->current( blitz::Range::all(), igroup );
                     // Normalize the surface currents
                     for( size_t plane=0; plane<mesh_->nz(); plane++ ) {
-                        for( auto surf=mesh_->plane_surf_xy_begin(plane); 
-                                surf!=mesh_->plane_surf_end(plane); 
-                                ++surf ) 
+                        for( auto surf=mesh_->plane_surf_xy_begin(plane);
+                                surf!=mesh_->plane_surf_end(plane);
+                                ++surf )
                         {
                             real_t area = mesh_->coarse_area(surf);
                             current(surf) /= area;

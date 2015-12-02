@@ -9,7 +9,7 @@
 
 BOOST_AUTO_TEST_CASE( testall )
 {
-    std::string test_xml = 
+    std::string test_xml =
         "<mesh type=\"rec\" pitch=\"1.2\">"
         "<sub_x>1</sub_x>"
         "<sub_y>1</sub_y>"

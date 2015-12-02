@@ -105,7 +105,7 @@ namespace mocc {
         // XSMesh provides its own facility to initialize itself from a \ref
         // CoreMesh
         XSMesh( const CoreMesh& mesh );
-        
+
         // Return the number of energy groups
         size_t n_group() const {
             return ng_;

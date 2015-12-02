@@ -21,8 +21,8 @@ namespace mocc {
         if( equation == "dd") {
             return UP_SnSweeper_t( new sn::SnSweeper_DD( input, mesh ) );
         } else if( equation == "cdd" ) {
-            return UP_SnSweeper_t( 
-                    new sn::SnSweeper_CDD<sn::CellWorker_CDD_DD>( input, 
+            return UP_SnSweeper_t(
+                    new sn::SnSweeper_CDD<sn::CellWorker_CDD_DD>( input,
                         mesh ) );
         } else {
             throw EXCEPT("Unrecognized equation for Sn sweeper.");

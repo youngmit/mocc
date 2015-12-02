@@ -113,8 +113,8 @@ namespace mocc{
 
             this->print( n_iterations, convergence_.back() );
 
-            done = ( (n_iterations >= min_iterations_) && 
-                     (error_k < tolerance_k_) && 
+            done = ( (n_iterations >= min_iterations_) &&
+                     (error_k < tolerance_k_) &&
                      (error_psi < tolerance_psi_) ) ||
                 (n_iterations >= max_iterations_ );
         }

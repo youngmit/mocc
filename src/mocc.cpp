@@ -52,7 +52,7 @@ int main(int argc, char* argv[]){
         {
 #pragma omp master
             {
-                LogFile << "Running with " << omp_get_num_threads() << " treads" 
+                LogFile << "Running with " << omp_get_num_threads() << " treads"
                     << std::endl;
             }
         }

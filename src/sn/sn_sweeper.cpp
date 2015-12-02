@@ -94,7 +94,7 @@ namespace mocc {
 
             ArrayB1 flux_1g = flux(blitz::Range::all(), ig);
 
-            HDF::Write( node, setname.str(), flux_1g.begin(), flux_1g.end(), 
+            HDF::Write( node, setname.str(), flux_1g.begin(), flux_1g.end(),
                     dims);
         }
 
@@ -111,7 +111,7 @@ namespace mocc {
 
             // Current
             b -= coarse_data_->current(
-                    mesh_.coarse_surf(icell, Surface::EAST), group ) * 
+                    mesh_.coarse_surf(icell, Surface::EAST), group ) *
                     mesh_.coarse_area( icell, Surface::EAST );
             b -= coarse_data_->current(
                     mesh_.coarse_surf(icell, Surface::NORTH), group ) *
@@ -127,13 +127,13 @@ namespace mocc {
                     mesh_.coarse_area( icell, Surface::SOUTH );
             b += coarse_data_->current(
                     mesh_.coarse_surf(icell, Surface::BOTTOM), group ) *
-                    mesh_.coarse_area( icell, Surface::BOTTOM );            
+                    mesh_.coarse_area( icell, Surface::BOTTOM );
 
             // Source
             b += (*source_)[icell]*vol_[icell];
 
             // Internal removal
-            b -= flux_1g_(icell) * 
+            b -= flux_1g_(icell) *
                 (*xs_mesh_)[icell].xsmacrm()[group] * vol_[icell];
 
             cout << "Cell balance: " << b << endl;

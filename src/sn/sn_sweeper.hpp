@@ -66,7 +66,7 @@ namespace mocc {
          * \brief Check the neutron balance in all of the cells of the sweeper
          */
         void check_balance( int group ) const;
-           
+
     protected:
         const CoreMesh &mesh_;
 

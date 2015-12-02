@@ -28,7 +28,7 @@ namespace mocc {
         mat_lib_ = MaterialLib( input.child("material_lib") );
 
         // Parse pins
-        pins_ = ParsePins( input, pin_meshes_ ); 
+        pins_ = ParsePins( input, pin_meshes_ );
 
         // Parse lattices
         lattices_ = ParseLattices( input, pins_ );

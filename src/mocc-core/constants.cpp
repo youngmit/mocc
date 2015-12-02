@@ -116,7 +116,7 @@ namespace mocc {
 
         return os;
     }
-    
+
 
     Normal surface_to_normal( Surface s ) {
         switch( s ) {

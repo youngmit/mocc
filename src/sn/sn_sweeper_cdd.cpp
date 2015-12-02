@@ -10,5 +10,5 @@ using std::cin;
 using std::endl;
 
 namespace mocc {
-    
+
 }

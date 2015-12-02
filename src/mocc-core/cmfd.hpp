@@ -28,7 +28,7 @@ namespace mocc {
             return &coarse_data_;
         }
 
-        /** 
+        /**
          * Return a reference to the \ref CoarseData object.
          */
         CoarseData& coarse_data() {
@@ -66,7 +66,7 @@ namespace mocc {
         ArrayF fs_;
         ArrayF fs_old_;
 
-        Source source_; 
+        Source source_;
 
         // Vector of one-group sparse matrix
         std::vector< Eigen::SparseMatrix<real_t> > m_;

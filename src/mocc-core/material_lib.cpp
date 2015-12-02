@@ -28,7 +28,7 @@ namespace mocc{
     }
 
     MaterialLib::MaterialLib( const pugi::xml_node &input ):
-        n_material_(0) 
+        n_material_(0)
     {
         if( input.empty() ) {
             throw EXCEPT("No material library specified.");
@@ -38,7 +38,7 @@ namespace mocc{
         LogFile << "Found material library specification: " << matLibName
                 << std::endl;
         FileScrubber matLibFile( matLibName.c_str(), "!" );
-        
+
 
         string line;
         // Read the first three lines to extract the library header
@@ -129,7 +129,7 @@ namespace mocc{
 
         // Parse material IDs
         for ( auto mat = input.child( "material" );
-                mat; mat = mat.next_sibling( "material" ) ) 
+                mat; mat = mat.next_sibling( "material" ) )
         {
             this->assignID( mat.attribute( "id" ).as_int(),
                     mat.attribute( "name" ).value() );

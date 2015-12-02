@@ -152,7 +152,7 @@ namespace mocc {
     typedef std::shared_ptr<Lattice> SP_Lattice_t;
     typedef std::shared_ptr<Lattice> UP_Lattice_t;
 
-    std::map<int, UP_Lattice_t> ParseLattices( const pugi::xml_node &input, 
+    std::map<int, UP_Lattice_t> ParseLattices( const pugi::xml_node &input,
             const std::map<int, UP_Pin_t> &pins );
 
 }

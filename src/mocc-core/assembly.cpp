@@ -101,7 +101,7 @@ namespace mocc {
         return;
     }
 
-    std::map<int, UP_Assembly_t> ParseAssemblies( const pugi::xml_node &input, 
+    std::map<int, UP_Assembly_t> ParseAssemblies( const pugi::xml_node &input,
             const std::map<int, UP_Lattice_t> lattices ) {
         std::map<int, UP_Assembly_t> assemblies;
 

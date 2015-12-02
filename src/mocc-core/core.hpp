@@ -111,6 +111,6 @@ namespace mocc {
         std::vector<Boundary> bc_;
     };
 
-    Core ParseCore( const pugi::xml_node &input, 
+    Core ParseCore( const pugi::xml_node &input,
             const std::map<int, UP_Assembly_t> &assemblies );
 }

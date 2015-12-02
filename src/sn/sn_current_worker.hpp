@@ -37,7 +37,7 @@ namespace mocc {
                 size_t nx = mesh_->nx();
                 size_t ny = mesh_->ny();
                 size_t nz = mesh_->nz();
-                
+
                 real_t w = ang.weight * HPI;
 
                 real_t ox = ang.ox*w;

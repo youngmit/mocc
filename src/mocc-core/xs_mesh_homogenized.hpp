@@ -48,7 +48,7 @@ namespace mocc {
 
         // Possibly-associated flux for homogenization.
         const ArrayB2 *flux_;
-        
+
 
         /**
         * \brief Return an XSMeshRegion containing homogenized cross sections

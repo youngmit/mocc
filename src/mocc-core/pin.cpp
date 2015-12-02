@@ -53,7 +53,7 @@ namespace mocc {
         }
     }
 
-    std::map<int, UP_Pin_t> ParsePins( const pugi::xml_node &input, 
+    std::map<int, UP_Pin_t> ParsePins( const pugi::xml_node &input,
             const std::map<int, UP_PinMesh_t> &meshes ) {
         std::map<int, UP_Pin_t> pins;
         for ( auto pin = input.child( "pin" ); pin;

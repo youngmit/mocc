@@ -94,7 +94,7 @@ namespace mocc {
             moc_sweeper_.set_coarse_data( cd );
             sn_sweeper_.set_coarse_data( cd );
         }
-        
+
     private:
         // Parse the various options from the XML
         void parse_options( const pugi::xml_node &input );

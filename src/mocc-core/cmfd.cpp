@@ -17,7 +17,7 @@ using std::endl;
 using std::cin;
 
 namespace mocc {
-    CMFD::CMFD( const pugi::xml_node &input, const Mesh *mesh, 
+    CMFD::CMFD( const pugi::xml_node &input, const Mesh *mesh,
             SP_XSMeshHomogenized_t xsmesh):
         mesh_(mesh),
         xsmesh_( xsmesh ),
@@ -67,7 +67,7 @@ namespace mocc {
                     throw EXCEPT("Psi tolerance is invalid.");
                 }
             }
-            
+
             // Max iterations
             if( !input.attribute("max_iter").empty() ) {
                 max_iter_ = input.attribute("max_iter").as_int(-1);
@@ -104,7 +104,7 @@ namespace mocc {
             fs_old_ = fs_;
             this->fission_source( k );
             real_t tfis_old = tfis;
-            
+
             for( int group=0; group<ng; group++ ) {
                 source_.initialize_group( group );
                 source_.fission( fs_, group );
@@ -125,13 +125,13 @@ namespace mocc {
                 psi_err += e*e;
             }
             psi_err = std::sqrt(psi_err);
-            
+
             std::ios::fmtflags flags = cout.flags();
-            std::cout << "CMFD K error: " << std::setprecision(12) << k << " " 
+            std::cout << "CMFD K error: " << std::setprecision(12) << k << " "
                 << std::abs(k-k_old) << std::endl;
             cout.flags(flags);
 
-            if( ((std::abs(k-k_old) < k_tol_) && 
+            if( ((std::abs(k-k_old) < k_tol_) &&
                 (psi_err < psi_tol_)) || (iter > max_iter_) ) {
                 break;
             }
@@ -173,7 +173,7 @@ namespace mocc {
 
     real_t CMFD::total_fission() {
         int ng = xsmesh_->n_group();
-        
+
         real_t f = 0.0;
 
         for( int i=0; i<n_cell_; i++ ) {
@@ -213,7 +213,7 @@ namespace mocc {
                 real_t diffusivity_1;
                 if( cells.first > -1 ) {
                     // Real neighbor
-                    diffusivity_1 = d_coeff[cells.first] / 
+                    diffusivity_1 = d_coeff[cells.first] /
                         mesh_->cell_thickness(cells.first, norm);
                 } else {
                     // Boundary surface
@@ -233,7 +233,7 @@ namespace mocc {
                 real_t diffusivity_2;
                 if( cells.second > -1 ) {
                     // Real neighbor
-                    diffusivity_2 = d_coeff[cells.second] / 
+                    diffusivity_2 = d_coeff[cells.second] /
                         mesh_->cell_thickness(cells.second, norm);
                 } else {
                     // Boundary surface
@@ -250,19 +250,19 @@ namespace mocc {
                     }
                 }
 
-                d_tilde(is) = diffusivity_1*diffusivity_2 / 
+                d_tilde(is) = diffusivity_1*diffusivity_2 /
                     (diffusivity_1 + diffusivity_2);
 
                 real_t j = coarse_data_.current( is, group );
                 real_t flux_l = coarse_data_.flux(cells.first, group);
                 real_t flux_r = coarse_data_.flux(cells.second, group);
                 if( coarse_data_.has_data() ) {
-                    d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) / 
+                    d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
                 } else {
                     d_hat(is) = 0.0;
                 }
-                
+
             }
 
             // put values into the matrix. Optimal access patterns in sparse
@@ -283,7 +283,7 @@ namespace mocc {
                             // Switch sign of D-hat if necessary
                             real_t d_hat_ij = d_hat(surf);
                             if( (is == Surface::WEST) ||
-                                (is == Surface::SOUTH) || 
+                                (is == Surface::SOUTH) ||
                                 (is == Surface::BOTTOM) )
                             {
                                 d_hat_ij = -d_hat_ij;
@@ -300,7 +300,7 @@ namespace mocc {
                         real_t d_hat_ij = d_hat(surf);
                         // Switch sign of D-hat if necessary
                         if( (pair.second == Surface::WEST) ||
-                            (pair.second == Surface::SOUTH) || 
+                            (pair.second == Surface::SOUTH) ||
                             (pair.second == Surface::BOTTOM) )
                         {
                             d_hat_ij = -d_hat_ij;

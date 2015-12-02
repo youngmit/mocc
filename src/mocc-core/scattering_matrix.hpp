@@ -87,7 +87,7 @@ namespace mocc {
 
                 int pos = 0;
                 for( auto &row: rhs ) {
-                    rows_.push_back( ScatteringRow(row.min_g, row.max_g, 
+                    rows_.push_back( ScatteringRow(row.min_g, row.max_g,
                                 &scat_[pos]) );
                     pos += row.max_g - row.min_g + 1;
                 }

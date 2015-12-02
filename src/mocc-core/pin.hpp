@@ -63,6 +63,6 @@ namespace mocc {
      * \brief Given an XML node containing one or more \<pin\> tags, parse the
      * \ref Pin entries into a map.
      */
-    std::map<int, UP_Pin_t> ParsePins( const pugi::xml_node &input, 
+    std::map<int, UP_Pin_t> ParsePins( const pugi::xml_node &input,
             const std::map<int, UP_PinMesh_t> &meshes );
 }

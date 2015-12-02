@@ -101,7 +101,7 @@ namespace mocc {
 
     typedef std::unique_ptr<Assembly> UP_Assembly_t;
 
-    
-    std::map<int, UP_Assembly_t> ParseAssemblies( const pugi::xml_node &input, 
+
+    std::map<int, UP_Assembly_t> ParseAssemblies( const pugi::xml_node &input,
             const std::map<int, UP_Lattice_t> lattices );
 }

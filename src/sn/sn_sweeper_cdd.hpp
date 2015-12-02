@@ -21,7 +21,7 @@ namespace mocc { namespace sn {
      */
     class CellWorker_CDD: public sn::CellWorker {
     public:
-        CellWorker_CDD( const Mesh &mesh, 
+        CellWorker_CDD( const Mesh &mesh,
                 const AngularQuadrature &ang_quad ):
             CellWorker( mesh ),
             ang_quad_( ang_quad )
@@ -59,7 +59,7 @@ namespace mocc { namespace sn {
      */
     class CellWorker_CDD_DD: public CellWorker_CDD {
     public:
-        CellWorker_CDD_DD( const Mesh &mesh, 
+        CellWorker_CDD_DD( const Mesh &mesh,
                 const AngularQuadrature &ang_quad ):
             CellWorker_CDD( mesh, ang_quad )
         {
@@ -146,7 +146,7 @@ namespace mocc { namespace sn {
             corrections_( nullptr )
         {
             LogFile << "Constructing a CDD Sn sweeper" << std::endl;
-    
+
             if( !input.child("data").empty() ) {
                 LogFile << "Located auxiliary data specification." << std::endl;
                 if( !input.child("data").attribute("type").empty() ) {
@@ -200,7 +200,7 @@ namespace mocc { namespace sn {
             ang_quad_ = ang_quad;
             return;
         }
-        
+
         void sweep( int group ) {
             // Make sure we have correction factors
             if( !corrections_ ) {

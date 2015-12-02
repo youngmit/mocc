@@ -53,10 +53,10 @@ namespace mocc {
          */
         Mesh( size_t n_reg, size_t n_xsreg,
                 VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] );
-        
+
         /**
          * \brief Return the total number of regions in the computational mesh.
-         * 
+         *
          * This is not necessarily the number of pins. For a MoC/CoreMesh this
          * is the number of flat source regions.
          */
@@ -205,7 +205,7 @@ namespace mocc {
         }
 
         /**
-         * \brief Return the total number of pin regions in the mesh. 
+         * \brief Return the total number of pin regions in the mesh.
          *
          * This includes plane separations. This is essentially the number of
          * coarse mesh regions.
@@ -260,7 +260,7 @@ namespace mocc {
         size_t plane_surf_end( size_t plane ) const {
             return n_surf_plane_*(plane+1);
         }
-        
+
         /**
          * \brief Return the lowest coarse surface index of the x- and y-normal
          * surfaces in a given plane.
@@ -288,7 +288,7 @@ namespace mocc {
 
         /**
          * \brief Return the coarse cell index given a pin \ref Position.
-         * 
+         *
          * Cell indexing is natural in x, y z.
         */
         inline size_t coarse_cell( Position pos ) const {
@@ -492,12 +492,12 @@ namespace mocc {
         /**
          * \brief Return the surface index between two cells.
          */
-        std::pair< size_t, Surface > coarse_interface( size_t cell1, 
+        std::pair< size_t, Surface > coarse_interface( size_t cell1,
                 size_t cell2 ) const {
             // Stupid search
             for( auto is: AllSurfaces ) {
                 if( this->coarse_neighbor( cell1, is ) == (int)cell2 ) {
-                    return std::pair< size_t, Surface >( 
+                    return std::pair< size_t, Surface >(
                             this->coarse_surf( cell1, is ), is );
                 }
             }
@@ -553,7 +553,7 @@ namespace mocc {
                     surf -= nx_*ny_ + (nx_+1)*ny_;
                     size_t ix = surf / (ny_+1);
 
-                    area = dx_vec_[ix] * dz_vec_[iz]; 
+                    area = dx_vec_[ix] * dz_vec_[iz];
                 }
                 break;
             case Normal::Z_NORM:

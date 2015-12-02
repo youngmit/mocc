@@ -143,7 +143,7 @@ namespace mocc {
                     vol_sum_[2*i+0] /= vol_norm_[i];
                     vol_sum_[2*i+1] /= vol_norm_[i];
                 }
-                
+
                 // Doing area-based normalization
                 //surf_sum_ /= surf_norm_;
 

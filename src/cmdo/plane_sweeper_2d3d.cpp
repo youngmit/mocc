@@ -266,7 +266,7 @@ namespace mocc {
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
         LogFile << "    Transversd Leakage: " << do_snproject_ << std::endl;
-        LogFile << "    Inactive MoC Outer Iterations: " 
+        LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
 
 
