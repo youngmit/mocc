@@ -1,3 +1,4 @@
+if(${BUILD_TESTS})
 add_executable(testRayData test_ray_data.cpp)
 target_link_libraries(testRayData mocc-core pugixml)
 add_test(testRayData testRayData)
@@ -28,3 +29,4 @@ target_link_libraries(testRay mocc-core pugixml)
 add_test(testRay testRay)
 copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/6x5.xml 
     ${CMAKE_CURRENT_BINARY_DIR}/6x5.xml testRay)
+endif()
