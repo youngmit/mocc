@@ -113,8 +113,9 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
-                // Wipe out the existing currents
-                coarse_data_->current( blitz::Range::all(), group ) = 0.0;
+                // Wipe out the existing currents (only on X- and Y-normal 
+                // faces)
+                this->zero_current( group );
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
             } else {
@@ -328,6 +329,21 @@ namespace mocc {
                     flux_1g.end(), dims );
         }
 
+        return;
+    }
+
+    void MoCSweeper::zero_current( int group ) {
+        assert( coarse_data_ );
+        ArrayB1 current = 
+            coarse_data_->current(blitz::Range::all(), group);
+        for( size_t plane=0; plane<mesh_.nz(); plane++ ) {
+            for( auto surf=mesh_.plane_surf_xy_begin(plane); 
+                    surf!=mesh_.plane_surf_end(plane); 
+                    ++surf ) 
+            {
+                current(surf) = 0.0;
+            }
+        }
         return;
     }
 }
