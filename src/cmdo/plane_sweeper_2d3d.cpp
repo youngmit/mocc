@@ -61,11 +61,12 @@ namespace mocc {
             i_outer_++;
         }
 
+        // Sn sweeper
         sn_sweeper_.get_homogenized_xsmesh()->update( );
         sn_sweeper_.sweep( group );
 
         if( do_snproject_ ) {
-            ArrayB1 sn_flux;
+            ArrayB1 sn_flux(sn_sweeper_.n_reg());
             sn_sweeper_.get_pin_flux_1g( group, sn_flux );
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
@@ -75,6 +76,7 @@ namespace mocc {
             this->add_tl( group );
         }
 
+        // MoC Sweeper
         if( i_outer_ > n_inactive_moc_ ) {
             moc_sweeper_.sweep( group );
         }
