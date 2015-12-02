@@ -197,6 +197,12 @@ namespace mocc {
     }
 
     std::ostream& operator<<( std::ostream &os, const CoreMesh &mesh ) {
+        os << "Boundary conditions: " << std::endl;
+        for( int ib=0; ib<6; ib++ ) {
+            os << (Surface)ib << ":\t" << mesh.bc_[ib] << std::endl;
+        }
+        os << std::endl;
+
         os << "Mesh X Pitches:" << std::endl;
         for( auto v: mesh.dx_vec_ ) {
             os << v << std::endl;

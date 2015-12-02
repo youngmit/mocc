@@ -187,7 +187,7 @@ namespace mocc {
     }
 
     void CMFD::setup_solve() {
-        const auto bc = mesh_->boundary_array();
+        const Mesh::BCArray_t bc = mesh_->boundary_array();
         // Construct the system matrix
         size_t n_surf = mesh_->n_surf();
         int group = 0;
@@ -225,6 +225,7 @@ namespace mocc {
                             diffusivity_1 = 0.5;
                             break;
                         default:
+                            cout << "Boundary: " << bc[(int)norm][0] << endl;
                             throw EXCEPT("Unsupported boundary type.");
                     }
                 }
@@ -244,6 +245,7 @@ namespace mocc {
                             diffusivity_2 = 0.5;
                             break;
                         default:
+                            cout << "Boundary: " << bc[(int)norm][1] << endl;
                             throw EXCEPT("Unsupported boundary type.");
                     }
                 }

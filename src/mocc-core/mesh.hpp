@@ -43,7 +43,7 @@ namespace mocc {
      */
     class Mesh {
     public:
-        typedef std::array< std::array< Boundary, 3 >, 2 > BCArray_t;
+        typedef std::array< std::array< Boundary, 2 >, 3 > BCArray_t;
 
         Mesh() { };
 
@@ -112,6 +112,8 @@ namespace mocc {
             bc[(int)Normal::Y_NORM][1] = bc_[(int)Surface::NORTH];
             bc[(int)Normal::Z_NORM][0] = bc_[(int)Surface::BOTTOM];
             bc[(int)Normal::Z_NORM][1] = bc_[(int)Surface::TOP];
+
+
 
             return bc;
         }
