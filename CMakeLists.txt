@@ -1,6 +1,14 @@
 project(MOCC)
 cmake_minimum_required(VERSION 3.2)
-enable_testing()
+
+SET(BUILD_TESTS true CACHE BOOL "Enable compilation of tests")
+MESSAGE(STATUS "Tests: ${BUILD_TESTS}")
+if(${BUILD_TESTS})
+    MESSAGE(STATUS "Building tests")
+    enable_testing()
+else()
+    MESSAGE(STATUS "Not building tests")
+endif()
 
 MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
     message("Copying file: ${in_file} to: ${out_file}")
