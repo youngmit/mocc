@@ -102,16 +102,11 @@ namespace mocc {
 
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, ArrayB1 &flux ) const {
-        sn_sweeper_.get_pin_flux_1g( ig, flux );
-    }
-
-////////////////////////////////////////////////////////////////////////////////
-    ArrayB2 PlaneSweeper_2D3D::get_pin_flux() const {
-        ArrayB2 flux( mesh_.n_pin(), 0.0 );
-
-        throw EXCEPT("Don't use this for now...");
-        
-        return flux;
+        if( expose_sn_ ) {
+            sn_sweeper_.get_pin_flux_1g( ig, flux );
+        } else {
+            moc_sweeper_.get_pin_flux_1g( ig, flux );
+        }
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,11 +242,15 @@ namespace mocc {
     // fine for now.
     void PlaneSweeper_2D3D::parse_options( const pugi::xml_node &input ) {
         // Set defaults for everything
+        expose_sn_ = false;
         do_snproject_ = true;
         do_tl_ = true;
         n_inactive_moc_ = 0;
 
         // Override with entries in the input node
+        if( !input.attribute("sn_expose").empty() ) {
+            expose_sn_ = input.attribute("sn_expose").as_bool();
+        }
         if( !input.attribute("sn_project").empty() ) {
             do_snproject_ = input.attribute("sn_project").as_bool();
         }

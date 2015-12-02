@@ -27,11 +27,13 @@ namespace mocc {
 
         void get_pin_flux_1g( int ig, ArrayB1 &flux ) const;
 
-        ArrayB2 get_pin_flux() const;
-
+        /**
+         * Delegate to the subbordinate \ref SnSweeper and \ref MoCSweeper.
+         * Return the error from the MoC sweeper.
+         */
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
-            throw EXCEPT("Not Implemented");
-            return 0.0;
+            sn_sweeper_.set_pin_flux_1g( group, pin_flux );
+            return moc_sweeper_.set_pin_flux_1g( group, pin_flux );
         }
 
         void output( H5::CommonFG *file ) const;
@@ -112,6 +114,7 @@ namespace mocc {
         std::vector<VecF> sn_resid_;
 
         // Options! Buttons and knobs!!!
+        bool expose_sn_; // When asking the sweeper for pin flux, which one?
         bool do_snproject_;
         bool do_tl_;
         int n_inactive_moc_;
