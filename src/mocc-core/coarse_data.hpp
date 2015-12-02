@@ -20,7 +20,8 @@ namespace mocc {
         CoarseData( size_t nreg, size_t nsurf, size_t ngroup ):
             current( nsurf, ngroup ),
             flux( nreg, ngroup ),
-            old_flux( nreg, ngroup )
+            old_flux( nreg, ngroup ),
+            has_data_( false )
         {
             current = 0.0;
             flux = 0.0;
@@ -28,9 +29,20 @@ namespace mocc {
             return;
         }
 
+        void set_has_data( bool has ) {
+            has_data_ = has;
+            return;
+        }
+
+        bool has_data() const {
+            return has_data_;
+        }
+
         ArrayB2 current;
         ArrayB2 flux;
         ArrayB2 old_flux;
+    private:
+        bool has_data_;
     };
 
     typedef std::shared_ptr<CoarseData> SP_CoarseData_t;

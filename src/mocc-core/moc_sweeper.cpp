@@ -35,13 +35,14 @@ namespace mocc {
 
         // Make sure we have input from the XML
         if( input.empty() ) {
-            Error("No input specified to initialize MoC sweeper.");
+            throw EXCEPT("No input specified to initialize MoC sweeper.");
         }
 
         // Parse the number of inner iterations
         int int_in = input.attribute("n_inner").as_int(-1);
         if(int_in < 0) {
-            Error("Invalid number of inner iterations specified (n_inner).");
+            throw EXCEPT("Invalid number of inner iterations specified "
+                "(n_inner).");
         }
         n_inner_ = int_in;
 
@@ -118,6 +119,7 @@ namespace mocc {
                 this->zero_current( group );
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
+                coarse_data_->set_has_data(true);
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );

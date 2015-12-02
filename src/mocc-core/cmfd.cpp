@@ -256,8 +256,13 @@ namespace mocc {
                 real_t j = coarse_data_.current( is, group );
                 real_t flux_l = coarse_data_.flux(cells.first, group);
                 real_t flux_r = coarse_data_.flux(cells.second, group);
-                d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) / 
-                    (flux_l + flux_r);
+                if( coarse_data_.has_data() ) {
+                    d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) / 
+                        (flux_l + flux_r);
+                } else {
+                    d_hat(is) = 0.0;
+                }
+                
             }
 
             // put values into the matrix. Optimal access patterns in sparse

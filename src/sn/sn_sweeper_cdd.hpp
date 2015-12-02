@@ -234,6 +234,8 @@ namespace mocc { namespace sn {
                     coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                     this->sweep_1g<sn::Current, CellWorker_CDD>( group,
                             cell_worker_ );
+                    coarse_data_->set_has_data( true );
+                    coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                 } else {
                     this->sweep_1g<sn::NoCurrent, CellWorker_CDD>( group,
                             cell_worker_ );
