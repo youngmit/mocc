@@ -15,7 +15,8 @@ namespace mocc{
             const CoreMesh &mesh ):
         fss_( input, mesh ),
         fission_source_( fss_.n_reg() ),
-        fission_source_prev_( fss_.n_reg() )
+        fission_source_prev_( fss_.n_reg() ),
+        min_iterations_( 0 )
     {
         if( input.empty() ) {
             Error("No input specified for the eigenvalue solver.");
@@ -45,6 +46,13 @@ namespace mocc{
             throw EXCEPT("Invalid number of maximum iterations.");
         }
         max_iterations_ = in_int;
+
+        // Min iterations
+        in_int = input.attribute("min_iter").as_int(-1);
+        if( (in_int < 0) || (in_int > (int)max_iterations_) ) {
+            throw EXCEPT("Invalid number of minimum iterations.");
+        }
+        min_iterations_ = in_int;
 
         // CMFD acceleration
         bool do_cmfd = input.attribute("cmfd").as_bool(false);
@@ -105,7 +113,9 @@ namespace mocc{
 
             this->print( n_iterations, convergence_.back() );
 
-            done = ((error_k < tolerance_k_) & (error_psi < tolerance_psi_)) |
+            done = ( (n_iterations >= min_iterations_) && 
+                     (error_k < tolerance_k_) && 
+                     (error_psi < tolerance_psi_) ) ||
                 (n_iterations >= max_iterations_ );
         }
 

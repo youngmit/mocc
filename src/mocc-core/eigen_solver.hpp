@@ -81,6 +81,7 @@ namespace mocc{
 
         // Maximum allowable outer iterations
         unsigned int max_iterations_;
+        unsigned int min_iterations_;
 
         // Print the current state of the eigenvalue solver
         void print( int iter, ConvergenceCriteria conv );
