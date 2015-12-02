@@ -96,6 +96,28 @@ namespace mocc {
         return os;
     }
 
+    std::ostream& operator<<(std::ostream& os, const Boundary b ) {
+        switch( b ) {
+            case Boundary::REFLECT:
+                os << "REFLECT";
+                break;
+            case Boundary::VACUUM:
+                os << "VACUUM";
+                break;
+            case Boundary::PARALLEL:
+                os << "PARALLEL";
+                break;
+            case Boundary::PERIODIC:
+                os << "PERIODIC";
+                break;
+            default:
+                os << "Unknown: " << (int)b;
+        }
+
+        return os;
+    }
+    
+
     Normal surface_to_normal( Surface s ) {
         switch( s ) {
             case Surface::EAST:
