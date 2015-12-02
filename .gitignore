@@ -5,3 +5,4 @@
 *.exe
 build/*
 bin/*
+mocc.sublime-workspace
