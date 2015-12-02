@@ -128,8 +128,6 @@ namespace mocc{
         if( cmfd_ ) {
             // push homogenized flux onto the coarse mesh
             cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();
-            cout << "flux into cmfd:" << endl;
-            cout << fss_.sweeper()->get_pin_flux() << endl;;
             cmfd_->solve(keff_, fss_.sweeper()->flux());
             fss_.sweeper()->set_pin_flux( cmfd_->flux() );
         }
