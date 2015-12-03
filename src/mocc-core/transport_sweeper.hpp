@@ -193,11 +193,6 @@ namespace mocc{
          */
         virtual real_t total_fission( bool old=false ) const;
 
-        /**
-         * Homogenize flux and group constants to a CoarseData object
-         */
-        virtual void homogenize( CoarseData &data ) const = 0;
-
     protected:
         const CoreMesh *core_mesh_;
 

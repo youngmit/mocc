@@ -6,6 +6,8 @@
 
 #include "error.hpp"
 
+using mocc::sn::SnSweeper;
+
 using std::cout;
 using std::endl;
 using std::cin;
@@ -34,7 +36,7 @@ namespace mocc {
         n_group_ = xs_mesh_->n_group();
         flux_.reference(moc_sweeper_.flux());
 
-        sn_sweeper_.set_corrections( &corrections_ );
+        sn_sweeper_.get_worker().set_corrections( &corrections_ );
         const XSMeshHomogenized* sn_xs_mesh =
             sn_sweeper_.get_homogenized_xsmesh().get();
         moc_sweeper_.set_coupling( &corrections_, sn_xs_mesh );

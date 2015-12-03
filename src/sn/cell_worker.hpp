@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "mocc-core/angle.hpp"
+#include "mocc-core/angular_quadrature.hpp"
 #include "mocc-core/global_config.hpp"
 
 namespace mocc { namespace sn {
@@ -19,10 +20,14 @@ namespace mocc { namespace sn {
      */
     class CellWorker {
     public:
-        CellWorker( const Mesh &mesh ):
+        CellWorker( const Mesh &mesh, const AngularQuadrature &ang_quad ):
             mesh_( mesh ),
             plane_size_( mesh.nx()*mesh.ny() )
         {
+            return;
+        }
+
+        inline void set_group( size_t group ) {
             return;
         }
 
@@ -42,7 +47,6 @@ namespace mocc { namespace sn {
             ty_ = oy_/mesh_.dy(iy);
         }
 
-
         /**
          * \brief Configure the \ref CellWorker to sweep the given angle.
          */
@@ -56,7 +60,7 @@ namespace mocc { namespace sn {
 
         /**
          * \brief Propagate flux through a single mesh element. Return the
-         * node-average flux.
+         * node-average flux. 3-D.
          *
          * \param[inout] flux_x the upwind flux in the x-normal direction. At
          * the end, it will be updated to the downwind flux.
@@ -70,6 +74,21 @@ namespace mocc { namespace sn {
          */
         virtual real_t evaluate( real_t &flux_x, real_t &flux_y, real_t &flux_z,
                                real_t q, real_t xstr, size_t i ) = 0;
+
+        /**
+         * \brief Propagate flux through a single mesh element in 2-D
+         *
+         * \param[inout] flux_x the upwind flux in the x-normal direction. At
+         * the end, it will be updated to the downwind flux.
+         * \param[inout] flux_y the upwind flux in the y-normal direction. At
+         * the end, it will be updated to the downwind flux.
+         * \param[in] q the node-average source.
+         * \param[in] xstr the node-average transport cross section.
+         * \param[in] i the index of the cell to treat.
+         */
+        virtual real_t evaluate_2d( real_t &flux_x, real_t &flux_y, 
+                               real_t q, real_t xstr, size_t i ) = 0;
+
 
     protected:
         const Mesh &mesh_;

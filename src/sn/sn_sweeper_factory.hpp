@@ -6,6 +6,6 @@
 #include "sn_sweeper.hpp"
 
 namespace mocc {
-    UP_SnSweeper_t SnSweeperFactory( const pugi::xml_node &input,
+    UP_Sweeper_t SnSweeperFactory( const pugi::xml_node &input,
             const CoreMesh &mesh );
 }

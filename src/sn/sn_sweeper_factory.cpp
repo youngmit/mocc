@@ -3,12 +3,15 @@
 #include <iostream>
 #include <string>
 
-#include "error.hpp"
-#include "sn_sweeper_cdd.hpp"
-#include "sn_sweeper_dd.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/transport_sweeper.hpp"
+
+#include "sn/sn_sweeper.hpp"
+#include "sn/sn_sweeper_cdd.hpp"
+#include "sn/sn_sweeper_dd.hpp"
 
 namespace mocc {
-    UP_SnSweeper_t SnSweeperFactory( const pugi::xml_node &input,
+    UP_Sweeper_t SnSweeperFactory( const pugi::xml_node &input,
             const CoreMesh &mesh ) {
 
         std::string equation = "dd";
@@ -19,16 +22,17 @@ namespace mocc {
             << equation << std::endl;
 
         if( equation == "dd") {
-            return UP_SnSweeper_t( new sn::SnSweeper_DD( input, mesh ) );
+            return UP_Sweeper_t( new sn::SnSweeper<sn::CellWorker_DD>( input, 
+                        mesh ) );
         } else if( equation == "cdd" ) {
-            return UP_SnSweeper_t(
-                    new sn::SnSweeper_CDD<sn::CellWorker_CDD_DD>( input,
+            return UP_Sweeper_t(
+                    new sn::SnSweeper<sn::CellWorker_CDD_DD>( input,
                         mesh ) );
         } else {
             throw EXCEPT("Unrecognized equation for Sn sweeper.");
         }
 
         // Shouldnt ever get here. This is just to suppress warnings.
-        return UP_SnSweeper_t( nullptr );
+        return UP_Sweeper_t( nullptr );
     }
 }
