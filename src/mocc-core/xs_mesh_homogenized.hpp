@@ -70,8 +70,6 @@ namespace mocc {
         * \param first_reg the region offset into the \c flux array to be used
         * for this particular pin.
         * \param pin the pin to homogenize cross sections for.
-        * \param flux the array containing the scalar flux to be used in the
-        * homogenization
         *
         * This routine performs a flux-weighted homogenization of the cross
         * sections in the passed \ref Pin object and returns an \ref
