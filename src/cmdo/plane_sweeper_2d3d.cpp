@@ -19,12 +19,14 @@ namespace mocc {
     /// \todo make sure to check the angular quadratures for conformance
     PlaneSweeper_2D3D::PlaneSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
+        TransportSweeper(input),
         mesh_(mesh),
         sn_sweeper_(input.child("sn_sweeper"), mesh),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad()),
-        corrections_( sn_sweeper_.n_reg(), ang_quad_.ndir()/2,
-                sn_sweeper_.n_group() ),
+        corrections_( new CorrectionData( sn_sweeper_.n_reg(), 
+            ang_quad_.ndir()/2,
+            sn_sweeper_.n_group() ) ),
         tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
         sn_resid_( sn_sweeper_.n_group() ),
         i_outer_( 0 )
@@ -36,10 +38,10 @@ namespace mocc {
         n_group_ = xs_mesh_->n_group();
         flux_.reference(moc_sweeper_.flux());
 
-        sn_sweeper_.get_worker().set_corrections( &corrections_ );
+        sn_sweeper_.worker()->set_corrections( corrections_ );
         const XSMeshHomogenized* sn_xs_mesh =
             sn_sweeper_.get_homogenized_xsmesh().get();
-        moc_sweeper_.set_coupling( &corrections_, sn_xs_mesh );
+        moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
 
         sn_sweeper_.set_ang_quad(ang_quad_);
 
@@ -212,9 +214,9 @@ namespace mocc {
                 VecF alpha_y( mesh_.n_pin(), 0.0 );
                 VecF beta( mesh_.n_pin(), 0.0 );
                 for( size_t i=0; i<mesh_.n_pin(); i++ ) {
-                    alpha_x[i] = corrections_.alpha( i, a, g, Normal::X_NORM );
-                    alpha_y[i] = corrections_.alpha( i, a, g, Normal::Y_NORM );
-                    beta[i] = corrections_.beta( i, a, g );
+                    alpha_x[i] = corrections_->alpha( i, a, g, Normal::X_NORM );
+                    alpha_y[i] = corrections_->alpha( i, a, g, Normal::Y_NORM );
+                    beta[i] = corrections_->beta( i, a, g );
                 }
 
                 {

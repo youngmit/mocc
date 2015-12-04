@@ -24,7 +24,8 @@ namespace mocc { namespace sn {
         CellWorker_CDD( const Mesh &mesh,
                 const AngularQuadrature &ang_quad ):
             CellWorker( mesh, ang_quad ),
-            ang_quad_( ang_quad )
+            ang_quad_( ang_quad ),
+            corrections_( nullptr )
         {
             return;
         }
@@ -38,10 +39,18 @@ namespace mocc { namespace sn {
             iang_alpha_ = iang % (ang_quad_.ndir() / 2);
         }
 
-        void set_corrections( const CorrectionData *data ) {
+        /**
+         * \brief Associate the internal reference to correction data.
+         *
+         * Any existing data will get kicked off. Since this uses
+         * std::shared_ptr, if the sweeper has the only reference to any data
+         * that gets replaced, we should expect the old data to be destroyed.
+         * Usually what we want, but be careful.
+         */
+        void set_corrections( std::shared_ptr<const CorrectionData> data ) {
             corrections_ = data;
         }
-        
+
         /** 
          * \copydoc CellWorker::evaluate(real_t&,real_t&,real_t,real_t,size_t)
          *
@@ -64,8 +73,8 @@ namespace mocc { namespace sn {
             real_t gx = ax*b;
             real_t gy = ay*b;
 
-            real_t psi = 0.5*q + 2.0*(tx * flux_x +
-                                      ty_* flux_y );
+            real_t psi = q + 2.0*(tx * flux_x +
+                                  ty_* flux_y );
             psi /= tx/gx + ty_/gy + xstr;
 
             flux_x = (psi - gx*flux_x) / gx;
@@ -77,7 +86,7 @@ namespace mocc { namespace sn {
     protected:
         const AngularQuadrature &ang_quad_;
 
-        const CorrectionData* corrections_;
+        std::shared_ptr<const CorrectionData> corrections_;
 
         size_t iang_alpha_;
 

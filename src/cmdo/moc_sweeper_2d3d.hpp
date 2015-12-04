@@ -11,7 +11,7 @@ namespace mocc {
 
         void sweep( int group );
 
-        void set_coupling( CorrectionData *data,
+        void set_coupling( std::shared_ptr<CorrectionData> data,
                 const XSMeshHomogenized *xsmesh) {
             corrections_ = data;
             sn_xs_mesh_ = xsmesh;
@@ -27,7 +27,7 @@ namespace mocc {
         void calculate_corrections( size_t ang, size_t group, ArrayF flux_surf,
                 ArrayF flux_node, ArrayF sigt );
 
-        CorrectionData* corrections_;
+        std::shared_ptr<CorrectionData> corrections_;
 
         const XSMeshHomogenized* sn_xs_mesh_;
     };

@@ -76,8 +76,6 @@ namespace mocc {
 
         RayData rays_;
 
-        AngularQuadrature ang_quad_;
-
         // Boundary condition. ordered by energy, plane, angle, ray
         BCSet_t boundary_;
         BCSet_Out_t boundary_out_;

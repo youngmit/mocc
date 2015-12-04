@@ -1,7 +1,9 @@
 #pragma once
 
-#include "error.hpp"
-#include "source.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/source.hpp"
+
+#include "sn/sn_source.hpp"
 
 namespace mocc {
     /**

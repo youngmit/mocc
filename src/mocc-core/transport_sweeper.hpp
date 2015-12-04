@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "mocc-core/angular_quadrature.hpp"
 #include "mocc-core/blitz_typedefs.hpp"
 #include "mocc-core/coarse_data.hpp"
 #include "mocc-core/eigen_interface.hpp"
@@ -15,13 +16,13 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
-        TransportSweeper():
-            coarse_data_(nullptr)
-        {
-            return;
-        }
+        //TransportSweeper():
+        //    coarse_data_(nullptr)
+        //{
+        //    return;
+        //}
 
-        TransportSweeper( const CoreMesh& mesh ):
+        TransportSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
             core_mesh_( &mesh ),
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
@@ -29,7 +30,14 @@ namespace mocc{
             flux_( n_reg_, n_group_ ),
             flux_old_( n_reg_, n_group_ ),
             vol_( n_reg_ ),
+            ang_quad_( input.child("ang_quad") ),
             coarse_data_(nullptr)
+        {
+            return;
+        }
+
+        TransportSweeper( const pugi::xml_node &input ):
+            ang_quad_(input.child("ang_quad")) 
         {
             return;
         }
@@ -48,10 +56,18 @@ namespace mocc{
         virtual void initialize() = 0;
 
         /**
-         * Return a vector containing the pin-homogenizes multi-group scalar
-         * flux. The values in the vector are ordered group-major.
+         * \brief Return a vector containing the pin-homogenizes multi-group
+         * scalar flux. The values in the vector are ordered group-major.
          */
         ArrayB2 get_pin_flux() const;
+
+        /**
+         * \brief Return a const reference to the Sweeper's \ref
+         * AngularQuadrature
+         */
+        const AngularQuadrature& ang_quad() const {
+            return ang_quad_;
+        }
 
         /**
          * Produce pin-homogenized scalar flux for the specified group and store
@@ -212,6 +228,8 @@ namespace mocc{
         // Region volumes. In a 3-D sweeper this is the true volume, while in a
         // 2-D sweeper, this is actually surface area.
         ArrayF vol_;
+
+        AngularQuadrature ang_quad_;
 
         // Reference to the CoarseData object that should be used to store
         // coarse mesh values. This is passed in from above.

@@ -1,17 +1,22 @@
 #include "sn_sweeper_factory.hpp"
 
 #include <iostream>
+#include <memory>
 #include <string>
 
 #include "mocc-core/error.hpp"
 #include "mocc-core/transport_sweeper.hpp"
 
+#include "sn/correction_data.hpp"
 #include "sn/sn_sweeper.hpp"
+#include "sn/sn_sweeper_variant.hpp"
 #include "sn/sn_sweeper_cdd.hpp"
 #include "sn/sn_sweeper_dd.hpp"
 
+using mocc::sn::UP_SnSweeper_t;
+
 namespace mocc {
-    UP_Sweeper_t SnSweeperFactory( const pugi::xml_node &input,
+    UP_SnSweeper_t SnSweeperFactory( const pugi::xml_node &input,
             const CoreMesh &mesh ) {
 
         std::string equation = "dd";
@@ -22,17 +27,27 @@ namespace mocc {
             << equation << std::endl;
 
         if( equation == "dd") {
-            return UP_Sweeper_t( new sn::SnSweeper<sn::CellWorker_DD>( input, 
+            return UP_SnSweeper_t( new sn::SnSweeperVariant<sn::CellWorker_DD>( input, 
                         mesh ) );
         } else if( equation == "cdd" ) {
-            return UP_Sweeper_t(
-                    new sn::SnSweeper<sn::CellWorker_CDD_DD>( input,
-                        mesh ) );
+            // For now, we are assuming if we are creating a CDD sweeper from
+            // this factory that it isnt getting correction data from another
+            // coupled sweeper. Therefore, we should make some correction
+            // factors for it here.
+            sn::SnSweeperVariant<sn::CellWorker_CDD_DD> *swp = 
+                new sn::SnSweeperVariant<sn::CellWorker_CDD_DD>( input, mesh );
+            auto corrections = std::shared_ptr<CorrectionData>( 
+                new CorrectionData(swp->n_reg(), swp->ang_quad().ndir()/2, 
+                swp->n_group()) );
+
+            swp->worker()->set_corrections( corrections );
+
+            return UP_SnSweeper_t( std::move(swp) );
         } else {
             throw EXCEPT("Unrecognized equation for Sn sweeper.");
         }
 
         // Shouldnt ever get here. This is just to suppress warnings.
-        return UP_Sweeper_t( nullptr );
+        return UP_SnSweeper_t( nullptr );
     }
 }

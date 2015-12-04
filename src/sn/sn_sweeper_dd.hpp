@@ -52,7 +52,7 @@ namespace mocc { namespace sn {
             size_t ix = i % mesh_.nx();
             real_t tx = ox_/mesh_.dx(ix);
             real_t psi = 2.0*( tx * flux_x +
-                               ty_* flux_y ) + q*0.5;
+                               ty_* flux_y ) + q;
             psi /= 2.0*(tx + ty_) + xstr;
 
             flux_x = 2.0*psi - flux_x;

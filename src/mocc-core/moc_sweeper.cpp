@@ -18,13 +18,12 @@ mocc::VecF temp;
 namespace mocc {
     MoCSweeper::MoCSweeper( const pugi::xml_node& input,
             const CoreMesh& mesh ):
-        TransportSweeper( mesh ),
+        TransportSweeper( input, mesh ),
         mesh_( mesh ),
         rays_( input.child("rays"),
-               AngularQuadrature(input.child("ang_quad")),
+               ang_quad_,
                mesh
              ),
-        ang_quad_( rays_.ang_quad() ),
         xstr_( n_reg_ ),
         flux_1g_( n_reg_ ),
         qbar_( n_reg_ ),

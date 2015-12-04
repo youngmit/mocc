@@ -3,13 +3,15 @@
 #include "pugixml.hpp"
 #include <blitz/array.h>
 
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/global_config.hpp"
 
-#include "angular_quadrature.hpp"
-#include "correction_data.hpp"
-#include "global_config.hpp"
-#include "moc_sweeper_2d3d.hpp"
-#include "sn_sweeper_cdd.hpp"
-#include "source_2d3d.hpp"
+#include "sn/correction_data.hpp"
+#include "sn/sn_sweeper_variant.hpp"
+#include "sn/sn_sweeper_cdd.hpp"
+
+#include "cmdo/moc_sweeper_2d3d.hpp"
+#include "cmdo/source_2d3d.hpp"
 
 namespace mocc {
     /**
@@ -104,10 +106,10 @@ namespace mocc {
 
 
         const CoreMesh& mesh_;
-        sn::SnSweeper<sn::CellWorker_CDD_DD> sn_sweeper_;
+        sn::SnSweeperVariant<sn::CellWorker_CDD_DD> sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
-        CorrectionData corrections_;
+        std::shared_ptr<CorrectionData> corrections_;
         ArrayB2 tl_;
 
         // Sn-MoC residuals by group sweep
