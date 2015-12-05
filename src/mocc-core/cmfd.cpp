@@ -257,10 +257,15 @@ cout << coarse_data_.current(blitz::Range::all(), group) << endl;
                 d_tilde(is) = diffusivity_1*diffusivity_2 /
                     (diffusivity_1 + diffusivity_2);
 
-                real_t j = coarse_data_.current( is, group );
-                real_t flux_l = coarse_data_.flux(cells.first, group);
-                real_t flux_r = coarse_data_.flux(cells.second, group);
+                
                 if( coarse_data_.has_data() ) {
+                    real_t j = coarse_data_.current( is, group );
+                    real_t flux_l = cells.first >= 0 ? 
+                        coarse_data_.flux(cells.first, group) : 
+                        0.0;
+                    real_t flux_r = cells.second >= 0 ?
+                        coarse_data_.flux(cells.second, group) : 
+                        0.0;
                     d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
                 } else {
