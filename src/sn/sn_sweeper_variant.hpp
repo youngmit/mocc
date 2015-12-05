@@ -69,7 +69,6 @@ namespace mocc { namespace sn {
         Worker* worker() {
             return &cell_worker_;
         }
-
         
         // Override the create_source() method to make an SnSource instead of
         // the regular
@@ -101,6 +100,7 @@ namespace mocc { namespace sn {
                     // Wipe out the existing currents
                     coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                     this->sweep_1g<sn::Current>( group );
+                    coarse_data_->set_has_data(true);
                 } else {
                     this->sweep_1g<sn::NoCurrent>( group );
                 }

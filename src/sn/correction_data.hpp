@@ -39,9 +39,7 @@ namespace mocc {
             return;
         }
 
-        ~CorrectionData() {
-            std::cout << "destroying corrections!" << std::endl;
-        }
+        ~CorrectionData() { }
 
         size_t size() {
             return alpha_.size();

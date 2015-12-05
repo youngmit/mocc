@@ -136,6 +136,8 @@ namespace mocc {
                 break;
             }
         }
+        cout << "CMFD flux: " << endl;
+        cout << coarse_data_.flux << endl;
 
         return;
     }
@@ -192,6 +194,8 @@ namespace mocc {
         size_t n_surf = mesh_->n_surf();
         int group = 0;
         for( auto &m: m_ ) {
+cout << "currents for group " << group << ": " << endl;
+cout << coarse_data_.current(blitz::Range::all(), group) << endl;
             // Diffusion coefficients
             VecF d_coeff( n_cell_ );
             for( int i=0; i<n_cell_; i++ ) {
@@ -312,6 +316,7 @@ namespace mocc {
             } // matrix element loop
             group++;
         } // group loop
+        cin.ignore();
         return;
     }
 }

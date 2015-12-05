@@ -86,8 +86,6 @@ namespace mocc{
 
         unsigned int n_iterations = 0;
 
-        bool done = false;
-
         cout << std::setw(out_w) << "Iter."
              << std::setw(out_w) << "k"
              << std::setw(out_w) << "k error"
@@ -121,15 +119,10 @@ namespace mocc{
 
             if( (error_k < tolerance_k_) && (error_psi < tolerance_psi_ ) &&
                 (n_iterations >= min_iterations_) ) {
-
                 std::cout << "Convergence criteria met!" << std::endl;
+                break;
             }
-            done = ( (n_iterations >= min_iterations_) &&
-                     (error_k < tolerance_k_) &&
-                     (error_psi < tolerance_psi_) ) ||
-                (n_iterations >= max_iterations_ );
         }
-
     }
 
     void EigenSolver::step() {
