@@ -93,7 +93,7 @@ namespace mocc{
              << std::setw(out_w) << "k error"
              << std::setw(out_w) << "psi error" << endl;
 
-        while( !done ) {
+        while( true ) {
 
             this->step();
 
@@ -113,6 +113,17 @@ namespace mocc{
 
             this->print( n_iterations, convergence_.back() );
 
+            if( n_iterations >= max_iterations_ ) {
+                std::cout << "Maximum number of iterations reached!" 
+                          << std::endl;
+                break;
+            }
+
+            if( (error_k < tolerance_k_) && (error_psi < tolerance_psi_ ) &&
+                (n_iterations >= min_iterations_) ) {
+
+                std::cout << "Convergence criteria met!" << std::endl;
+            }
             done = ( (n_iterations >= min_iterations_) &&
                      (error_k < tolerance_k_) &&
                      (error_psi < tolerance_psi_) ) ||
