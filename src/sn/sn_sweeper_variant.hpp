@@ -101,7 +101,6 @@ namespace mocc { namespace sn {
                     // Wipe out the existing currents
                     coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                     this->sweep_1g<sn::Current>( group );
-std::cout << coarse_data_->current(blitz::Range::all(), group) << std::endl;
                 } else {
                     this->sweep_1g<sn::NoCurrent>( group );
                 }
@@ -112,8 +111,6 @@ std::cout << coarse_data_->current(blitz::Range::all(), group) << std::endl;
         }
 
     protected:
-        
-
         /**
          * \brief Generic Sn sweep procedure for orthogonal mesh.
          *
@@ -139,7 +136,6 @@ std::cout << coarse_data_->current(blitz::Range::all(), group) << std::endl;
 
             int iang = 0;
             for( auto ang: ang_quad_ ) {
-//std::cout << "angle: " << iang << std::endl;
                 // Configure the current worker for this angle
                 cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
 
@@ -198,18 +194,14 @@ std::cout << coarse_data_->current(blitz::Range::all(), group) << std::endl;
                             real_t psi_x = x_flux[ny*iz + iy];
                             real_t psi_y = y_flux[nx*iz + ix];
                             real_t psi_z = z_flux[nx*iy + ix];
-//std::cout << psi_x << " " << psi_y << " " << psi_z << std::endl;
 
                             size_t i = mesh_.coarse_cell( Position( ix, iy, iz ) );
 
-                            //real_t psi = cell_worker_.evaluate( psi_x, psi_y,
-                            //        psi_z, q_[i], xstr_[i], i );
-                            real_t psi = cell_worker_.evaluate_2d( psi_x, psi_y,
-                                    q_[i], xstr_[i], i );
+                            real_t psi = cell_worker_.evaluate( psi_x, psi_y,
+                                    psi_z, q_[i], xstr_[i], i );
+                            //real_t psi = cell_worker_.evaluate_2d( psi_x, psi_y,
+                            //        q_[i], xstr_[i], i );
 
-//std::cout << psi << std::endl;
-//std::cout << psi_x << " " << psi_y << " " << psi_z << std::endl;
-//std::cout << std::endl;
 
                             x_flux[ny*iz + iy] = psi_x;
                             y_flux[nx*iz + ix] = psi_y;
@@ -231,11 +223,11 @@ std::cout << coarse_data_->current(blitz::Range::all(), group) << std::endl;
                 bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
                 bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
                 bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
-                bc_in_.update( group, iang, bc_out_ );
+                //bc_in_.update( group, iang, bc_out_ );
                 iang++;
             }
             // Update the boundary condition
-            //bc_in_.update( group, bc_out_ );
+            bc_in_.update( group, bc_out_ );
 
             return;
         }
