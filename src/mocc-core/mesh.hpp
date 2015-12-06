@@ -490,7 +490,17 @@ namespace mocc {
         }
 
         /**
-         * \brief Return the surface index between two cells.
+         * \brief Return the surface index between two cells and the \ref
+         * Surface of \p cell1 that makes the interface.
+         *
+         * This returns a \c std::pair containing the surface index and a \ref
+         * Surface enumeration. The surface index is self-explainatory. The \ref
+         * Surface enumeration is a little more complicated; it is the \ref
+         * Surface of \p cell1 that makes the interface between \p cell1 and \p
+         * cell2. If \p cell2 is to the north of \p cell1, then the \ref Surface
+         * will be \ref Surface::NORTH. If the cell indices were passed in the
+         * reverse order, the \ref Surface would be \ref Surface::SOUTH.
+         * Therefore, it is important which order the cells are provided.
          */
         std::pair< size_t, Surface > coarse_interface( size_t cell1,
                 size_t cell2 ) const {
