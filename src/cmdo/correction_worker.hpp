@@ -46,18 +46,20 @@ namespace mocc {
             {
                 ArrayB1 current =
                         coarse_data_->current(blitz::Range::all(), group);
-                size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
-                size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
-                int surf_fw = ray.cm_surf_fw()+surf_offset_;
-                int surf_bw = ray.cm_surf_bw()+surf_offset_;
+                size_t cell_fw = ray.cm_cell_fw();
+                size_t cell_bw = ray.cm_cell_bw();
+                int surf_fw = ray.cm_surf_fw();
+                int surf_bw = ray.cm_surf_bw();
                 size_t iseg_fw = 0;
                 size_t iseg_bw = ray.nseg();
 
+                // Use an offset for the current contributions, but NOT for the
+                // correction factors, which use plane-by-plane indexing
                 Normal norm_fw = mesh_->surface_normal( surf_fw );
                 Normal norm_bw = mesh_->surface_normal( surf_bw );
-                current( surf_fw, group ) +=
+                current( surf_fw+surf_offset_, group ) +=
                     psi1[iseg_fw] * current_weights_[(int)norm_fw];
-                current( surf_bw, group ) -=
+                current( surf_bw+surf_offset_, group ) -=
                     psi2[iseg_bw] * current_weights_[(int)norm_bw];
 
                 surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
@@ -85,7 +87,7 @@ namespace mocc {
                         // Store FW surface stuff
                         norm_fw = surface_to_normal( crd->fw );
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
-                        current( surf_fw, group ) +=
+                        current( surf_fw+surf_offset_, group ) +=
                             psi1[iseg_fw] * current_weights_[(int)norm_fw];
                         surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
                         surf_norm_[surf_fw*2+0] += 1.0;
@@ -106,7 +108,7 @@ namespace mocc {
                         // Store BW surface stuff
                         norm_bw = surface_to_normal( crd->bw );
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
-                        current( surf_bw, group ) -=
+                        current( surf_bw+surf_offset_, group ) -=
                             psi2[iseg_bw] * current_weights_[(int)norm_bw];
                         surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
                         surf_norm_[surf_bw*2+1] += 1.0;

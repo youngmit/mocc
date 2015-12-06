@@ -35,6 +35,8 @@ namespace mocc {
             virtual void set_plane( int iplane ) = 0;
 
             virtual void post_sweep( int igroup ) = 0;
+
+            virtual void post_plane( int igroup ) = 0;
         };
 
         /**
@@ -81,6 +83,10 @@ namespace mocc {
             inline void post_sweep( int igroup ) {
                 return;
             }
+
+            inline void post_plane( int igroup ) {
+                return;
+            }
         };
 
         /**
@@ -102,6 +108,14 @@ namespace mocc {
                 coarse_data_( data ),
                 mesh_( mesh )
             {
+                return;
+            }
+            
+            inline void post_angle( int iang, int igroup ) {
+                return;
+            };
+
+            inline void post_plane( int igroup ) {
                 return;
             }
 
@@ -176,10 +190,7 @@ namespace mocc {
                 return;
             }
 
-            inline void post_angle( int iang, int igroup ) {
-                return;
-            };
-
+            
             inline void post_sweep( int igroup ) {
 #pragma omp single
                 {

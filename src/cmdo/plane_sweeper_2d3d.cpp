@@ -89,13 +89,6 @@ namespace mocc {
         ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
 
-cout << "group: " << group << endl;
-cout << "mocc flux: " << moc_flux << endl;
-ArrayB1 sn_flux(sn_sweeper_.n_reg());
-sn_sweeper_.get_pin_flux_1g(group, sn_flux);
-
-cout << "sn flux: " << sn_flux << endl;
-
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
             residual += (moc_flux(i) - sn_sweeper_.flux( group, i )) *
@@ -157,6 +150,7 @@ cout << "sn flux: " << sn_flux << endl;
             real_t j_up = coarse_data_->current(surf_up, group);
             real_t j_down = coarse_data_->current(surf_down, group);
             tl_g(ipin) = ( j_down - j_up ) / dz;
+cout << surf_up << " " << j_up << " " << surf_down << " " << j_down << endl;
 
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 tl_fsr( ir+ireg_pin ) = tl_g(ipin);
