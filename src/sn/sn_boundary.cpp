@@ -86,35 +86,36 @@ namespace mocc {
         Normal norm;
         int iang_refl = 0;
 
+        /// \todo replace with a loop over AllNormal
         // X-normal surface
         norm = Normal::X_NORM;
         surf = (angle.ox > 0) ? Surface::WEST : Surface::EAST;
         iang_refl = ang_quad_.reflect( ang, norm );
         if( bc_[(int)surf] == Boundary::REFLECT ) {
-            auto new_bc = out.get_face( 0, iang_refl, norm );
-            this->set_face( group, ang, norm, new_bc );
+            auto new_bc = out.get_face( 0, ang, norm );
+            this->set_face( group, iang_refl, norm, new_bc );
         } else {
-            this->zero_face(group, ang, norm);
+            this->zero_face(group, iang_refl, norm);
         }
         // Y-normal surface
         norm = Normal::Y_NORM;
         surf = (angle.oy > 0) ? Surface::SOUTH : Surface::NORTH;
-        iang_refl = ang_quad_.reflect( iang_refl, norm );
+        iang_refl = ang_quad_.reflect( ang, norm );
         if( bc_[(int)surf] == Boundary::REFLECT ) {
             auto new_bc = out.get_face( 0, ang, norm );
-            this->set_face(group, ang, norm, new_bc);
+            this->set_face(group, iang_refl, norm, new_bc);
         } else {
-            this->zero_face(group, ang, norm);
+            this->zero_face(group, iang_refl, norm);
         }
         // Z-normal surface
         norm = Normal::Z_NORM;
         surf = (angle.oz > 0) ? Surface::BOTTOM : Surface::TOP;
-        iang_refl = ang_quad_.reflect( iang_refl, norm );
+        iang_refl = ang_quad_.reflect( ang, norm );
         if( bc_[(int)surf] == Boundary::REFLECT ) {
             auto new_bc = out.get_face( 0, ang, norm );
-            this->set_face(group, ang, norm, new_bc );
+            this->set_face(group, iang_refl, norm, new_bc );
         } else {
-            this->zero_face(group, ang, norm);
+            this->zero_face(group, iang_refl, norm);
         }
     }
 

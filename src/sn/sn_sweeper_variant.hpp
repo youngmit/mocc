@@ -20,6 +20,18 @@
 #include "sn/sn_sweeper.hpp"
 
 namespace mocc { namespace sn {
+
+    /**
+     * The \ref SnSweeperVariant allows for the templating of an Sn sweeper upon
+     * a specific differencing scheme. They are derived from the\ref SnSweeper
+     * class itself so that the \ref SnSweeperFactory may return a pointer of
+     * that type for use elsewhere, so that the template parameter need not be
+     * known to the client code. In uses where the differencing scheme is indeed
+     * known, the client code may instantiate their own sweeper of this class
+     * and have access to a fully-typed \ref CellWorker member. This is useful
+     * in the \ref PlaneSweeper_2D3D class, which knows what type of \ref
+     * CellWorker it is using.
+     */
     template <class Worker>
     class SnSweeperVariant: public SnSweeper {
     public:
@@ -100,7 +112,8 @@ namespace mocc { namespace sn {
                     // Wipe out the existing currents
                     coarse_data_->current( blitz::Range::all(), group ) = 0.0;
                     this->sweep_1g<sn::Current>( group );
-                    coarse_data_->set_has_data(true);
+                    coarse_data_->set_has_axial_data(true);
+                    coarse_data_->set_has_radial_data(true);
                 } else {
                     this->sweep_1g<sn::NoCurrent>( group );
                 }
@@ -138,6 +151,7 @@ namespace mocc { namespace sn {
             for( auto ang: ang_quad_ ) {
                 // Configure the current worker for this angle
                 cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+                
 
                 cell_worker_.set_angle( iang, ang );
 
@@ -223,11 +237,15 @@ namespace mocc { namespace sn {
                 bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
                 bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
                 bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
-                //bc_in_.update( group, iang, bc_out_ );
+                if( gs_boundary_ ) {
+                    bc_in_.update( group, iang, bc_out_ );
+                }
                 iang++;
             }
             // Update the boundary condition
-            bc_in_.update( group, bc_out_ );
+            if( !gs_boundary_ ) {
+                bc_in_.update( group, bc_out_ );
+            }
 
             return;
         }

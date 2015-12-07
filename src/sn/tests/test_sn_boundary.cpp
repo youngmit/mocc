@@ -98,13 +98,20 @@ BOOST_AUTO_TEST_CASE( testboundary )
     // them to update the boundary and make sure that the right values come back
     // out.
     {
+        for( auto iface: AllNormals ) {
+            for( int iang=0; iang<ang_quad.ndir(); iang++ ) {
+                boundary.zero_face(0, iang, iface);
+            }
+        }
         ArrayF face = boundary.get_face( 0, 0, Normal::X_NORM );
         face = 1.77;
         out.set_face( 0, 0, Normal::X_NORM, face );
 
         boundary.update( 0, 3, out );
         face = boundary.get_face( 0, 3, Normal::X_NORM );
-        BOOST_CHECK_EQUAL( face[0], 1.77 );
+        for( int i=0; i<(int)face.size(); i++ ) {
+            BOOST_CHECK_EQUAL( face[i], 1.77 );
+        }
     }
 
 }
