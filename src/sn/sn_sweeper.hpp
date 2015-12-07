@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pugixml.hpp"
+
 #include "mocc-core/angular_quadrature.hpp"
 #include "mocc-core/transport_sweeper.hpp"
 #include "mocc-core/utils.hpp"
@@ -11,18 +13,7 @@
 namespace mocc { namespace sn {
     class SnSweeper: public TransportSweeper {
     public:
-        SnSweeper( const pugi::xml_node &input, const CoreMesh& mesh ):
-            TransportSweeper( input ),
-            mesh_( mesh ),
-            bc_type_( mesh.boundary() ),
-            flux_1g_( mesh_.n_pin() ),
-            xstr_( mesh.n_pin() ),
-            q_( mesh_.n_pin() ),
-            bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
-            bc_out_( 1, ang_quad_, mesh_ )
-        {
-            return;
-        }
+        SnSweeper( const pugi::xml_node &input, const CoreMesh &mesh );
 
         void initialize() {
             flux_ = 1.0;
@@ -69,29 +60,8 @@ namespace mocc { namespace sn {
             return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
         }
 
-        void output( H5::CommonFG *node ) const {
-            auto dims = mesh_.dimensions();
-            std::reverse( dims.begin(), dims.end() );
-
-            // Make a group in the file to store the flux
-            node->createGroup("flux");
-
-            ArrayB2 flux = this->get_pin_flux();
-            Normalize( flux.begin(), flux.end() );
-
-            for( unsigned int ig=0; ig<n_group_; ig++ ) {
-                std::stringstream setname;
-                setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
-
-                ArrayB1 flux_1g = flux(blitz::Range::all(), ig);
-
-                HDF::Write( node, setname.str(), flux_1g.begin(), flux_1g.end(),
-                        dims);
-            }
-
-            xs_mesh_->output( node );
-            return;
-        }
+        void output( H5::CommonFG *node ) const;
+        
     protected:
         const CoreMesh &mesh_;
 
@@ -114,6 +84,9 @@ namespace mocc { namespace sn {
 
         // Outgoing boundary condition. Only difined for one group
         SnBoundary bc_out_;
+
+        // Gauss-Seidel BC update?
+        bool gs_boundary_;
 
         /**
          * \brief Check the neutron balance in all of the cells of the sweeper
