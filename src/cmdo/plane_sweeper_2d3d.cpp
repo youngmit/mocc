@@ -65,15 +65,7 @@ namespace mocc {
             i_outer_++;
         }
 
-        // Sn sweeper
-        sn_sweeper_.get_homogenized_xsmesh()->update( );
-        sn_sweeper_.sweep( group );
-
-        if( do_snproject_ ) {
-            ArrayB1 sn_flux(sn_sweeper_.n_reg());
-            sn_sweeper_.get_pin_flux_1g( group, sn_flux );
-            moc_sweeper_.set_pin_flux_1g( group, sn_flux );
-        }
+        
 
         // Calculate transverse leakage source
         if( do_tl_ ) {
@@ -84,10 +76,20 @@ namespace mocc {
         if( i_outer_ > n_inactive_moc_ ) {
             moc_sweeper_.sweep( group );
         }
-
-        // Compute Sn-MoC residual
         ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
+        
+        // Sn sweeper
+        sn_sweeper_.get_homogenized_xsmesh()->update( );
+        sn_sweeper_.sweep( group );
+
+        if( do_snproject_ ) {
+            ArrayB1 sn_flux(sn_sweeper_.n_reg());
+            sn_sweeper_.get_pin_flux_1g( group, sn_flux );
+            moc_sweeper_.set_pin_flux_1g( group, sn_flux );
+        }
+
+        // Compute Sn-MoC residual
 
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
@@ -150,7 +152,10 @@ namespace mocc {
             real_t j_up = coarse_data_->current(surf_up, group);
             real_t j_down = coarse_data_->current(surf_down, group);
             tl_g(ipin) = ( j_down - j_up ) / dz;
-cout << surf_up << " " << j_up << " " << surf_down << " " << j_down << endl;
+
+//cout << surf_down << " " << j_down << " " 
+//     << surf_up << " " << j_up << " "
+//     << tl_g(ipin) << endl;
 
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 tl_fsr( ir+ireg_pin ) = tl_g(ipin);

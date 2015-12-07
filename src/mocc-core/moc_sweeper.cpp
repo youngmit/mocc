@@ -115,14 +115,11 @@ namespace mocc {
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents (only on X- and Y-normal
                 // faces)
-                //this->zero_current( group ); 
-                // Actually, for now clear all of them until we get some 2d3d
-                // stuff sorted
-                coarse_data_->current(blitz::Range::all(), group) = 0.0;
+                this->zero_current( group ); 
 
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
-                coarse_data_->set_has_data(true);
+                coarse_data_->set_has_radial_data(true);
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
