@@ -27,6 +27,8 @@ namespace mocc {
         fs_old_( n_cell_ ),
         source_( n_cell_, xsmesh_.get(), coarse_data_.flux ),
         m_( xsmesh->n_group(), Eigen::SparseMatrix<real_t>(n_cell_, n_cell_) ),
+        d_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
+        d_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         k_tol_( 1.0e-4 ),
         psi_tol_( 1.0e-4 ),
         max_iter_( 100 )
@@ -126,16 +128,21 @@ namespace mocc {
             }
             psi_err = std::sqrt(psi_err);
 
-            std::ios::fmtflags flags = cout.flags();
-            std::cout << "CMFD K error: " << std::setprecision(12) << k << " "
-                << std::abs(k-k_old) << std::endl;
-            cout.flags(flags);
-
             if( ((std::abs(k-k_old) < k_tol_) &&
                 (psi_err < psi_tol_)) || (iter > max_iter_) ) {
                 break;
             }
+
         }
+        auto flags = cout.flags();
+        std::cout << "CMFD : " << iter << " " 
+                  << std::setprecision(12) << k << " "
+                  << std::abs(k-k_old) << std::endl;
+        cout.flags(flags);
+
+        
+        // Calculate the resultant currents and store back onto the coarse data
+        this->store_currents();
 
         return;
     }
@@ -204,8 +211,8 @@ namespace mocc {
             // simplifications, but this is very conformal to the canonical
             // formulations of CMFD found in the literature. If this starts
             // taking too much time, optimize.
-            ArrayB1 d_tilde( n_surf );
-            ArrayB1 d_hat( n_surf );
+            ArrayB1 d_tilde = d_tilde_( blitz::Range::all(), group );
+            ArrayB1 d_hat = d_hat_( blitz::Range::all(), group );
             for( int is=0; is<(int)n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
                 Normal norm = mesh_->surface_normal(is);
@@ -254,7 +261,10 @@ namespace mocc {
                     (diffusivity_1 + diffusivity_2);
 
                 
-                if( coarse_data_.has_data() ) {
+                bool have_data = norm == Normal::Z_NORM ?
+                    coarse_data_.has_axial_data() : 
+                    coarse_data_.has_radial_data();
+                if( have_data ) {
                     real_t j = coarse_data_.current( is, group );
                     real_t flux_l = cells.first >= 0 ? 
                         coarse_data_.flux(cells.first, group) : 
@@ -317,6 +327,27 @@ namespace mocc {
             } // matrix element loop
             group++;
         } // group loop
+        return;
+    }
+
+    void CMFD::store_currents() {
+        int n_group = xsmesh_->n_group();
+        int n_surf = mesh_->n_surf();
+        for( int ig=0; ig<n_group; ig++ ) {
+            for( int is=0; is<n_surf; is++ ) {
+                auto cells = mesh_->coarse_neigh_cells(is);
+                real_t flux_r = cells.second >= 0 ? 
+                    coarse_data_.flux(cells.second, ig) : 0.0;
+                real_t flux_l = cells.first >= 0 ? 
+                    coarse_data_.flux(cells.first, ig) : 0.0;
+                real_t d_hat = d_hat_(is, ig);
+                real_t d_tilde = d_tilde_(is, ig);
+
+                real_t current = -d_tilde*(flux_r - flux_l) - 
+                                   d_hat*(flux_r + flux_l);
+                coarse_data_.current(is, ig) = current;
+            }
+        }
         return;
     }
 }

@@ -46,6 +46,19 @@ namespace mocc {
         // Private methods
         void solve_1g( int group );
         void fission_source( real_t k );
+
+        /**
+         * \brief Calculate CMFD-derived currents after a CMFD solve and store
+         * on the \ref CoarseData.
+         *
+         * After performing a CMFD solve, it is useful to have access to the
+         * state of the current, as predicted by the CMFD system given the
+         * current state of the D-hats. This allows us to calculate, for
+         * instance, transverse leakage for an MoC sweeper, which otherwise
+         * wouldn't know what the current looks like in the axial dimension.
+         */
+        void store_currents();
+
         /**
          * Set up the linear systems for each group. This doesnt need to be done
          * for each iteration, nor in the case of non-zero currents/d-hat terms
@@ -56,7 +69,7 @@ namespace mocc {
         void setup_solve();
         real_t total_fission();
 
-        // PRivate data
+        // Private data
         const Mesh* mesh_;
         SP_XSMeshHomogenized_t xsmesh_;
         int n_cell_;
@@ -70,6 +83,13 @@ namespace mocc {
 
         // Vector of one-group sparse matrix
         std::vector< Eigen::SparseMatrix<real_t> > m_;
+
+        // Surface quantities. We need to keep these around to do the current
+        // update without having to recalculate. Based on profiling, might be
+        // nice to still get these on the fly to save on memory, but this is
+        // fine for now.
+        ArrayB2 d_hat_;
+        ArrayB2 d_tilde_;
 
         // Convergence options
         real_t k_tol_;
