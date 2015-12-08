@@ -72,7 +72,10 @@ namespace mocc {
                     return (oy > 0.0) ? Surface::SOUTH : Surface::NORTH;
                 case Normal::Z_NORM:
                     return (oz > 0.0) ? Surface::BOTTOM : Surface::TOP;
+                default:
+                    return Surface::INVALID;
             }
+        return Surface::INVALID;
         }
     };
 
