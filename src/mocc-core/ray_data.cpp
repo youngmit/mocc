@@ -158,8 +158,8 @@ namespace mocc {
                         // BC is on the left/west boundary of the core
                         bc2 = p2.y/space_y;
                     } else {
-                        Error("Something has gone horribly wrong in the ray "
-                              "trace.");
+                        throw EXCEPT("Something has gone horribly wrong in the "
+                                "ray trace.");
                     }
                     rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
                     max_seg_ = std::max( rays.back().nseg(), max_seg_ );
@@ -182,8 +182,8 @@ namespace mocc {
                         // BC is on the left/west boundary of the core
                         bc2 = p2.y/space_y;
                     } else {
-                        Error("Something has gone horribly wrong in the ray "
-                              "trace.");
+                        throw EXCEPT("Something has gone horribly wrong in the "
+                                "ray trace.");
                     }
                     rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
                     max_seg_ = std::max( rays.back().nseg(), max_seg_ );
@@ -217,7 +217,7 @@ namespace mocc {
 
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
-        this->correct_volume( mesh, FLAT );
+        this->correct_volume( mesh, ANGLE );
     }
 
     void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )
