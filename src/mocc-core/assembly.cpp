@@ -52,11 +52,17 @@ namespace mocc {
                 real_t hzi;
                 hzstream >> hzi;
                 dz_.push_back(hzi);
-                std::reverse( dz_.begin(), dz_.end() );
+                
             }
+            // Lattice dimensions are read as top-to-bottom, but stored as
+            // bottom-to-top.
+            std::reverse( dz_.begin(), dz_.end() );
         }
 
         // Parse lattice IDs
+        if( input.child("lattices").empty() ) {
+            throw EXCEPT("No lattices specified!");
+        }
         {
             string lat_str = input.child("lattices").child_value();
             stringstream inBuf( trim(lat_str) );
@@ -74,6 +80,10 @@ namespace mocc {
                         "assembly.");
             }
         }
+        // Lattice IDs are read from the top down, but are stored from the
+        // bottom up. Reverse the vector we just populated.
+        std::reverse( lattices_.begin(), lattices_.end() );
+
 
         // Store lattice dimensions
         hx_ = lattices_[0]->hx();
