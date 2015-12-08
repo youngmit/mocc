@@ -3,8 +3,8 @@
 #include <cmath>
 #include <iostream>
 
-#include "global_config.hpp"
-#include "constants.hpp"
+#include "mocc-core/constants.hpp"
+#include "mocc-core/global_config.hpp"
 
 namespace mocc {
     inline real_t RadToDeg( real_t rad ) {
@@ -59,6 +59,21 @@ namespace mocc {
 
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, const Angle &ang );
+
+        /**
+         * \brief Return the upwind surface of the angle, given a \ref Normal
+         * direction.
+         */
+        Surface upwind_surface( Normal norm ) {
+            switch( norm ) {
+                case Normal::X_NORM:
+                    return (ox > 0.0) ? Surface::WEST : Surface::EAST;
+                case Normal::Y_NORM:
+                    return (oy > 0.0) ? Surface::SOUTH : Surface::NORTH;
+                case Normal::Z_NORM:
+                    return (oz > 0.0) ? Surface::BOTTOM : Surface::TOP;
+            }
+        }
     };
 
     Angle ToOctant( Angle in, int octant );
