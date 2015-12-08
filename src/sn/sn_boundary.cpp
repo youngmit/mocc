@@ -81,9 +81,6 @@ namespace mocc {
     }
 
     void SnBoundary::update( size_t group, size_t ang, const SnBoundary &out ) {
-        Surface surf;
-        Normal norm;
-
         /// \todo Refactor to use Blitz arrays, avoid excess copies
         for( auto norm: AllNormals ) {
             int iang_refl = ang_quad_.reflect( ang, norm );
