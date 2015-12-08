@@ -209,6 +209,16 @@ namespace mocc{
          */
         virtual real_t total_fission( bool old=false ) const;
 
+        /**
+         * \brief Return a const reference to the region volumes
+         */
+        const ArrayF &volumes() const {
+            if( vol_.size() != n_reg_ ) {
+                throw EXCEPT("Volume array dimensions are wrong.");
+            }
+            return vol_;
+        }
+
     protected:
         const CoreMesh *core_mesh_;
 

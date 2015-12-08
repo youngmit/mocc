@@ -37,6 +37,7 @@ namespace mocc {
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
         flux_.reference(moc_sweeper_.flux());
+        vol_ = moc_sweeper_.volumes();
 
         sn_sweeper_.worker()->set_corrections( corrections_ );
         const XSMeshHomogenized* sn_xs_mesh =
