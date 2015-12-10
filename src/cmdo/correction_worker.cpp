@@ -73,13 +73,17 @@ namespace mocc {
                 // FW direction
                 {
                     real_t psi_xl =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][XL])*2+0]*area_x;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][XL])*2+0] * 
+                        area_x;
                     real_t psi_xr =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][XR])*2+0]*area_x;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][XR])*2+0] * 
+                        area_x;
                     real_t psi_yl =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][YL])*2+0]*area_y;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][YL])*2+0] * 
+                        area_y;
                     real_t psi_yr =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][YR])*2+0]*area_y;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[FW][YR])*2+0] * 
+                        area_y;
                     real_t ax = vol_sum_[ic*2+0]/(psi_xl + psi_xr);
                     real_t ay = vol_sum_[ic*2+0]/(psi_yl + psi_yr);
 
@@ -96,13 +100,17 @@ namespace mocc {
                 // BW direction
                 {
                     real_t psi_xl =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][XL])*2+1]*area_x;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][XL])*2+1] * 
+                        area_x;
                     real_t psi_xr =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][XR])*2+1]*area_x;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][XR])*2+1] * 
+                        area_x;
                     real_t psi_yl =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][YL])*2+1]*area_y;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][YL])*2+1] * 
+                        area_y;
                     real_t psi_yr =
-                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][YR])*2+1]*area_y;
+                        surf_sum_[mesh_->coarse_surf(ic, surfs[BW][YR])*2+1] * 
+                        area_y;
 
                     real_t ax = vol_sum_[ic*2+1]/(psi_xl + psi_xr);
                     real_t ay = vol_sum_[ic*2+1]/(psi_yl + psi_yr);
