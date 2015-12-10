@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <sstream>
+#include <string>
 
 #include "error.hpp"
 
@@ -127,5 +129,12 @@ namespace mocc {
         os << std::endl;
         os << "Type: Rectangular";
         return;
+    }
+
+    std::string PinMesh_Rect::draw() const {
+        std::stringstream buf;
+
+
+        return buf.str();
     }
 }

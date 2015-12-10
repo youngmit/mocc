@@ -113,8 +113,6 @@ namespace mocc {
             bc[(int)Normal::Z_NORM][0] = bc_[(int)Surface::BOTTOM];
             bc[(int)Normal::Z_NORM][1] = bc_[(int)Surface::TOP];
 
-
-
             return bc;
         }
 
@@ -653,6 +651,14 @@ namespace mocc {
         */
         void trace( std::vector<Point2> &p ) const;
 
+        /**
+         * \brief Return a const reference to the collection of \ref Line
+         * objects.
+         */
+        const std::vector<Line> lines() const {
+            return lines_;
+        }
+
     protected:
         /**
          * This method pre-computes the surface indices for each coarse cell.
@@ -702,8 +708,8 @@ namespace mocc {
         /// Coarse cell volumes
         VecF vol_;
 
-        /// Vector of \ref Line objects, representing pin boundaries. This greatly
-        /// simplifies the ray trace.
+        /// Vector of \ref Line objects, representing pin boundaries. This
+        //greatly / simplifies the ray trace.
         std::vector<Line> lines_;
 
         /// Number of surfaces per plane (doesn't consider the top surface)

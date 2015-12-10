@@ -45,6 +45,9 @@ namespace mocc {
         }
         n_inner_ = int_in;
 
+        // Parse the output options
+        dump_rays_ = input.attribute("dump_rays").as_bool(false);
+
         // Set up the array of volumes (surface area)
         int ireg = 0;
         for( auto &pin: mesh_ ) {
@@ -84,7 +87,7 @@ namespace mocc {
             }
         }
 
-        {
+        if( dump_rays_ ) {
             std::ofstream rayfile("rays.py");
             rayfile << rays_ << endl;
         }

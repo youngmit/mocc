@@ -101,6 +101,8 @@ namespace mocc {
         // Exponential table
         Exponential exp_;
 
+        bool dump_rays_;
+
         /**
          * \brief Perform an MoC sweep
          *
@@ -126,11 +128,11 @@ namespace mocc {
             int iplane = 0;
             for( const auto plane_ray_id: mesh_.unique_planes() ) {
                 cw.set_plane( iplane );
-                auto &plane_rays = rays_[plane_ray_id];
+                const auto &plane_rays = rays_[plane_ray_id];
                 int first_reg = mesh_.first_reg_plane(iplane);
                 int iang = 0;
                 // Angles
-                for( auto &ang_rays: plane_rays ) {
+                for( const auto &ang_rays: plane_rays ) {
                     int iang1 = iang;
                     int iang2 = ang_quad_.reverse(iang);
                     Angle ang = ang_quad_[iang];

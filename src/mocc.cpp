@@ -10,8 +10,9 @@
 #include "mocc-core/files.hpp"
 #include "mocc-core/global_config.hpp"
 #include "mocc-core/h5file.hpp"
-#include "mocc-core/input_proc.hpp"
 #include "mocc-core/transport_sweeper.hpp"
+
+#include "input_proc.hpp"
 
 
 using std::cout;

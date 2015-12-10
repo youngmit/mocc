@@ -349,23 +349,43 @@ namespace mocc {
         }
     } // correct_volume
 
-    std::ostream& operator<<( std::ostream &os, const RayData &rays) {
+    std::ostream& operator<<( std::ostream &os, const RayData &rays ) {
         // For now, we are more interested in the rays in the macro sense. Where
         // they start and stop, more than what they do internally, so only do
         // output for one plane.
+        
+        // spit out some boilerplate python to make these easy to draw
+        os << "import cairo" << endl;
+        os << "def draw_rays( ctx, angle):" << endl;
+        os << "    angle_rays = rays[angle]" << endl;
+
+        os << "    for r in angle_rays:" << endl;
+        os << "        p1 = r[0]" << endl;
+        os << "        p2 = r[1]" << endl;
+        os << "        ctx.move_to(p1[0], p1[1])" << endl;
+        os << "        ctx.line_to(p2[0], p2[1])" << endl;
+        os << "        ctx.close_path()" << endl;
+        os << "    ctx.stroke()" << endl;
+        os << "    return" << endl;
+
         const auto &plane_rays = rays.begin();
-        int iang=0;
+        os << "rays = [ ";
+        auto angle_pos = os.tellp();
         for( auto &ang_rays: *plane_rays ){
-            os << "#Rays for angle " << iang << endl;
-            std::stringstream varname;
-            varname << "ang_" << iang;
-            os << varname.str() << " = [" << endl;
+            auto ray_pos = os.tellp();
+            os << "[ " << endl;
             for( auto &r: ang_rays ) {
-                os << r << "," << endl;
+                os << r;
+                ray_pos = os.tellp();
+                os << "," << endl;
             }
-            os << "]" << endl;
-            iang++;
+            os.seekp(ray_pos);
+            os << " ]";
+            angle_pos = os.tellp();
+            os << "," << endl;
         }
+        os.seekp(angle_pos);
+        os << " ]" << endl;
 
         return os;
     }

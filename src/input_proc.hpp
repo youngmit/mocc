@@ -3,8 +3,8 @@
 #include <map>
 #include <memory>
 
-#include "core_mesh.hpp"
-#include "solver_factory.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/solver_factory.hpp"
 
 namespace mocc{
     /**

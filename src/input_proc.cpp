@@ -13,6 +13,8 @@
 #include "mocc-core/material_lib.hpp"
 #include "mocc-core/pin_mesh.hpp"
 
+#include "aux/geometry_output.hpp"
+
 
 using std::cout;
 using std::endl;
@@ -38,6 +40,12 @@ namespace mocc{
 
         // Generate a top-level solver
         solver_ = SolverFactory( doc.child("solver"), *core_mesh_.get() );
+
+        // Perform geometry output if necessary
+        if( !doc.child("geometry_output").empty() ) {
+            aux::output_geometry( doc.child("geometry_output"), 
+                    *core_mesh_.get() );
+        }
 
         LogFile << endl;
         return;

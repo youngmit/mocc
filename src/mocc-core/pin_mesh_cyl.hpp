@@ -1,8 +1,12 @@
 #pragma once
+
+#include <string>
+#include <vector>
+
+#include "pugixml.hpp"
+
 #include "global_config.hpp"
 #include "pin_mesh_base.hpp"
-#include "pugixml.hpp"
-#include <vector>
 
 namespace mocc {
     class PinMesh_Cyl : public PinMesh {
@@ -28,6 +32,8 @@ namespace mocc {
         }
 
         void print( std::ostream &os ) const;
+
+        std::string draw() const;
 
     private:
         // Radii of material rings

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 
 #include "pugixml.hpp"
 
@@ -97,6 +98,12 @@ namespace mocc {
          * PinMesh and have it work as expected.
          */
         virtual void print( std::ostream &os ) const;
+
+        /**
+         * \brief Return a string containing PyCairo commands to draw the \ref
+         * PinMesh.
+         */
+        virtual std::string draw() const = 0;
 
         /**
          * \brief Provide stream insertion support.

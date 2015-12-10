@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <vector>
 
 #include "pugixml.hpp"
@@ -20,6 +21,8 @@ namespace mocc {
         }
 
         void print( std::ostream &os ) const;
+
+        std::string draw() const;
     private:
         VecF hx_;
         VecF hy_;
