@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "constants.hpp"
 #include "error.hpp"
@@ -46,6 +47,7 @@ namespace mocc {
             const CoreMesh &mesh ):
         ang_quad_(ang_quad)
     {
+        LogFile << "Generating ray data: " << std::endl;
         // Make sure we have reasonable input
         if ( input.empty() ) {
             throw EXCEPT("No input privided for ray spacing.");
@@ -57,12 +59,46 @@ namespace mocc {
             throw EXCEPT("Failed to read valid ray spacing.");
         }
 
+        // Get the modularity setting
+        bool core_modular = true;
+        if( !input.attribute("modularity").empty() ) {
+            std::string in_str = input.attribute("modularity").value();
+            std::transform( in_str.begin(), in_str.end(), in_str.begin(), 
+                    ::tolower );
+            if( in_str == "pin" ) {
+                core_modular = false;
+                // Make sure that all of the pins on the CoreMesh have the same
+                // dimensions
+                if( !mesh.is_pin_modular() ) {
+                    throw EXCEPT("Core Mesh does not support pin modular ray "
+                            "tracing.");
+                }
+            } else if( in_str == "core" ) {
+                core_modular = true;
+            } else {
+                throw EXCEPT("Unrecognized modularity option.");
+            }
+        }
+
+        if( core_modular ) {
+            LogFile << "Ray modularity: CORE" << std::endl;
+        } else {
+            LogFile << "Ray modularity: PIN" << std::endl;
+        }
+
+
         // Store some necessary stuff from the CoreMesh
         n_planes_ = mesh.n_unique_planes();
 
-        // Figure out modular angles and spacings
+        // Extract whole-core dimensions
         real_t hx = mesh.hx_core();
         real_t hy = mesh.hy_core();
+
+        // Figure out modular angles and spacings
+        real_t hx_mod= core_modular ? mesh.hx_core() :
+            (*mesh.begin())->mesh().pitch_x();
+        real_t hy_mod = core_modular ? mesh.hy_core() :
+            (*mesh.begin())->mesh().pitch_y();
 
         LogFile << "Original Angular quadrature " << std::endl;
         LogFile << ang_quad_ << std::endl;
@@ -73,10 +109,16 @@ namespace mocc {
 
             Angle ang = *ang_it;
 
-            int Nx = ceil( hx/opt_spacing*std::abs( sin( ang.alpha ) ) );
-            int Ny = ceil( hy/opt_spacing*std::abs( cos( ang.alpha ) ) );
+            int Nx = ceil( hx_mod/opt_spacing*std::abs( sin( ang.alpha ) ) );
+            int Ny = ceil( hy_mod/opt_spacing*std::abs( cos( ang.alpha ) ) );
             //Nx += Nx%2+1;
             //Ny += Ny%2+1;
+            
+            if( !core_modular ) {
+                Nx *= mesh.nx();
+                Ny *= mesh.ny();
+            }
+
 
             LogFile << "Total number of rays (Nx/Ny): "
                 << Nx << " " << Ny << std::endl;
@@ -218,6 +260,8 @@ namespace mocc {
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
         this->correct_volume( mesh, ANGLE );
+
+        LogFile << std::endl;
     }
 
     void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )
