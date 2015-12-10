@@ -164,6 +164,11 @@ namespace mocc {
         Point2 p1;
         Point2 p2;
         Line(Point2 p1, Point2 p2): p1(p1), p2(p2) { }
+
+        friend std::ostream& operator<<( std::ostream &os, Line &l ) {
+            os << "[" << l.p1 << ", " << l.p2 << "]";
+            return os;
+        }
     };
 
     inline Point2 Midpoint( const Point2 p1, const Point2 p2 ) {
