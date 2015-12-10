@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <map>
 #include <memory>
 
@@ -89,9 +90,10 @@ namespace mocc {
                 int &first_reg) const;
 
         /**
-        * Return a const reference to the indexed plane. These planes are not
-        * considered "unique;" it returns actual Plane that fills the indezed
-        * axial region.
+        * R\brief eturn a const reference to the indexed plane. 
+        *
+        * These planes are not considered "unique;" it returns actual Plane that
+        * fills the indezed axial region.
         */
         const Plane& plane( unsigned int iz ) const {
             assert( (0 <= iz) & (iz < planes_.size()) );
@@ -99,42 +101,68 @@ namespace mocc {
         }
 
         /**
-        * Return a const iterator to the first \ref Pin in the \ref CoreMesh.
+         * \brief Return whether the mesh is Pin modular.
+         *
+         * In this context, pin modular essentially means that all of the pin
+         * meshes in the mesh have the same pitch.
+         */
+        bool is_pin_modular() const {
+            bool x_good = std::all_of( dx_vec_.begin(), dx_vec_.end(), 
+                    [&] (auto &v)
+                    {
+                        return fp_equiv_ulp(v, dx_vec_[0]);
+                    }
+                );
+            bool y_good = std::all_of( dy_vec_.begin(), dy_vec_.end(),
+                    [&] (auto &v)
+                    {
+                        return fp_equiv_ulp(v, dy_vec_[0]);
+                    }
+                );
+            return x_good && y_good;
+        }
+
+        /**
+        * \brief Return a const iterator to the first \ref Pin in the \ref
+        * CoreMesh.
         */
         std::vector<const Pin*>::const_iterator begin_pin() const {
             return core_pins_.cbegin();
         }
 
         /**
-        * Return a const iterator past the last \ref Pin in the \ref CoreMesh.
+        * \brief Return a const iterator past the last \ref Pin in the \ref
+        * CoreMesh.
         */
         std::vector<const Pin*>::const_iterator end_pin() const {
             return core_pins_.cend();
         }
 
         /**
-        * Return a const iterator to the first \ref Pin in the \ref CoreMesh.
+        * \brief Return a const iterator to the first \ref Pin in the \ref
+        * CoreMesh.
         */
         std::vector<const Pin*>::const_iterator begin() const {
             return core_pins_.cbegin();
         }
 
         /**
-        * Return a const iterator past the last \ref Pin in the \ref CoreMesh.
+        * \brief Return a const iterator past the last \ref Pin in the \ref
+        * CoreMesh.
         */
         std::vector<const Pin*>::const_iterator end() const {
             return core_pins_.cend();
         }
 
         /**
-        * Return a const reference to the material library.
+        * \brief Return a const reference to the material library.
         */
         const MaterialLib& mat_lib() const {
             return mat_lib_;
         }
 
         /**
-        * Return the index of the first FSR within the given plane.
+        * \brief Return the index of the first FSR within the given plane.
         */
         size_t first_reg_plane( size_t iz ) const {
             assert( (0 <= iz ) & ( iz < nz_ ) );
@@ -142,7 +170,7 @@ namespace mocc {
         }
 
         /**
-        * Return the 1-D lexicographic index of a \ref Position.
+        * \brief Return the 1-D lexicographic index of a \ref Position.
         *
         * It is often useful to flatten the index space of the entire geometry
         * for, usually to facilitate output to the HDF5 file. This accepts a
@@ -155,8 +183,8 @@ namespace mocc {
             return pos.x + pos.y*nx_ + pos.z*nx_*ny_;
         }
 
-        /*
-        * Return a \ref Position, indicating the global position of a pin in the
+        /**
+        * \brief Return a \ref Position, indicating the global position of a pin in the
         * core geometry.
         *
         * At some point it would be nifty to create a custom iterator class that
@@ -164,6 +192,11 @@ namespace mocc {
         * iterating over the core.
         */
         Position pin_position( size_t ipin ) const;
+
+        /**
+         * \brief Return the Core-local coordinates to the pin origin
+         */
+        Point2 pin_origin( size_t ipin ) const;
 
         /**
          * \brief Return a const reference to the vector of plane IDs
@@ -223,8 +256,6 @@ namespace mocc {
 
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
-
-
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

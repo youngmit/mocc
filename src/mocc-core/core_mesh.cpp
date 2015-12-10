@@ -114,7 +114,7 @@ namespace mocc {
         for( int ilatx=0; ilatx < core_.nx(); ilatx++ ) {
             const Assembly* asy = &core_.at(ilatx, 0);
             const Lattice* lat = &((*asy)[0]);
-            for( auto &h: lat->hx_vec() ) {
+            for( auto h: lat->hx_vec() ) {
 
                 dx_vec_.push_back(h);
                 x_vec_.push_back(h + h_prev);
@@ -128,7 +128,7 @@ namespace mocc {
         for( int ilaty=0; ilaty < core_.ny(); ilaty++ ) {
             const Assembly* asy = &core_.at(0, ilaty);
             const Lattice* lat = &((*asy)[0]);
-            for( auto &h: lat->hy_vec() ) {
+            for( auto h: lat->hy_vec() ) {
                 dy_vec_.push_back(h);
                 y_vec_.push_back(h + h_prev);
                 lines_.push_back( Line( Point2(0.0, h+h_prev),
@@ -194,6 +194,15 @@ namespace mocc {
         Position pos = planes_[0].pin_position( ipin % (nx_*ny_) );
         pos.z = ipin/(nx_ * ny_);
         return pos;
+    }
+
+    Point2 CoreMesh::pin_origin( size_t ipin ) const {
+        auto pos = this->pin_position( ipin );
+        Point2 p;
+        p.x = (x_vec_[pos.x] + x_vec_[pos.x+1])*0.5;
+        p.y = (y_vec_[pos.y] + y_vec_[pos.y+1])*0.5;
+
+        return p;
     }
 
     std::ostream& operator<<( std::ostream &os, const CoreMesh &mesh ) {
