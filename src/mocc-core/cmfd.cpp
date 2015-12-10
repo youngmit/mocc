@@ -343,7 +343,7 @@ namespace mocc {
                 real_t d_hat = d_hat_(is, ig);
                 real_t d_tilde = d_tilde_(is, ig);
 
-                real_t current = -d_tilde*(flux_r - flux_l) - 
+                real_t current = -d_tilde*(flux_r - flux_l) + 
                                    d_hat*(flux_r + flux_l);
                 coarse_data_.current(is, ig) = current;
             }
