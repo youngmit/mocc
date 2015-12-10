@@ -162,7 +162,7 @@ namespace mocc {
         // Boundary condition index for the forward and backward directions
         const size_t bc_[2];
 
-        // Store the points that were used to initialize the points. You know...
+        // Store the points that were used to initialize the ray. You know...
         // for posterity
         const Point2 p1_;
         const Point2 p2_;

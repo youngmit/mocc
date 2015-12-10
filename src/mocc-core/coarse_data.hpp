@@ -5,7 +5,6 @@
 
 #include <blitz/array.h>
 
-#include "arrays.hpp"
 #include "blitz_typedefs.hpp"
 #include "eigen_interface.hpp"
 #include "global_config.hpp"

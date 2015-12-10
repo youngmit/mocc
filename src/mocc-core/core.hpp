@@ -6,7 +6,6 @@
 
 #include "pugixml.hpp"
 
-#include "arrays.hpp"
 #include "assembly.hpp"
 #include "geom.hpp"
 #include "constants.hpp"

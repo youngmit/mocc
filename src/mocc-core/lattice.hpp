@@ -11,7 +11,6 @@
 #include "geom.hpp"
 #include "pin_mesh_base.hpp"
 #include "global_config.hpp"
-#include "arrays.hpp"
 
 namespace mocc {
     class Lattice {

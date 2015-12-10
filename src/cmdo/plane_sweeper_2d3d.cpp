@@ -66,8 +66,6 @@ namespace mocc {
             i_outer_++;
         }
 
-        
-
         // Calculate transverse leakage source
         if( do_tl_ ) {
             this->add_tl( group );

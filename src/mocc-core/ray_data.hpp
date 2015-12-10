@@ -45,6 +45,9 @@ namespace mocc {
     * pointing opposite those angles.
     */
     class RayData {
+        /**
+         * A set of planes of \ref Ray
+         */
         typedef std::vector< std::vector <std::vector<Ray> > > RaySet_t;
         typedef std::vector< std::vector<Ray> > PlaneRays_t;
     public:
