@@ -1,3 +1,5 @@
+#include <csignal>
+#include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <iomanip>
@@ -27,11 +29,27 @@ SP_Solver_t solver;
 // Global core mesh
 SP_CoreMesh_t mesh;
 
+// Generate output from the solver
+void generate_output() {
+    HDF::H5File outfile( "out.h5", "w" );
+    solver->output( outfile.get() );
+}
+
+// Signal handler for SIGINT. Calls output() and quits
+void int_handler(int p) {
+    std::cout << "Caught SIGINT. Bailing." << std::endl;
+    generate_output();
+    std::exit(EXIT_FAILURE);
+}
+
+
 int main(int argc, char* argv[]){
     // Make sure we have an input file
     if(argc < 2){
         Error("No input file specified!");
     }
+
+    std::signal( SIGINT, int_handler );
 
     try {
         auto time_begin = omp_get_wtime();
@@ -71,8 +89,7 @@ int main(int argc, char* argv[]){
         solver->solve();
 
         // Output stuff
-        HDF::H5File outfile( "out.h5", "w" );
-        solver->output( outfile.get() );
+        
 
         auto time_end = omp_get_wtime();
         std::cout << "Time: " << time_end - time_begin << " sec" << endl;
