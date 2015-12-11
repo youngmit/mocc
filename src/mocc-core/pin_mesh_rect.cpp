@@ -134,6 +134,13 @@ namespace mocc {
     std::string PinMesh_Rect::draw() const {
         std::stringstream buf;
 
+        for( auto l: lines_ ) {
+            buf << "ctx.move_to(" << l.p1.x << ", " 
+                                  << l.p1.y << ")" << std::endl;
+            buf << "ctx.line_to(" << l.p2.x << ", " 
+                                  << l.p2.y << ")" << std::endl;
+            buf << "ctx.close_path()" << std::endl;
+        }
 
         return buf.str();
     }

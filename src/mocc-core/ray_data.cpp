@@ -259,7 +259,7 @@ namespace mocc {
 
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
-        this->correct_volume( mesh, ANGLE );
+        this->correct_volume( mesh, FLAT );
 
         LogFile << std::endl;
     }
@@ -313,8 +313,7 @@ namespace mocc {
                         real_t wgt = ang->weight*0.5;
 
                         for( auto &ray: rays ) {
-                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
-                            {
+                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ ) {
                                 size_t ireg = ray.seg_index(iseg);
                                 fsr_vol[ireg] += ray.seg_len(iseg) * space *
                                     wgt;

@@ -25,7 +25,7 @@ namespace mocc { namespace aux {
         string file = input.attribute("file").value();
 
         int plane = input.attribute("plane").as_int(0);
-        if( (plane < 0) || (plane >= mesh.nz() ) ) {
+        if( (plane < 0) || (plane >= (int)mesh.nz() ) ) {
             throw EXCEPT("Invalid plane specified.");
         }
 
@@ -49,7 +49,8 @@ namespace mocc { namespace aux {
         out << "" << endl;
         out << "surface = cr.PDFSurface(\"geometry.pdf\", 720, 720)" << endl;
         out << "ctx = cr.Context(surface)" << endl;
-        out << "ctx.scale(720/core_dims[0], 720/core_dims[1])" << endl;
+        out << "ctx.scale(720/core_dims[0], -720/core_dims[1])" << endl;
+        out << "ctx.translate(0, -core_dims[1])" << endl;
         out << "" << endl;
 
 
