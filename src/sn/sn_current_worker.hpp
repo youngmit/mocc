@@ -70,6 +70,7 @@ namespace mocc {
                         size_t i = mesh_->coarse_cell( pos );
                         int surf = mesh_->coarse_surf( i, upwind_x_ );
                         data_->current(surf, group) += ox*x[ny*iz + iy];
+                        data_->surface_flux(surf, group) += x[ny*iz + iy];
                     }
                 }
 
@@ -80,6 +81,7 @@ namespace mocc {
                         size_t i = mesh_->coarse_cell( pos );
                         int surf = mesh_->coarse_surf( i, upwind_y_ );
                         data_->current(surf, group) += oy*y[nx*iz + ix];
+                        data_->surface_flux(surf, group) += y[nx*iz + ix];
                     }
                 }
 
@@ -90,6 +92,7 @@ namespace mocc {
                         size_t i = mesh_->coarse_cell( pos );
                         int surf = mesh_->coarse_surf( i, upwind_z_ );
                         data_->current(surf, group) += oz*z[ny*iy + ix];
+                        data_->surface_flux(surf, group) += z[ny*iy + ix];
                     }
                 }
 
@@ -116,18 +119,21 @@ namespace mocc {
                 {
                     int surf = mesh_->coarse_surf( i, downwind_x_ );
                     data_->current( surf, group ) += psi_x*ox;
+                    data_->surface_flux( surf, group ) += psi_x;
                 }
 
                 // Y-normal
                 {
                     int surf = mesh_->coarse_surf( i, downwind_y_ );
                     data_->current( surf, group ) += psi_y*oy;
+                    data_->surface_flux( surf, group ) += psi_y;
                 }
 
                 // Z-normal
                 {
                     int surf = mesh_->coarse_surf( i, downwind_z_ );
                     data_->current( surf, group ) += psi_z*oz;
+                    data_->surface_flux( surf, group ) += psi_z;
                 }
 
                 return;

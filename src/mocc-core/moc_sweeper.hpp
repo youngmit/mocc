@@ -64,13 +64,6 @@ namespace mocc {
         void check_balance( int group ) const;
 
     protected:
-        // Member functions
-        /**
-         * \brief Set the currents on the X- and Y-normal surfaces to zero for
-         * the passed group.
-         */
-        void zero_current( int group );
-
         // Data
         const CoreMesh& mesh_;
 

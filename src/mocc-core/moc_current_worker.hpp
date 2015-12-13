@@ -138,6 +138,10 @@ namespace mocc {
                         spacing/std::abs( std::cos(ang.alpha) ) *  dz;
                     current_weights_[1] = w * ang.oy *
                         spacing/std::abs( std::sin(ang.alpha) ) *  dz;
+                    flux_weights_[0] = w *
+                        spacing/std::abs( std::cos(ang.alpha) ) *  dz;
+                    flux_weights_[1] = w *
+                        spacing/std::abs( std::sin(ang.alpha) ) *  dz;
                 }
 #pragma omp barrier
             }
@@ -149,6 +153,8 @@ namespace mocc {
                 {
                     ArrayB1 current =
                         coarse_data_->current(blitz::Range::all(), group);
+                    ArrayB1 surface_flux =
+                        coarse_data_->surface_flux(blitz::Range::all(), group);
                     size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
                     size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
                     int surf_fw = ray.cm_surf_fw()+surf_offset_;
@@ -162,6 +168,10 @@ namespace mocc {
                         current_weights_[(int)norm_fw];
                     current( surf_bw ) -= psi2[iseg_bw] *
                         current_weights_[(int)norm_bw];
+                    surface_flux( surf_fw ) += psi1[iseg_fw] *
+                        flux_weights_[(int)norm_fw];
+                    surface_flux( surf_bw ) += psi2[iseg_bw] *
+                        flux_weights_[(int)norm_bw];
 
                     auto begin = ray.cm_data().cbegin();
                     auto end = ray.cm_data().cend();
@@ -172,7 +182,9 @@ namespace mocc {
                             norm_fw = surface_to_normal( crd->fw );
                             surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
                             current( surf_fw ) += psi1[iseg_fw] *
-                                 current_weights_[(int)norm_fw];
+                                current_weights_[(int)norm_fw];
+                            surface_flux( surf_fw ) += psi1[iseg_fw] *
+                                flux_weights_[(int)norm_fw];
                         }
 
                         if( crd->bw != Surface::INVALID ) {
@@ -181,6 +193,8 @@ namespace mocc {
                             surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
                             current( surf_bw ) -= psi2[iseg_bw] *
                                 current_weights_[(int)norm_bw];
+                            surface_flux( surf_bw ) += psi2[iseg_bw] *
+                                flux_weights_[(int)norm_bw];
                         }
 
                         cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
@@ -193,20 +207,23 @@ namespace mocc {
             
             inline void post_sweep( int igroup ) {
 #pragma omp single
-                {
-                    ArrayB1 current =
-                        coarse_data_->current( blitz::Range::all(), igroup );
-                    // Normalize the surface currents
-                    for( size_t plane=0; plane<mesh_->nz(); plane++ ) {
-                        for( auto surf=mesh_->plane_surf_xy_begin(plane);
-                                surf!=mesh_->plane_surf_end(plane);
-                                ++surf )
-                        {
-                            real_t area = mesh_->coarse_area(surf);
-                            current(surf) /= area;
-                        }
+            {
+                ArrayB1 current =
+                    coarse_data_->current( blitz::Range::all(), igroup );
+                ArrayB1 surface_flux =
+                    coarse_data_->surface_flux( blitz::Range::all(), igroup );
+                // Normalize the surface currents
+                for( size_t plane=0; plane<mesh_->nz(); plane++ ) {
+                    for( auto surf=mesh_->plane_surf_xy_begin(plane);
+                            surf!=mesh_->plane_surf_end(plane);
+                            ++surf )
+                    {
+                        real_t area = mesh_->coarse_area(surf);
+                        current(surf) /= area;
+                        surface_flux(surf) /= area;
                     }
                 }
+            }
                 return;
             }
 
@@ -214,6 +231,7 @@ namespace mocc {
             CoarseData *coarse_data_;
             const Mesh *mesh_;
             real_t current_weights_[2];
+            real_t flux_weights_[2];
 
             int plane_;
             int cell_offset_;

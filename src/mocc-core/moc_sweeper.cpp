@@ -118,11 +118,15 @@ namespace mocc {
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents (only on X- and Y-normal
                 // faces)
-                this->zero_current( group ); 
+                coarse_data_->zero_data_radial( group ); 
 
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
                 coarse_data_->set_has_radial_data(true);
+cout << "current (MoC)" << endl;
+cout << coarse_data_->current(blitz::Range::all(), group) << endl;
+cout << "surface flux (moc)" << endl;
+cout << coarse_data_->surface_flux(blitz::Range::all(), group) << endl;
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
@@ -136,7 +140,7 @@ namespace mocc {
 
 
     void MoCSweeper::update_boundary( int group ) {
-        int iplane=0;
+        int iplane = 0;
         for( auto &plane_bcs: boundary_[group] ) {
             for( unsigned int iang=0; iang<plane_bcs.size(); iang++ ) {
                 int nx = rays_.nx(iang);
@@ -334,21 +338,6 @@ namespace mocc {
                     flux_1g.end(), dims );
         }
 
-        return;
-    }
-
-    void MoCSweeper::zero_current( int group ) {
-        assert( coarse_data_ );
-        ArrayB1 current =
-            coarse_data_->current(blitz::Range::all(), group);
-        for( size_t plane=0; plane<mesh_.nz(); plane++ ) {
-            for( auto surf=mesh_.plane_surf_xy_begin(plane);
-                    surf!=mesh_.plane_surf_end(plane);
-                    ++surf )
-            {
-                current(surf) = 0.0;
-            }
-        }
         return;
     }
 }

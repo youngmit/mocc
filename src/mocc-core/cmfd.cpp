@@ -22,13 +22,15 @@ namespace mocc {
         mesh_(mesh),
         xsmesh_( xsmesh ),
         n_cell_( mesh->n_pin() ),
-        coarse_data_( n_cell_, mesh->n_surf(), xsmesh->n_group() ),
+        coarse_data_( *mesh, xsmesh->n_group() ),
         fs_( n_cell_ ),
         fs_old_( n_cell_ ),
         source_( n_cell_, xsmesh_.get(), coarse_data_.flux ),
         m_( xsmesh->n_group(), Eigen::SparseMatrix<real_t>(n_cell_, n_cell_) ),
         d_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
         d_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
+        s_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
+        s_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         k_tol_( 1.0e-4 ),
         psi_tol_( 1.0e-4 ),
         max_iter_( 100 )
@@ -213,6 +215,8 @@ namespace mocc {
             // taking too much time, optimize.
             ArrayB1 d_tilde = d_tilde_( blitz::Range::all(), group );
             ArrayB1 d_hat = d_hat_( blitz::Range::all(), group );
+            ArrayB1 s_tilde = s_tilde_( blitz::Range::all(), group );
+            ArrayB1 s_hat = s_hat_( blitz::Range::all(), group );
             for( int is=0; is<(int)n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
                 Normal norm = mesh_->surface_normal(is);
@@ -257,10 +261,9 @@ namespace mocc {
                     }
                 }
 
-                d_tilde(is) = diffusivity_1*diffusivity_2 /
+                d_tilde(is) = 2.0*diffusivity_1*diffusivity_2 /
                     (diffusivity_1 + diffusivity_2);
 
-                
                 bool have_data = norm == Normal::Z_NORM ?
                     coarse_data_.has_axial_data() : 
                     coarse_data_.has_radial_data();

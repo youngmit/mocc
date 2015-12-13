@@ -110,10 +110,15 @@ namespace mocc { namespace sn {
                 source_->self_scatter( group, flux_1g_, q_ );
                 if( inner == n_inner_-1 && coarse_data_ ) {
                     // Wipe out the existing currents
-                    coarse_data_->current( blitz::Range::all(), group ) = 0.0;
+                    coarse_data_->zero_data( group );
                     this->sweep_1g<sn::Current>( group );
                     coarse_data_->set_has_axial_data(true);
                     coarse_data_->set_has_radial_data(true);
+std::cout << "current: " << std::endl;
+std::cout << coarse_data_->current(blitz::Range::all(), group) << std::endl;
+std::cout << "surface flux: " << std::endl;
+std::cout << coarse_data_->surface_flux(blitz::Range::all(), group) << std::endl;
+std::cin.ignore();
                 } else {
                     this->sweep_1g<sn::NoCurrent>( group );
                 }

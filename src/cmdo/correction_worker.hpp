@@ -46,6 +46,8 @@ namespace mocc {
             {
                 ArrayB1 current =
                         coarse_data_->current(blitz::Range::all(), group);
+                ArrayB1 surface_flux =
+                        coarse_data_->surface_flux(blitz::Range::all(), group);
                 size_t cell_fw = ray.cm_cell_fw();
                 size_t cell_bw = ray.cm_cell_bw();
                 int surf_fw = ray.cm_surf_fw();
@@ -61,6 +63,10 @@ namespace mocc {
                     psi1[iseg_fw] * current_weights_[(int)norm_fw];
                 current( surf_bw+surf_offset_, group ) -=
                     psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                surface_flux( surf_fw+surf_offset_, group ) +=
+                    psi1[iseg_fw] * flux_weights_[(int)norm_fw];
+                surface_flux( surf_bw+surf_offset_, group ) -=
+                    psi2[iseg_bw] * flux_weights_[(int)norm_bw];
 
                 surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
                 surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
@@ -89,6 +95,8 @@ namespace mocc {
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
                         current( surf_fw+surf_offset_, group ) +=
                             psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                        surface_flux( surf_fw+surf_offset_, group ) +=
+                            psi1[iseg_fw] * flux_weights_[(int)norm_fw];
                         surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
                         surf_norm_[surf_fw*2+0] += 1.0;
                     }
@@ -110,6 +118,8 @@ namespace mocc {
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
                         current( surf_bw+surf_offset_, group ) -=
                             psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                        surface_flux( surf_bw+surf_offset_, group ) -=
+                            psi2[iseg_bw] * flux_weights_[(int)norm_bw];
                         surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
                         surf_norm_[surf_bw*2+1] += 1.0;
                     }

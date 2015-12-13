@@ -43,7 +43,7 @@ namespace mocc {
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
-                this->zero_current( group );
+                coarse_data_->zero_data_radial( group );
                 //coarse_data_->current(blitz::Range::all(), group) = 0.0;
                 cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
                         corrections_.get(), qbar_, xstr_, ang_quad_, 
