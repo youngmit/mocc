@@ -84,15 +84,14 @@ namespace mocc{
         real_t error_k = 1.0; // K residual
         real_t error_psi = 1.0; // L-2 norm of the fission source residual
 
-        unsigned int n_iterations = 0;
-
         cout << std::setw(out_w) << "Iter."
              << std::setw(out_w) << "k"
              << std::setw(out_w) << "k error"
              << std::setw(out_w) << "psi error" << endl;
 
-        while( true ) {
-
+        for( size_t n_iterations=0; n_iterations < max_iterations_; 
+                n_iterations++ )
+        {
             this->step();
 
             n_iterations++;
