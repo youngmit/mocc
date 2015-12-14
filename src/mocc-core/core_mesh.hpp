@@ -153,6 +153,22 @@ namespace mocc {
         std::vector<const Pin*>::const_iterator end() const {
             return core_pins_.cend();
         }
+        
+        /**
+        * \brief Return a const iterator to the first \ref Pin in the \ref
+        * CoreMesh.
+        */
+        std::vector<const Pin*>::const_iterator begin( int iz ) const {
+            return core_pins_.cbegin()+nx_*ny_*iz;
+        }
+
+        /**
+        * \brief Return a const iterator past the last \ref Pin in the \ref
+        * CoreMesh.
+        */
+        std::vector<const Pin*>::const_iterator end( int iz ) const {
+            return core_pins_.cbegin()+nx_*ny_*(iz+1);
+        }
 
         /**
         * \brief Return a const reference to the material library.
