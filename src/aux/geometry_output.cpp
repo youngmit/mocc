@@ -77,8 +77,11 @@ namespace mocc { namespace aux {
 
         // Draw the pin meshes
         int ipin = 0;
-        for( const auto &pin: mesh ) {
-            const PinMesh &pm = pin->mesh();
+        for( auto pin=mesh.begin( plane );
+                pin!=mesh.end( plane ); ++pin )
+        {
+            out << "print \"drawing pin \" + str(" << ipin << ")" << endl;
+            const PinMesh &pm = (*pin)->mesh();
             Point2 origin = mesh.pin_origin(ipin);
 
             out << "ctx.translate(" << origin.x << ", " 
@@ -92,8 +95,6 @@ namespace mocc { namespace aux {
 
         out << endl;
 
-        out << "ctx.stroke()" << endl;
-
         // Do ray output
         out << "if angle >= 0:" << endl;
         out << "    ctx.set_source_rgb(0, 0, 1)" << endl;
@@ -102,8 +103,6 @@ namespace mocc { namespace aux {
 
         out << "surface.finish()" << endl;
         out << "" << endl;
-
-        
 
         return;
     }

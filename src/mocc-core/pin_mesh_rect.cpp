@@ -141,6 +141,7 @@ namespace mocc {
                                   << l.p2.y << ")" << std::endl;
             buf << "ctx.close_path()" << std::endl;
         }
+        buf << "ctx.stroke()";
 
         return buf.str();
     }
