@@ -90,6 +90,8 @@ namespace mocc {
         // fine for now.
         ArrayB2 d_hat_;
         ArrayB2 d_tilde_;
+        ArrayB2 s_hat_;
+        ArrayB2 s_tilde_;
 
         // Convergence options
         real_t k_tol_;
