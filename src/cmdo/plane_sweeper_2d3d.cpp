@@ -97,8 +97,12 @@ namespace mocc {
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
+        cout << "MoC/Sn residual: " << residual;
+        if( sn_resid_[group].size() > 0 ) {
+             cout << "   \t" << residual-sn_resid_[group].back();
+        }
+        cout << endl;
         sn_resid_[group].push_back(residual);
-        cout << "MoC/Sn residual: " << residual << endl;
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,10 +155,6 @@ namespace mocc {
             real_t j_up = coarse_data_->current(surf_up, group);
             real_t j_down = coarse_data_->current(surf_down, group);
             tl_g(ipin) = ( j_down - j_up ) / dz;
-
-//cout << surf_down << " " << j_down << " " 
-//     << surf_up << " " << j_up << " "
-//     << tl_g(ipin) << endl;
 
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 tl_fsr( ir+ireg_pin ) = tl_g(ipin);
