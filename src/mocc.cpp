@@ -31,7 +31,9 @@ SP_CoreMesh_t mesh;
 
 // Generate output from the solver
 void generate_output() {
-    HDF::H5File outfile( "out.h5", "w" );
+    std::string out_name = CaseName;
+    out_name.append(".h5");
+    HDF::H5File outfile( out_name, "w" );
     solver->output( outfile.get() );
 }
 
@@ -89,6 +91,7 @@ int main(int argc, char* argv[]){
         solver->solve();
 
         // Output stuff
+        generate_output();
         
 
         auto time_end = omp_get_wtime();

@@ -7,11 +7,14 @@
 std::fstream LogFile;
 std::fstream OutFile;
 
+std::string CaseName;
+
 // A utility function for stripping the extension from the end of the command
 // line argument and replacing with '.log'
 void StartLogFile(const char* arg){
     std::string fname = arg;
     size_t pos = fname.rfind(".");
+    CaseName = fname.substr(0, pos);
     std::string logname = fname.substr(0, pos);
     logname.append(".log");
 

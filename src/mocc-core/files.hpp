@@ -6,6 +6,7 @@
 
 extern std::fstream LogFile;
 extern std::fstream OutFile;
+extern std::string CaseName;
 
 void StartLogFile(const char* arg);
 
