@@ -35,7 +35,9 @@ namespace mocc {
          */
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
             sn_sweeper_.set_pin_flux_1g( group, pin_flux );
-            return moc_sweeper_.set_pin_flux_1g( group, pin_flux );
+            real_t diff = moc_sweeper_.set_pin_flux_1g( group, pin_flux );
+
+            return diff;
         }
 
         void output( H5::CommonFG *file ) const;
@@ -71,16 +73,30 @@ namespace mocc {
         }
 
         /**
-         * \brief Calculate the group-independent spatial fission source, scaled
-         * by k_eff.
+         * Override the default \ref TransportSweeper implementation to call the
+         * method on one of the sub-sweepers.
          */
-        void calc_fission_source( real_t k, ArrayF &fission_source ) const;
+        void calc_fission_source( real_t k, ArrayF &fission_source ) const {
+            if( expose_sn_ ) {
+                sn_sweeper_.calc_fission_source( k, fission_source );
+            } else {
+                moc_sweeper_.calc_fission_source( k, fission_source );
+            }
+            return;
+        }
 
         /**
-         * \brief Return the total, volume- and energy-integrated fission
-         * source.
+         * \copybrief TransportSweeper::total_fission()
+         * Override the default \ref TransportSweeper implementation to call the
+         * method on one of the sub-sweepers.
          */
-        real_t total_fission( bool old ) const;
+        real_t total_fission( bool old ) const {
+            if( expose_sn_ ) {
+                return sn_sweeper_.total_fission( old );
+            } else {
+                return moc_sweeper_.total_fission( old );
+            }
+        }
 
         /**
          * Defer to the MoC and Sn sweepers.

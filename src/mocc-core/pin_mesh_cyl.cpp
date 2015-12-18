@@ -274,19 +274,19 @@ namespace mocc {
 
         buf << "ctx.move_to(0, 0)" << std::endl;
         for( auto c: circles_ ) {
-            buf << "ctx.arc(" << c.c.x << ", " 
-                              << c.c.y << ", " 
+            buf << "ctx.arc(" << c.c.x << ", "
+                              << c.c.y << ", "
                               << c.r << ", 0, twopi)" << std::endl;;
         }
 
         for( auto l: lines_ ) {
-            buf << "ctx.move_to(" << l.p1.x << ", " 
+            buf << "ctx.move_to(" << l.p1.x << ", "
                                   << l.p1.y << ")" << std::endl;
-            buf << "ctx.line_to(" << l.p2.x << ", " 
+            buf << "ctx.line_to(" << l.p2.x << ", "
                                   << l.p2.y << ")" << std::endl;
             buf << "ctx.close_path()" << std::endl;
         }
         buf << "ctx.stroke()";
-        return buf.str(); 
+        return buf.str();
     }
 }

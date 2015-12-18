@@ -90,7 +90,7 @@ namespace mocc {
                 int &first_reg) const;
 
         /**
-        * R\brief eturn a const reference to the indexed plane. 
+        * R\brief eturn a const reference to the indexed plane.
         *
         * These planes are not considered "unique;" it returns actual Plane that
         * fills the indezed axial region.
@@ -107,7 +107,7 @@ namespace mocc {
          * meshes in the mesh have the same pitch.
          */
         bool is_pin_modular() const {
-            bool x_good = std::all_of( dx_vec_.begin(), dx_vec_.end(), 
+            bool x_good = std::all_of( dx_vec_.begin(), dx_vec_.end(),
                     [&] (auto &v)
                     {
                         return fp_equiv_ulp(v, dx_vec_[0]);
@@ -153,7 +153,7 @@ namespace mocc {
         std::vector<const Pin*>::const_iterator end() const {
             return core_pins_.cend();
         }
-        
+
         /**
         * \brief Return a const iterator to the first \ref Pin in the \ref
         * CoreMesh.

@@ -118,15 +118,11 @@ namespace mocc {
             if( inner == n_inner_-1 && coarse_data_ ) {
                 // Wipe out the existing currents (only on X- and Y-normal
                 // faces)
-                coarse_data_->zero_data_radial( group ); 
+                coarse_data_->zero_data_radial( group );
 
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
                 coarse_data_->set_has_radial_data(true);
-cout << "current (MoC)" << endl;
-cout << coarse_data_->current(blitz::Range::all(), group) << endl;
-cout << "surface flux (moc)" << endl;
-cout << coarse_data_->surface_flux(blitz::Range::all(), group) << endl;
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );

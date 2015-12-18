@@ -61,7 +61,7 @@ namespace mocc { namespace sn {
         }
 
         void output( H5::CommonFG *node ) const;
-        
+
     protected:
         const CoreMesh &mesh_;
 
@@ -97,7 +97,7 @@ namespace mocc { namespace sn {
             }
             for( size_t icell=0; icell<mesh_.n_pin(); icell++ ) {
                 real_t b = 0.0;
-    
+
                 // Current
                 b -= coarse_data_->current(
                         mesh_.coarse_surf(icell, Surface::EAST), group ) *
@@ -117,14 +117,14 @@ namespace mocc { namespace sn {
                 b += coarse_data_->current(
                         mesh_.coarse_surf(icell, Surface::BOTTOM), group ) *
                         mesh_.coarse_area( icell, Surface::BOTTOM );
-    
+
                 // Source
                 b += (*source_)[icell]*vol_[icell];
-    
+
                 // Internal removal
                 b -= flux_1g_(icell) *
                     (*xs_mesh_)[icell].xsmacrm()[group] * vol_[icell];
-    
+
                 std::cout << "Cell balance: " << b << std::endl;
             }
             std::cout << std::endl;

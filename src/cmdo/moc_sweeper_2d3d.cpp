@@ -46,7 +46,7 @@ namespace mocc {
                 coarse_data_->zero_data_radial( group );
                 //coarse_data_->current(blitz::Range::all(), group) = 0.0;
                 cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
-                        corrections_.get(), qbar_, xstr_, ang_quad_, 
+                        corrections_.get(), qbar_, xstr_, ang_quad_,
                         *sn_xs_mesh_, rays_ );
                 this->sweep1g( group, cw );
                 coarse_data_->set_has_radial_data(true);

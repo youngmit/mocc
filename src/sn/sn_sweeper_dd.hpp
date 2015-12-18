@@ -46,7 +46,7 @@ namespace mocc { namespace sn {
             return psi;
         }
 
-        inline real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, 
+        inline real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
                 real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();

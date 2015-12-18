@@ -19,7 +19,7 @@ namespace mocc{
         min_iterations_( 0 )
     {
         if( input.empty() ) {
-            Error("No input specified for the eigenvalue solver.");
+            throw EXCEPT("No input specified for the eigenvalue solver.");
         }
 
         // grab the convergence constraints from the XML
@@ -89,12 +89,10 @@ namespace mocc{
              << std::setw(out_w) << "k error"
              << std::setw(out_w) << "psi error" << endl;
 
-        for( size_t n_iterations=0; n_iterations < max_iterations_; 
+        for( size_t n_iterations=0; n_iterations < max_iterations_;
                 n_iterations++ )
         {
             this->step();
-
-            n_iterations++;
 
             // Check for convergence
             error_k = fabs(keff_-keff_prev_);
@@ -108,10 +106,10 @@ namespace mocc{
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k, error_psi) );
 
-            this->print( n_iterations, convergence_.back() );
+            this->print( n_iterations+1, convergence_.back() );
 
             if( n_iterations >= max_iterations_ ) {
-                std::cout << "Maximum number of iterations reached!" 
+                std::cout << "Maximum number of iterations reached!"
                           << std::endl;
                 break;
             }
@@ -129,7 +127,8 @@ namespace mocc{
         fission_source_prev_ = fission_source_;
 
         if( cmfd_ ) {
-            // push homogenized flux onto the coarse mesh
+            // push homogenized flux onto the coarse mesh, solve, and pull it
+            // back.
             cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();
             cmfd_->solve(keff_, fss_.sweeper()->flux());
             fss_.sweeper()->set_pin_flux( cmfd_->flux() );
@@ -139,7 +138,6 @@ namespace mocc{
         // Perform a group sweep with the FSS
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
         fss_.step();
-
 
         // Get the total fission sources
         real_t tfis1 = fss_.sweeper()->total_fission(false);

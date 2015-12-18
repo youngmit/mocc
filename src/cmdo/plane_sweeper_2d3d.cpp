@@ -24,20 +24,30 @@ namespace mocc {
         sn_sweeper_(input.child("sn_sweeper"), mesh),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad()),
-        corrections_( new CorrectionData( sn_sweeper_.n_reg(), 
+        corrections_( new CorrectionData( sn_sweeper_.n_reg(),
             ang_quad_.ndir()/2,
             sn_sweeper_.n_group() ) ),
         tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
         sn_resid_( sn_sweeper_.n_group() ),
         i_outer_( 0 )
     {
+        this->parse_options( input );
         /// \todo initialize the rest of the data members on the TS base type
         core_mesh_ = &mesh;
-        xs_mesh_ = moc_sweeper_.get_xs_mesh();
-        n_reg_ = moc_sweeper_.n_reg();
+
+        if( expose_sn_ ) {
+            xs_mesh_ = sn_sweeper_.get_xs_mesh();
+            n_reg_ = sn_sweeper_.n_reg();
+            flux_.reference(sn_sweeper_.flux());
+            vol_ = sn_sweeper_.volumes();
+        } else {
+            xs_mesh_ = moc_sweeper_.get_xs_mesh();
+            n_reg_ = moc_sweeper_.n_reg();
+            flux_.reference(moc_sweeper_.flux());
+            vol_ = moc_sweeper_.volumes();
+        }
+
         n_group_ = xs_mesh_->n_group();
-        flux_.reference(moc_sweeper_.flux());
-        vol_ = moc_sweeper_.volumes();
 
         sn_sweeper_.worker()->set_corrections( corrections_ );
         const XSMeshHomogenized* sn_xs_mesh =
@@ -50,7 +60,6 @@ namespace mocc {
 
         coarse_data_ = nullptr;
 
-        this->parse_options( input );
 
         return;
     }
@@ -77,13 +86,13 @@ namespace mocc {
         }
         ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
-        
+
         // Sn sweeper
         sn_sweeper_.get_homogenized_xsmesh()->update( );
         sn_sweeper_.sweep( group );
 
         if( do_snproject_ ) {
-            ArrayB1 sn_flux(sn_sweeper_.n_reg());
+            ArrayB1 sn_flux(mesh_.n_pin());
             sn_sweeper_.get_pin_flux_1g( group, sn_flux );
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
@@ -118,22 +127,6 @@ namespace mocc {
         } else {
             moc_sweeper_.get_pin_flux_1g( ig, flux );
         }
-    }
-
-////////////////////////////////////////////////////////////////////////////////
-    real_t PlaneSweeper_2D3D::total_fission( bool old ) const {
-        // using the MoC for now, but once things start to converge, might want
-        // to use Sn, since it should yield the same result at convergence and
-        // is cheaper to evaluate.
-        real_t tfis = moc_sweeper_.total_fission( old );
-        return tfis;
-    }
-
-////////////////////////////////////////////////////////////////////////////////
-    void PlaneSweeper_2D3D::calc_fission_source( real_t k,
-            ArrayF &fission_source ) const {
-        moc_sweeper_.calc_fission_source( k, fission_source );
-        return;
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -259,8 +252,8 @@ namespace mocc {
         n_inactive_moc_ = 0;
 
         // Override with entries in the input node
-        if( !input.attribute("sn_expose").empty() ) {
-            expose_sn_ = input.attribute("sn_expose").as_bool();
+        if( !input.attribute("expose_sn").empty() ) {
+            expose_sn_ = input.attribute("expose_sn").as_bool();
         }
         if( !input.attribute("sn_project").empty() ) {
             do_snproject_ = input.attribute("sn_project").as_bool();
@@ -274,6 +267,7 @@ namespace mocc {
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
+        LogFile << "    Expose Sn variables: " << expose_sn_ << std::endl;
         LogFile << "    Transversd Leakage: " << do_snproject_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;

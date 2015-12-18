@@ -86,7 +86,7 @@ namespace mocc { namespace sn {
          * \param[in] xstr the node-average transport cross section.
          * \param[in] i the index of the cell to treat.
          */
-        virtual real_t evaluate_2d( real_t &flux_x, real_t &flux_y, 
+        virtual real_t evaluate_2d( real_t &flux_x, real_t &flux_y,
                                real_t q, real_t xstr, size_t i ) = 0;
 
 

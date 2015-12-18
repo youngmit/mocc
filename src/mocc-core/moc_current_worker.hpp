@@ -110,7 +110,7 @@ namespace mocc {
             {
                 return;
             }
-            
+
             inline void post_angle( int iang, int igroup ) {
                 return;
             };
@@ -204,7 +204,7 @@ namespace mocc {
                 return;
             }
 
-            
+
             inline void post_sweep( int igroup ) {
 #pragma omp single
             {

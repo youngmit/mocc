@@ -52,7 +52,7 @@ namespace mocc {
                 real_t hzi;
                 hzstream >> hzi;
                 dz_.push_back(hzi);
-                
+
             }
             // Lattice dimensions are read as top-to-bottom, but stored as
             // bottom-to-top.

@@ -79,7 +79,7 @@ namespace mocc {
          *
          * \param[in] group the group to update
          *
-         * \param[in] ang the angle to update from. For non-vacuum conditions, 
+         * \param[in] ang the angle to update from. For non-vacuum conditions,
          * BCs are transfered TO the reflection of \p ang FROM \p ang.
          *
          * \param[in] out the outgoing angular flux boundary condition to use

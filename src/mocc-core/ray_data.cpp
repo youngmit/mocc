@@ -63,7 +63,7 @@ namespace mocc {
         bool core_modular = true;
         if( !input.attribute("modularity").empty() ) {
             std::string in_str = input.attribute("modularity").value();
-            std::transform( in_str.begin(), in_str.end(), in_str.begin(), 
+            std::transform( in_str.begin(), in_str.end(), in_str.begin(),
                     ::tolower );
             if( in_str == "pin" ) {
                 core_modular = false;
@@ -113,7 +113,7 @@ namespace mocc {
             int Ny = ceil( hy_mod/opt_spacing*std::abs( cos( ang.alpha ) ) );
             //Nx += Nx%2+1;
             //Ny += Ny%2+1;
-            
+
             if( !core_modular ) {
                 Nx *= mesh.nx();
                 Ny *= mesh.ny();
@@ -352,7 +352,7 @@ namespace mocc {
         // For now, we are more interested in the rays in the macro sense. Where
         // they start and stop, more than what they do internally, so only do
         // output for one plane.
-        
+
         // spit out some boilerplate python to make these easy to draw
         os << "import cairo" << endl;
         os << "def draw_rays( ctx, angle):" << endl;

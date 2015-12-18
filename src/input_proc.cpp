@@ -43,7 +43,7 @@ namespace mocc{
 
         // Perform geometry output if necessary
         if( !doc.child("geometry_output").empty() ) {
-            aux::output_geometry( doc.child("geometry_output"), 
+            aux::output_geometry( doc.child("geometry_output"),
                     *core_mesh_.get() );
         }
 

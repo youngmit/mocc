@@ -92,7 +92,7 @@ int main(int argc, char* argv[]){
 
         // Output stuff
         generate_output();
-        
+
 
         auto time_end = omp_get_wtime();
         std::cout << "Time: " << time_end - time_begin << " sec" << endl;

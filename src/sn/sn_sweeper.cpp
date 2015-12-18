@@ -22,9 +22,9 @@ namespace sn {
         {
             // Try to read boundary update option
             if( !input.attribute("boundary_update").empty() ) {
-                std::string in_string = 
+                std::string in_string =
                     input.attribute("boundary_update").value();
-                std::transform(in_string.begin(), in_string.end(), 
+                std::transform(in_string.begin(), in_string.end(),
                         in_string.begin(), ::tolower);
 
                 if( (in_string == "gs") || (in_string == "gauss-seidel") ) {

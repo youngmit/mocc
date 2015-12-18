@@ -137,12 +137,12 @@ namespace mocc {
 
         }
         auto flags = cout.flags();
-        std::cout << "CMFD : " << iter << " " 
+        std::cout << "CMFD : " << iter << " "
                   << std::setprecision(12) << k << " "
                   << std::abs(k-k_old) << std::endl;
         cout.flags(flags);
 
-        
+
         // Calculate the resultant currents and store back onto the coarse data
         this->store_currents();
 
@@ -265,15 +265,15 @@ namespace mocc {
                     (diffusivity_1 + diffusivity_2);
 
                 bool have_data = norm == Normal::Z_NORM ?
-                    coarse_data_.has_axial_data() : 
+                    coarse_data_.has_axial_data() :
                     coarse_data_.has_radial_data();
                 if( have_data ) {
                     real_t j = coarse_data_.current( is, group );
-                    real_t flux_l = cells.first >= 0 ? 
-                        coarse_data_.flux(cells.first, group) : 
+                    real_t flux_l = cells.first >= 0 ?
+                        coarse_data_.flux(cells.first, group) :
                         0.0;
                     real_t flux_r = cells.second >= 0 ?
-                        coarse_data_.flux(cells.second, group) : 
+                        coarse_data_.flux(cells.second, group) :
                         0.0;
                     d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
@@ -339,14 +339,14 @@ namespace mocc {
         for( int ig=0; ig<n_group; ig++ ) {
             for( int is=0; is<n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
-                real_t flux_r = cells.second >= 0 ? 
+                real_t flux_r = cells.second >= 0 ?
                     coarse_data_.flux(cells.second, ig) : 0.0;
-                real_t flux_l = cells.first >= 0 ? 
+                real_t flux_l = cells.first >= 0 ?
                     coarse_data_.flux(cells.first, ig) : 0.0;
                 real_t d_hat = d_hat_(is, ig);
                 real_t d_tilde = d_tilde_(is, ig);
 
-                real_t current = -d_tilde*(flux_r - flux_l) + 
+                real_t current = -d_tilde*(flux_r - flux_l) +
                                    d_hat*(flux_r + flux_l);
                 coarse_data_.current(is, ig) = current;
             }

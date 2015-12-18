@@ -38,13 +38,13 @@ namespace mocc { namespace aux {
         out << endl;
         out << "twopi = math.pi*2" << endl;
         out << endl;
-        out << "# set this to whichever angle of ray you want to show." 
+        out << "# set this to whichever angle of ray you want to show."
                 " Negative value to disable." << endl;
         out << "angle = -1" << endl;
         out << endl;
         out << "mesh_lines = []" << endl;
         out << endl;
-        out << "core_dims = [" << mesh.hx_core() << ", " 
+        out << "core_dims = [" << mesh.hx_core() << ", "
                                << mesh.hy_core() << "]" << endl;
         out << "" << endl;
         out << "surface = cr.PDFSurface(\"geometry.pdf\", 720, 720)" << endl;
@@ -54,7 +54,7 @@ namespace mocc { namespace aux {
         out << "" << endl;
 
 
-        
+
         // do all of the mesh stuff
         out << "ctx.set_line_width(0.001)" << endl;
         out << "" << endl;
@@ -84,11 +84,11 @@ namespace mocc { namespace aux {
             const PinMesh &pm = (*pin)->mesh();
             Point2 origin = mesh.pin_origin(ipin);
 
-            out << "ctx.translate(" << origin.x << ", " 
+            out << "ctx.translate(" << origin.x << ", "
                                     << origin.y << ")" << endl;
 
             out << pm.draw() << endl;
-            out << "ctx.translate(" << -origin.x << ", " 
+            out << "ctx.translate(" << -origin.x << ", "
                                     << -origin.y << ")" << endl << endl;
             ipin++;
         }

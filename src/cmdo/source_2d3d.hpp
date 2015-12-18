@@ -49,36 +49,45 @@ namespace mocc {
         }
 
         /**
-         * Replaces the standard fission source calculation with a delecation to
-         * the base Source::fission() routine for MoC, a homogenization of the
-         * FM fission source to the Sn mesh, and a call to Source::fission() on
-         * the Sn source object with the homogenized fissions source.
+         * Replaces the standard fission source calculation with a delegation to
+         * the base \ref Source::fission() routine for MoC, a possible
+         * homogenization of the FM fission source to the Sn mesh, and a call to
+         * \ref Source::fission() on the Sn source object with the homogenized
+         * fissions source.
          *
-         * Of cource we are assuming for the time being that the fission source
-         * coming in is sized appropriately for the MoC sweeper, a requirement
-         * that we might want to relax in the future.
+         * There are two possibilities for how the fission source might be
+         * defined: either on the fine mesh or coarse, Sn mesh. For now it
+         * should be sufficient to use the size of the \p fs array to decide
+         * which we are getting.
          */
         void fission( const ArrayF &fs, int ig ) {
-            assert( fs.size() == n_reg_ );
+            assert( (fs.size() == n_reg_) ||
+                    (fs.size() == sn_source_.n_reg()) );
 
             Source::fission( fs, ig );
 
-            // We need to homogenize the fission source to the Sn mesh
-            ArrayF sn_fs(sn_source_.n_reg());
-            int ireg_fsr = 0;
-            int ipin = 0;
-            for( const auto &pin: mesh_ ) {
-                auto pos = mesh_.pin_position(ipin);
-                int ireg = mesh_.index_lex( pos );
-                for( const auto v: pin->vols() ) {
-                    sn_fs[ireg] += v*fs[ireg_fsr];
-                    ireg_fsr++;
+            if( fs.size() == n_reg_ ) {
+                // We need to homogenize the fission source to the Sn mesh
+                ArrayF sn_fs(sn_source_.n_reg());
+                int ireg_fsr = 0;
+                int ipin = 0;
+                for( const auto &pin: mesh_ ) {
+                    auto pos = mesh_.pin_position(ipin);
+                    int ireg = mesh_.index_lex( pos );
+                    for( const auto v: pin->vols() ) {
+                        sn_fs[ireg] += v*fs[ireg_fsr];
+                        ireg_fsr++;
+                    }
+                    sn_fs[ireg] /= pin->vol();
+                    ipin++;
                 }
-                sn_fs[ireg] /= pin->vol();
-                ipin++;
-            }
 
-            sn_source_.fission( sn_fs, ig );
+                sn_source_.fission( sn_fs, ig );
+            } else {
+                // Let's assume the fissions source is defined on the Sn mesh,
+                // and set it directly
+                sn_source_.fission( fs, ig );
+            }
         }
 
         void in_scatter( size_t ig ) {

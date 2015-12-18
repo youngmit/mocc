@@ -5,9 +5,6 @@
 #include "mocc-core/error.hpp"
 #include "mocc-core/constants.hpp"
 
-using std::endl;
-using std::cout;
-
 namespace mocc {
     Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayB2& flux ):
         xs_mesh_( xs_mesh ),

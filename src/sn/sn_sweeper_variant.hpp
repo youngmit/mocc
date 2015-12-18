@@ -77,11 +77,11 @@ namespace mocc { namespace sn {
         }
 
         ~SnSweeperVariant() { }
-        
+
         Worker* worker() {
             return &cell_worker_;
         }
-        
+
         // Override the create_source() method to make an SnSource instead of
         // the regular
         UP_Source_t create_source() const {
@@ -101,9 +101,9 @@ namespace mocc { namespace sn {
                     xstr_[ireg] = xstr;
                 }
             }
-    
+
             flux_1g_ = flux_(blitz::Range::all(), group);
-    
+
             // Perform inner iterations
             for( size_t inner=0; inner<n_inner_; inner++ ) {
                 // Set the source (add upscatter and divide by 4PI)
@@ -119,7 +119,7 @@ namespace mocc { namespace sn {
                 }
             }
             flux_(blitz::Range::all(), group) = flux_1g_;
-    
+
             return;
         }
 
@@ -151,7 +151,7 @@ namespace mocc { namespace sn {
             for( auto ang: ang_quad_ ) {
                 // Configure the current worker for this angle
                 cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
-                
+
 
                 cell_worker_.set_angle( iang, ang );
 
@@ -250,7 +250,7 @@ namespace mocc { namespace sn {
             return;
         }
 
-        
+
     private:
         Worker cell_worker_;
     };
