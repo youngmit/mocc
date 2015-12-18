@@ -16,12 +16,6 @@
 namespace mocc{
     class TransportSweeper: public HasOutput {
     public:
-        //TransportSweeper():
-        //    coarse_data_(nullptr)
-        //{
-        //    return;
-        //}
-
         TransportSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
             core_mesh_( &mesh ),
             xs_mesh_( new XSMesh(mesh) ),
@@ -37,7 +31,7 @@ namespace mocc{
         }
 
         TransportSweeper( const pugi::xml_node &input ):
-            ang_quad_(input.child("ang_quad")) 
+            ang_quad_(input.child("ang_quad"))
         {
             return;
         }
@@ -184,28 +178,32 @@ namespace mocc{
             coarse_data_ = cd;
         }
 
-        /// Associate the sweeper with a source. This is usually done by
-        /// something like the FixedSourceSolver.
+        /**
+         * Associate the sweeper with a source. This is usually done by
+         * something like the FixedSourceSolver.
+         */
         virtual void assign_source( Source* source) {
             assert( source != nullptr );
             source_ = source;
         }
 
-        /// Store the current flux as the old flux
+        /**
+         * \brief Store the current flux as the old flux
+         */
         virtual void store_old_flux() {
             flux_old_ = flux_;
             return;
         }
 
         /**
-         * Compute a flux residual between the current state of the flux and the
-         * old flux. Defaults to L-2 norm.
+         * \brief Compute a flux residual between the current state of the flux
+         * and the old flux. Defaults to L-2 norm.
          */
         virtual real_t flux_residual() const;
 
         /**
-         * Compute the total fission source based on the current state of the
-         * flux
+         * \brief Compute the total fission source based on the current state of
+         * the flux
          */
         virtual real_t total_fission( bool old=false ) const;
 
