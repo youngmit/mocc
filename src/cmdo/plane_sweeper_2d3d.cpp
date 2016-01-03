@@ -35,18 +35,11 @@ namespace mocc {
         /// \todo initialize the rest of the data members on the TS base type
         core_mesh_ = &mesh;
 
-        if( expose_sn_ ) {
-            xs_mesh_ = sn_sweeper_.get_xs_mesh();
-            n_reg_ = sn_sweeper_.n_reg();
-            flux_.reference(sn_sweeper_.flux());
-            vol_ = sn_sweeper_.volumes();
-        } else {
-            xs_mesh_ = moc_sweeper_.get_xs_mesh();
-            n_reg_ = moc_sweeper_.n_reg();
-            flux_.reference(moc_sweeper_.flux());
-            vol_ = moc_sweeper_.volumes();
-        }
+        xs_mesh_ = moc_sweeper_.get_xs_mesh();
+        flux_.reference(moc_sweeper_.flux());
+        vol_ = moc_sweeper_.volumes();
 
+        n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
 
         sn_sweeper_.worker()->set_corrections( corrections_ );
@@ -56,7 +49,7 @@ namespace mocc {
 
         sn_sweeper_.set_ang_quad(ang_quad_);
 
-        sn_sweeper_.get_homogenized_xsmesh()->set_flux( flux_ );
+        sn_sweeper_.get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
 
         coarse_data_ = nullptr;
 
@@ -267,7 +260,7 @@ namespace mocc {
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
-        LogFile << "    Expose Sn variables: " << expose_sn_ << std::endl;
+        LogFile << "    Expose Sn pin flux: " << expose_sn_ << std::endl;
         LogFile << "    Transversd Leakage: " << do_snproject_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;

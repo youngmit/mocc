@@ -126,7 +126,7 @@ namespace mocc{
         // Store the old fission source
         fission_source_prev_ = fission_source_;
 
-        if( cmfd_ ) {
+        if( cmfd_ && false ) {
             // push homogenized flux onto the coarse mesh, solve, and pull it
             // back.
             cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();

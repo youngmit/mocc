@@ -77,11 +77,7 @@ namespace mocc {
          * method on one of the sub-sweepers.
          */
         void calc_fission_source( real_t k, ArrayF &fission_source ) const {
-            if( expose_sn_ ) {
-                sn_sweeper_.calc_fission_source( k, fission_source );
-            } else {
-                moc_sweeper_.calc_fission_source( k, fission_source );
-            }
+            moc_sweeper_.calc_fission_source( k, fission_source );
             return;
         }
 
@@ -91,11 +87,7 @@ namespace mocc {
          * method on one of the sub-sweepers.
          */
         real_t total_fission( bool old ) const {
-            if( expose_sn_ ) {
-                return sn_sweeper_.total_fission( old );
-            } else {
-                return moc_sweeper_.total_fission( old );
-            }
+            return sn_sweeper_.total_fission( old );
         }
 
         /**
