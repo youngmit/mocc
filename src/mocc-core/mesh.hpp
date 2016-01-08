@@ -709,7 +709,7 @@ namespace mocc {
         VecF vol_;
 
         /// Vector of \ref Line objects, representing pin boundaries. This
-        //greatly / simplifies the ray trace.
+        /// greatly simplifies the ray trace.
         std::vector<Line> lines_;
 
         /// Number of surfaces per plane (doesn't consider the top surface)
