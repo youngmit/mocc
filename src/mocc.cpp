@@ -37,6 +37,9 @@ void generate_output() {
     solver->output( outfile.get() );
 }
 
+// Print the MOCC banner. Pretty!
+void print_banner();
+
 // Signal handler for SIGINT. Calls output() and quits
 void int_handler(int p) {
     std::cout << "Caught SIGINT. Bailing." << std::endl;
@@ -53,19 +56,11 @@ int main(int argc, char* argv[]){
 
     std::signal( SIGINT, int_handler );
 
+    print_banner();
+
     try {
         auto time_begin = omp_get_wtime();
-        std::string space = "                         ";
-        std::cout << space << "01001101010011110100001101000011" << std::endl;
-        std::cout << space << " __  __   _____   _____   _____" <<std::endl;
-        std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
-        std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
-        std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
-        std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
-        std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
-        std::cout << space << std::endl;
-        std::cout << space << "01101101011011110110001101100011 " << std::endl;
-
+        
         // Spin up the log file. For now, just use the name of the input file.
         StartLogFile(argv[1]);
 
@@ -106,4 +101,17 @@ int main(int argc, char* argv[]){
         cout << e.what();
         return 1;
     }
+}
+
+void print_banner() {
+    std::string space = "                         ";
+    std::cout << space << "01001101010011110100001101000011" << std::endl;
+    std::cout << space << " __  __   _____   _____   _____" <<std::endl;
+    std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
+    std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
+    std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
+    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
+    std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
+    std::cout << space << std::endl;
+    std::cout << space << "01101101011011110110001101100011 " << std::endl;
 }
