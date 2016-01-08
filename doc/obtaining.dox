@@ -71,4 +71,41 @@ Pugixml is a very small and easy-to-build library, and has therefore been fully
 integrated into the MOCC build system. Simply having the git submodules properly
 synced should be sufficient to build.
 
+HDF5
+----
+HDF5 is used to generate and read the HDF5 binary file format. This is necessary
+for generating output files and for interacting with various other auxiliary
+data files. The HDF5 library and its associated utilities should be available
+in most Linux package repositories. Having these packages installed on the
+target system should be sufficient for the cmake build system to locate them.
+
+Configuring and Building
+========================
+MOCC uses cmake for configuring the build system, with very few bells and
+whistles on top of standard cmake. Assuming that Boost and HDF5 are installed to
+the system, and that the Blitz++ library is present, with the \c Blitz
+environment variable set (see above), one should be ready to invoke cmake.
+
+Start by creating a build directory and cd-ing into it, for instance:
+\verbatim
+mkdir mocc-release
+cd mocc-release
+\endverbatim
+Once inside the build system, invoke cmake like this:
+\verbatim
+cmake -DCMAKE_BUILD_TYPE=Release /path/to/mocc/repo
+\endverbatim
+The above will configure the build system to build a release (optimized) version
+of MOCC in the current directory. If you want to make a Debug build, simply
+specify <tt>-DCMAKE_BUILD_TYPE=Debug</tt>. There are some other options to
+control the whether or not to build unit tests (they can take a while to build,
+thanks Boost!), to enable profiling, etc., which can be found by inspecting
+the top-level \c CMakelists.txt file.
+
+You can now build by invoking:
+\verbatim
+make
+\endverbatim
+After twiddling your thumbs for a little bit, there should be a \c mocc
+executable in the \c src/ directory.
 */
