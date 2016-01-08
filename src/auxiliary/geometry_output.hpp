@@ -2,7 +2,7 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/ray_data.hpp"
+#include "moc/ray_data.hpp"
 #include "mocc-core/core_mesh.hpp"
 
 namespace mocc { namespace aux {

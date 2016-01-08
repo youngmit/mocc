@@ -12,7 +12,6 @@
 #include "mocc-core/geom.hpp"
 #include "mocc-core/global_config.hpp"
 #include "mocc-core/mesh.hpp"
-#include "mocc-core/ray_data.hpp"
 
 using std::cout;
 using std::endl;

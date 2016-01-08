@@ -8,11 +8,12 @@
 
 #include "pugixml.hpp"
 
-#include "angular_quadrature.hpp"
-#include "constants.hpp"
-#include "core_mesh.hpp"
-#include "global_config.hpp"
-#include "ray_data.hpp"
+#include "moc/ray_data.hpp"
+
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/constants.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/global_config.hpp"
 
 using namespace mocc;
 
