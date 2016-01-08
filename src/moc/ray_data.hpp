@@ -11,7 +11,7 @@
 #include "geom.hpp"
 #include "ray.hpp"
 
-namespace mocc {
+namespace mocc { namespace moc {
     enum VolumeCorrection {
         FLAT,
         ANGLE
@@ -173,4 +173,4 @@ namespace mocc {
     };
 
     typedef std::shared_ptr<RayData> SP_RayData_t;
-}
+} }

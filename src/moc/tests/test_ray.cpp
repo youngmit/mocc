@@ -16,6 +16,7 @@
 #include "mocc-core/global_config.hpp"
 
 using namespace mocc;
+using namespace mocc::moc;
 
 using std::cout;
 using std::endl;

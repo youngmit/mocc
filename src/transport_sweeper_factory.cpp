@@ -14,7 +14,8 @@ namespace mocc {
         // Check the input XML for which type of sweeper to make
         std::string type = input.child("sweeper").attribute("type").value();
         if( type == "moc" ) {
-            UP_Sweeper_t ts( new MoCSweeper( input.child("sweeper"), mesh ) );
+            UP_Sweeper_t ts( new moc::MoCSweeper( input.child("sweeper"),
+                        mesh ) );
             return ts;
         } else if ( type == "sn" ) {
             auto snts = SnSweeperFactory( input.child("sweeper"), mesh );

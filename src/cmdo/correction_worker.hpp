@@ -22,7 +22,8 @@ namespace mocc {
             CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh,
                     CorrectionData *corrections, const ArrayF &qbar,
                     const ArrayF &xstr, const AngularQuadrature &ang_quad,
-                    const XSMeshHomogenized &sn_xs_mesh, const RayData &rays ):
+                    const XSMeshHomogenized &sn_xs_mesh,
+                    const moc::RayData &rays ):
                 moc::Current( coarse_data, mesh ),
                 corrections_( corrections ),
                 qbar_( qbar ),
@@ -40,7 +41,7 @@ namespace mocc {
             }
 
             inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
-                    const ArrayF &e_tau, const Ray &ray, int first_reg,
+                    const ArrayF &e_tau, const moc::Ray &ray, int first_reg,
                     int group ) {
 #pragma omp critical
             {
@@ -182,7 +183,7 @@ namespace mocc {
 
             Angle ang_;
 
-			const RayData &rays_;
+			const moc::RayData &rays_;
 
             /** \page surface_norm Surface Normalization
              * Surface normalization \todo discuss surface normalization

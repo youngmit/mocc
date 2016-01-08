@@ -30,8 +30,8 @@ namespace mocc {
         void get_pin_flux_1g( int ig, ArrayB1 &flux ) const;
 
         /**
-         * Delegate to the subbordinate \ref sn::SnSweeper and \ref MoCSweeper.
-         * Return the error from the MoC sweeper.
+         * Delegate to the subbordinate \ref sn::SnSweeper and \ref
+         * moc::MoCSweeper.  Return the error from the MoC sweeper.
          */
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
             sn_sweeper_.set_pin_flux_1g( group, pin_flux );

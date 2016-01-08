@@ -71,8 +71,8 @@ namespace mocc {
         * This routine provides a means by which to locate the \ref PinMesh
         * object that fills the space in which the passed Point resides. This is
         * useful during ray tracing to determine the geometry that needs to be
-        * traced through each pin subdomain. See \ref Ray::Ray() for and example
-        * of its use.
+        * traced through each pin subdomain. See \ref moc::Ray::Ray() for and
+        * example of its use.
         *
         * \note The \ref Point2 that is passed in will be modified! The new
         * location will be the \ref PinMesh origin, in the core-local (global)

@@ -15,7 +15,7 @@ using std::cin;
 
 mocc::VecF temp;
 
-namespace mocc {
+namespace mocc { namespace moc {
     MoCSweeper::MoCSweeper( const pugi::xml_node& input,
             const CoreMesh& mesh ):
         TransportSweeper( input, mesh ),
@@ -336,4 +336,4 @@ namespace mocc {
 
         return;
     }
-}
+} }

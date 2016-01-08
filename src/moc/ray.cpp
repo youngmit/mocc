@@ -15,7 +15,7 @@ inline int get_octant( mocc::Point2 p1, mocc::Point2 p2 ) {
 }
 
 
-namespace mocc {
+namespace mocc { namespace moc {
     /**
      * \param p1 the starting point of the \ref Ray.
      * \param p2 the ending point of the \ref Ray.
@@ -173,4 +173,4 @@ namespace mocc {
         return os;
     }
 
-}
+} }

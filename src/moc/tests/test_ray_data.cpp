@@ -31,7 +31,7 @@ int main() {
     pugi::xml_document ray_xml;
     ray_xml.load_string("<rays spacing=\"0.01\" />");
 
-    mocc::RayData ray_data( ray_xml.child("rays"), ang_quad, mesh );
+    mocc::moc::RayData ray_data( ray_xml.child("rays"), ang_quad, mesh );
 
 
 

@@ -6,7 +6,7 @@
 
 #define MAX_NSEG 255
 
-namespace mocc {
+namespace mocc { namespace moc {
     /**
      * A \ref Ray stores vectors of segment length and the flat source region
      * index that each segment is crossing. The FSR indices are represented as
@@ -167,4 +167,4 @@ namespace mocc {
         const Point2 p1_;
         const Point2 p2_;
     };
-}
+} }

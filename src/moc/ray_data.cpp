@@ -15,7 +15,7 @@ using std::cout;
 using std::endl;
 using std::cin;
 
-namespace mocc {
+namespace mocc { namespace moc {
     /**
      * \brief Construct a RayData object using a \<rays\> XML tag, a desired
      * AngularQuadrature, and CoreMesh.
@@ -388,4 +388,4 @@ namespace mocc {
 
         return os;
     }
-}
+} }

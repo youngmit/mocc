@@ -16,7 +16,7 @@
 #include "mocc-core/xs_mesh.hpp"
 #include "mocc-core/xs_mesh_homogenized.hpp"
 
-namespace mocc {
+namespace mocc { namespace moc {
     class MoCSweeper: public TransportSweeper {
         struct BC {
             real_t fw;
@@ -217,4 +217,4 @@ namespace mocc {
             return;
         }
     };
-}
+} }

@@ -163,7 +163,7 @@ location of a pin origin from in core/global coordinates, this specifies the
 origin of the pin coordinate system, translated to its location in real
 space, then converted to the global coordinate scheme. This is done to make
 conversion of global-coordinate points to pin-local points easy (refer to
-\ref mocc::RayData::RayData() and \ref mocc::CoreMesh::get_pinmesh() to see
+\ref mocc::moc::RayData::RayData() and \ref mocc::CoreMesh::get_pinmesh() to see
 how this is done.)
 
 */
