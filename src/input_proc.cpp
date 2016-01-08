@@ -13,7 +13,7 @@
 #include "mocc-core/material_lib.hpp"
 #include "mocc-core/pin_mesh.hpp"
 
-#include "aux/geometry_output.hpp"
+#include "auxiliary/geometry_output.hpp"
 
 
 using std::cout;
@@ -50,8 +50,4 @@ namespace mocc{
         LogFile << endl;
         return;
     }
-
-
-
-
 };
