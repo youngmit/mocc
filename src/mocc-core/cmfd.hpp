@@ -20,26 +20,39 @@ namespace mocc {
         void solve( real_t &k, const ArrayB2 &flux );
 
         /**
-         * Return a pointer to the coarse data. This is used to couple sweepers
-         * and other objects that need access to the coarse data to the CMFD
-         * solver.
+         * \brief Return a pointer to the coarse data. 
+         *
+         * This is used to couple sweepers and other objects that need access to
+         * the coarse data to the CMFD solver.
          */
         CoarseData* get_data() {
             return &coarse_data_;
         }
 
         /**
-         * Return a reference to the \ref CoarseData object.
+         * \brief Return a reference to the \ref CoarseData object.
          */
         CoarseData& coarse_data() {
             return coarse_data_;
         }
 
         /**
-         * Return a referebce to the MG flux.
+         * \brief Return a reference to the MG flux.
          */
         const ArrayB2& flux() const {
             return coarse_data_.flux;
+        }
+
+        /**
+         * \brief Return whether the CMFD object is meant to actually do a
+         * solve.
+         *
+         * It is possible to need a CMFD object to be constructed to use its
+         * \ref CoarseData and other functionality, but not want to perform
+         * actual CMFD solves.
+         */
+        bool is_enabled() const {
+            return is_enabled_;
         }
 
     private:
@@ -74,6 +87,7 @@ namespace mocc {
         SP_XSMeshHomogenized_t xsmesh_;
         int n_cell_;
         CoarseData coarse_data_;
+        bool is_enabled_;
 
         // Single-group fission source
         ArrayF fs_;

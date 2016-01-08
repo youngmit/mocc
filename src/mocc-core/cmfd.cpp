@@ -23,6 +23,7 @@ namespace mocc {
         xsmesh_( xsmesh ),
         n_cell_( mesh->n_pin() ),
         coarse_data_( *mesh, xsmesh->n_group() ),
+        is_enabled( true ),
         fs_( n_cell_ ),
         fs_old_( n_cell_ ),
         source_( n_cell_, xsmesh_.get(), coarse_data_.flux ),
@@ -80,6 +81,10 @@ namespace mocc {
                 }
             }
 
+            // Enabled
+            if( !input.attribute("enabled").empty() ) {
+                is_enabled_ = input.attribute("enabled").as_bool(true);
+            }
         }
         return;
     }
