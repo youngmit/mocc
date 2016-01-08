@@ -1,0 +1,74 @@
+/**
+\page obtaining Obtaining and Building MOCC
+ 
+Cloning the Repository
+======================
+The MOCC repository can be cloned using the following command:
+\verbatim
+git clone [user]@abacus.engin.umich.edu/git-root/mocc.git
+\endverbatim
+Once the repository is cloned, it is still necessary to initialize and update
+the various submodules that MOCC needs. To do so, \c cd into the repository and
+run:
+\verbatim
+git submodule init
+git submodule update
+\endverbatim
+This will tell git to clone its submodules, which provide a couple of MOCC's
+dependencies.
+
+Handling Dependencies
+=====================
+MOCC relies on a few dependencies to build and run. Below are instructions on
+how to obtain and build them, as well as how to make them available to the MOCC
+build system.
+
+Eigen
+-----
+Eigen is a linear algebra library that is used primarily for setting up and
+solving the \ref mocc::CMFD system. It is implemented as a pure header library,
+and therefore no binary library need be compiled. As such, it is included as a
+git submodule and is fully integrated into the MOCC build system; as long as the
+git submodules are properly synced, everything should just work. For more
+information about Eigen, check out <a
+href="http://eigen.tuxfamily.org/index.php?title=Main_Page">their website</a>.
+
+Blitz++
+-------
+Blitz++ is a C++ library that provides advanced support for multi-dimensional
+arrays. Refer to the <a href="http://blitz.sourceforge.net/">Blitz++ website</a>
+for proper documentation. It is recommended that MOCC developers gain a good
+understanding of how this library works before diving into MOCC, since much of
+MOCC depends on it.
+
+To build MOCC, it is necessary to first have a built version of the Blitz++
+library. The source and directions for building Blitz can be found on their
+website, linked above. Once Blitz++ is built, define an environment variable, \c
+Blitz, which stores the path to the directory where the Blitz++ installation can
+be found. For most Unix systems/shells, this can be accomplished with the
+command:
+\verbatim
+export Blitz=/path/to/blitz/installation
+\endverbatim
+Add the above to your shell startup script to make it stick.
+
+Boost
+-----
+The <a href="http://www.boost.org/">Boost library collection</a> contains many
+useful C++ libraries for all number of applications. We only use the Boost Unit
+Test Framework. Boost is popular enough that it can be found in most Linux
+package repositories, and installing it to your system using a package manager
+should be sufficient for the cmake build system to locate it.
+
+pugixml
+-------
+The <a href="http://pugixml.org/">pugixml library</a> provides XML paring
+facilities, which are used extensively throughout MOCC for input file processing.
+Make sure to look over the <a href="http://pugixml.org/docs/manual.html">
+documentation</a> to get a sense for how it works.
+
+Pugixml is a very small and easy-to-build library, and has therefore been fully
+integrated into the MOCC build system. Simply having the git submodules properly
+synced should be sufficient to build.
+
+*/
