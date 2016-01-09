@@ -8,7 +8,7 @@
 
 #include "sn/sn_boundary.hpp"
 #include "sn/cell_worker.hpp"
-#include "sn/sn_source.hpp"
+#include "sn/source_sn.hpp"
 
 namespace mocc { namespace sn {
     class SnSweeper: public TransportSweeper {

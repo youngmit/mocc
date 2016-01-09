@@ -16,7 +16,7 @@
 
 #include "sn/sn_boundary.hpp"
 #include "sn/sn_current_worker.hpp"
-#include "sn/sn_source.hpp"
+#include "sn/source_sn.hpp"
 #include "sn/sn_sweeper.hpp"
 
 namespace mocc { namespace sn {
@@ -82,10 +82,10 @@ namespace mocc { namespace sn {
             return &cell_worker_;
         }
 
-        // Override the create_source() method to make an SnSource instead of
+        // Override the create_source() method to make a SourceSn instead of
         // the regular
         UP_Source_t create_source() const {
-            Source *s = new SnSource( n_reg_, xs_mesh_.get(), this->flux());
+            Source *s = new SourceSn( n_reg_, xs_mesh_.get(), this->flux());
             UP_Source_t source( s );
             return source;
         }
@@ -107,7 +107,7 @@ namespace mocc { namespace sn {
             // Perform inner iterations
             for( size_t inner=0; inner<n_inner_; inner++ ) {
                 // Set the source (add upscatter and divide by 4PI)
-                source_->self_scatter( group, flux_1g_, q_ );
+                source_->self_scatter( group, flux_1g_ );
                 if( inner == n_inner_-1 && coarse_data_ ) {
                     // Wipe out the existing currents
                     coarse_data_->zero_data( group );
@@ -151,6 +151,9 @@ namespace mocc { namespace sn {
             for( auto ang: ang_quad_ ) {
                 // Configure the current worker for this angle
                 cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+
+                // Get the source for this angle
+                auto& q = source_->get_transport( iang );
 
 
                 cell_worker_.set_angle( iang, ang );
@@ -212,9 +215,9 @@ namespace mocc { namespace sn {
                             size_t i = mesh_.coarse_cell( Position( ix, iy, iz ) );
 
                             real_t psi = cell_worker_.evaluate( psi_x, psi_y,
-                                    psi_z, q_[i], xstr_[i], i );
+                                    psi_z, q[i], xstr_[i], i );
                             //real_t psi = cell_worker_.evaluate_2d( psi_x, psi_y,
-                            //        q_[i], xstr_[i], i );
+                            //        q[i], xstr_[i], i );
 
 
                             x_flux[ny*iz + iy] = psi_x;

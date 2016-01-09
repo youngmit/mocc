@@ -1,0 +1,31 @@
+#include "mocc-core/source.hpp"
+#include "mocc-core/source_isotropic.hpp"
+
+namespace mocc {
+    void SourceIsotropic::self_scatter( size_t ig, const ArrayB1 &flux_1g)
+    {
+        for( auto &xsr: *xs_mesh_ ) {
+            const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
+            real_t xssc = scat_row.from[ig-scat_row.min_g];
+            real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
+            for ( auto &ireg: xsr.reg() ) {
+                q_[ireg] = ( source_1g_[ireg] + flux_1g((int)ireg)*xssc ) *
+                    r_fpi_tr;
+            }
+        }
+
+        // Check to make sure that the source is positive
+        bool any = false;
+        for( int i=0; i<q_.size(); i++ ) {
+            if(q_[i] < 0.0 ) {
+                any = true;
+            }
+        }
+        if( any ) {
+          //  throw EXCEPT("Negative source!");
+        }
+
+        return;
+
+    }
+}

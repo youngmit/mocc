@@ -10,6 +10,7 @@
 #include "mocc-core/global_config.hpp"
 #include "mocc-core/output_interface.hpp"
 #include "mocc-core/source.hpp"
+#include "mocc-core/source_isotropic.hpp"
 #include "mocc-core/xs_mesh.hpp"
 #include "mocc-core/xs_mesh_homogenized.hpp"
 
@@ -113,10 +114,11 @@ namespace mocc{
 
         /**
          * Construct and return a source object which conforms to the sweeper.
-         * For now, default to the MoC Source type
+         * For now, default to the isotropic MoC Source type, \ref
+         * SourceIsotropic.
          */
         virtual UP_Source_t create_source() const {
-            UP_Source_t source( new Source( n_reg_, xs_mesh_.get(),
+            UP_Source_t source( new SourceIsotropic( n_reg_, xs_mesh_.get(),
                         this->flux()) );
             return source;
         }

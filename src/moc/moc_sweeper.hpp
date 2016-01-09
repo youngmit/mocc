@@ -80,9 +80,6 @@ namespace mocc { namespace moc {
         // Temporary storage for 1-group scalar flux
         ArrayB1 flux_1g_;
 
-        // One-group, isotropic source, scaled by transport cross section
-        ArrayF qbar_;
-
         // Number of inner iterations per group sweep
         unsigned int n_inner_;
 
@@ -127,6 +124,8 @@ namespace mocc { namespace moc {
                 int iang = 0;
                 // Angles
                 for( const auto &ang_rays: plane_rays ) {
+                    // Get the source for this angle
+                    auto &qbar = source_->get_transport( iang );
                     int iang1 = iang;
                     int iang2 = ang_quad_.reverse(iang);
                     Angle ang = ang_quad_[iang];
@@ -160,7 +159,7 @@ namespace mocc { namespace moc {
                         // Propagate through core geometry
                         for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            real_t psi_diff = (psi1[iseg] - qbar_[ireg]) *
+                            real_t psi_diff = (psi1[iseg] - qbar[ireg]) *
                                 e_tau[iseg];
                             psi1[iseg+1] = psi1[iseg] - psi_diff;
                             t_flux[ireg] += psi_diff*wt_v_st;
@@ -176,7 +175,7 @@ namespace mocc { namespace moc {
                         // Propagate through core geometry
                         for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            real_t psi_diff = (psi2[iseg+1] - qbar_[ireg]) *
+                            real_t psi_diff = (psi2[iseg+1] - qbar[ireg]) *
                                 e_tau[iseg];
                             psi2[iseg] = psi2[iseg+1] - psi_diff;
                             t_flux[ireg] += psi_diff*wt_v_st;
@@ -204,10 +203,14 @@ namespace mocc { namespace moc {
 #pragma omp barrier
             // Scale the scalar flux by the volume and add back the source
 #pragma omp single
-            for( int i=0; i<(int)n_reg_; i++)
             {
-                flux_1g_(i) = flux_1g_(i)/(xstr_[i]*vol_[i]) + qbar_[i]*FPI;
-            }
+                // \todo this is not correct for angle-dependent sources!
+                auto &qbar = source_->get_transport( 0 );
+                for( int i=0; i<(int)n_reg_; i++)
+                {
+                    flux_1g_(i) = flux_1g_(i)/(xstr_[i]*vol_[i]) + qbar[i]*FPI;
+                }
+            } // OMP single
 
             cw.post_sweep( group );
 

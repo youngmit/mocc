@@ -26,7 +26,6 @@ namespace mocc { namespace moc {
              ),
         xstr_( n_reg_ ),
         flux_1g_( n_reg_ ),
-        qbar_( n_reg_ ),
         bc_type_( mesh_.boundary() )
     {
 
@@ -111,7 +110,7 @@ namespace mocc { namespace moc {
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
-            source_->self_scatter( group, flux_1g_, qbar_ );
+            source_->self_scatter( group, flux_1g_ );
 
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.

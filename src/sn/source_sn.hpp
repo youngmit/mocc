@@ -4,21 +4,21 @@
 
 #include "source.hpp"
 
-namespace mocc {
+namespace mocc { namespace sn {
     /**
      * Slight modification to the original \ref Source type to avoid scaling the
      * source by the transport cross section, which is unneccesary for the Sn
      * sweepers. Could do some template magic at some point instead.
      */
-    class SnSource: public Source {
+    class SourceSn: public SourceIsotropic {
     public:
-        SnSource( int nreg, const XSMesh *xs_mesh, const ArrayB2& flux ):
-            Source( nreg, xs_mesh, flux )
+        SourceSn( int nreg, const XSMesh *xs_mesh, const ArrayB2& flux ):
+            SourceIsotropic( nreg, xs_mesh, flux )
         {
             return;
         }
 
-        ~SnSource() {
+        ~SourceSn() {
         }
 
         /**
@@ -40,4 +40,4 @@ namespace mocc {
             return;
         }
     };
-}
+} }

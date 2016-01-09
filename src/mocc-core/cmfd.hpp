@@ -8,7 +8,7 @@
 #include "eigen_interface.hpp"
 #include "global_config.hpp"
 #include "mesh.hpp"
-#include "source.hpp"
+#include "source_isotropic.hpp"
 #include "xs_mesh_homogenized.hpp"
 
 namespace mocc {
@@ -93,7 +93,7 @@ namespace mocc {
         ArrayF fs_;
         ArrayF fs_old_;
 
-        Source source_;
+        SourceIsotropic source_;
 
         // Vector of one-group sparse matrix
         std::vector< Eigen::SparseMatrix<real_t> > m_;

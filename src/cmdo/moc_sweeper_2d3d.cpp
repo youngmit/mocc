@@ -38,7 +38,7 @@ namespace mocc {
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
-            source_->self_scatter( group, flux_1g_, qbar_ );
+            source_->self_scatter( group, flux_1g_ );
 
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
@@ -46,8 +46,8 @@ namespace mocc {
                 coarse_data_->zero_data_radial( group );
                 //coarse_data_->current(blitz::Range::all(), group) = 0.0;
                 cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
-                        corrections_.get(), qbar_, xstr_, ang_quad_,
-                        *sn_xs_mesh_, rays_ );
+                        corrections_.get(), source_->get_transport( 0 ), xstr_,
+                        ang_quad_, *sn_xs_mesh_, rays_ );
                 this->sweep1g( group, cw );
                 coarse_data_->set_has_radial_data(true);
             } else {

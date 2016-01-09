@@ -20,7 +20,7 @@ namespace mocc {
         class CurrentCorrections: public moc::Current {
         public:
             CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh,
-                    CorrectionData *corrections, const ArrayF &qbar,
+                    CorrectionData *corrections, const VectorX &qbar,
                     const ArrayF &xstr, const AngularQuadrature &ang_quad,
                     const XSMeshHomogenized &sn_xs_mesh,
                     const moc::RayData &rays ):
@@ -170,7 +170,7 @@ namespace mocc {
 
         private:
             CorrectionData *corrections_;
-            const ArrayF &qbar_;
+            const VectorX &qbar_;
             const ArrayF &xstr_;
             const AngularQuadrature &ang_quad_;
             const XSMeshHomogenized &sn_xs_mesh_;

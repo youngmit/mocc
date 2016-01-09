@@ -73,34 +73,6 @@ namespace mocc {
         return;
     }
 
-    // This can get away with being const, since we are actually returning the
-    // source to the caller. Nothing should get touched internally
-    void Source::self_scatter( size_t ig, const ArrayB1& flux_1g,
-            ArrayF& qbar ) const {
-        for( auto &xsr: *xs_mesh_ ) {
-            const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
-            real_t xssc = scat_row.from[ig-scat_row.min_g];
-            real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
-            for ( auto &ireg: xsr.reg() ) {
-                qbar[ireg] = ( source_1g_[ireg] + flux_1g((int)ireg)*xssc ) *
-                    r_fpi_tr;
-            }
-        }
-
-        // Check to make sure that the source is positive
-        bool any = false;
-        for( size_t i=0; i<qbar.size(); i++ ) {
-            if(qbar[i] < 0.0 ) {
-                any = true;
-            }
-        }
-        if( any ) {
-          //  throw EXCEPT("Negative source!");
-        }
-
-        return;
-    }
-
     void Source::auxiliary( const ArrayB1 &aux ) {
         assert( source_1g_.size() == (int)aux.size() );
         for( int i=0; i<(int)n_reg_; i++) {

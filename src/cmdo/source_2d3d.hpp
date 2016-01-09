@@ -3,7 +3,7 @@
 #include "mocc-core/error.hpp"
 #include "mocc-core/source.hpp"
 
-#include "sn/sn_source.hpp"
+#include "sn/source_sn.hpp"
 
 namespace mocc {
     /**
@@ -28,10 +28,10 @@ namespace mocc {
      * their corresponding sub-sources, calling self_scatter() directly on those
      * instead.
      */
-    class Source_2D3D: public Source {
+    class Source_2D3D: public SourceIsotropic {
     public:
         Source_2D3D( const MoCSweeper_2D3D &moc, const TransportSweeper &sn ):
-            Source( moc.n_reg(), &(moc.xs_mesh()), moc.flux() ),
+            SourceIsotropic( moc.n_reg(), &(moc.xs_mesh()), moc.flux() ),
             mesh_(moc.mesh()),
             sn_source_( sn.n_reg(), &(sn.xs_mesh()), sn.flux() )
         {
@@ -101,6 +101,6 @@ namespace mocc {
         }
     private:
         const CoreMesh& mesh_;
-        SnSource sn_source_;
+        sn::SourceSn sn_source_;
     };
 }

@@ -29,15 +29,16 @@ namespace mocc {
      * hierarchy (probably by introducing a Pn variant of the \ref Source base
      * class). How the implementation will occur is somewhat up in the air.
      * Simplest approach would be to add a new virtual method (which just
-     * returns on non-Pn sources), which accepts angular flux as input somehow.
-     * This could be done by passing in an FSR-dependent angular flux after each
-     * angle sweep and have the \ref Source maintain angular flux moments
-     * internally. This probably isn't the most computationally efficient method
-     * though. Ultimately, flux moments need to be stored somewhere, and the
-     * \ref Source is a great candidate; perhaps exposing a reference to those
-     * moments to the \ref TransportSweeper and coming up with a slick way for
-     * the \ref TransportSweeper to interact with those moments in an as-needed
-     * way would work better. Cross that river when we get to it, I suppose...
+     * <tt>return</tt>s on non-Pn sources), which accepts angular flux as input
+     * somehow.  This could be done by passing in an FSR-dependent angular flux
+     * after each angle sweep and have the \ref Source contribute to angular
+     * flux moments internally. This probably isn't the most computationally
+     * efficient method, though. Ultimately, flux moments need to be stored
+     * somewhere, and the \ref Source is a great candidate; perhaps exposing a
+     * reference to those moments to the \ref TransportSweeper and coming up
+     * with a slick way for the \ref TransportSweeper to interact with those
+     * moments in an as-needed way would work better. Cross that river when we
+     * get to it, I suppose...
      */
     class Source {
     public:
@@ -87,8 +88,7 @@ namespace mocc {
          * point, it might be prudent to update it in-place, at which point,
          * this flux_1g argument here would be superfluous.
          */
-        virtual void self_scatter( size_t ig, const ArrayB1& flux_1g,
-                ArrayF& qbar ) const;
+        virtual void self_scatter( size_t ig, const ArrayB1& flux_1g ) = 0;
 
         /**
          * \brief Return the number of regions for which the Source is defined.
@@ -141,12 +141,24 @@ namespace mocc {
             return source_1g_;
         }
 
+        /**
+         * \brief Return a const reference to the source, as it should be used
+         * in a transport sweeper.
+         *
+         * \param [in] iang the angle index to get a source for. Not used for
+         * isotropic sources, but necessary for angle-dependent sources.
+         */
+        virtual const VectorX& get_transport( int iang ) const = 0;
+
         friend std::ostream& operator<<(std::ostream &os, const Source &src) {
             std::cout << src.source_1g_ << std::endl;
             return os;
         }
 
     protected:
+        /**
+         * Reference to a compatible \ref TransportSweeper \ref XSMesh.
+         */
         const XSMesh *xs_mesh_;
         size_t n_group_;
 
