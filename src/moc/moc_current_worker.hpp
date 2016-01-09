@@ -11,7 +11,7 @@ namespace mocc {
     namespace moc {
         /**
          * This is a pure virtual class from which all valid current workers
-         * should derive. There really shoudnt be any pointers of this class
+         * should derive. There really shouldn't be any pointers of this class
          * floating around, since we never really intend to have to resolve
          * virtual method calls (use templates instead), but this provides the
          * requirements of all variants of the current worker to be used as a
@@ -53,7 +53,7 @@ namespace mocc {
 
             /**
              * Defines work to be done following the sweep of a single ray. This
-             * is useful for when you need to do something with the angluar
+             * is useful for when you need to do something with the angular
              * flux.
              */
             inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
