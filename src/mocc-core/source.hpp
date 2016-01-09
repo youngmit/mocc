@@ -10,6 +10,35 @@
 #include "xs_mesh.hpp"
 
 namespace mocc {
+    /**
+     * The \ref Source class provides functionality for defining a particle
+     * source, accumulated from commonly-used origins (in-scattering, fission,
+     * self-scatter, etc.). A \ref Source object can be thought of as a simple
+     * state machine, in which source contributions for a single group (and
+     * potentially, angle) are added one-at-a-time. The "state" is reset with a
+     * call to \ref Source::initialize_group(), which clears all contributions
+     * to the internally-stored single-group source by initializing it to a
+     * prescribed external source (if one is defined), or to zero. Following
+     * group initialization, the other methods can be invoked by the client code
+     * to add other contributions as needed. When all contributions have been
+     * added, the client can then request a source for the current group and
+     * desired angle.
+     *
+     * \note At some point, it may be nice to incorporate Pn scattering. Most of
+     * the functionality for Pn scattering would end up in the Source class
+     * hierarchy (probably by introducing a Pn variant of the \ref Source base
+     * class). How the implementation will occur is somewhat up in the air.
+     * Simplest approach would be to add a new virtual method (which just
+     * returns on non-Pn sources), which accepts angular flux as input somehow.
+     * This could be done by passing in an FSR-dependent angular flux after each
+     * angle sweep and have the \ref Source maintain angular flux moments
+     * internally. This probably isn't the most computationally efficient method
+     * though. Ultimately, flux moments need to be stored somewhere, and the
+     * \ref Source is a great candidate; perhaps exposing a reference to those
+     * moments to the \ref TransportSweeper and coming up with a slick way for
+     * the \ref TransportSweeper to interact with those moments in an as-needed
+     * way would work better. Cross that river when we get to it, I suppose...
+     */
     class Source {
     public:
         Source( int nreg, const XSMesh* xs_mesh, const ArrayB2& flux );
