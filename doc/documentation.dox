@@ -1,0 +1,30 @@
+/**
+\page documentation Documenting the Code
+MOCC uses <a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a> to produce
+the software documentation that you are looking at now. Refer to the Doxygen
+website linked above for more information about Doxygen, how to use it, and how
+to write well-formed software documentation. The goal is to have complete and
+thorough documentation of all aspects of MOCC at some point, but that is a
+pretty tall order, and is often in conflict with the primary goal of getting
+stuff done. As such, some of the classes and functions in MOCC lack complete
+documentation. As time goes on the situation should improve, however in the
+meantime, if there are sections of the code that are both undocumented and
+complicated, confusing, or not obvious, let me know and I'll make a point of
+flushing out the docs in those trouble spots.
+
+The above being said, do try and make a point of documenting all new code. When
+updating documentation, it is necessary to invoke the \c doxygen executable to
+generate new HTML output. This can be accomplished by running this command in
+the top level of the git repository:
+\verbatim
+doxygen Doxyfile | grep -i warning
+\endverbatim
+The Doxygen configuration file, \c Doxyfile, dictates how the code is processed
+and how the documentation is generated. It is currently configured to output the
+documentation to the Abacus web server directory, which most users lack write
+privileges to. It is therefore necessary to alter the \c OUTPUT_DIRECTORY
+option in \c Doxyfile to a user-controlled location before invoking the above
+command. Just make sure not to push such changes back to the repository. Perhaps
+make a local copy of Doxyfile with a different name and add it to your \c
+.gitignore file.
+*/
