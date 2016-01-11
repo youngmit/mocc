@@ -48,11 +48,13 @@ namespace mocc{
         max_iterations_ = in_int;
 
         // Min iterations
-        in_int = input.attribute("min_iter").as_int(-1);
-        if( (in_int < 0) || (in_int > (int)max_iterations_) ) {
-            throw EXCEPT("Invalid number of minimum iterations.");
+        if( !input.attribute("min_iter").empty() ) {
+            in_int = input.attribute("min_iter").as_int(-1);
+            if( (in_int < 0) || (in_int > (int)max_iterations_) ) {
+                throw EXCEPT("Invalid number of minimum iterations.");
+            }
+            min_iterations_ = in_int;
         }
-        min_iterations_ = in_int;
 
         // CMFD acceleration
         bool do_cmfd = input.attribute("cmfd").as_bool(false);
