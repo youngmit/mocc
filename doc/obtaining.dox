@@ -21,7 +21,12 @@ Handling Dependencies
 =====================
 MOCC relies on a few dependencies to build and run. Below are instructions on
 how to obtain and build them, as well as how to make them available to the MOCC
-build system.
+build system. The Eigen and pugixml libraries are fully integrated into the MOCC
+git repository, and aside from synchronizing the git submodules, nothing should
+need to be done for them to work. On most systems, Boost and HDF5 can and maybe
+will be installed system-wide using a package manager. Blitz++ is a more niche
+library, and may not be available through regular means; it must therefore be
+built manually (see below).
 
 Eigen
 -----

@@ -5,6 +5,11 @@ Getting and Building MOCC
 For detailed instructions on how to obtain and build MOCC, refer to the \ref
 obtaining page.
 
+MOCC Code Documentation
+=======================
+The code is documented using Doxygen. See \ref documentation for more
+information.
+
 Style
 =====
 For the most part, we are following the <a

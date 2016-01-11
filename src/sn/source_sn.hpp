@@ -22,9 +22,9 @@ namespace mocc { namespace sn {
         }
 
         /**
-         * Replaces the standard \ref Source::self_scatter() method with one that
-         * does not divide the source by the transport cross section, which is
-         * only needed for the MoC sweeper.
+         * Replaces the standard \ref Source::self_scatter() method with one
+         * that does not divide the source by the transport cross section, which
+         * is only needed for the MoC sweeper.
          */
         void self_scatter( size_t ig, const ArrayB1& flux_1g )
         {
