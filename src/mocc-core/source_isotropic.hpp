@@ -23,7 +23,11 @@ namespace mocc {
             return q_;
         }
 
-    private:
+    protected:
+        // The source, including self-scatter. This is stored separately from
+        // source_1g_ so that the self_scatter method may be called multiple
+        // times without having to completely reconstruct the source. All calls
+        // to get_transport() will return a reference to this vector.
         VectorX q_;
     };
 }
