@@ -26,7 +26,16 @@ namespace mocc {
             UP_Sweeper_t ts( new PlaneSweeper_2D3D( input.child("sweeper"),
                         mesh) );
             return ts;
-        } else {
+        } else if ( type == "moc_2d3d" ) {
+            // Create a 2D3D MoC sweeper by itself. This is really only useful
+            // for one-way coupling
+            MoCSweeper_2D3D *sweeper = new MoCSweeper_2D3D(
+                    input.child("sweeper"), mesh );
+            sweeper->set_self_coupling();
+            UP_Sweeper_t ts( sweeper );
+            return ts;
+        }
+        else {
             throw EXCEPT("Failed to detect a valid sweeper type.");
         }
     }

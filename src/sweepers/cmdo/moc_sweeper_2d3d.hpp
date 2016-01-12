@@ -13,10 +13,27 @@ namespace mocc {
 
         void sweep( int group );
 
+        /**
+         * \brief Assign correction and cross-section coupling.
+         */
         void set_coupling( std::shared_ptr<CorrectionData> data,
-                const XSMeshHomogenized *xsmesh) {
+                const XSMeshHomogenized *xsmesh ) {
+            if( corrections_ || sn_xs_mesh_ ) {
+                throw EXCEPT( "Correction data already assigned." );
+            }
             corrections_ = data;
             sn_xs_mesh_ = xsmesh;
+        }
+
+        /**
+         * \brief Allocate space internally to store coupling coefficients and
+         * cross sections. Mainly useful for one-way coupling.
+         */
+        void set_self_coupling() {
+            corrections_ = std::shared_ptr<CorrectionData>( 
+                    new CorrectionData( mesh_.n_pin(),
+                    ang_quad_.ndir()/2, xs_mesh_->n_group() )
+                );
         }
 
     private:
