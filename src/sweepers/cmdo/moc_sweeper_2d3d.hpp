@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mocc-core/global_config.hpp"
+#include "core/global_config.hpp"
 
 #include "sweepers/moc/moc_sweeper.hpp"
 

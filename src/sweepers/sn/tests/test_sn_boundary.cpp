@@ -8,9 +8,9 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/constants.hpp"
-#include "mocc-core/global_config.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
 
 #include "sn/sn_boundary.hpp"
 

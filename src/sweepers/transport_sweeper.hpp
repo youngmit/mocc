@@ -3,16 +3,16 @@
 #include <memory>
 #include <vector>
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/blitz_typedefs.hpp"
-#include "mocc-core/coarse_data.hpp"
-#include "mocc-core/eigen_interface.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/output_interface.hpp"
-#include "mocc-core/source.hpp"
-#include "mocc-core/source_isotropic.hpp"
-#include "mocc-core/xs_mesh.hpp"
-#include "mocc-core/xs_mesh_homogenized.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/coarse_data.hpp"
+#include "core/eigen_interface.hpp"
+#include "core/global_config.hpp"
+#include "core/output_interface.hpp"
+#include "core/source.hpp"
+#include "core/source_isotropic.hpp"
+#include "core/xs_mesh.hpp"
+#include "core/xs_mesh_homogenized.hpp"
 
 namespace mocc{
     class TransportSweeper: public HasOutput {

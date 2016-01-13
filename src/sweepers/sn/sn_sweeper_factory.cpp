@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "mocc-core/error.hpp"
+#include "core/error.hpp"
 
 #include "sweepers/transport_sweeper.hpp"
 

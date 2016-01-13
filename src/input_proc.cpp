@@ -6,12 +6,12 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/error.hpp"
-#include "mocc-core/file_scrubber.hpp"
-#include "mocc-core/files.hpp"
-#include "mocc-core/material_lib.hpp"
-#include "mocc-core/pin_mesh.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/error.hpp"
+#include "core/file_scrubber.hpp"
+#include "core/files.hpp"
+#include "core/material_lib.hpp"
+#include "core/pin_mesh.hpp"
 
 #include "auxiliary/geometry_output.hpp"
 

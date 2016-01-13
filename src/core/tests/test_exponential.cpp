@@ -7,7 +7,7 @@
 #include <cmath>
 #include <iostream>
 
-#include "mocc-core/exponential.hpp"
+#include "core/exponential.hpp"
 
 using namespace mocc;
 using std::cout;

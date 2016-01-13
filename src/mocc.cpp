@@ -7,11 +7,11 @@
 #include <sstream>
 #include <string>
 
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/error.hpp"
-#include "mocc-core/files.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/h5file.hpp"
+#include "core/core_mesh.hpp"
+#include "core/error.hpp"
+#include "core/files.hpp"
+#include "core/global_config.hpp"
+#include "core/h5file.hpp"
 
 #include "solvers/solver.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mocc-core/error.hpp"
-#include "mocc-core/source.hpp"
+#include "core/error.hpp"
+#include "core/source.hpp"
 
 #include "sn/source_sn.hpp"
 

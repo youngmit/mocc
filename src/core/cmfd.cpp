@@ -6,8 +6,8 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/error.hpp"
-#include "mocc-core/global_config.hpp"
+#include "core/error.hpp"
+#include "core/global_config.hpp"
 
 typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;

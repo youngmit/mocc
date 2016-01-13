@@ -3,8 +3,8 @@
 #include <cmath>
 #include <iostream>
 
-#include "mocc-core/constants.hpp"
-#include "mocc-core/global_config.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
 
 namespace mocc {
     inline real_t RadToDeg( real_t rad ) {

@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "mocc-core/error.hpp"
-#include "mocc-core/mesh.hpp"
+#include "core/error.hpp"
+#include "core/mesh.hpp"
 
 #include "moc/moc_sweeper.hpp"
 #include "sn/sn_sweeper_factory.hpp"

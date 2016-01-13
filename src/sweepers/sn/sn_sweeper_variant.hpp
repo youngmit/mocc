@@ -2,16 +2,16 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/blitz_typedefs.hpp"
-#include "mocc-core/coarse_data.hpp"
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/error.hpp"
-#include "mocc-core/files.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/mesh.hpp"
-#include "mocc-core/utils.hpp"
-#include "mocc-core/xs_mesh_homogenized.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/coarse_data.hpp"
+#include "core/core_mesh.hpp"
+#include "core/error.hpp"
+#include "core/files.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
+#include "core/utils.hpp"
+#include "core/xs_mesh_homogenized.hpp"
 
 #include "sweepers/transport_sweeper.hpp"
 

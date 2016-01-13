@@ -4,10 +4,10 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/eigen_interface.hpp"
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/h5file.hpp"
-#include "mocc-core/cmfd.hpp"
+#include "core/eigen_interface.hpp"
+#include "core/core_mesh.hpp"
+#include "core/h5file.hpp"
+#include "core/cmfd.hpp"
 
 #include "sweepers/transport_sweeper.hpp"
 

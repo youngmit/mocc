@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include "mocc-core/error.hpp"
-#include "mocc-core/constants.hpp"
+#include "core/error.hpp"
+#include "core/constants.hpp"
 
 namespace mocc {
     Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayB2& flux ):

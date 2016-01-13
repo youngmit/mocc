@@ -1,10 +1,10 @@
 #pragma once
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/coarse_data.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/mesh.hpp"
-#include "mocc-core/xs_mesh_homogenized.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/coarse_data.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
+#include "core/xs_mesh_homogenized.hpp"
 
 #include "sweepers/moc/moc_current_worker.hpp"
 #include "sweepers/moc/ray.hpp"

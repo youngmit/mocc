@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mocc-core/mesh.hpp"
+#include "core/mesh.hpp"
 
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"

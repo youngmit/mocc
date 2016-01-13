@@ -7,9 +7,9 @@
 #include <sstream>
 #include <string>
 
-#include "mocc-core/constants.hpp"
-#include "mocc-core/error.hpp"
-#include "mocc-core/files.hpp"
+#include "core/constants.hpp"
+#include "core/error.hpp"
+#include "core/files.hpp"
 
 using std::cout;
 using std::endl;

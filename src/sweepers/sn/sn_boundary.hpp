@@ -3,10 +3,10 @@
 #include <cassert>
 #include <iostream>
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/constants.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/mesh.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
 
 
 namespace mocc {

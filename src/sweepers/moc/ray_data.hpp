@@ -5,10 +5,10 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/angle.hpp"
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/geom.hpp"
+#include "core/angle.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/core_mesh.hpp"
+#include "core/geom.hpp"
 
 #include "ray.hpp"
 

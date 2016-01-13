@@ -3,8 +3,8 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/included/unit_test.hpp>
 
-#include "mocc-core/assembly.hpp"
-#include "mocc-core/lattice.hpp"
+#include "core/assembly.hpp"
+#include "core/lattice.hpp"
 
 
 BOOST_AUTO_TEST_CASE( testall )

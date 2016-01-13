@@ -7,11 +7,11 @@
 #include <iostream>
 #include <vector>
 
-#include "mocc-core/constants.hpp"
-#include "mocc-core/fp_utils.hpp"
-#include "mocc-core/geom.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/mesh.hpp"
+#include "core/constants.hpp"
+#include "core/fp_utils.hpp"
+#include "core/geom.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
 
 using std::cout;
 using std::endl;

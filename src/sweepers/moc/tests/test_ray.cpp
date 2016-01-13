@@ -10,10 +10,10 @@
 
 #include "moc/ray_data.hpp"
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/constants.hpp"
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/global_config.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/constants.hpp"
+#include "core/core_mesh.hpp"
+#include "core/global_config.hpp"
 
 using namespace mocc;
 using namespace mocc::moc;

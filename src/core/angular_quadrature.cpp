@@ -5,8 +5,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include "mocc-core/error.hpp"
-#include "mocc-core/level_symmetric.hpp"
+#include "core/error.hpp"
+#include "core/level_symmetric.hpp"
 
 
 namespace mocc {

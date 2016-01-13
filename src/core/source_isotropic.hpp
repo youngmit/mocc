@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mocc-core/source.hpp"
+#include "core/source.hpp"
 
 namespace mocc {
     /**

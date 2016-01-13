@@ -2,9 +2,9 @@
 
 #include "transport_sweeper_factory.hpp"
 
-#include "mocc-core/error.hpp"
-#include "mocc-core/files.hpp"
-#include "mocc-core/h5file.hpp"
+#include "core/error.hpp"
+#include "core/files.hpp"
+#include "core/h5file.hpp"
 
 using std::cout;
 using std::endl;

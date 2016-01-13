@@ -4,7 +4,7 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/error.hpp"
+#include "core/error.hpp"
 
 #include "eigen_solver.hpp"
 #include "fixed_source_solver.hpp"

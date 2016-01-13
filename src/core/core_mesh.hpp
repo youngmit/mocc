@@ -6,14 +6,14 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/assembly.hpp"
-#include "mocc-core/core.hpp"
-#include "mocc-core/lattice.hpp"
-#include "mocc-core/material_lib.hpp"
-#include "mocc-core/mesh.hpp"
-#include "mocc-core/plane.hpp"
-#include "mocc-core/pin.hpp"
-#include "mocc-core/pin_mesh.hpp"
+#include "core/assembly.hpp"
+#include "core/core.hpp"
+#include "core/lattice.hpp"
+#include "core/material_lib.hpp"
+#include "core/mesh.hpp"
+#include "core/plane.hpp"
+#include "core/pin.hpp"
+#include "core/pin_mesh.hpp"
 
 namespace mocc {
     /**

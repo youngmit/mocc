@@ -2,9 +2,9 @@
 
 #include <cmath>
 
-#include "mocc-core/angle.hpp"
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/global_config.hpp"
+#include "core/angle.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/global_config.hpp"
 
 namespace mocc { namespace sn {
     /**

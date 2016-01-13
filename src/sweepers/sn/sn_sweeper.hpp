@@ -2,8 +2,8 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/utils.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/utils.hpp"
 
 #include "sweepers/transport_sweeper.hpp"
 

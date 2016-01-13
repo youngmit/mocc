@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "mocc-core/global_config.hpp"
+#include "core/global_config.hpp"
 
 const int N = 10000;
 

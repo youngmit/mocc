@@ -3,8 +3,8 @@
 #include "pugixml.hpp"
 #include <blitz/array.h>
 
-#include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/global_config.hpp"
+#include "core/angular_quadrature.hpp"
+#include "core/global_config.hpp"
 
 #include "sn/correction_data.hpp"
 #include "sn/sn_sweeper_variant.hpp"

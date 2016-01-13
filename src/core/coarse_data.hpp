@@ -5,10 +5,10 @@
 
 #include <blitz/array.h>
 
-#include "mocc-core/blitz_typedefs.hpp"
-#include "mocc-core/eigen_interface.hpp"
-#include "mocc-core/global_config.hpp"
-#include "mocc-core/mesh.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/eigen_interface.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
 
 namespace mocc {
     /**

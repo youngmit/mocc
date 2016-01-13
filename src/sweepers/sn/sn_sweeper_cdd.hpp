@@ -4,8 +4,8 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/files.hpp"
+#include "core/core_mesh.hpp"
+#include "core/files.hpp"
 
 #include "sn/cell_worker.hpp"
 #include "sn/correction_data.hpp"

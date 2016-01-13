@@ -1,5 +1,5 @@
-#include "mocc-core/source.hpp"
-#include "mocc-core/source_isotropic.hpp"
+#include "core/source.hpp"
+#include "core/source_isotropic.hpp"
 
 namespace mocc {
     void SourceIsotropic::self_scatter( size_t ig, const ArrayB1 &flux_1g)

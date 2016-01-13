@@ -2,9 +2,9 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/core_mesh.hpp"
-#include "mocc-core/h5file.hpp"
-#include "mocc-core/source.hpp"
+#include "core/core_mesh.hpp"
+#include "core/h5file.hpp"
+#include "core/source.hpp"
 
 #include "sweepers/transport_sweeper.hpp"
 

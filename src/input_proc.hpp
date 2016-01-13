@@ -3,7 +3,7 @@
 #include <map>
 #include <memory>
 
-#include "mocc-core/core_mesh.hpp"
+#include "core/core_mesh.hpp"
 
 #include "solvers/solver_factory.hpp"
 
