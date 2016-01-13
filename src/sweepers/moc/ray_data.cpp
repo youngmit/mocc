@@ -10,6 +10,7 @@
 #include "core/constants.hpp"
 #include "core/error.hpp"
 #include "core/files.hpp"
+#include "core/string_utils.hpp"
 
 using std::cout;
 using std::endl;
@@ -63,8 +64,7 @@ namespace mocc { namespace moc {
         bool core_modular = true;
         if( !input.attribute("modularity").empty() ) {
             std::string in_str = input.attribute("modularity").value();
-            std::transform( in_str.begin(), in_str.end(), in_str.begin(),
-                    ::tolower );
+            sanitize(in_str);
             if( in_str == "pin" ) {
                 core_modular = false;
                 // Make sure that all of the pins on the CoreMesh have the same

@@ -6,6 +6,7 @@
 #include "pugixml.hpp"
 
 #include "files.hpp"
+#include "string_utils.hpp"
 
 namespace mocc {
 namespace sn {
@@ -24,8 +25,7 @@ namespace sn {
             if( !input.attribute("boundary_update").empty() ) {
                 std::string in_string =
                     input.attribute("boundary_update").value();
-                std::transform(in_string.begin(), in_string.end(),
-                        in_string.begin(), ::tolower);
+                sanitize(in_string);
 
                 if( (in_string == "gs") || (in_string == "gauss-seidel") ) {
                     gs_boundary_ = true;
