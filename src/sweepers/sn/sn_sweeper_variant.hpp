@@ -10,14 +10,15 @@
 #include "mocc-core/files.hpp"
 #include "mocc-core/global_config.hpp"
 #include "mocc-core/mesh.hpp"
-#include "mocc-core/transport_sweeper.hpp"
 #include "mocc-core/utils.hpp"
 #include "mocc-core/xs_mesh_homogenized.hpp"
 
-#include "sn/sn_boundary.hpp"
-#include "sn/sn_current_worker.hpp"
-#include "sn/source_sn.hpp"
-#include "sn/sn_sweeper.hpp"
+#include "sweepers/transport_sweeper.hpp"
+
+#include "sn_boundary.hpp"
+#include "sn_current_worker.hpp"
+#include "source_sn.hpp"
+#include "sn_sweeper.hpp"
 
 namespace mocc { namespace sn {
 

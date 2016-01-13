@@ -5,10 +5,11 @@
 
 #include "pugixml.hpp"
 
-#include "angle.hpp"
-#include "angular_quadrature.hpp"
-#include "core_mesh.hpp"
-#include "geom.hpp"
+#include "mocc-core/angle.hpp"
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/geom.hpp"
+
 #include "ray.hpp"
 
 namespace mocc { namespace moc {

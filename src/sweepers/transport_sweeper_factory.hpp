@@ -2,7 +2,7 @@
 
 #include "pugixml.hpp"
 
-#include "mocc-core/transport_sweeper.hpp"
+#include "transport_sweeper.hpp"
 
 namespace mocc {
     /**

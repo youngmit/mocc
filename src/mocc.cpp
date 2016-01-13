@@ -12,7 +12,10 @@
 #include "mocc-core/files.hpp"
 #include "mocc-core/global_config.hpp"
 #include "mocc-core/h5file.hpp"
-#include "mocc-core/transport_sweeper.hpp"
+
+#include "solvers/solver.hpp"
+
+#include "sweepers/transport_sweeper.hpp"
 
 #include "input_proc.hpp"
 

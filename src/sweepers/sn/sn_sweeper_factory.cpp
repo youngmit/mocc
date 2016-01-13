@@ -5,13 +5,14 @@
 #include <string>
 
 #include "mocc-core/error.hpp"
-#include "mocc-core/transport_sweeper.hpp"
 
-#include "sn/correction_data.hpp"
-#include "sn/sn_sweeper.hpp"
-#include "sn/sn_sweeper_variant.hpp"
-#include "sn/sn_sweeper_cdd.hpp"
-#include "sn/sn_sweeper_dd.hpp"
+#include "sweepers/transport_sweeper.hpp"
+
+#include "correction_data.hpp"
+#include "sn_sweeper.hpp"
+#include "sn_sweeper_variant.hpp"
+#include "sn_sweeper_cdd.hpp"
+#include "sn_sweeper_dd.hpp"
 
 using mocc::sn::UP_SnSweeper_t;
 

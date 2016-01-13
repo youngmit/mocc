@@ -7,12 +7,13 @@
 
 #include "moc/ray_data.hpp"
 
+#include "sweepers/transport_sweeper.hpp"
+
 #include "mocc-core/angular_quadrature.hpp"
 #include "mocc-core/coarse_data.hpp"
 #include "mocc-core/core_mesh.hpp"
 #include "mocc-core/eigen_interface.hpp"
 #include "mocc-core/exponential.hpp"
-#include "mocc-core/transport_sweeper.hpp"
 #include "mocc-core/xs_mesh.hpp"
 #include "mocc-core/xs_mesh_homogenized.hpp"
 

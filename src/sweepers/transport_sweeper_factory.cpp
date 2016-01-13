@@ -2,11 +2,12 @@
 
 #include <string>
 
-#include "error.hpp"
-#include "mesh.hpp"
-#include "moc_sweeper.hpp"
-#include "sn_sweeper_factory.hpp"
-#include "plane_sweeper_2d3d.hpp"
+#include "mocc-core/error.hpp"
+#include "mocc-core/mesh.hpp"
+
+#include "moc/moc_sweeper.hpp"
+#include "sn/sn_sweeper_factory.hpp"
+#include "cmdo/plane_sweeper_2d3d.hpp"
 
 namespace mocc {
     UP_Sweeper_t TransportSweeperFactory( const pugi::xml_node &input,

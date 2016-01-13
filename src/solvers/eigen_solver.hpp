@@ -4,13 +4,15 @@
 
 #include "pugixml.hpp"
 
-#include "eigen_interface.hpp"
-#include "solver.hpp"
-#include "core_mesh.hpp"
+#include "mocc-core/eigen_interface.hpp"
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/h5file.hpp"
+#include "mocc-core/cmfd.hpp"
+
+#include "sweepers/transport_sweeper.hpp"
+
 #include "fixed_source_solver.hpp"
-#include "transport_sweeper.hpp"
-#include "h5file.hpp"
-#include "cmfd.hpp"
+#include "solver.hpp"
 
 namespace mocc{
     struct ConvergenceCriteria {

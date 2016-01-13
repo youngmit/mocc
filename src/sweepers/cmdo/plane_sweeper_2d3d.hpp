@@ -10,8 +10,8 @@
 #include "sn/sn_sweeper_variant.hpp"
 #include "sn/sn_sweeper_cdd.hpp"
 
-#include "cmdo/moc_sweeper_2d3d.hpp"
-#include "cmdo/source_2d3d.hpp"
+#include "moc_sweeper_2d3d.hpp"
+#include "source_2d3d.hpp"
 
 namespace mocc {
     /**

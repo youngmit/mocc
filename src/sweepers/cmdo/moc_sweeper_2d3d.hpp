@@ -1,8 +1,10 @@
 #pragma once
 
-#include "correction_data.hpp"
-#include "global_config.hpp"
-#include "moc_sweeper.hpp"
+#include "mocc-core/global_config.hpp"
+
+#include "sweepers/moc/moc_sweeper.hpp"
+
+#include "sweepers/sn/correction_data.hpp"
 
 namespace mocc {
     class MoCSweeper_2D3D: public moc::MoCSweeper {

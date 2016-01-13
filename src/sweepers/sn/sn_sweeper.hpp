@@ -3,12 +3,13 @@
 #include "pugixml.hpp"
 
 #include "mocc-core/angular_quadrature.hpp"
-#include "mocc-core/transport_sweeper.hpp"
 #include "mocc-core/utils.hpp"
 
-#include "sn/sn_boundary.hpp"
-#include "sn/cell_worker.hpp"
-#include "sn/source_sn.hpp"
+#include "sweepers/transport_sweeper.hpp"
+
+#include "sn_boundary.hpp"
+#include "cell_worker.hpp"
+#include "source_sn.hpp"
 
 namespace mocc { namespace sn {
     class SnSweeper: public TransportSweeper {

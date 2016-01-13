@@ -1,14 +1,17 @@
 #pragma once
 
-#include "angular_quadrature.hpp"
-#include "coarse_data.hpp"
-#include "correction_data.hpp"
-#include "global_config.hpp"
-#include "mesh.hpp"
-#include "moc_current_worker.hpp"
-#include "ray.hpp"
-#include "ray_data.hpp"
-#include "xs_mesh_homogenized.hpp"
+#include "mocc-core/angular_quadrature.hpp"
+#include "mocc-core/coarse_data.hpp"
+#include "mocc-core/global_config.hpp"
+#include "mocc-core/mesh.hpp"
+#include "mocc-core/xs_mesh_homogenized.hpp"
+
+#include "sweepers/moc/moc_current_worker.hpp"
+#include "sweepers/moc/ray.hpp"
+#include "sweepers/moc/ray_data.hpp"
+
+#include "sweepers/sn/correction_data.hpp"
+
 
 namespace mocc {
     namespace cmdo {

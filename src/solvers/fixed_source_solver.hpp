@@ -2,11 +2,13 @@
 
 #include "pugixml.hpp"
 
+#include "mocc-core/core_mesh.hpp"
+#include "mocc-core/h5file.hpp"
+#include "mocc-core/source.hpp"
+
+#include "sweepers/transport_sweeper.hpp"
+
 #include "solver.hpp"
-#include "source.hpp"
-#include "core_mesh.hpp"
-#include "transport_sweeper.hpp"
-#include "h5file.hpp"
 
 namespace mocc{
     /**

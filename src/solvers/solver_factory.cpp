@@ -6,6 +6,9 @@
 
 #include "mocc-core/error.hpp"
 
+#include "eigen_solver.hpp"
+#include "fixed_source_solver.hpp"
+
 namespace mocc {
     SP_Solver_t SolverFactory( const pugi::xml_node &input,
         const CoreMesh &mesh ){

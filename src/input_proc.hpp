@@ -4,7 +4,8 @@
 #include <memory>
 
 #include "mocc-core/core_mesh.hpp"
-#include "mocc-core/solver_factory.hpp"
+
+#include "solvers/solver_factory.hpp"
 
 namespace mocc{
     /**
