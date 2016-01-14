@@ -163,7 +163,7 @@ namespace mocc {
          * This struct stores the current state of the \ref Source. While not
          * absolutely necessary, it keeps client code from doing stupid things.
          */
-        struct {
+        struct State {
             bool has_fission : 1;
             bool has_inscatter : 1;
             bool is_scaled : 1;
@@ -172,7 +172,9 @@ namespace mocc {
                 has_inscatter = false;
                 is_scaled = false;
             }
-        } state_;
+        };
+
+        State state_;
 
         /**
          * Reference to a compatible \ref TransportSweeper \ref XSMesh.
