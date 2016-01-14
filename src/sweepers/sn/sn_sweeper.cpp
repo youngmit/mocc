@@ -14,7 +14,7 @@ namespace sn {
             TransportSweeper( input ),
             mesh_( mesh ),
             bc_type_( mesh.boundary() ),
-            flux_1g_( mesh_.n_pin() ),
+            flux_1g_( ),
             xstr_( mesh.n_pin() ),
             q_( mesh_.n_pin() ),
             bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
@@ -72,5 +72,5 @@ namespace sn {
         xs_mesh_->output( node );
         return;
     }
-}
-}
+} // namespace sn
+} // namespace moc

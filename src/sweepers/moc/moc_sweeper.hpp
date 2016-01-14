@@ -78,7 +78,8 @@ namespace mocc { namespace moc {
         // Array of one group transport cross sections
         ArrayF xstr_;
 
-        // Temporary storage for 1-group scalar flux
+        // Reference to a one-group slice of flux_. This should be 
+        // default-constructed, so that it only references data in flux_
         ArrayB1 flux_1g_;
 
         // Number of inner iterations per group sweep

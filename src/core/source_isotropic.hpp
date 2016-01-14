@@ -17,7 +17,7 @@ namespace mocc {
             return;
         }
 
-        virtual void self_scatter( size_t ig, const ArrayB1 &flux_1g );
+        virtual void self_scatter( size_t ig );
 
         const VectorX& get_transport( int iang ) const {
             return q_;

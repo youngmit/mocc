@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -10,6 +11,7 @@
 #include "core/global_config.hpp"
 #include "core/output_interface.hpp"
 #include "core/source.hpp"
+#include "core/source_factory.hpp"
 #include "core/source_isotropic.hpp"
 #include "core/xs_mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
@@ -113,14 +115,23 @@ namespace mocc{
                 ArrayF& fission_source) const;
 
         /**
-         * Construct and return a source object which conforms to the sweeper.
+         * \brief Construct and return a source object which conforms to the 
+         * sweeper.
+         *
          * For now, default to the isotropic MoC Source type, \ref
          * SourceIsotropic.
          */
-        virtual UP_Source_t create_source() const {
+        virtual UP_Source_t create_source( const pugi::xml_node &input ) const {
             UP_Source_t source( new SourceIsotropic( n_reg_, xs_mesh_.get(),
                         this->flux()) );
-            return source;
+            try {
+                return SourceFactory( input, n_reg_, xs_mesh_.get(), 
+                    this->flux() );
+            } 
+            catch( Exception e ) {
+                std::cerr << e.what() << std::endl;
+                throw EXCEPT("Failed to create source.");
+            }
         }
 
         /**

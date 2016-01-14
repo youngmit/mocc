@@ -81,11 +81,11 @@ namespace mocc {
     }
 
     void Source::add_external( const pugi::xml_node &input ) {
-        // Actual source specification. Pretty limited for now.
-        if( input.empty() ) {
-            throw EXCEPT("Standalone FSS must supply a <source> "
-                    "specification");
+        if( input.attribute("file").empty() ) {
+            // Nothing to do here
+            return;
         }
+
         std::string srcfname = input.attribute("file").value();
         HDF::H5File srcfile( srcfname, "r" );
         VecF src;

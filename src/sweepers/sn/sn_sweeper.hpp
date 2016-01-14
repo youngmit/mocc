@@ -71,7 +71,8 @@ namespace mocc { namespace sn {
         // Boundary condition enumeration
         std::vector<Boundary> bc_type_;
 
-        // Temporary storage for 1-group scalar flux
+        // One-group slice of flux_. Should be default-constructed, and assigned
+        // slices using .reference()
         ArrayB1 flux_1g_;
 
         // Temporary storage of the current-group transport cross section

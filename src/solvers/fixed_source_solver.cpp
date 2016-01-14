@@ -14,7 +14,7 @@ namespace mocc {
     FixedSourceSolver::FixedSourceSolver( const pugi::xml_node &input,
             const CoreMesh &mesh ) try :
         sweeper_( UP_Sweeper_t( TransportSweeperFactory(input, mesh) ) ),
-        source_( sweeper_->create_source() ),
+        source_( sweeper_->create_source(input.child("source")) ),
         fs_( nullptr ),
         ng_( sweeper_->n_group() ),
         fixed_source_( false )

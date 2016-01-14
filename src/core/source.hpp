@@ -82,13 +82,8 @@ namespace mocc {
          * sweeper in its "inner" iterations, and therefore does not mutate the
          * interal representation of the source, but instead returns the result
          * to the caller through the qbar argument.
-         *
-         * Have to pass flux_1g in for now, because it is assumed to be updated
-         * in the sweeper inner iterations outside of the MG flux array. At some
-         * point, it might be prudent to update it in-place, at which point,
-         * this flux_1g argument here would be superfluous.
          */
-        virtual void self_scatter( size_t ig, const ArrayB1& flux_1g ) = 0;
+        virtual void self_scatter( size_t ig ) = 0;
 
         /**
          * \brief Return the number of regions for which the Source is defined.

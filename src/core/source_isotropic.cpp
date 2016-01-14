@@ -2,8 +2,10 @@
 #include "core/source_isotropic.hpp"
 
 namespace mocc {
-    void SourceIsotropic::self_scatter( size_t ig, const ArrayB1 &flux_1g)
+    void SourceIsotropic::self_scatter( size_t ig )
     {
+        // Take a slice reference for this group's flux
+        const ArrayB1 flux_1g = flux_(blitz::Range::all(), ig);
         for( auto &xsr: *xs_mesh_ ) {
             const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
             real_t xssc = scat_row.from[ig-scat_row.min_g];

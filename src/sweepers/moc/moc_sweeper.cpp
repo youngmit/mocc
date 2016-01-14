@@ -25,7 +25,7 @@ namespace mocc { namespace moc {
                mesh
              ),
         xstr_( n_reg_ ),
-        flux_1g_( n_reg_ ),
+        flux_1g_( ),
         bc_type_( mesh_.boundary() )
     {
 
@@ -105,12 +105,12 @@ namespace mocc { namespace moc {
             }
         }
 
-        flux_1g_ = flux_( blitz::Range::all(), group );
+        flux_1g_.reference( flux_( blitz::Range::all(), group ) );
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
-            source_->self_scatter( group, flux_1g_ );
+            source_->self_scatter( group );
 
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
@@ -127,8 +127,6 @@ namespace mocc { namespace moc {
                 this->sweep1g( group, cw );
             }
         }
-
-        flux_( blitz::Range::all(), group ) = flux_1g_;
 
         return;
     }
