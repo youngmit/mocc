@@ -10,11 +10,13 @@ namespace mocc {
         xs_mesh_( xs_mesh ),
         n_group_( xs_mesh->n_group() ),
         has_external_( false ),
+        scale_transport_( false ),
         source_1g_( nreg ),
         flux_( flux ),
         n_reg_( flux.size()/n_group_ )
     {
         assert( n_reg_*n_group_ == flux_.size() );
+        state_.reset();
         return;
     }
 
@@ -26,6 +28,8 @@ namespace mocc {
         } else {
             source_1g_.fill(0.0);
         }
+
+        state_.reset();
         return;
     }
 
@@ -34,6 +38,8 @@ namespace mocc {
     // start with that.
     void Source::fission( const ArrayF& fs, int ig ) {
         assert(fs.size() == n_reg_);
+        assert(!state_.has_fission);
+        assert(!state_.is_scaled);
 
         for( auto &xsr: *xs_mesh_ ) {
             real_t xsch = xsr.xsmacch()[ig];
@@ -42,12 +48,18 @@ namespace mocc {
             }
         }
 
+        state_.has_fission = true;
+
         return;
     }
 
-    // Compute the contribution to the source from inscattering from other
-    // groups
+    /**
+     * \brief Compute the contribution to the source from inscattering from
+     * other groups.
+     */
     void Source::in_scatter( size_t ig ) {
+        assert(!state_.has_inscatter);
+        assert(!state_.is_scaled);
         for( auto &xsr: *xs_mesh_ ) {
             if( xsr.reg().size() == 0) {
                 continue;
@@ -73,8 +85,10 @@ namespace mocc {
         return;
     }
 
+
     void Source::auxiliary( const ArrayB1 &aux ) {
         assert( source_1g_.size() == (int)aux.size() );
+        assert( !state_.is_scaled );
         for( int i=0; i<(int)n_reg_; i++) {
             source_1g_[i] += aux(i);
         }

@@ -9,7 +9,6 @@
 
 #include "sn_boundary.hpp"
 #include "cell_worker.hpp"
-#include "source_sn.hpp"
 
 namespace mocc { namespace sn {
     class SnSweeper: public TransportSweeper {

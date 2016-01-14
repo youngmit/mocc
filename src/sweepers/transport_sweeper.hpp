@@ -115,19 +115,19 @@ namespace mocc{
                 ArrayF& fission_source) const;
 
         /**
-         * \brief Construct and return a source object which conforms to the 
+         * \brief Construct and return a source object which conforms to the
          * sweeper.
          *
          * For now, default to the isotropic MoC Source type, \ref
          * SourceIsotropic.
          */
         virtual UP_Source_t create_source( const pugi::xml_node &input ) const {
-            UP_Source_t source( new SourceIsotropic( n_reg_, xs_mesh_.get(),
-                        this->flux()) );
             try {
-                return SourceFactory( input, n_reg_, xs_mesh_.get(), 
+                auto source = SourceFactory( input, n_reg_, xs_mesh_.get(),
                     this->flux() );
-            } 
+
+                return source;
+            }
             catch( Exception e ) {
                 std::cerr << e.what() << std::endl;
                 throw EXCEPT("Failed to create source.");

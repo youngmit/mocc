@@ -51,6 +51,19 @@ namespace mocc { namespace moc {
         }
 
         /**
+         * \copybrief TransportSweeper::create_source()
+         *
+         * This mostly calls the base \ref TransportSweeper::create_source()
+         * method, but also makes sure that the source is configured properly
+         * for MoC.
+         */
+        virtual UP_Source_t create_source( const pugi::xml_node &input ) const {
+            auto source = TransportSweeper::create_source( input );
+            source->set_scale_transport(true);
+            return source;
+        }
+
+        /**
          * Return a copy of the sweeper's angular quadrature.
          */
         AngularQuadrature get_ang_quad() const {
@@ -78,7 +91,7 @@ namespace mocc { namespace moc {
         // Array of one group transport cross sections
         ArrayF xstr_;
 
-        // Reference to a one-group slice of flux_. This should be 
+        // Reference to a one-group slice of flux_. This should be
         // default-constructed, so that it only references data in flux_
         ArrayB1 flux_1g_;
 

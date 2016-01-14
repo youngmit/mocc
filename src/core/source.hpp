@@ -63,14 +63,14 @@ namespace mocc {
 
         /**
          * Add the contribution from in-scattering from other groups. At some
-         * point, ill play with upscattering iterations, but for now KISS.
+         * point, ill play with up-scattering iterations, but for now KISS.
          */
         virtual void in_scatter( size_t ig );
 
         /**
          * \brief Add a one-group auxiliary source
          * This adds some arbitrary source to the current group. Bear in mind
-         * that the source definitiion starts with the MG fission source, then
+         * that the source definition starts with the MG fission source, then
          * contributions get tacked on from there.
          */
         void auxiliary( const ArrayB1 &aux );
@@ -80,7 +80,7 @@ namespace mocc {
          * Add a contribution due to self-scatter within the current group,
          * returning the final source. This is usually called several times by a
          * sweeper in its "inner" iterations, and therefore does not mutate the
-         * interal representation of the source, but instead returns the result
+         * internal representation of the source, but instead returns the result
          * to the caller through the qbar argument.
          */
         virtual void self_scatter( size_t ig ) = 0;
@@ -90,6 +90,14 @@ namespace mocc {
          */
         size_t n_reg() const {
             return n_reg_;
+        }
+
+        /**
+         * \brief Define whether this \ref Source should scale itself by the
+         * transport cross section.
+         */
+        void set_scale_transport( bool scale ) {
+            scale_transport_ = scale;
         }
 
         /**
@@ -152,14 +160,34 @@ namespace mocc {
 
     protected:
         /**
+         * This struct stores the current state of the \ref Source. While not
+         * absolutely necessary, it keeps client code from doing stupid things.
+         */
+        struct {
+            bool has_fission : 1;
+            bool has_inscatter : 1;
+            bool is_scaled : 1;
+            void reset() {
+                has_fission = false;
+                has_inscatter = false;
+                is_scaled = false;
+            }
+        } state_;
+
+        /**
          * Reference to a compatible \ref TransportSweeper \ref XSMesh.
          */
         const XSMesh *xs_mesh_;
+
         size_t n_group_;
 
         // This is true if an external source has been specified. For now it's
         // initialized false.
         bool has_external_;
+
+        // Should we scale the source by the transport cross section? This is a
+        // useful optimization for MoC, but not necessarily other sweeper types.
+        bool scale_transport_;
 
         // The external source, if set
         ArrayB2 external_source_;

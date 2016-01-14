@@ -17,7 +17,6 @@
 
 #include "sn_boundary.hpp"
 #include "sn_current_worker.hpp"
-#include "source_sn.hpp"
 #include "sn_sweeper.hpp"
 
 namespace mocc { namespace sn {
@@ -81,14 +80,6 @@ namespace mocc { namespace sn {
 
         Worker* worker() {
             return &cell_worker_;
-        }
-
-        // Override the create_source() method to make a SourceSn instead of
-        // the regular
-        UP_Source_t create_source() const {
-            Source *s = new SourceSn( n_reg_, xs_mesh_.get(), this->flux());
-            UP_Source_t source( s );
-            return source;
         }
 
         void sweep( int group ) {

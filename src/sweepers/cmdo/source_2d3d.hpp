@@ -3,8 +3,6 @@
 #include "core/error.hpp"
 #include "core/source.hpp"
 
-#include "sn/source_sn.hpp"
-
 namespace mocc {
     /**
      * This class extends the Source class to provide an abstract representation
@@ -35,7 +33,7 @@ namespace mocc {
             mesh_(moc.mesh()),
             sn_source_( sn.n_reg(), &(sn.xs_mesh()), sn.flux() )
         {
-
+            this->set_scale_transport(true);
         }
 
         /**
@@ -101,6 +99,6 @@ namespace mocc {
         }
     private:
         const CoreMesh& mesh_;
-        sn::SourceSn sn_source_;
+        SourceIsotropic sn_source_;
     };
 }
