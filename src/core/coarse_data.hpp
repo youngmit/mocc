@@ -22,6 +22,7 @@ namespace mocc {
             surface_flux( (int)mesh.n_surf(), ngroup ),
             flux( (int)mesh.n_pin(), ngroup ),
             old_flux( (int)mesh.n_pin(), ngroup ),
+            n_group_( ngroup ),
             mesh_(mesh),
             has_data_radial_( false ),
             has_data_axial_( false )
@@ -63,6 +64,8 @@ namespace mocc {
          * zero_data_radial().
          */
         void zero_data( int group ) {
+            assert(group < n_group_ );
+
             current( blitz::Range::all(), group ) = 0.0;
             surface_flux( blitz::Range::all(), group ) = 0.0;
         }
@@ -94,6 +97,7 @@ namespace mocc {
         ArrayB2 flux;
         ArrayB2 old_flux;
     private:
+        int n_group_;
         const Mesh &mesh_;
         bool has_data_radial_;
         bool has_data_axial_;

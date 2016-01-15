@@ -34,7 +34,8 @@ namespace mocc{
         }
 
         TransportSweeper( const pugi::xml_node &input ):
-            ang_quad_(input.child("ang_quad"))
+            ang_quad_( input.child("ang_quad") ),
+            coarse_data_(nullptr)
         {
             return;
         }
