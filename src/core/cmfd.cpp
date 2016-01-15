@@ -28,6 +28,7 @@ namespace mocc {
         fs_old_( n_cell_ ),
         source_( n_cell_, xsmesh_.get(), coarse_data_.flux ),
         m_( xsmesh->n_group(), Eigen::SparseMatrix<real_t>(n_cell_, n_cell_) ),
+        solvers_( xsmesh->n_group() ),
         d_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
         d_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
@@ -158,9 +159,7 @@ namespace mocc {
         // Not sure exactly how expensive this is. Maybe it would be better to
         // store a collection of BiCGSTAB objects rather than/along with the
         // matrices?
-        Eigen::BiCGSTAB< Eigen::SparseMatrix<real_t> > solver;
-        solver.compute(m_[group]);
-        VectorX x = solver.solve(source_.get());
+        VectorX x = solvers_[group].solve(source_.get());
 
         // Store the result of the LS solution onto the CoarseData
         ArrayB1 flux_1g = coarse_data_.flux( blitz::Range::all(), group );
@@ -333,6 +332,8 @@ namespace mocc {
                     }
                 }
             } // matrix element loop
+
+            solvers_[group].compute(m);
             group++;
         } // group loop
         return;

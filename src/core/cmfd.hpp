@@ -98,6 +98,9 @@ namespace mocc {
         // Vector of one-group sparse matrix
         std::vector< Eigen::SparseMatrix<real_t> > m_;
 
+        // Vector of BiCGSTAB objects.
+        std::vector< Eigen::BiCGSTAB< Eigen::SparseMatrix<real_t> > > solvers_;
+
         // Surface quantities. We need to keep these around to do the current
         // update without having to recalculate. Based on profiling, might be
         // nice to still get these on the fly to save on memory, but this is
