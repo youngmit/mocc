@@ -63,6 +63,11 @@ namespace mocc { namespace sn {
         void output( H5::CommonFG *node ) const;
 
     protected:
+        /** 
+         * \brief Grab data (XS, etc.) from one or more external files
+         */
+        void add_data( const pugi::xml_node &input );
+
         const CoreMesh &mesh_;
 
         unsigned int n_inner_;

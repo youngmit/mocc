@@ -39,40 +39,8 @@ namespace mocc { namespace sn {
                 SnSweeper( input, mesh ),
                 cell_worker_( mesh_, ang_quad_ )
         {
-            LogFile << "Constructing a base Sn sweeper" << std::endl;
 
-            // Set up all of the stuff that would normally be done by the
-            // TransportSweeper constructor. There is probably a better and more
-            // maintainable way to do this; will revisit.
-            core_mesh_ = &mesh;
-            xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
-            n_reg_ = mesh.n_pin();
-            n_group_ = xs_mesh_->n_group();
-            flux_.resize( n_reg_, n_group_ );
-            flux_old_.resize( n_reg_, n_group_ );
-            vol_.resize( n_reg_ );
-
-            // Set the mesh volumes. Same as the pin volumes
-            int ipin = 0;
-            for( auto &pin: mesh_ ) {
-                int i = mesh_.index_lex( mesh_.pin_position(ipin) );
-                vol_[i] = pin->vol();
-                ipin++;
-            }
-
-            // Make sure we have input from the XML
-            if( input.empty() ) {
-                throw EXCEPT("No input specified to initialize Sn sweeper.");
-            }
-
-            // Parse the number of inner iterations
-            int int_in = input.attribute("n_inner").as_int(-1);
-            if( int_in < 0 ) {
-                throw EXCEPT("Invalid number of inner iterations specified "
-                        "(n_inner).");
-            }
-            n_inner_ = int_in;
-
+            
             return;
         }
 

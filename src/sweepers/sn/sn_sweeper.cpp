@@ -20,23 +20,68 @@ namespace sn {
             bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
             bc_out_( 1, ang_quad_, mesh_ ),
             gs_boundary_( true )
-        {
-            // Try to read boundary update option
-            if( !input.attribute("boundary_update").empty() ) {
-                std::string in_string =
-                    input.attribute("boundary_update").value();
-                sanitize(in_string);
+    {
+        LogFile << "Constructing a base Sn sweeper" << std::endl;
 
-                if( (in_string == "gs") || (in_string == "gauss-seidel") ) {
-                    gs_boundary_ = true;
-                } else if ( (in_string == "jacobi") || (in_string == "j") ) {
-                    gs_boundary_ = false;
-                } else {
-                    throw EXCEPT("Unrecognized option for BC update!");
-                }
+        core_mesh_ = &mesh;
+        n_reg_ = mesh.n_pin();
+        n_group_ = xs_mesh_->n_group();
+        flux_.resize( n_reg_, n_group_ );
+        flux_old_.resize( n_reg_, n_group_ );
+        vol_.resize( n_reg_ );
+
+        // Set up the cross-section mesh. If there is <data> specified, try to
+        // use that, otherwise generate volume-weighted cross sections
+        if( input.child("data").empty() ) {
+            xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh) );
+        } else {
+            try {
+                xs_mesh_ = SP_XSMesh_t( new XSMeshHomogenized(mesh, input) );
             }
-            return;
+            catch( Exception e ) {
+                std::cerr << e.what() << std::endl;
+                throw EXCEPT("Failed to create XSMesh for Sn Sweeper.");
+            }
         }
+
+        // Set the mesh volumes. Same as the pin volumes
+        int ipin = 0;
+        for( auto &pin: mesh_ ) {
+            int i = mesh_.index_lex( mesh_.pin_position(ipin) );
+            vol_[i] = pin->vol();
+            ipin++;
+        }
+
+        // Make sure we have input from the XML
+        if( input.empty() ) {
+            throw EXCEPT("No input specified to initialize Sn sweeper.");
+        }
+
+        // Parse the number of inner iterations
+        int int_in = input.attribute("n_inner").as_int(-1);
+        if( int_in < 0 ) {
+            throw EXCEPT("Invalid number of inner iterations specified "
+                    "(n_inner).");
+        }
+        n_inner_ = int_in;
+
+        // Try to read boundary update option
+        if( !input.attribute("boundary_update").empty() ) {
+            std::string in_string =
+                input.attribute("boundary_update").value();
+            sanitize(in_string);
+
+            if( (in_string == "gs") || (in_string == "gauss-seidel") ) {
+                gs_boundary_ = true;
+            } else if ( (in_string == "jacobi") || (in_string == "j") ) {
+                gs_boundary_ = false;
+            } else {
+                throw EXCEPT("Unrecognized option for BC update!");
+            }
+        }
+
+        return;
+    }
 
     void SnSweeper::output( H5::CommonFG *node ) const {
         auto dims = mesh_.dimensions();

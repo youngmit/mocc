@@ -6,20 +6,11 @@
 #include "sn/sn_sweeper.hpp"
 
 namespace mocc { namespace sn {
-//    class SnSweeper_DD: public SnSweeper {
-//    public:
-//        SnSweeper_DD( const pugi::xml_node& input, const CoreMesh& mesh ):
-//            SnSweeper( input, mesh ),
-//            cell_worker_( mesh ) { }
-//
-//        void sweep( int group );
-//
-//    private:
-//        /**
-//         * A simple class extending \ref sn::CellWorker to perform the algebraic
-//         * work needed to propagate flux through an orthogonal mesh cell using
-//         * the diamond difference scheme.
-//         */
+    /**
+     * A simple class extending \ref sn::CellWorker to perform the algebraic
+     * work needed to propagate flux through an orthogonal mesh cell using
+     * the diamond difference scheme.
+     */
     class CellWorker_DD: public sn::CellWorker {
     public:
         CellWorker_DD( const Mesh &mesh, const AngularQuadrature &ang_quad ):
@@ -61,7 +52,4 @@ namespace mocc { namespace sn {
             return psi;
         }
     };
-//
-//        CellWorker_DD cell_worker_;
-//    };
 } }

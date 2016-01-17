@@ -22,7 +22,7 @@ namespace mocc {
         int ipin = 0;
         int first_reg = 0;
         for( const auto &pin: mesh_ ) {
-            // Use the lexicographically-ordered pin index as the xs mesh index.
+            // Use the naturally-ordered pin index as the xs mesh index.
             // This is to put the indexing in a way that works best for the Sn
             // sweeper as it is implemented now. This is really brittle, and
             // should be replaced with some sort of Sn Mesh object, which both
@@ -34,6 +34,53 @@ namespace mocc {
             ipin++;
             first_reg += pin->n_reg();
         }
+    }
+
+    /**
+     * This creates a "homogenized" cross-section mesh using data prescribed by
+     * one or more HDF5 files. The allowance of multiple files is so that an
+     * \ref XSMeshHomogenized object can be composed from various sources. For
+     * example, imagine a 3-D mesh, where the cross sections are obtained from
+     * several different 2-D solutions, and the cross sections for each plane
+     * may be drawn from any of the 2-D results.
+     *
+     * Since the primary use-case for this functionality is for using planar,
+     * fine-mesh MoC solutions to provide cross sections to a coarse-mesh Sn
+     * solver, the data is specified along with the upper bound plane index to
+     * which the cross sections are to be applied. The data itself is assumed to
+     * be coming from a call to \ref XSMesh::output().
+     */
+
+    XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh, 
+            const pugi::xml_node &input ):
+        mesh_( mesh ),
+        flux_( nullptr )
+    {
+        if( input.child("data").empty() ) {
+            throw EXCEPT("No data found in input tag.");
+        }
+
+        // First, validate the <data> tags. Make sure that they are the right
+        // size and have cover all planes in the mesh.
+        {
+            int last_plane = -1;
+            for( auto data = input.child("data"); data;
+                data = data.next_sibling("data") )
+            {
+                int top_plane = data.attribute("top_plane").as_int(-1);
+                if( top_plane < 0 ) {
+                    throw EXCEPT("Invalid top_plane in <data />");
+                }
+                if( top_plane <= last_plane ) {
+                    throw EXCEPT("Out-of-order or duplicate top_plane in "
+                            "<data> tags" );
+                }
+
+                last_plane = top_plane;
+            }
+        }
+
+        return;
     }
 
     /**

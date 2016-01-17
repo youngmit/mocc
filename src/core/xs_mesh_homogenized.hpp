@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "pugixml.hpp"
+
 #include "blitz_typedefs.hpp"
 #include "eigen_interface.hpp"
 #include "h5file.hpp"
@@ -17,7 +19,23 @@ namespace mocc {
      */
     class XSMeshHomogenized: public XSMesh {
     public:
+        /** 
+         * Construct a homogenized \ref XSMesh from only a \ref CoreMesh object.
+         * Following construction, the cross sections in the mesh will be
+         * volume-weighted.
+         */
         XSMeshHomogenized( const CoreMesh& mesh );
+
+        /**
+         * Construct a homogenized \ref XSMesh from a \ref CoreMesh and external
+         * data. Following construction, the cross sections will be those
+         * specified by the auxiliary data files specified by the \p input XML.
+         * 
+         * \param mesh a \ref CoreMesh with which the \ref XSMeshHomogenized
+         * should conform.
+         * \param input an XML node containing at least one <data> child
+         */
+        XSMeshHomogenized( const CoreMesh& mesh, const pugi::xml_node &input );
 
         /**
          * Update homogenized cross sections using the passed flux array
