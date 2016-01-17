@@ -17,7 +17,7 @@ namespace mocc {
          * \brief Assign correction and cross-section coupling.
          */
         void set_coupling( std::shared_ptr<CorrectionData> data,
-                const XSMeshHomogenized *xsmesh ) {
+                SP_XSMeshHomogenized_t xsmesh ) {
             if( corrections_ || sn_xs_mesh_ ) {
                 throw EXCEPT( "Correction data already assigned." );
             }
@@ -30,11 +30,20 @@ namespace mocc {
          * cross sections. Mainly useful for one-way coupling.
          */
         void set_self_coupling() {
+            internal_coupling_ = true;
             corrections_ = std::shared_ptr<CorrectionData>( 
-                    new CorrectionData( mesh_.n_pin(),
-                    ang_quad_.ndir()/2, xs_mesh_->n_group() )
-                );
+                    new CorrectionData( mesh_,
+                    ang_quad_.ndir()/2, xs_mesh_->n_group() ) );
+            sn_xs_mesh_ = this->get_homogenized_xsmesh();
+            sn_xs_mesh_->set_flux( flux_ );
         }
+
+        /**
+         * \brief Extend output() to export correction factors and homogenized
+         * cross sections if the sweeper is internally coupled. Again, this is
+         * only for the one-way coupling case to output data.
+         */
+        void output( H5::CommonFG *node ) const;
 
     private:
         void sweep1g_final( int group );
@@ -48,6 +57,8 @@ namespace mocc {
 
         std::shared_ptr<CorrectionData> corrections_;
 
-        const XSMeshHomogenized* sn_xs_mesh_;
+        std::shared_ptr<XSMeshHomogenized> sn_xs_mesh_;
+
+        bool internal_coupling_;
     };
 }

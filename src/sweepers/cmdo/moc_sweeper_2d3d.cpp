@@ -17,13 +17,16 @@ namespace mocc {
     MoCSweeper_2D3D::MoCSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
         MoCSweeper( input, mesh ),
-        corrections_( nullptr )
+        corrections_( nullptr ),
+        sn_xs_mesh_( nullptr ),
+        internal_coupling_( false )
     {
         LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
     };
 
     void MoCSweeper_2D3D::sweep( int group ) {
         assert(source_);
+        assert(sn_xs_mesh_);
 
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
@@ -57,5 +60,12 @@ namespace mocc {
         }
 
         return;
+    }
+
+    void MoCSweeper_2D3D::output( H5::CommonFG *node ) const {
+        MoCSweeper::output( node );
+        if( internal_coupling_ ) {
+            corrections_->output( node );
+        }
     }
 }

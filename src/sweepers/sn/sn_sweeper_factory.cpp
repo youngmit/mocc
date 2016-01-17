@@ -38,7 +38,7 @@ namespace mocc {
             sn::SnSweeperVariant<sn::CellWorker_CDD_DD> *swp =
                 new sn::SnSweeperVariant<sn::CellWorker_CDD_DD>( input, mesh );
             auto corrections = std::shared_ptr<CorrectionData>(
-                new CorrectionData(swp->n_reg(), swp->ang_quad().ndir()/2,
+                new CorrectionData( mesh, swp->ang_quad().ndir()/2,
                 swp->n_group()) );
 
             swp->worker()->set_corrections( corrections );

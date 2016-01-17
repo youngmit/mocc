@@ -5,6 +5,8 @@
 
 #include "constants.hpp"
 #include "global_config.hpp"
+#include "mesh.hpp"
+#include "output_interface.hpp"
 
 namespace mocc {
 
@@ -17,7 +19,7 @@ namespace mocc {
      * [X|Y]), instead of using a multidimensional array, we will instead use
      * accessor functions to get the data out of a dense linear representation.
      */
-    class CorrectionData {
+    class CorrectionData : public HasOutput {
     public:
         CorrectionData( ):
             nreg_( 0 ),
@@ -27,8 +29,11 @@ namespace mocc {
             return;
         }
 
-        CorrectionData( size_t nreg, size_t nang, size_t ngroup ):
-            nreg_( nreg ),
+        CorrectionData( Mesh mesh, size_t nang, size_t ngroup ):
+            nreg_( mesh.n_pin() ),
+            nx_( mesh.nx() ),
+            ny_( mesh.ny() ),
+            nz_( mesh.nz() ),
             nang_( nang ),
             ngroup_( ngroup ),
             alpha_( nreg_*nang_*ngroup_*2, 0.5 ),
@@ -36,6 +41,7 @@ namespace mocc {
         {
             assert( alpha_.size() > 0 );
             assert( beta_.size() > 0 );
+            assert( nx_*ny_*nz_ == nreg_ );
             return;
         }
 
@@ -69,8 +75,13 @@ namespace mocc {
             return beta_[ nreg_*nang_*group + nreg_*ang + reg ];
         }
 
+        void output( H5::CommonFG *file ) const;
+        
     private:
         size_t nreg_;
+        size_t nx_;
+        size_t ny_;
+        size_t nz_;
         size_t nang_;
         size_t ngroup_;
 

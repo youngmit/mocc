@@ -24,8 +24,7 @@ namespace mocc {
         sn_sweeper_(input.child("sn_sweeper"), mesh),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad()),
-        corrections_( new CorrectionData( sn_sweeper_.n_reg(),
-            ang_quad_.ndir()/2,
+        corrections_( new CorrectionData( mesh_, ang_quad_.ndir()/2,
             sn_sweeper_.n_group() ) ),
         tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
         sn_resid_( sn_sweeper_.n_group() ),
@@ -43,8 +42,8 @@ namespace mocc {
         n_group_ = xs_mesh_->n_group();
 
         sn_sweeper_.worker()->set_corrections( corrections_ );
-        const XSMeshHomogenized* sn_xs_mesh =
-            sn_sweeper_.get_homogenized_xsmesh().get();
+        auto sn_xs_mesh =
+            sn_sweeper_.get_homogenized_xsmesh();
         moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
 
         sn_sweeper_.set_ang_quad(ang_quad_);
@@ -195,42 +194,8 @@ namespace mocc {
         }
 
         // Write out the correction factors
-        file->createGroup("/alpha_x");
-        file->createGroup("/alpha_y");
-        file->createGroup("/beta");
-
-        for( size_t g=0; g<n_group_; g++ ) {
-            for( int a=0; a<ang_quad_.ndir_oct()*4; a++ ) {
-                VecF alpha_x( mesh_.n_pin(), 0.0 );
-                VecF alpha_y( mesh_.n_pin(), 0.0 );
-                VecF beta( mesh_.n_pin(), 0.0 );
-                for( size_t i=0; i<mesh_.n_pin(); i++ ) {
-                    alpha_x[i] = corrections_->alpha( i, a, g, Normal::X_NORM );
-                    alpha_y[i] = corrections_->alpha( i, a, g, Normal::Y_NORM );
-                    beta[i] = corrections_->beta( i, a, g );
-                }
-
-                {
-                    std::stringstream setname;
-                    setname << "/beta/" << g << "_" << a;
-                    HDF::Write( file, setname.str(), beta, dims );
-                }
-
-                {
-                    std::stringstream setname;
-                    setname << "/alpha_x/" << setfill('0') << setw(3) << g
-                            << "_"         << setfill('0') << setw(3) << a;
-                    HDF::Write( file, setname.str(), alpha_x, dims );
-                }
-
-                {
-                    std::stringstream setname;
-                    setname << "/alpha_y/" << setfill('0') << setw(3) << g
-                            << "_"         << setfill('0') << setw(3) << a;
-                    HDF::Write( file, setname.str(), alpha_y, dims );
-                }
-            }
-        }
+        corrections_->output(file);
+        
     }
 
 ////////////////////////////////////////////////////////////////////////////////
