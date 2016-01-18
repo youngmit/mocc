@@ -53,6 +53,7 @@ find_package(HDF5)
 find_package(Blitz REQUIRED)
 
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")
+include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/unittest-cpp")
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
 include_directories(SYSTEM ${Blitz_INCLUDE_DIR})
 
