@@ -4,3 +4,6 @@
 [submodule "lib/eigen"]
 	path = lib/eigen
 	url = https://github.com/tjtg/eigen.git
+[submodule "lib/unittest-cpp"]
+	path = lib/unittest-cpp
+	url = https://github.com/unittest-cpp/unittest-cpp.git
