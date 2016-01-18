@@ -33,7 +33,7 @@ namespace mocc {
          * 
          * \param mesh a \ref CoreMesh with which the \ref XSMeshHomogenized
          * should conform.
-         * \param input an XML node containing at least one <data> child
+         * \param input an XML node containing at least one \<data\> child
          */
         XSMeshHomogenized( const CoreMesh& mesh, const pugi::xml_node &input );
 

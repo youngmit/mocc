@@ -50,7 +50,6 @@ namespace mocc {
      * which the cross sections are to be applied. The data itself is assumed to
      * be coming from a call to \ref XSMesh::output().
      */
-
     XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh, 
             const pugi::xml_node &input ):
         mesh_( mesh ),
@@ -60,7 +59,7 @@ namespace mocc {
             throw EXCEPT("No data found in input tag.");
         }
 
-        // First, validate the <data> tags. Make sure that they are the right
+        // First, validate the data tags. Make sure that they are the right
         // size and have cover all planes in the mesh.
         {
             int last_plane = -1;

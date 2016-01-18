@@ -98,6 +98,16 @@ namespace mocc {
             return;
         }
 
+        /**
+         * \brief Read data from an \ref H5Node into a Blitz++ array.
+         *
+         * This will attempt to read the dataset specified by the path relative
+         * the location of the \ref H5Node into the passed Blitz array. This
+         * requires that the number of dimensions of the passed array match that
+         * of the dataset in the HDF5 file. It also assumes that the Blitz array
+         * is empty (size == 0), or that it is allocated to the same shape as
+         * the dataset.
+         */
         template<class BlitzArray>
         void read( std::string path, BlitzArray &data ) {
             try {
