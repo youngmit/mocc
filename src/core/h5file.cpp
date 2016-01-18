@@ -8,7 +8,85 @@
 using std::cout;
 using std::endl;
 
+unsigned int convert_access( mocc::H5Access access ) {
+    switch(access) {
+    case mocc::H5Access::WRITE:
+        return H5F_ACC_TRUNC;
+    case mocc::H5Access::APPEND:
+        return H5F_ACC_RDWR;
+    default:
+        return H5F_ACC_RDONLY;
+    }
+}
+
 namespace mocc {
+    H5Node::H5Node( std::string filename, H5Access access ):
+        file_( new H5::H5File( filename.c_str(), convert_access(access) ) ),
+        node_( file_ ),
+        access_( access )
+    {
+        return;
+    }
+
+    H5Node::H5Node( std::shared_ptr<H5::CommonFG> node, H5Access access ):
+        file_( nullptr ),
+        node_( node ),
+        access_( access )
+    {
+        return;
+    }
+
+    H5Node H5Node::create_group( std::string path ) {
+        if( access_ != H5Access::READ ) {
+            H5::Group *g = new H5::Group();
+            *g = node_->createGroup(path.c_str());
+            std::shared_ptr<H5::CommonFG> sp( g );
+            return H5Node( sp, access_ );
+        } else {
+            throw EXCEPT( "No write permissions" );
+        }
+    }
+
+    void H5Node::write( std::string path, VecF data, VecI dims ) {
+        hsize_t *dims_a = new hsize_t[dims.size()];
+        for ( size_t i=0; i<dims.size(); i++ ) {
+            dims_a[i] = dims[i];
+        }
+
+        try {
+            H5::DataSpace space( dims.size(), dims_a );
+            H5::DataSet dataset = node_->createDataSet( path,
+                    H5::PredType::NATIVE_DOUBLE, space );
+            dataset.write( data.data(), H5::PredType::NATIVE_DOUBLE );
+        } catch (...) {
+            std::stringstream msg;
+            msg << "Failed to write dataset: " << path;
+            throw EXCEPT( msg.str().c_str() );
+        }
+
+        delete[] dims_a;
+
+        return;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     namespace HDF {
         H5File::H5File( std::string fname, std::string access ) {
             if( access == "w" ) {
