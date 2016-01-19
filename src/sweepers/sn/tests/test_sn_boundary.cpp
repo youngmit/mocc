@@ -1,7 +1,4 @@
-#undef __STRICT_ANSI__
-#undef _REENT_ONLY
-#define BOOST_TEST_MAIN
-#include <boost/test/included/unit_test.hpp>
+#include "UnitTest++/UnitTest++.h"
 
 #include <algorithm>
 #include <iostream>
@@ -19,7 +16,7 @@ using std::endl;
 
 using namespace mocc;
 
-BOOST_AUTO_TEST_CASE( testboundary )
+TEST( testboundary )
 {
     // Start with the necessary boundary conditions, Mesh, and angular
     // quadrature to construct an Sn boundary condition.
@@ -67,15 +64,15 @@ BOOST_AUTO_TEST_CASE( testboundary )
     {
         ArrayF face = boundary.get_face( 0, 0, Normal::X_NORM );
         // Check face dimensions
-        BOOST_CHECK_EQUAL(face.size(), 5*6);
+        CHECK_EQUAL(face.size(), 5*6);
         // Check that the face is storing the right value
         for( int i=0; i<5*6; i++ ) {
-            BOOST_CHECK_EQUAL(face[i], 3.14);
+            CHECK_EQUAL(face[i], 3.14);
         }
     }
     {
         ArrayF face = boundary.get_face( 0, 0, Normal::Y_NORM );
-        BOOST_CHECK_EQUAL(face.size(), 4*6);
+        CHECK_EQUAL(face.size(), 4*6);
 
         // Change the value of the face, set it, get it back and make sure it
         // stuck.
@@ -83,15 +80,15 @@ BOOST_AUTO_TEST_CASE( testboundary )
         face = 4.0;
         boundary.set_face( 1, 1, Normal::X_NORM, face );
         face = boundary.get_face( 1, 1, Normal::X_NORM );
-        BOOST_CHECK_EQUAL(face[3], 4.0);
+        CHECK_EQUAL(face[3], 4.0);
 
         // Make sure that the rest of the faces are unaffected
         face = boundary.get_face( 0, 1, Normal::X_NORM );
-        BOOST_CHECK_EQUAL(face[3], 3.14);
+        CHECK_EQUAL(face[3], 3.14);
     }
     {
         ArrayF face = boundary.get_face( 0, 0, Normal::Z_NORM );
-        BOOST_CHECK_EQUAL(face.size(), 4*5);
+        CHECK_EQUAL(face.size(), 4*5);
     }
 
     // Check the update routines. Stash some values in the out boundary, and use
@@ -110,8 +107,11 @@ BOOST_AUTO_TEST_CASE( testboundary )
         boundary.update( 0, 3, out );
         face = boundary.get_face( 0, 3, Normal::X_NORM );
         for( int i=0; i<(int)face.size(); i++ ) {
-            BOOST_CHECK_EQUAL( face[i], 1.77 );
+            CHECK_EQUAL( face[i], 1.77 );
         }
     }
+}
 
+int main() {
+    return UnitTest::RunAllTests();
 }

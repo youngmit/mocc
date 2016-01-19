@@ -1,9 +1,6 @@
-#undef __STRICT_ANSI__
-#undef _REENT_ONLY
-#define BOOST_TEST_MAIN
-#include <stdlib.h>
-#include <boost/test/included/unit_test.hpp>
+#include "UnitTest++/UnitTest++.h"
 
+#include <stdlib.h>
 #include <cmath>
 #include <iostream>
 
@@ -13,7 +10,7 @@ using namespace mocc;
 using std::cout;
 using std::endl;
 
-BOOST_AUTO_TEST_CASE( testall )
+TEST( exp )
 {
 
     Exponential_Linear exp;
@@ -25,8 +22,12 @@ BOOST_AUTO_TEST_CASE( testall )
         real_t exp_r = std::exp(x);
         max_err = std::max(max_err, std::abs(exp_r - exp_t));
         cout << x << " " << exp_r << " " << exp_t << endl;
-        BOOST_CHECK( std::abs(exp_r - exp_t) < 1e-9 );
+        CHECK( std::abs(exp_r - exp_t) < 2e-8 );
     }
 
     cout << "max_err: " << max_err << endl;
+}
+
+int main(int, const char*[]) {
+    return UnitTest::RunAllTests();
 }

@@ -1,13 +1,10 @@
-#undef __STRICT_ANSI__
-#undef _REENT_ONLY
-#define BOOST_TEST_MAIN
-#include <boost/test/included/unit_test.hpp>
+#include "UnitTest++/UnitTest++.h"
 
 #include "core/assembly.hpp"
 #include "core/lattice.hpp"
 
 
-BOOST_AUTO_TEST_CASE( testall )
+TEST( assembly )
 {
     std::string test_xml =
         "<mesh type=\"rec\" pitch=\"1.2\">"
@@ -58,6 +55,8 @@ BOOST_AUTO_TEST_CASE( testall )
     if( !result ){
         return 1;
     }
+}
 
-
+int main(int, const char*[]) {
+    return UnitTest::RunAllTests();
 }

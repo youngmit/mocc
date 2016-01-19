@@ -1,5 +1,5 @@
-#undef __STRICT_ANSI__
-#undef _REENT_ONLY
+#include "UnitTest++/UnitTest++.h"
+
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -13,7 +13,8 @@
 using std::cout;
 using std::endl;
 
-int main() {
+TEST( material )
+{
     mocc::FileScrubber c5g7_file ("c5g7.xsl", "!");
     mocc::MaterialLib matlib(c5g7_file);
 
@@ -50,4 +51,8 @@ int main() {
         cout << endl;
     }
     assert(mat.xssc().to(3).from[0] == 5.04050E-09);
+}
+
+int main(int, const char*[]) {
+    return UnitTest::RunAllTests();
 }
