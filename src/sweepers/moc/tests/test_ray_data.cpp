@@ -1,5 +1,5 @@
-#undef __STRICT_ANSI__
-#undef _REENT_ONLY
+#include "UnitTest++/UnitTest++.h"
+
 #include <string>
 #include <cassert>
 
@@ -11,8 +11,7 @@
 #include "constants.hpp"
 #include "global_config.hpp"
 
-int main() {
-
+TEST( raydata ) {
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "square.xml" );
 
@@ -22,9 +21,7 @@ int main() {
     result =
         angquad_xml.load_string("<ang_quad type=\"ls\" order=\"4\" />");
 
-    if ( !result ) {
-        return 1;
-    }
+    CHECK(result);
 
     mocc::AngularQuadrature ang_quad( angquad_xml.child("ang_quad") );
 
@@ -32,8 +29,6 @@ int main() {
     ray_xml.load_string("<rays spacing=\"0.01\" />");
 
     mocc::moc::RayData ray_data( ray_xml.child("rays"), ang_quad, mesh );
-
-
 
     for( auto &plane_rays: ray_data ) {
         int iang = 0;
@@ -58,7 +53,8 @@ int main() {
         }
         std::cout << "angle weight sum: " << wsum << std::endl;
     }
+}
 
-
-    return 0;
+int main() {
+    return UnitTest::RunAllTests();
 }

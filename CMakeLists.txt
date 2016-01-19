@@ -47,7 +47,6 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}"
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 find_package(HDF5)
 
 find_package(Blitz REQUIRED)
@@ -57,8 +56,6 @@ include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/unittest-cpp")
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
 include_directories(SYSTEM ${Blitz_INCLUDE_DIR})
 
-
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 add_subdirectory(lib)
 
 add_subdirectory(src)

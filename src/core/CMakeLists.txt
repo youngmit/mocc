@@ -6,4 +6,4 @@ file(GLOB core_src "*.cpp")
 
 add_library(core ${core_src})
 target_link_libraries(core pugixml hdf5 )
-target_link_libraries(core ${Boost_LIBRARIES})
+target_link_libraries(core)
