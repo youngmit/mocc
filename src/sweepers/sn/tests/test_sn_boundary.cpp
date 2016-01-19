@@ -46,7 +46,8 @@ TEST( testboundary )
     Mesh mesh( 120, 120, x, y, z, bc );
 
     pugi::xml_document angquad_xml;
-    pugi::xml_parse_result result = angquad_xml.load_string( "<ang_quad type=\"ls\" order=\"4\" />" );
+    pugi::xml_parse_result result =
+        angquad_xml.load_string( "<ang_quad type=\"ls\" order=\"4\" />" );
 
     if( !result ) {
         cout << "failed to read ang quad" << endl;
@@ -67,12 +68,12 @@ TEST( testboundary )
         CHECK_EQUAL(face.size(), 5*6);
         // Check that the face is storing the right value
         for( int i=0; i<5*6; i++ ) {
-            CHECK_EQUAL(face[i], 3.14);
+            CHECK_EQUAL(3.14, face[i]);
         }
     }
     {
         ArrayF face = boundary.get_face( 0, 0, Normal::Y_NORM );
-        CHECK_EQUAL(face.size(), 4*6);
+        CHECK_EQUAL(4*6, face.size());
 
         // Change the value of the face, set it, get it back and make sure it
         // stuck.
@@ -80,15 +81,15 @@ TEST( testboundary )
         face = 4.0;
         boundary.set_face( 1, 1, Normal::X_NORM, face );
         face = boundary.get_face( 1, 1, Normal::X_NORM );
-        CHECK_EQUAL(face[3], 4.0);
+        CHECK_EQUAL(4.0, face[3]);
 
         // Make sure that the rest of the faces are unaffected
         face = boundary.get_face( 0, 1, Normal::X_NORM );
-        CHECK_EQUAL(face[3], 3.14);
+        CHECK_EQUAL(3.14, face[3]);
     }
     {
         ArrayF face = boundary.get_face( 0, 0, Normal::Z_NORM );
-        CHECK_EQUAL(face.size(), 4*5);
+        CHECK_EQUAL(4*5, face.size());
     }
 
     // Check the update routines. Stash some values in the out boundary, and use
@@ -104,10 +105,12 @@ TEST( testboundary )
         face = 1.77;
         out.set_face( 0, 0, Normal::X_NORM, face );
 
-        boundary.update( 0, 3, out );
-        face = boundary.get_face( 0, 3, Normal::X_NORM );
+        int iangrefl = ang_quad.reflect(0, Normal::X_NORM);
+
+        boundary.update( 0, 0, out );
+        face = boundary.get_face( 0, iangrefl, Normal::X_NORM );
         for( int i=0; i<(int)face.size(); i++ ) {
-            CHECK_EQUAL( face[i], 1.77 );
+            CHECK_EQUAL( 1.77, face[i] );
         }
     }
 }
