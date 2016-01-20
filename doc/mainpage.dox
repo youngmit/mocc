@@ -29,7 +29,7 @@ File Naming
 -----------
 Most classes should have their own file, with the exception of small utility
 classes which may make sense to be packaged together with a larger, more
-standalone class. Class filenames should share the same name as the class
+standalone file. Class filenames should share the same name as the class
 that they contain, be all lowercase, with words separated by underscores.
 
 Conventions
