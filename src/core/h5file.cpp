@@ -47,6 +47,21 @@ namespace mocc {
         }
     }
 
+    std::vector<hsize_t> H5Node::dimensions( std::string path ) {
+        try {
+            H5::DataSet dataset = node_->openDataSet( path );
+            H5::DataSpace dataspace = dataset.getSpace();
+            size_t ndim = dataspace.getSimpleExtentNdims();
+            std::vector<hsize_t> dims(ndim);
+            dataspace.getSimpleExtentDims( dims.data() );
+
+            return dims;
+        }
+        catch(...) {
+            throw EXCEPT("Failed to get dataset dimensions");
+        }
+    }
+
     void H5Node::write( std::string path, VecF data, VecI dims ) {
         hsize_t *dims_a = new hsize_t[dims.size()];
         for ( size_t i=0; i<dims.size(); i++ ) {

@@ -37,18 +37,47 @@ namespace mocc {
     public:
         H5Node( std::string filename, H5Access access );
 
+        /**
+         * \brief Create a new group in the HDF5 file.
+         *
+         * \param path the path to the group to be created
+         * \return a new \ref H5Node pointing to the new group
+         *
+         * This method produces a new HDF5 group in the file, located at the
+         * path specified relative to the \ref H5Node upon which this method is
+         * called. If the path contains a leading slash ('/'), the path will be
+         * relative to the root of the file.
+         */
         H5Node create_group( std::string path );
 
+        /**
+         * \brief Return a pointer to the underlying H5::CommonFG
+         *
+         * This is provided so that client code can use the full-blown HDF5
+         * library to interact with the file.
+         */
         H5::CommonFG *get() {
             return node_.get();
         }
 
+        /**
+         * \brief Return an \ref H5Node pointing to the path specified.
+         */
         H5Node operator[]( std::string path ) {
             std::shared_ptr<H5::CommonFG> 
                 g(new H5::Group(node_->openGroup(path)));
             return H5Node( g, access_ );
         }
 
+        /**
+         * \brief Return the dimensions of the dataset specified by the path
+         */
+        std::vector<hsize_t> dimensions( std::string path );
+
+        /**
+         * \brief Write an std::vector<double> to the file, using specified
+         * dimensions.
+         */
         void write( std::string path, VecF data, VecI dims );
 
         /**
@@ -69,7 +98,6 @@ namespace mocc {
             if( !data.isStorageContiguous() ) {
                 throw EXCEPT("Blitz data is not contiguous.");
             }
-
 
             int ndim = data.dimensions();
             std::vector<hsize_t> dims;
@@ -110,6 +138,9 @@ namespace mocc {
          */
         template<class BlitzArray>
         void read( std::string path, BlitzArray &data ) {
+            if( !data.isStorageContiguous() ) {
+                throw EXCEPT("Blitz data is not contiguous");
+            }
             try {
                 H5::DataSet dataset = node_->openDataSet( path );
                 H5::DataSpace dataspace = dataset.getSpace();
