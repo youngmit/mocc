@@ -59,6 +59,8 @@ namespace mocc {
             throw EXCEPT("No data found in input tag.");
         }
 
+        ng_ = mesh.mat_lib().n_group();
+
         // First, validate the data tags. Make sure that they are the right
         // size and have cover all planes in the mesh.
         {
@@ -74,10 +76,48 @@ namespace mocc {
                     throw EXCEPT("Out-of-order or duplicate top_plane in "
                             "<data> tags" );
                 }
+                
+                if(data.attribute("file").empty()) {
+                    throw EXCEPT("No file specified.");
+                }
+
+                // Check the dimensions of the contained XSMesh
+                H5Node h5d(data.attribute("file").value(), H5Access::READ);
+                auto dims = h5d.dimensions("/xsmesh/xstr/0");
+                if( dims[2] != mesh_.nx() ) {
+                    throw EXCEPT("Incorrect XS Mesh dimensions");
+                }
+                if( dims[1] != mesh_.ny() ) {
+                    throw EXCEPT("Incorrect XS Mesh dimensions");
+                }
+                if( dims[0] != 1 ) {
+                    throw EXCEPT("Data should only have one plane");
+                }
 
                 last_plane = top_plane;
             }
         }
+
+        // If we made it this far, things should be kosher
+        regions_.resize(mesh_.n_pin());
+        
+        for( auto data = input.child("data"); data;
+            data = data.next_sibling("data") )
+        {
+            H5Node h5d( data.attribute("file").value(), H5Access::READ );
+
+            // Get all the data out to memory first
+            ArrayB4 xstr( ng_, 1, mesh_.ny(), mesh_.nx() );
+            for( unsigned g=0; g<ng_; g++ ) {
+                std::stringstream path;
+                path << "/xsmesh/xstr/" << g;
+                ArrayB3 group_slice(xstr(blitz::Range::all(),
+                        blitz::Range::all(), 0, blitz::Range::all()));
+                std::cout << group_slice.isStorageContiguous() << endl;;
+                //h5d.read(path.str(), group_slice);
+            }
+        }
+
 
         return;
     }

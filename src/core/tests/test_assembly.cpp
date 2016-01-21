@@ -50,7 +50,7 @@ TEST( assembly )
         "";
 
     pugi::xml_document xml;
-    auto result = xml.load_string( xml );
+    auto result = xml.load_string( test_xml.c_str() );
 
     if( !result ){
         return 1;
