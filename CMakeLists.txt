@@ -1,11 +1,18 @@
 project(MOCC)
 cmake_minimum_required(VERSION 3.2)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 SET(BUILD_TESTS true CACHE BOOL "Enable compilation of tests")
-SET(PROFILE false CACHE BOOL "Enable profiling")
 MESSAGE(STATUS "Tests: ${BUILD_TESTS}")
+SET(PROFILE false CACHE BOOL "Enable profiling")
 MESSAGE(STATUS "Profiling: ${PROFILE}")
+SET(COVERAGE false CACHE BOOL "Enable code coverage instrumentation")
+MESSAGE(STATUS "Coverage: ${COVERAGE}")
+
 enable_testing()
+CONFIGURE_FILE("${CMAKE_MODULE_PATH}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake")
+
+include(CTest)
 
 MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
     message("Copying file: ${in_file} to: ${out_file}")
@@ -30,6 +37,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
         SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
     endif()
+    if (${COVERAGE})
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /XW /EHsc")
 else()
@@ -45,7 +55,6 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 #set(CMAKE_CXX_LINK_FLAGS ${link})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 find_package(HDF5)
 
