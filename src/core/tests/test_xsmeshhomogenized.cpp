@@ -39,6 +39,9 @@ TEST( fromdata ) {
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "stack.xml" );
     CHECK( result );
+    if( !result ) {
+        std::cout << result.description() << std::endl;
+    }
 
     CoreMesh mesh( geom_xml );
 

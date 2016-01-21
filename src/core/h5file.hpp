@@ -138,7 +138,7 @@ namespace mocc {
          */
         template<class BlitzArray>
         void read( std::string path, BlitzArray &data ) {
-            if( !data.isStorageContiguous() ) {
+            if( (data.size() != 0) && !data.isStorageContiguous() ) {
                 throw EXCEPT("Blitz data is not contiguous");
             }
             try {
