@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "h5file.hpp"
+
 using std::cout;
 using std::cin;
 using std::endl;
@@ -17,10 +19,32 @@ namespace mocc {
         eubounds_ = mesh_.mat_lib().g_bounds();
         ng_ = eubounds_.size();
 
-        regions_ = std::vector<XSMeshRegion>( mesh_.n_pin() );
+        int n_xsreg = mesh.n_pin();
+
+
+        // Allocate space to store the cross sections
+        xstr_.resize(n_xsreg, ng_);
+        xsnf_.resize(n_xsreg, ng_);
+        xsch_.resize(n_xsreg, ng_);
+        xskf_.resize(n_xsreg, ng_);
+        xsrm_.resize(n_xsreg, ng_);
+        assert(xstr_(0, blitz::Range::all()).isStorageContiguous());
+
+        // Set up the regions
+        regions_.reserve(n_xsreg);
+        VecI fsrs(1);
+        for( int i=0; i<n_xsreg; i++ ) {
+            fsrs[0] = i;
+            regions_.emplace_back( fsrs,
+                    &xstr_(i, 0),
+                    &xsnf_(i, 0),
+                    &xsch_(i, 0),
+                    &xskf_(i, 0),
+                    &xsrm_(i, 0),
+                    ScatteringMatrix() );
+        }
 
         int ipin = 0;
-        int first_reg = 0;
         for( const auto &pin: mesh_ ) {
             // Use the naturally-ordered pin index as the xs mesh index.
             // This is to put the indexing in a way that works best for the Sn
@@ -30,9 +54,8 @@ namespace mocc {
             auto pos = mesh.pin_position(ipin);
             int ireg = mesh.index_lex( pos );
             int ixsreg = mesh_.index_lex( pos );
-            regions_[ixsreg] = this->homogenize_region( ireg, *pin );
+            this->homogenize_region( ireg, *pin, regions_[ixsreg] );
             ipin++;
-            first_reg += pin->n_reg();
         }
     }
 
@@ -101,23 +124,24 @@ namespace mocc {
         // If we made it this far, things should be kosher
         regions_.resize(mesh_.n_pin());
         
+
         for( auto data = input.child("data"); data;
             data = data.next_sibling("data") )
         {
             H5Node h5d( data.attribute("file").value(), H5Access::READ );
 
-            // Get all the data out to memory first
+            // Get all the group data out to memory first
             ArrayB4 xstr( ng_, 1, mesh_.ny(), mesh_.nx() );
             for( unsigned g=0; g<ng_; g++ ) {
                 std::stringstream path;
                 path << "/xsmesh/xstr/" << g;
                 ArrayB3 group_slice(xstr(blitz::Range::all(),
                         blitz::Range::all(), 0, blitz::Range::all()));
-                std::cout << group_slice.isStorageContiguous() << endl;;
-                //h5d.read(path.str(), group_slice);
+                h5d.read(path.str(), group_slice);
             }
-        }
 
+            ArrayB4 xsnf( ng_, 1, mesh_.ny(), mesh_.nx() );
+        }
 
         return;
     }
@@ -137,8 +161,8 @@ namespace mocc {
         for( const auto &pin: mesh_ ) {
             int ireg = mesh_.index_lex( mesh_.pin_position(ipin) );
             int ixsreg = ireg;
-            regions_[ixsreg] = this->homogenize_region_flux( ireg, first_reg,
-                    *pin);
+            this->homogenize_region_flux( ireg, first_reg, *pin,
+                    regions_[ixsreg]);
 
             ipin++;
             first_reg += pin->n_reg();
@@ -146,8 +170,8 @@ namespace mocc {
         return;
     }
 
-    XSMeshRegion XSMeshHomogenized::homogenize_region( int i,
-            const Pin& pin) const {
+    void XSMeshHomogenized::homogenize_region( int i, const Pin& pin, 
+            XSMeshRegion &xsr ) const {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
         VecF xsnf( ng_, 0.0 );
@@ -171,14 +195,14 @@ namespace mocc {
                 int gmax = scat_row.max_g;
                 real_t fsrc = 0.0;
                 for( size_t igg=0; igg<ng_; igg++ ) {
-                    fsrc += mat.xsnf()[igg];
+                    fsrc += mat.xsnf(igg);
                 }
                 for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
                     fvol += vols[ireg] * fsrc;
-                    xstr[ig] += vols[ireg] * mat.xstr()[ig];
-                    xsnf[ig] += vols[ireg] * mat.xsnf()[ig];
-                    xskf[ig] += vols[ireg] * mat.xskf()[ig];
-                    xsch[ig] += vols[ireg] * fsrc * mat.xsch()[ig];
+                    xstr[ig] += vols[ireg] * mat.xstr(ig);
+                    xsnf[ig] += vols[ireg] * mat.xsnf(ig);
+                    xskf[ig] += vols[ireg] * mat.xskf(ig);
+                    xsch[ig] += vols[ireg] * fsrc * mat.xsch(ig);
 
                     for( int igg=gmin; igg<=gmax; igg++ ) {
                         scat[ig][igg] += scat_row.from[igg-gmin] * vols[ireg];
@@ -203,11 +227,14 @@ namespace mocc {
 
         ScatteringMatrix scat_mat(scat);
 
-        return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
+        xsr.update(xstr, xsnf, xsch, xskf, scat_mat);
+
+        return;
     }
 
-    XSMeshRegion XSMeshHomogenized::homogenize_region_flux( int i,
-            int first_reg, const Pin& pin ) const {
+    void XSMeshHomogenized::homogenize_region_flux( int i, int first_reg, 
+            const Pin& pin, XSMeshRegion &xsr ) const
+    {
         assert(flux_);
         // Extract a reference to the flux array.
         const ArrayB2 flux = *flux_;
@@ -237,7 +264,7 @@ namespace mocc {
                     int ireg = first_reg; // pin-local region index
                     int ireg_local = 0;
                     for( size_t i=0; i<pin_mesh.n_fsrs(ixsreg); i++ ) {
-                        fs[ireg_local] += mat.xsnf()[ig] * flux(ireg, (int)ig) *
+                        fs[ireg_local] += mat.xsnf(ig) * flux(ireg, (int)ig) *
                             vols[ireg_local];
                         ireg++;
                         ireg_local++;
@@ -267,10 +294,10 @@ namespace mocc {
                     real_t v = vols[ireg_local];
                     real_t flux_i = flux(ireg, (int)ig);
                     fluxvolsum += v * flux_i;
-                    xstr[ig] += v * flux_i * mat.xstr()[ig];
-                    xsnf[ig] += v * flux_i * mat.xsnf()[ig];
-                    xskf[ig] += v * flux_i * mat.xskf()[ig];
-                    xsch[ig] += fs[ireg_local] * mat.xsch()[ig];
+                    xstr[ig] += v * flux_i * mat.xstr(ig);
+                    xsnf[ig] += v * flux_i * mat.xsnf(ig);
+                    xskf[ig] += v * flux_i * mat.xskf(ig);
+                    xsch[ig] += fs[ireg_local] * mat.xsch(ig);
 
                     for( size_t igg=0; igg<ng_; igg++ ){
                         real_t fluxgg = flux(ireg, (int)igg);
@@ -302,7 +329,9 @@ namespace mocc {
 
         ScatteringMatrix scat_mat(scat);
 
-        return XSMeshRegion( fsrs, xstr, xsnf, xsch, xskf, scat_mat );
+        xsr.update(xstr, xsnf, xsch, xskf, scat_mat);
+
+        return;
     }
 
 
@@ -353,6 +382,5 @@ namespace mocc {
 
         return;
     }
-
 
 }

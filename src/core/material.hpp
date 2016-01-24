@@ -2,32 +2,53 @@
 #include <algorithm>
 #include <vector>
 
+#include "blitz_typedefs.hpp"
 #include "global_config.hpp"
 #include "scattering_matrix.hpp"
 
 namespace mocc{
     class Material{
     public:
-        Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
+        Material(VecF xsab, VecF xsnf, VecF xskf, VecF xsch,
                 std::vector<VecF> scat);
-        const VecF& xsab() const {
+        // Accessors for absorption
+        const auto xsab() const {
             return xsab_;
         }
+        const auto& xsab( int i ) const {
+            return xsab_(i);
+        }
 
-        const VecF& xstr() const {
+        // Accessors for transport xs
+        const auto xstr() const {
             return xstr_;
         }
+        const auto& xstr( int i ) const {
+            return xstr_(i);
+        }
 
-        const VecF& xsnf() const {
+        // Accessors for nu-fission
+        const auto xsnf() const {
             return xsnf_;
         }
-
-        const VecF& xskf() const {
-            return xsf_;
+        const auto& xsnf( int i ) const {
+            return xsnf_(i);
         }
 
-        const VecF& xsch() const {
+        // Accessors for kappa-fission
+        const auto xskf() const {
+            return xskf_;
+        }
+        const auto& xskf( int i ) const {
+            return xskf_(i);
+        }
+
+        // Accessors for chi
+        const auto xsch() const {
             return xsch_;
+        }
+        const auto& xsch( int i ) const {
+            return xsch_(i);
         }
 
         const ScatteringMatrix& xssc() const {
@@ -43,11 +64,11 @@ namespace mocc{
         }
 
     private:
-        VecF xsab_;
-        VecF xstr_;
-        VecF xsnf_;
-        VecF xsf_;
-        VecF xsch_;
+        ArrayB1 xsab_;
+        ArrayB1 xstr_;
+        ArrayB1 xsnf_;
+        ArrayB1 xskf_;
+        ArrayB1 xsch_;
         ScatteringMatrix xssc_;
     };
 }

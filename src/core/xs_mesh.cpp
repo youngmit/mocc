@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <memory>
+#include <map>
 
+#include "blitz_typedefs.hpp"
 #include "global_config.hpp"
 
 using std::cout;
@@ -20,34 +22,60 @@ namespace mocc {
 
         // loop over all of the pins in the CoreMesh and set up the XSMesh
         // regions
-        std::vector<VecI> fsrs(mat_lib.n_materials());
+        std::map<int, VecI> fsrs;
         int ireg = 0;
         for( auto &pini: mesh ) {
             const PinMesh& pm = pini->mesh();
             const VecI& mat_ids = pini->mat_ids();
             int ixsreg = 0;
             for( auto &mat_id: mat_ids ) {
-                int mat_index = mat_lib.get_index_by_id(mat_id);
                 // post-increment pushes value, then increments
                 for( size_t reg=0; reg<pm.n_fsrs(ixsreg); reg++) {
-                    fsrs[mat_index].push_back(ireg++);
+                    fsrs[mat_id].push_back(ireg++);
                 }
                 ixsreg++;
             }
         }
 
+        int n_xsreg = fsrs.size();
+
         // Calculate the necessary cross sections and store them in the
         // XSMesh-local arrays
+        xstr_.resize(n_xsreg, ng_);
+        xsnf_.resize(n_xsreg, ng_);
+        xsch_.resize(n_xsreg, ng_);
+        xskf_.resize(n_xsreg, ng_);
+        xsrm_.resize(n_xsreg, ng_);
+        assert(xstr_(0, blitz::Range::all()).isStorageContiguous());
+
+        VecI mat_ids(n_xsreg);
         int imat = 0;
-        for( auto &mat: mat_lib ) {
-            // This is a bit of a hack until i use Eigen vectors or something
-            // homebrew for storing these cross sections. need to add total
-            // scattering to absorption to get xstr
-            regions_.emplace_back( fsrs[imat],
-                    mat.xstr(),
-                    mat.xsnf(),
-                    mat.xsch(),
-                    mat.xskf(),
+        for( const auto &mat_pair: fsrs ) {
+            mat_ids[imat] = mat_pair.first;
+            const auto &mat = mat_lib[mat_pair.first];
+            xstr_(imat, blitz::Range::all()) = mat.xstr();
+            xsnf_(imat, blitz::Range::all()) = mat.xsnf();
+            xsch_(imat, blitz::Range::all()) = mat.xsch();
+            xskf_(imat, blitz::Range::all()) = mat.xskf();
+
+            for( int ig=0; ig<(int)ng_; ig++ ) {
+                xsrm_(imat, ig) = xstr_(imat, ig) - mat.xssc().self_scat(ig);
+            }
+            imat++;
+        }
+        
+        // Preallocate space for the regions. Saves on lots of copies for large
+        // xsmeshes.
+        regions_.reserve(fsrs.size());
+        imat = 0;
+        for( auto &reg_pair: fsrs ) {
+            const auto &mat = mat_lib[mat_ids[imat]];
+            regions_.emplace_back( reg_pair.second,
+                    &xstr_(imat, 0),
+                    &xsnf_(imat, 0),
+                    &xsch_(imat, 0),
+                    &xskf_(imat, 0),
+                    &xsrm_(imat, 0),
                     mat.xssc() );
             imat++;
         }
@@ -56,27 +84,28 @@ namespace mocc {
     }
 
     std::ostream& operator<<( std::ostream& os, const XSMeshRegion &xsr ) {
+        int ng = xsr.xsmacsc_.n_group();
         os << "Transport: " << std::endl;
-        for( auto v: xsr.xsmactr_ ){
-            os << v << " ";
+        for( int ig=0; ig<ng; ig++ ) {
+            os << xsr.xsmactr_[ig];
         }
         os << std::endl;
 
         os << "nu-fission: " << std::endl;
-        for( auto v: xsr.xsmacnf_ ) {
-            os << v << " ";
+        for( int ig=0; ig<ng; ig++ ) {
+            os << xsr.xsmacnf_[ig];
         }
         os << std::endl;
 
         os << "chi: " << std::endl;
-        for( auto v: xsr.xsmacch_ ) {
-            os << v << " ";
+        for( int ig=0; ig<ng; ig++ ) {
+            os << xsr.xsmacch_[ig];
         }
         os << std::endl;
 
         os << "removal: " << std::endl;
-        for( auto v: xsr.xsmacrm_ ) {
-            os << v << " ";
+        for( int ig=0; ig<ng; ig++ ) {
+            os << xsr.xsmacrm_[ig];
         }
         os << std::endl;
 

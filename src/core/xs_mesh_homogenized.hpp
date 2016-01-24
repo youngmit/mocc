@@ -67,13 +67,13 @@ namespace mocc {
         // Possibly-associated flux for homogenization.
         const ArrayB2 *flux_;
 
-
         /**
         * \brief Return an XSMeshRegion containing homogenized cross sections
         * from a pin cell. No flux wieghting is performed, only volume
         * weighting.
         */
-        XSMeshRegion homogenize_region( int i, const Pin& pin ) const;
+        void homogenize_region( int i, const Pin& pin, 
+                XSMeshRegion &xsr ) const;
 
         /**
         * \brief Return an XSMeshRegion containing homogenized cross sections
@@ -93,8 +93,8 @@ namespace mocc {
         * sections in the passed \ref Pin object and returns an \ref
         * XSMeshRegion object containing the homogenized cross sections.
         */
-        XSMeshRegion homogenize_region_flux( int i, int first_reg,
-                const Pin& pin ) const;
+        void homogenize_region_flux( int i, int first_reg, const Pin& pin, 
+                XSMeshRegion &xsr ) const;
     };
 
     typedef std::shared_ptr<XSMeshHomogenized> SP_XSMeshHomogenized_t;

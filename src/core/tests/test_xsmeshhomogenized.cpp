@@ -5,6 +5,8 @@
 #include "xs_mesh_homogenized.hpp"
 
 using namespace mocc;
+using std::cout;
+using std::endl;
 
 TEST( xsmeshhom ) {
     {
@@ -35,7 +37,56 @@ TEST( xsmeshhom ) {
     
 }
 
-TEST( fromdata ) {
+// Tests some of the error checking involved in constructing an XSMeshHom from
+// data files.
+TEST( fromdata_fail ) {
+    pugi::xml_document geom_xml;
+    pugi::xml_parse_result result = geom_xml.load_file( "stack.xml" );
+    CHECK( result );
+    if( !result ) {
+        std::cout << result.description() << std::endl;
+    }
+
+    CoreMesh mesh( geom_xml );
+
+    // Test error checks on the XML input
+    {
+        cout << "invalid" << endl;
+        pugi::xml_document xsmesh_xml;
+        std::string xml = 
+            "<data file=\"xsmesh_1.h5\" top_plane=\"-1\"/>";
+        xsmesh_xml.load_string( xml.c_str() );
+
+        CHECK_THROW( XSMeshHomogenized xs_mesh( mesh, xsmesh_xml ), Exception);
+    }
+    {
+        cout << "out of order" << endl;
+        pugi::xml_document xsmesh_xml;
+        std::string xml = 
+            "<data file=\"xsmesh_1.h5\" top_plane=\"5\"/>"
+            "<data file=\"xsmesh_2.h5\" top_plane=\"1\"/>";
+        xsmesh_xml.load_string( xml.c_str() );
+
+        CHECK_THROW( XSMeshHomogenized xs_mesh( mesh, xsmesh_xml ), Exception);
+    }
+
+
+    {
+        pugi::xml_document xsmesh_xml;
+        std::string xml = 
+            "<data file=\"xsmesh_1.h5\" top_plane=\"3\"/>"
+            "<data file=\"xsmesh_2.h5\" top_plane=\"11\"/>"
+            "";
+        xsmesh_xml.load_string( xml.c_str() );
+
+        XSMeshHomogenized xs_mesh( mesh, xsmesh_xml );
+
+    }
+}
+
+// Test an actual xsmesh hom object that should successfully construct
+TEST( fromdata )
+{
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "stack.xml" );
     CHECK( result );
@@ -47,14 +98,14 @@ TEST( fromdata ) {
 
     pugi::xml_document xsmesh_xml;
     std::string xml = 
-        "<data file=\"xsmesh_1.h5\" top_plane=\"3\">"
-        "<data file=\"xsmesh_2.h5\" top_plane=\"11\">"
+        "<data file=\"xsmesh_1.h5\" top_plane=\"3\"/>"
+        "<data file=\"xsmesh_2.h5\" top_plane=\"11\"/>"
         "";
     xsmesh_xml.load_string( xml.c_str() );
 
     XSMeshHomogenized xs_mesh( mesh, xsmesh_xml );
 
-    
+
 }
 
 int main() {

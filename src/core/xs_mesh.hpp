@@ -3,21 +3,11 @@
 #include <iostream>
 #include <vector>
 
+#include "blitz_typedefs.hpp"
 #include "core_mesh.hpp"
+#include "global_config.hpp"
 #include "output_interface.hpp"
 
-// TODO:
-//  - make a struct/class for an XS Mesh "region"
-//  - make begin() and end() iterators
-//  - the region class/struct can store data however it wants, but the interface
-//  should be such that i can change the underlying structure later. Options for
-//  that:
-//      + store XS data in independent arrays for each region. This is easy to
-//      implement and hard to screw up, but wont be the most efficient, since
-//      the data will be all over the heap and carry around a bunch of overhead
-//      + store all of the XS data on the xsmesh itself, and alias the proper
-//      portion of the data in that blob. data will be super local, less
-//      overhead, but a pain to implement.
 namespace mocc {
     // For now im using the lazy implementation of the xsmesh region class.
     // Using a structure of arrays would be more useful.
@@ -25,19 +15,20 @@ namespace mocc {
     friend class XSMesh;
     public:
         XSMeshRegion(){ }
-        XSMeshRegion( const VecI& fsrs, const VecF& xstr, const VecF& xsnf,
-                const VecF& xsch, const VecF& xsf, const ScatteringMatrix& xssc ):
+        XSMeshRegion( const VecI &fsrs, real_t *xstr, 
+                                        real_t *xsnf,
+                                        real_t *xsch,
+                                        real_t *xsf,
+                                        real_t *xsrm,
+                                        const ScatteringMatrix& xssc ):
             reg_(fsrs),
             xsmactr_(xstr),
             xsmacnf_(xsnf),
             xsmackf_(xsf),
             xsmacch_(xsch),
-            xsmacsc_(xssc),
-            xsmacrm_(xstr.size())
+            xsmacrm_(xsrm),
+            xsmacsc_(xssc)
         {
-            for( size_t ig=0; ig<xstr.size(); ig++ ) {
-                xsmacrm_[ig] = xstr[ig] - xssc.self_scat(ig);
-            }
             return;
         }
 
@@ -46,23 +37,23 @@ namespace mocc {
         }
 
         const real_t* xsmactr() const {
-            return xsmactr_.data();
+            return xsmactr_;
         }
 
         const real_t* xsmacnf() const {
-            return xsmacnf_.data();
+            return xsmacnf_;
         }
 
         const real_t* xsmackf() const {
-            return xsmackf_.data();
+            return xsmackf_;
         }
 
         const real_t* xsmacch() const {
-            return xsmacch_.data();
+            return xsmacch_;
         }
 
         const real_t* xsmacrm() const {
-            return xsmacrm_.data();
+            return xsmacrm_;
         }
 
         const ScatteringMatrix& xsmacsc() const {
@@ -77,6 +68,23 @@ namespace mocc {
             return reg_;
         }
 
+        /**
+         * \brief Update the cross sections referenced by the \ref XSMeshRegion
+         */
+        void update( const VecF &xstr, const VecF &xsnf, const VecF &xsch, 
+                const VecF &xskf, const ScatteringMatrix &xssc )
+        {
+            for( int ig=0; ig<(int)xssc.n_group(); ig++ ) {
+                xsmactr_[ig] = xstr[ig];
+                xsmacnf_[ig] = xsnf[ig];
+                xsmacch_[ig] = xsch[ig];
+                xsmackf_[ig] = xskf[ig];
+                xsmacrm_[ig] = xstr[ig] - xssc.self_scat(ig);
+            }
+            xsmacsc_ = xssc;
+            return;
+        }
+
         friend std::ostream& operator<<(std::ostream& os,
                 const XSMeshRegion &xsr );
 
@@ -85,15 +93,15 @@ namespace mocc {
         VecI reg_;
 
         // Actual group constants for this XS mesh region
-        VecF xsmactr_;
-        VecF xsmacnf_;
-        VecF xsmackf_;
-        VecF xsmacch_;
+        real_t *xsmactr_;
+        real_t *xsmacnf_;
+        real_t *xsmackf_;
+        real_t *xsmacch_;
+        real_t *xsmacrm_;
 
         // Scattering matrix
         ScatteringMatrix xsmacsc_;
 
-        VecF xsmacrm_;
     };
 
     class XSMesh: public HasOutput {
@@ -142,6 +150,13 @@ namespace mocc {
 
         // Vector of xs mesh regions
         std::vector<XSMeshRegion> regions_;
+
+        // Actual cross-section data
+        ArrayB2 xstr_;
+        ArrayB2 xsnf_;
+        ArrayB2 xsch_;
+        ArrayB2 xskf_;
+        ArrayB2 xsrm_;
 
         // Energy group upper bounds
         VecF eubounds_;

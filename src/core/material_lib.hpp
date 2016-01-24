@@ -35,32 +35,51 @@ namespace mocc {
          */
         void assignID(int id, std::string name);
 
-        // Return the number of materials in the library
+        /**
+         * Return the number of materials in the library
+         */
         unsigned int n_materials() const {
             return n_material_;
         }
 
-        // Return the map of materials by ID
+        /**
+         * Return the map of materials by ID
+         */
         const MaterialVec& materials() const {
             return lib_materials_;
         }
-
-        // Return the index of the material given a material ID
+        
+        /**
+         * Return the index of the material given a material ID
+         */
         unsigned int get_index_by_id( unsigned int id ) const {
             return material_dense_index_.at(id);
         }
 
-        // Return a const reference to a material by ID
+        /**
+         * Return a const reference to a material by ID
+         */
         const Material& get_material_by_id( unsigned int id ) const {
             return lib_materials_[material_ids_.at(id)];
         }
 
-        // Return the number of groups spanned by the library
+        /**
+         * Return a const refernce to the material indexed by ID
+        */
+        const Material& operator[]( int id ) const {
+            return this->get_material_by_id( id );
+        }
+
+        /**
+         * Return the number of groups spanned by the library
+         */
         unsigned int n_group() const {
             return n_grp_;
         }
 
-        // Return the group bounds
+        /**
+         * Return the group bounds
+         */
         const VecF& g_bounds() const {
             return g_bounds_;
         }
