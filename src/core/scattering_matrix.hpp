@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "blitz_typedefs.hpp"
 #include "global_config.hpp"
 
 namespace mocc {
@@ -25,6 +26,24 @@ namespace mocc {
         const real_t* end() const {
             return from + max_g - min_g + 1;
         }
+
+        bool operator==( const ScatteringRow &other ) const {
+            if( this == &other ) {
+                return true;
+            }
+            if( min_g != other.min_g ) {
+                return false;
+            }
+            if( max_g != other.max_g ) {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool operator!=( const ScatteringRow &other ) const {
+            return !(*this == other);
+        }
     };
 
     /**
@@ -45,12 +64,23 @@ namespace mocc {
         /**
          * Construct a scattering matrix using a 2-dimensional vector<vector<>>.
          * This full, dense representation of the scattering matrix will be
-         * densified.
+         * sparsified.
          *
          * \param scat the dense representation of the scattering matrix.
          * Indexing should be [to group][from group]
          */
-        ScatteringMatrix(std::vector<VecF> scat);
+        ScatteringMatrix( const std::vector<VecF> &scat);
+        
+        /**
+         * Construct a scattering matrix using a 2-dimensional Blitz++ array.
+         * This full, dense representation of the scattering matrix will be
+         * sparsified.
+         *
+         * \param scat the dense representation of the scattering matrix.
+         * Indexing should be (to group, from group)
+         */
+        ScatteringMatrix( const ArrayB2 &scat);
+
 
         const ScatteringRow& to( int ig ) const {
             return rows_[ig];
@@ -107,10 +137,9 @@ namespace mocc {
          * Return the number of energy groups for which the scattering matrix is
          * defined.
          */
-        size_t n_group() const {
+        int n_group() const {
             return ng_;
         }
-
 
         /**
          * Return the total out-scattering cross section for group ig
@@ -151,11 +180,31 @@ namespace mocc {
             return sc;
         }
 
+        bool operator==( const ScatteringMatrix &other ) const {
+            if( this == &other ) {
+                return true;
+            }
+            if( ng_ != other.n_group() ) {
+                return false;
+            }
+            if( scat_ != other.scat_ ) {
+                return false;
+            }
+            if( out_ != other.out_ ) {
+                return false;
+            }
+            return true;
+        }
+
+        bool operator!=( const ScatteringMatrix &other ) const {
+            return !(*this == other);
+        }
+
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os,
                 const ScatteringMatrix &scat_mat);
     private:
-        size_t ng_;
+        int ng_;
         VecF scat_;
         VecF out_;
         std::vector<ScatteringRow> rows_;
