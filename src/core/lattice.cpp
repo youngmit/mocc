@@ -21,14 +21,14 @@ namespace mocc {
         // Get lattice ID
         id_ = input.attribute( "id" ).as_int( 0 );
         if ( id_ == 0 ) {
-            Error( "Trouble reading lattice ID." );
+            throw EXCEPT( "Trouble reading lattice ID." );
         }
 
         // Get dimensions
         nx_ = input.attribute( "nx" ).as_int( 0 );
         ny_ = input.attribute( "ny" ).as_int( 0 );
         if ( (nx_ == 0) | (ny_ == 0) ) {
-            Error( "Trouble reading lattice dimensions." );
+            throw EXCEPT( "Trouble reading lattice dimensions." );
         }
 
         // Read in the pin IDs
@@ -43,19 +43,19 @@ namespace mocc {
 
                 // Make sure the pin ID is valid
                 if ( pins.count( pin_id ) == 0 ){
-                    Error( "Unrecognized pin ID in lattice specification." );
+                    throw EXCEPT( "Unrecognized pin ID in lattice specification." );
                 }
                 pin_vec.push_back( pins.at( pin_id ).get() );
             }
             // Catch errors in reading
             if ( inBuf.fail() ) {
-                Error( "Trouble reading pin IDs in lattice specification." );
+                throw EXCEPT( "Trouble reading pin IDs in lattice specification." );
             }
 
             // Make sure we have ther right number of pins
             if ( pin_vec.size() != nx_*ny_) {
                 cout << pin_vec.size() << " " << nx_ << " " << ny_ << endl;
-                Error( "Incorrect number of pin IDs specified for lattice." );
+                throw EXCEPT( "Incorrect number of pin IDs specified for lattice." );
             }
 
             // We should be done parsing and checking things from the XML
@@ -102,10 +102,10 @@ namespace mocc {
             for ( unsigned int iy=0; iy<ny_; iy++ ) {
                 for ( unsigned int ix=0; ix<nx_; ix++ ) {
                     if (this->at(ix, iy).mesh().pitch_x() != hx_vec_[ix]) {
-                        Error("Inconguent pin pitches found in lattice.");
+                        throw EXCEPT("Inconguent pin pitches found in lattice.");
                     }
                     if (this->at(ix, iy).mesh().pitch_y() != hy_vec_[iy]) {
-                        Error("Inconguent pin pitches found in lattice.");
+                        throw EXCEPT("Inconguent pin pitches found in lattice.");
                     }
                 }
             }
