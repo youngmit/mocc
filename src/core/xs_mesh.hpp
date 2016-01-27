@@ -5,6 +5,7 @@
 
 #include "blitz_typedefs.hpp"
 #include "core_mesh.hpp"
+#include "fp_utils.hpp"
 #include "global_config.hpp"
 #include "output_interface.hpp"
 
@@ -32,26 +33,41 @@ namespace mocc {
             return;
         }
 
-        size_t n_group() const {
+        int n_group() const {
             return xsmacsc_.n_group();
         }
 
+        const real_t &xsmactr(int ig) const {
+            return xsmactr_[ig];
+        }
         const real_t* xsmactr() const {
             return xsmactr_;
         }
 
+        const real_t &xsmacnf(int ig) const {
+            return xsmacnf_[ig];
+        }
         const real_t* xsmacnf() const {
             return xsmacnf_;
         }
 
+        const real_t &xsmackf(int ig) const {
+            return xsmackf_[ig];
+        }
         const real_t* xsmackf() const {
             return xsmackf_;
         }
 
+        const real_t &xsmacch(int ig) const {
+            return xsmacch_[ig];
+        }
         const real_t* xsmacch() const {
             return xsmacch_;
         }
 
+        const real_t &xsmacrm(int ig) const {
+            return xsmacrm_[ig];
+        }
         const real_t* xsmacrm() const {
             return xsmacrm_;
         }
@@ -83,6 +99,33 @@ namespace mocc {
             }
             xsmacsc_ = xssc;
             return;
+        }
+
+        bool operator==( const XSMeshRegion &other ) const {
+            // Short-circuit true if checking self-equivalence
+            if( this == &other ) {
+                return true;
+            }
+
+            // Return false on any discrepancy, otherwise fall through to return
+            // true;
+            if( this->n_group() != other.n_group() ) {
+                return false;
+            }
+            for( int ig=0; ig<this->n_group(); ig++ ) {
+                if( !fp_equiv_ulp(this->xsmactr(ig), 
+                                  other.xsmactr(ig)) )
+                {
+                    return false;
+                }
+                if( !fp_equiv_ulp(this->xsmacnf(ig), 
+                                  other.xsmacnf(ig)) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         friend std::ostream& operator<<(std::ostream& os,
@@ -146,6 +189,25 @@ namespace mocc {
         }
 
     protected:
+        /**
+         * \brief Allocate space to store the actual cross sections.
+         *
+         * \param nxs the number of cross section mesh materials
+         * \param ng the number of energy groups
+         *
+         * This is identical for all cross-section mesh types, so might as well
+         * have it in one place.
+         */
+        void allocate_xs( int nxs, int ng ) {
+            xstr_.resize(nxs, ng);
+            xsnf_.resize(nxs, ng);
+            xsch_.resize(nxs, ng);
+            xskf_.resize(nxs, ng);
+            xsrm_.resize(nxs, ng);
+            auto test_slice(xstr_(0, blitz::Range::all()));
+            assert(test_slice.isStorageContiguous());
+        }
+        
         size_t ng_;
 
         // Vector of xs mesh regions

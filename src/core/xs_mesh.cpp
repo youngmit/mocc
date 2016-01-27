@@ -39,14 +39,8 @@ namespace mocc {
 
         int n_xsreg = fsrs.size();
 
-        // Calculate the necessary cross sections and store them in the
-        // XSMesh-local arrays
-        xstr_.resize(n_xsreg, ng_);
-        xsnf_.resize(n_xsreg, ng_);
-        xsch_.resize(n_xsreg, ng_);
-        xskf_.resize(n_xsreg, ng_);
-        xsrm_.resize(n_xsreg, ng_);
-        assert(xstr_(0, blitz::Range::all()).isStorageContiguous());
+        
+        this->allocate_xs(n_xsreg, ng_);
 
         VecI mat_ids(n_xsreg);
         int imat = 0;
