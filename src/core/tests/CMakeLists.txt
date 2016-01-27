@@ -26,10 +26,11 @@ if(${BUILD_TESTS})
     add_test(testXSMeshHom testXSMeshHom)
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/c5g7.xsl 
             ${CMAKE_CURRENT_BINARY_DIR}/c5g7.xsl testXSMeshHom)
-    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/square.xml 
-            ${CMAKE_CURRENT_BINARY_DIR}/square.xml testXSMeshHom)
-    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/square_2.xml 
-            ${CMAKE_CURRENT_BINARY_DIR}/square_2.xml testXSMeshHom)
-    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/stack.xml 
-            ${CMAKE_CURRENT_BINARY_DIR}/stack.xml testXSMeshHom)
+    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/2x3_stack.xml 
+            ${CMAKE_CURRENT_BINARY_DIR}/2x3_stack.xml testXSMeshHom)
+    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/2x3_1.xml 
+            ${CMAKE_CURRENT_BINARY_DIR}/2x3_1.xml testXSMeshHom)
+    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/2x3_2.xml 
+            ${CMAKE_CURRENT_BINARY_DIR}/2x3_2.xml testXSMeshHom)
+
 endif()

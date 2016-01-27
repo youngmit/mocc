@@ -23,13 +23,8 @@ namespace mocc {
 
 
         // Allocate space to store the cross sections
-        xstr_.resize(n_xsreg, ng_);
-        xsnf_.resize(n_xsreg, ng_);
-        xsch_.resize(n_xsreg, ng_);
-        xskf_.resize(n_xsreg, ng_);
-        xsrm_.resize(n_xsreg, ng_);
-        assert(xstr_(0, blitz::Range::all()).isStorageContiguous());
-
+        this->allocate_xs(n_xsreg, ng_);
+        
         // Set up the regions
         regions_.reserve(n_xsreg);
         VecI fsrs(1);
@@ -83,6 +78,8 @@ namespace mocc {
         }
 
         ng_ = mesh.mat_lib().n_group();
+        
+        int nreg_plane = mesh.nx()*mesh.ny();
 
         // First, validate the data tags. Make sure that they are the right
         // size and have cover all planes in the mesh.
@@ -108,9 +105,15 @@ namespace mocc {
                 H5Node h5d(data.attribute("file").value(), H5Access::READ);
                 auto dims = h5d.dimensions("/xsmesh/xstr/0");
                 if( dims[2] != mesh_.nx() ) {
-                    throw EXCEPT("Incorrect XS Mesh dimensions");
+                    std::stringstream msg;
+                    msg << "Incorrect XS Mesh dimensions: " << dims[2] << " " <<
+                        mesh_.nx();
+                    throw EXCEPT(msg.str());
                 }
                 if( dims[1] != mesh_.ny() ) {
+                    std::stringstream msg;
+                    msg << "Incorrect XS Mesh dimensions: " << dims[1] << " " <<
+                        mesh_.ny();
                     throw EXCEPT("Incorrect XS Mesh dimensions");
                 }
                 if( dims[0] != 1 ) {
@@ -122,29 +125,91 @@ namespace mocc {
         }
 
         // If we made it this far, things should be kosher
-        regions_.resize(mesh_.n_pin());
-        
+        int n_xsreg = mesh.n_pin();
 
+        // Allocate space to store the cross sections
+        this->allocate_xs(n_xsreg, ng_);
+
+        // Reserve space for the XSMeshRegions
+        regions_.reserve(n_xsreg);
+
+        // We are going to want a nice contiguous buffer for storing xs as they
+        // come in from the file
+        ArrayB1 tr_buf(nreg_plane);
+        ArrayB1 nf_buf(nreg_plane);
+        ArrayB1 ch_buf(nreg_plane);
+        ArrayB1 kf_buf(nreg_plane);
+
+        int last_plane = 0;
         for( auto data = input.child("data"); data;
             data = data.next_sibling("data") )
         {
+            int plane = data.attribute("top_plane").as_int();
             H5Node h5d( data.attribute("file").value(), H5Access::READ );
 
             // Get all the group data out to memory first
-            ArrayB4 xstr( ng_, 1, mesh_.ny(), mesh_.nx() );
-            for( unsigned g=0; g<ng_; g++ ) {
-                std::stringstream path;
-                path << "/xsmesh/xstr/" << g;
-                ArrayB3 group_slice(xstr(blitz::Range::all(),
-                        blitz::Range::all(), 0, blitz::Range::all()));
-                h5d.read(path.str(), group_slice);
+            for( unsigned ig=0; ig<ng_; ig++ ) {
+                {
+                    std::stringstream path;
+                    path << "/xsmesh/xstr/" << ig;
+                    h5d.read(path.str(), tr_buf);
+                }
+                {
+                    std::stringstream path;
+                    path << "/xsmesh/xsnf/" << ig;
+                    h5d.read(path.str(), nf_buf);
+                }
+                {
+                    std::stringstream path;
+                    path << "/xsmesh/xsch/" << ig;
+                    h5d.read(path.str(), ch_buf);
+                }
+                {
+                    std::stringstream path;
+                    path << "/xsmesh/xskf/" << ig;
+                    h5d.read(path.str(), kf_buf);
+                }
+
+                // Apply the above to the appropriate planes of the actual xs
+                // mesh
+                for( int ip = last_plane; ip<=plane; ip++ ) {
+                    int stt = ip*nreg_plane;
+                    int stp = stt+nreg_plane-1;
+                    xstr_(blitz::Range(stt, stp), ig) = tr_buf;
+                    xsnf_(blitz::Range(stt, stp), ig) = nf_buf;
+                    xsch_(blitz::Range(stt, stp), ig) = ch_buf;
+                    xskf_(blitz::Range(stt, stp), ig) = kf_buf;
+                }
             }
 
-            ArrayB4 xsnf( ng_, 1, mesh_.ny(), mesh_.nx() );
-        }
+            // We dont try to plot the scattering cross sections in the same was
+            // as we do the others, so this can be read in more naturally.
+            ArrayB3 scat;
+            h5d.read("/xsmesh/xssc", scat);
+
+            // Set up the regions for the appropriate planes
+            VecI fsrs(1);
+            for( int i=last_plane*nreg_plane; i<(plane+1)*nreg_plane; i++ ) {
+                int reg_in_plane = i%nreg_plane;
+                ArrayB2 scat_reg = scat( reg_in_plane, blitz::Range::all(),
+                        blitz::Range::all() );
+                fsrs[0] = i;
+                regions_.emplace_back( fsrs,
+                        &xstr_(i, 0),
+                        &xsnf_(i, 0),
+                        &xsch_(i, 0),
+                        &xskf_(i, 0),
+                        &xsrm_(i, 0),
+                        ScatteringMatrix(scat_reg) );
+            }
+
+            last_plane = plane+1;
+        } // data entry loop
+
+        
 
         return;
-    }
+    } // HDF5 constructor
 
     /**
      * Update the XS mesh, incorporating a new estimate of the scalar flux.
@@ -339,6 +404,8 @@ namespace mocc {
         file->createGroup( "/xsmesh" );
         file->createGroup( "/xsmesh/xstr" );
         file->createGroup( "/xsmesh/xsnf" );
+        file->createGroup( "/xsmesh/xskf" );
+        file->createGroup( "/xsmesh/xsch" );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());
@@ -347,10 +414,14 @@ namespace mocc {
             // Transport cross section
             VecF xstr( this->size(), 0.0 );
             VecF xsnf( this->size(), 0.0 );
+            VecF xskf( this->size(), 0.0 );
+            VecF xsch( this->size(), 0.0 );
             int i = 0;
             for( auto xsr: regions_ ) {
-                xstr[i] = xsr.xsmactr()[ig];
-                xsnf[i] = xsr.xsmacnf()[ig];
+                xstr[i] = xsr.xsmactr(ig);
+                xsnf[i] = xsr.xsmacnf(ig);
+                xskf[i] = xsr.xsmackf(ig);
+                xsch[i] = xsr.xsmacch(ig);
                 i++;
             }
             {
@@ -363,6 +434,17 @@ namespace mocc {
                 setname << "/xsmesh/xsnf/" << ig;
                 HDF::Write( file, setname.str(), xsnf, d );
             }
+            {
+                std::stringstream setname;
+                setname << "/xsmesh/xsch/" << ig;
+                HDF::Write( file, setname.str(), xsch, d );
+            }
+            {
+                std::stringstream setname;
+                setname << "/xsmesh/xskf/" << ig;
+                HDF::Write( file, setname.str(), xskf, d );
+            }
+
         }
 
         // scattering matrix

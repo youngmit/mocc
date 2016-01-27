@@ -1,0 +1,41 @@
+<!-- Mix of UO2 and MOx pins in 2x3 array -->
+<mesh id="1" type="cyl" pitch="1.26">
+    <radii>0.54</radii>
+    <sub_radii>3</sub_radii>
+    <sub_azi>8</sub_azi>
+</mesh>
+
+<pin id="1" mesh="1">
+    1 3
+</pin>
+<pin id="2" mesh="1">
+    2 3
+</pin>
+
+<lattice id="1" nx="2" ny="3">
+    1 2
+    1 1
+    2 2
+</lattice>
+
+<assembly id="1" np="1" hz="0.5">
+    <lattices>
+        1
+    </lattices>
+</assembly>
+
+<core nx="1" ny="1" 
+    north  = "reflect" 
+    south  = "reflect" 
+    east   = "reflect"
+    west   = "reflect"
+    top    = "vacuum"
+    bottom = "vacuum" >
+    1 
+</core>
+
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-4.3" />
+    <material id="3" name="Moderator" />
+</material_lib>
