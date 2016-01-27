@@ -135,13 +135,7 @@ TEST( fromdata )
     // the I/O procedures.
     XSMeshHomogenized xs_reference( mesh );
 
-    for( int ixs=0; ixs<(int)xs_mesh.size(); ixs ++) {
-        CHECK( xs_mesh[ixs] == xs_reference[ixs] );
-    }
-
-
-
-
+    CHECK( xs_mesh == xs_reference );
 
 }
 
