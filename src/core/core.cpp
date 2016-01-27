@@ -32,7 +32,7 @@ namespace mocc {
     {
         // Make sure that we read the a proper ID
         if( (nx_ < 1) | (ny_ < 1) ) {
-            Error("Invalid core dimensions.");
+            throw EXCEPT("Invalid core dimensions.");
         }
 
         // Read in the boundary conditions

@@ -27,7 +27,7 @@ namespace mocc {
             std::stringstream err;
             err << "Unrecognized mesh type for mesh ID: "
                 << input.attribute( "id" ).value();
-            Error( err.str().c_str() );
+            throw EXCEPT( err.str() );
         }
 
         return pm;

@@ -28,8 +28,8 @@ namespace mocc {
             << equation << std::endl;
 
         if( equation == "dd") {
-            return UP_SnSweeper_t( new sn::SnSweeperVariant<sn::CellWorker_DD>( input,
-                        mesh ) );
+            return UP_SnSweeper_t( new sn::SnSweeperVariant<sn::CellWorker_DD>(
+                        input, mesh ) );
         } else if( equation == "cdd" ) {
             // For now, we are assuming if we are creating a CDD sweeper from
             // this factory that it isnt getting correction data from another

@@ -14,7 +14,7 @@ namespace mocc {
         flag_(commentFlag){
 
             if( !stream_.good() ) {
-                Error("Failed to open file.");
+                throw EXCEPT("Failed to open file.");
             }
 
         }
