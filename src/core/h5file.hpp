@@ -130,52 +130,84 @@ namespace mocc {
          * \brief Read data from an \ref H5Node into a Blitz++ array.
          *
          * This will attempt to read the dataset specified by the path relative
-         * the location of the \ref H5Node into the passed Blitz array. This
-         * requires that the number of dimensions of the passed array match that
-         * of the dataset in the HDF5 file. It also assumes that the Blitz array
-         * is empty (size == 0), or that it is allocated to the same shape as
-         * the dataset.
+         * the location of the \ref H5Node into the passed Blitz array.
+         * \pre One of the following must be true:
+         *  - The array is one-dimensional, or
+         *  - The array has the same dimensions as the HDF5 database.
+         * \pre One of the following musht be true:
+         *  - The array is empty (size == 0)
+         *  - The array has space allocated for the same number of elements as
+         *  the HDF5 dataset, and \c isStorageContiguous() must return \c true.
          */
         template<class BlitzArray>
         void read( std::string path, BlitzArray &data ) {
-            if( (data.size() != 0) && !data.isStorageContiguous() ) {
+            if( (data.size() > 0) && !data.isStorageContiguous() ) {
                 throw EXCEPT("Blitz data is not contiguous");
             }
+
+            H5::DataSet dataset;
+            H5::DataSpace dataspace;
+            int ndim = -1;
+            int h5size = -1;
+            std::vector<hsize_t> dims;
             try {
-                H5::DataSet dataset = node_->openDataSet( path );
-                H5::DataSpace dataspace = dataset.getSpace();
-                size_t ndim = dataspace.getSimpleExtentNdims();
-                std::vector<hsize_t> dims(ndim);
+                dataset = node_->openDataSet( path );
+                dataspace = dataset.getSpace();
+                ndim = dataspace.getSimpleExtentNdims();
+                h5size = dataspace.getSimpleExtentNpoints();
+                dims.resize(ndim);
                 dataspace.getSimpleExtentDims( dims.data() );
+            } catch(...) {
+                std::stringstream msg;
+                msg << "Failed to access dataset: " << path;
+                throw EXCEPT(msg.str().c_str());
+            }
                 
-                if( (int)ndim != data.dimensions() ) {
-                    throw EXCEPT("Array and dataset dimensionality disagree.");
-                }
+            if( (int)ndim != data.dimensions() ) {
+            }
 
-                auto shape = data.shape();
-                auto size = data.size();
+            auto shape = data.shape();
+            auto size = data.size();
 
-                if( size == 0 ) {
-                    // Allocate space in the destination array
-                    for( unsigned i=0; i<ndim; i++ ) {
+            if( size == 0 ) {
+                // Allocate space in the destination array
+                if( data.dimensions() == 1) {
+                    data.resize(h5size);
+                } else {
+                    if(data.dimensions() != ndim ) {
+                        throw EXCEPT("Array and dataset dimensionality "
+                                "disagree.");
+                    }
+                    for( int i=0; i<ndim; i++ ) {
                         shape[i] = dims[i];
                     }
                     data.resize(shape);
+                }
+                
+            } else {
+                if( data.dimensions() == 1 ) {
+                    if( (int)data.size() != h5size ) {
+                        std::cerr << data.size() << " " << h5size << std::endl;
+                        throw EXCEPT("Incorrect array size.");
+                    }
                 } else {
                     // Make sure the dimensions match
-                    for( unsigned i=0; i<ndim; i++ ) {
+                    for( int i=0; i<ndim; i++ ) {
                         if( shape[i] != (int)dims[i] ) {
                             throw EXCEPT("Incorrect array shape.");
                         }
                     }
                 }
+            }
 
+            try {
                 dataset.read( data.data(), H5::PredType::NATIVE_DOUBLE );
             } catch(...) {
                 std::stringstream msg;
-                msg << "Failed to write dataset: " << path;
+                msg << "Failed to read dataset: " << path;
                 throw EXCEPT(msg.str().c_str());
             }
+
             return;
         }
 
