@@ -90,13 +90,12 @@ namespace mocc {
         }
     }
 
-    void FixedSourceSolver::output( H5::CommonFG *node ) const {
+    void FixedSourceSolver::output( H5Node &node ) const {
         // Provide energy group upper bounds
         // We do this here, to prevent collisions between possibly-multiple
         // sweepers colliding.
-        HDF::Write( node, "ng", sweeper_->n_group() );
-        HDF::Write( node, "eubounds", sweeper_->xs_mesh().eubounds(),
-                VecI(1, ng_) );
+        node.write( "ng", (int)sweeper_->n_group() );
+        node.write( "eubounds", sweeper_->xs_mesh().eubounds(), VecI(1, ng_) );
         sweeper_->output( node );
         return;
     }

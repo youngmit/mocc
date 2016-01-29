@@ -154,17 +154,17 @@ namespace mocc {
     }
 
 ////////////////////////////////////////////////////////////////////////////////
-    void PlaneSweeper_2D3D::output( H5::CommonFG *file ) const {
+    void PlaneSweeper_2D3D::output( H5Node &file ) const {
         // Put the Sn data in its own location
         {
-            H5::Group g = file->createGroup( "/Sn" );
-            sn_sweeper_.output( &g );
+            auto g = file.create_group( "/Sn" );
+            sn_sweeper_.output( g );
         }
 
         // Put the MoC data in its own location
         {
-            H5::Group g = file->createGroup( "/MoC" );
-            moc_sweeper_.output( &g );
+            auto g = file.create_group( "/MoC" );
+            moc_sweeper_.output( g );
         }
 
         VecI dims;
@@ -173,23 +173,23 @@ namespace mocc {
         dims.push_back(mesh_.nx());
 
         // Write out the Sn-MoC residual convergence
-        file->createGroup("/SnResid");
+        file.create_group("/SnResid");
         for( size_t g=0; g<n_group_; g++ ) {
             std::stringstream setname;
             setname << "/SnResid/" << setfill('0') << setw(3) << g;
             VecI niter(1, sn_resid_[g].size());
-            HDF::Write( file, setname.str(), sn_resid_[g], niter );
+            file.write( setname.str(), sn_resid_[g], niter );
         }
 
         // Write out the transverse leakages
-        file->createGroup("/TL");
+        file.create_group("/TL");
         for( size_t g=0; g<n_group_; g++ ) {
             std::stringstream setname;
             setname << "/TL/" << setfill('0') << setw(3) << g;
 
             const auto tl_slice = tl_((int)g, blitz::Range::all());
 
-            HDF::Write( file, setname.str(), tl_slice.begin(), tl_slice.end(),
+            file.write( setname.str(), tl_slice.begin(), tl_slice.end(),
                     dims );
         }
 

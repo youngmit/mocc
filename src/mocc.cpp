@@ -36,8 +36,8 @@ SP_CoreMesh_t mesh;
 void generate_output() {
     std::string out_name = CaseName;
     out_name.append(".h5");
-    HDF::H5File outfile( out_name, "w" );
-    solver->output( outfile.get() );
+    H5Node outfile( out_name, H5Access::WRITE );
+    solver->output( outfile );
 }
 
 // Print the MOCC banner. Pretty!

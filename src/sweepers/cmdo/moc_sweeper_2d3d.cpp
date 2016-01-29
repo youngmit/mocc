@@ -62,7 +62,7 @@ namespace mocc {
         return;
     }
 
-    void MoCSweeper_2D3D::output( H5::CommonFG *node ) const {
+    void MoCSweeper_2D3D::output( H5Node &node ) const {
         MoCSweeper::output( node );
         if( internal_coupling_ ) {
             corrections_->output( node );

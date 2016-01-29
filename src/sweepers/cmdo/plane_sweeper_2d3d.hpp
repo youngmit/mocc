@@ -5,6 +5,7 @@
 
 #include "core/angular_quadrature.hpp"
 #include "core/global_config.hpp"
+#include "core/output_interface.hpp"
 
 #include "sn/correction_data.hpp"
 #include "sn/sn_sweeper_variant.hpp"
@@ -40,7 +41,7 @@ namespace mocc {
             return diff;
         }
 
-        void output( H5::CommonFG *file ) const;
+        void output( H5Node &file ) const;
 
         void homogenize( CoarseData &data ) const {
             throw EXCEPT("Not implemented");
