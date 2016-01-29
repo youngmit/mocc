@@ -51,9 +51,21 @@ namespace mocc {
 
     // Boundary condition enumeration
     enum class Boundary {
+        /**
+         * Zero incoming flux
+         */
         VACUUM,
+        /**
+         * Reflected incoming flux
+         */
         REFLECT,
+        /**
+         * Incoming flux communicated between domain nodes
+         */
         PARALLEL,
+        /**
+         * Self-explanatory
+         */
         PERIODIC,
         INVALID
     };
