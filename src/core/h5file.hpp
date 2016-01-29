@@ -7,6 +7,7 @@
 #include <string>
 
 #include "error.hpp"
+#include "blitz_typedefs.hpp"
 #include "global_config.hpp"
 
 namespace mocc {
@@ -28,6 +29,7 @@ namespace mocc {
          */
         APPEND,
     };
+
     /**
      * Wrapper class for the HDF5 library. An instance of this class is similar
      * to the HDF5 CommonFG class, with extra stuff to make it easier to work
@@ -78,7 +80,12 @@ namespace mocc {
          * \brief Write an std::vector<double> to the file, using specified
          * dimensions.
          */
-        void write( std::string path, VecF data, VecI dims );
+        void write( std::string path, const VecF &data, VecI dims );
+
+        /**
+         * \brief Write a 1-D Blitz array to an HDF5 file, possibly reshaping
+         */
+        void write( std::string path, const ArrayB1 &data, VecI dims );
 
         /**
          * \brief Write a Blitz++ array to the HDF5 node.
