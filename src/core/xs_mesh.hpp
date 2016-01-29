@@ -47,7 +47,7 @@ namespace mocc {
             return eubounds_;
         }
 
-        virtual void output( H5::CommonFG *file ) const {
+        virtual void output( H5Node &file ) const {
             // Not really implementing for the general XS Mesh type.
             assert(false);
         }

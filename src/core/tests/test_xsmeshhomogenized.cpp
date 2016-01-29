@@ -20,7 +20,7 @@ TEST( xsmeshhom ) {
 
         H5Node h5f( "xsmesh_1.h5", H5Access::WRITE );
         auto g = h5f.create_group("xs_mesh");
-        xs_mesh.output(g.get());
+        xs_mesh.output(g);
     }
     {
         pugi::xml_document geom_xml;
@@ -32,7 +32,7 @@ TEST( xsmeshhom ) {
         XSMeshHomogenized xs_mesh( mesh );
 
         H5Node h5f( "xsmesh_2.h5", H5Access::WRITE );
-        xs_mesh.output(h5f.get());
+        xs_mesh.output(h5f);
     }
     
 }

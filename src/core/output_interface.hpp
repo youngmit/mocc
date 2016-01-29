@@ -12,6 +12,6 @@ namespace mocc {
     public:
         // Perform final output to a data file. Most output is probably
         // delegated to supbordinate objects.
-        virtual void output( H5::CommonFG *file ) const = 0;
+        virtual void output( H5Node &file ) const = 0;
     };
 }
