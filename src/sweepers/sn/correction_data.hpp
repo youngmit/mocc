@@ -83,7 +83,7 @@ namespace mocc {
 
         /**
          * \brief Read correction factors from one or more HDF5 files, as
-         * specified by <data /> tags
+         * specified by \<data /\> tags
          */
         void from_data( const pugi::xml_node &input );
 
