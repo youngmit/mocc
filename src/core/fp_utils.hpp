@@ -17,6 +17,13 @@ namespace mocc {
         };
     }
 
+    /**
+     * \brief Compare two floats using ULP.
+     *
+     * See <a
+     * href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">
+     * this page</a> for more info about testing floating point equivalence.
+     */
     inline bool fp_equiv_ulp(float v1, float v2) {
         fp_utils::float_int i1;
         i1.f = v1;
@@ -33,6 +40,11 @@ namespace mocc {
         return std::abs(i1.i - i2.i) < 100;
     }
 
+    /**
+     * \brief Compare two doubles using ULP.
+     *
+     * \copydetails fp_equiv_ulp(float, float)
+     */
     inline bool fp_equiv_ulp(double v1, double v2) {
         fp_utils::double_int i1;
         i1.f = v1;
