@@ -235,7 +235,6 @@ namespace mocc {
         /**
          * Write data to an HDF5 location using iterators.
          *
-         * \param node the location in the file to write to
          * \param path the path to the dataset, relative to \c node. If
          * preceeded by a '/', the path is absolute and will resolve to a
          * location relative to the root of the HDF5 file.
