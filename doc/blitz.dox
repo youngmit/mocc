@@ -1,3 +1,4 @@
+/**
 \page blitz Blitz++ Arrays
 
 For most of the arrays in MOCC, we use the Blitz++ library. It provides (among
@@ -10,3 +11,4 @@ And even then, we only use a relatively small subset of the features of that
 class.
 
 I have provided an annotated version of the Blitz++ documentation <a href=""> </a>
+*/
