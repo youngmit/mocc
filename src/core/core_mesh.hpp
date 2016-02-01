@@ -36,7 +36,7 @@ namespace mocc {
          * responsible for parsing many of the tags in the XML document:
          * \<mesh\>, \<pin\>, \<material_lib\>, \<lattice\>, \<core\>
         */
-        CoreMesh( pugi::xml_node &input );
+        CoreMesh( const pugi::xml_node &input );
 
         ~CoreMesh();
 

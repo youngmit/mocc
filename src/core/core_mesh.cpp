@@ -16,11 +16,7 @@ using std::stringstream;
 
 
 namespace mocc {
-    /**
-     * \todo Simplify the CoreMesh construction by offloading stuff to the other
-     * structure (Lattice, Core, etc.).
-     */
-    CoreMesh::CoreMesh(pugi::xml_node &input) {
+    CoreMesh::CoreMesh( const pugi::xml_node &input ) {
         // Parse meshes
         pin_meshes_ = ParsePinMeshes( input );
 
