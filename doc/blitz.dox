@@ -1,0 +1,12 @@
+\page blitz Blitz++ Arrays
+
+For most of the arrays in MOCC, we use the Blitz++ library. It provides (among
+other things) a heavily-templated, powerful multi-dimensional array class. This
+class makes it much easier to allocate multi-dimensional storage and take
+slices and references to that data than is possible with built-in C++ features
+or the C++ standard library. While the library offers much more than the Array
+class, sush as stencils (for PDEs) and the like, we only use the Array class.
+And even then, we only use a relatively small subset of the features of that
+class.
+
+I have provided an annotated version of the Blitz++ documentation <a href=""> </a>
