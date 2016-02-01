@@ -16,7 +16,9 @@ namespace mocc {
             int64_t i;
         };
     }
-
+    /**
+     * \todo Document the  purpose of the function
+     */
     inline bool fp_equiv_ulp(float v1, float v2) {
         fp_utils::float_int i1;
         i1.f = v1;
