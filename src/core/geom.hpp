@@ -45,11 +45,9 @@ namespace mocc {
             return os;
         }
         /**
-         * \todo Inconsistency between comment and implementation
-         * comment: x-coordinate; implementation: y value?
+         * A point is considered "less than" another point if it has a smaller
+         * y-coordinate.
          */
-        // Overload the < operator. A point is considered "less than" another
-        // point if it has a smaller x-coordinate
         bool operator<(const Point2 &other) const {
             return y < other.y;
         }
