@@ -160,6 +160,16 @@ namespace mocc {
         void read( std::string path, std::vector<double> &data ) const;
 
         /**
+         * \brief Read data from an \ref H5Node into a 1-D Blitz array
+         * 
+         * Dimensionality of the data in the HDF5 file is allowed to be more
+         * than 1-D, in which case the data is copied linearly into the 1-D
+         * Blitz array. This is not an overload of the regular \c read() method
+         * to avoid the potential for error.
+         */
+        void read_1d( std::string path, ArrayB1 &data ) const;
+
+        /**
          * \brief Read data from an \ref H5Node into a Blitz++ array.
          *
          * This will attempt to read the dataset specified by the path relative

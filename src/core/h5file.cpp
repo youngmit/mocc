@@ -87,6 +87,9 @@ namespace mocc {
     }
 
     void H5Node::write( std::string path, const ArrayB1 &data, VecI dims ) {
+        if( !data.isStorageContiguous() ) {
+            throw EXCEPT("Data is not contiguous.");
+        }
         std::vector<hsize_t> dims_a;
         dims_a.reserve(dims.size());
         for( const auto &v: dims ) {
@@ -107,8 +110,43 @@ namespace mocc {
         return;
     }
 
-    void H5Node::read( std::string path, std::vector<double> &data ) const {
 
+    void H5Node::read_1d( std::string path, ArrayB1 &data ) const {
+        H5::DataSet dataset;
+        H5::DataSpace dataspace;
+        int h5size = -1;
+
+        try {
+            dataset = node_->openDataSet( path );
+            dataspace = dataset.getSpace();
+            h5size = dataspace.getSimpleExtentNpoints();
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to access dataset: " << path;
+            throw EXCEPT(msg.str());
+        }
+
+        if( data.size() == 0 ) {
+            data.resize(h5size);
+        } else {
+            if( (int)data.size() != h5size ) {
+                throw EXCEPT("Incompatible data sizes");
+            }
+        }
+
+        try {
+            dataset.read( data.data(), H5::PredType::NATIVE_DOUBLE );
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to read dataset: " << path;
+            throw EXCEPT(msg.str());
+        }
+
+        
+        return;
+    }
+
+    void H5Node::read( std::string path, std::vector<double> &data ) const {
         H5::DataSet dataset;
         H5::DataSpace dataspace;
         int h5size = -1;
@@ -132,7 +170,7 @@ namespace mocc {
         if( data.size() == 0 ) {
             data.resize(h5size);
         } else {
-            if( data.size() != h5size ) {
+            if( (int)data.size() != h5size ) {
                 throw EXCEPT("Incompatible data sizes");
             }
         }
