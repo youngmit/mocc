@@ -118,7 +118,7 @@ namespace mocc { namespace sn {
             real_t ay = corrections_->alpha( i, iang_alpha_, group_,
                     Normal::Y_NORM);
             real_t b = corrections_->beta( i, iang_alpha_, group_ );
-
+            
             real_t gx = ax*b;
             real_t gy = ay*b;
 
@@ -127,10 +127,16 @@ namespace mocc { namespace sn {
                                   tz_* flux_z );
             psi /= tx/gx + ty_/gy + 2.0*tz_ + xstr;
 
+//std::cout << ax << " " << ay << " " << b << std::endl;
+//std::cout << flux_x << " " << flux_y << " " << flux_z << std::endl << psi << std::endl;
+
+
             flux_x = (psi - gx*flux_x) / gx;
             flux_y = (psi - gy*flux_y) / gy;
             flux_z = 2.0*psi - flux_z;
 
+//std::cout << flux_x << " " << flux_y << " " << flux_z << std::endl;
+//std::cin.ignore();
             return psi;
         }
     };

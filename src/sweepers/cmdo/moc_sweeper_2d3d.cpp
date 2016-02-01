@@ -13,7 +13,7 @@ using std::cout;
 using std::cin;
 using std::endl;
 
-namespace mocc {
+namespace mocc { namespace cmdo {
     MoCSweeper_2D3D::MoCSweeper_2D3D( const pugi::xml_node &input,
             const CoreMesh &mesh ):
         MoCSweeper( input, mesh ),
@@ -36,6 +36,13 @@ namespace mocc {
             }
         }
 
+        // Instantiate the workers for current/no current
+        CurrentCorrections ccw( coarse_data_, &mesh_, corrections_.get(),
+                source_->get_transport( 0 ), xstr_, ang_quad_, *sn_xs_mesh_,
+                rays_ );
+        moc::NoCurrent ncw( coarse_data_, &mesh_ );
+
+
         flux_1g_.reference( flux_( blitz::Range::all(), group ) );
 
         // Perform inner iterations
@@ -47,15 +54,10 @@ namespace mocc {
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
                 coarse_data_->zero_data_radial( group );
-                //coarse_data_->current(blitz::Range::all(), group) = 0.0;
-                cmdo::CurrentCorrections cw( coarse_data_, &mesh_,
-                        corrections_.get(), source_->get_transport( 0 ), xstr_,
-                        ang_quad_, *sn_xs_mesh_, rays_ );
-                this->sweep1g( group, cw );
+                this->sweep1g( group, ccw );
                 coarse_data_->set_has_radial_data(true);
             } else {
-                moc::NoCurrent cw( coarse_data_, &mesh_ );
-                this->sweep1g( group, cw );
+                this->sweep1g( group, ncw );
             }
         }
 
@@ -66,7 +68,8 @@ namespace mocc {
         MoCSweeper::output( node );
         if( internal_coupling_ ) {
             corrections_->output( node );
+            sn_xs_mesh_->update();
             sn_xs_mesh_->output( node );
         }
     }
-}
+} } // Namespace mocc::cmdo

@@ -14,7 +14,7 @@ using std::cin;
 using std::setfill;
 using std::setw;
 
-namespace mocc {
+namespace mocc { namespace cmdo {
 ////////////////////////////////////////////////////////////////////////////////
     /// \todo make sure to check the angular quadratures for conformance
     PlaneSweeper_2D3D::PlaneSweeper_2D3D( const pugi::xml_node &input,
@@ -232,4 +232,4 @@ namespace mocc {
 
 
     }
-}
+} } // Namespace mocc::cmdo

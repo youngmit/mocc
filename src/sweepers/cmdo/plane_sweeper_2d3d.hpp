@@ -14,7 +14,7 @@
 #include "moc_sweeper_2d3d.hpp"
 #include "source_2d3d.hpp"
 
-namespace mocc {
+namespace mocc { namespace cmdo {
     /**
      * This is an implementation of the 2D3D method. Each plane is treated with
      * a 2-D MoC sweeper, which produces the correction factors needed to treat
@@ -131,4 +131,4 @@ namespace mocc {
         int n_inactive_moc_;
         int i_outer_;
     };
-}
+} } // Namespace mocc::cmdo

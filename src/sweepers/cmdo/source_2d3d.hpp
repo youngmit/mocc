@@ -3,7 +3,7 @@
 #include "core/error.hpp"
 #include "core/source.hpp"
 
-namespace mocc {
+namespace mocc { namespace cmdo {
     /**
      * This class extends the Source class to provide an abstract representation
      * of two fused sources, with each treating one of the sweepers containted
@@ -101,4 +101,4 @@ namespace mocc {
         const CoreMesh& mesh_;
         SourceIsotropic sn_source_;
     };
-}
+} } // Namespace mocc::cmdo

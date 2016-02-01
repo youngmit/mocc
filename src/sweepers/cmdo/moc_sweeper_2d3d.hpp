@@ -6,7 +6,7 @@
 
 #include "sweepers/sn/correction_data.hpp"
 
-namespace mocc {
+namespace mocc { namespace cmdo {
     class MoCSweeper_2D3D: public moc::MoCSweeper {
     public:
         MoCSweeper_2D3D( const pugi::xml_node &input, const CoreMesh &mesh );
@@ -61,4 +61,4 @@ namespace mocc {
 
         bool internal_coupling_;
     };
-}
+} } // Namespace mocc:cmdo

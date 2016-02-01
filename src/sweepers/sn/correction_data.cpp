@@ -2,11 +2,14 @@
 
 #include <iomanip>
 
+#include "core/files.hpp"
+
 using std::setfill;
 using std::setw;
 
 namespace mocc {
     void CorrectionData::from_data( const pugi::xml_node &input ) {
+        LogFile << "Loading CDD data from file(s)." << std::endl;
         // First, validate the data tags. Make sure that they are the right
         // size and have cover all planes in the mesh.
         {
@@ -33,9 +36,42 @@ namespace mocc {
             }
         }
 
-        for( int ig=0; ig<ngroup_; ig++ ) {
-            for( int iang=0; iang<nang_; iang++ ) {
-                
+        ArrayB1 slice(nreg_);
+
+        for( auto data = input.child("data"); data;
+            data = data.next_sibling("data") )
+        {
+            H5Node h5f( data.attribute("file").value(), H5Access::READ );
+
+            for( int ig=0; ig<ngroup_; ig++ ) {
+                for( int iang=0; iang<nang_; iang++ ) {
+                    // Gobble that data. Om nom nom!
+                    {
+                        std::stringstream path;
+                        path << "/alpha_x/" << setfill('0') << setw(3) << ig <<
+                            "_" << setfill('0') << setw(3) << iang;
+
+                        h5f.read_1d( path.str(), slice );
+                        alpha_(ig, iang, blitz::Range::all(), 
+                                (int)Normal::X_NORM) = slice;
+                    }
+                    
+                    {
+                        std::stringstream path;
+                        path << "/alpha_y/" << setfill('0') << setw(3) << ig <<
+                            "_" << setfill('0') << setw(3) << iang;
+                        h5f.read_1d( path.str(), slice );
+                        alpha_(ig, iang, blitz::Range::all(), 
+                                (int)Normal::Y_NORM) = slice;
+                    }
+                    {
+                        std::stringstream path;
+                        path << "/beta/" << setfill('0') << setw(3) << ig << "_"
+                            << setfill('0') << setw(3) << iang;
+                        h5f.read_1d( path.str(), slice );
+                        beta_(ig, iang, blitz::Range::all()) = slice;
+                    }
+                }
             }
         }
 
@@ -61,7 +97,8 @@ namespace mocc {
                 {
                     slice = beta_(g, a, blitz::Range::all());
                     std::stringstream setname;
-                    setname << "/beta/" << g << "_" << a;
+                    setname << "/beta/" << setfill('0') << setw(3) << g 
+                            << "_"      << setfill('0') << setw(3) << a;
                     file.write( setname.str(), slice, dims );
                 }
 
