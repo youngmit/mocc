@@ -60,7 +60,7 @@ namespace mocc {
         /**
          * Generate output of important cross sections on the homogenized mesh
          */
-        void output( H5::CommonFG *file ) const;
+        void output( H5Node &file ) const;
     private:
         const CoreMesh& mesh_;
 

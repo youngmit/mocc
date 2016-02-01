@@ -122,6 +122,9 @@ namespace mocc {
 
                 last_plane = top_plane;
             }
+            if( last_plane != ((int)mesh.nz()-1) ) {
+                throw EXCEPT("Data do not span entire mesh.");
+            }
         }
 
         // If we made it this far, things should be kosher
@@ -400,12 +403,12 @@ namespace mocc {
     }
 
 
-    void XSMeshHomogenized::output( H5::CommonFG *file ) const {
-        file->createGroup( "/xsmesh" );
-        file->createGroup( "/xsmesh/xstr" );
-        file->createGroup( "/xsmesh/xsnf" );
-        file->createGroup( "/xsmesh/xskf" );
-        file->createGroup( "/xsmesh/xsch" );
+    void XSMeshHomogenized::output( H5Node &file ) const {
+        file.create_group( "/xsmesh" );
+        file.create_group( "/xsmesh/xstr" );
+        file.create_group( "/xsmesh/xsnf" );
+        file.create_group( "/xsmesh/xskf" );
+        file.create_group( "/xsmesh/xsch" );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());
@@ -427,22 +430,22 @@ namespace mocc {
             {
                 std::stringstream setname;
                 setname << "/xsmesh/xstr/" << ig;
-                HDF::Write( file, setname.str(), xstr, d );
+                file.write( setname.str(), xstr, d );
             }
             {
                 std::stringstream setname;
                 setname << "/xsmesh/xsnf/" << ig;
-                HDF::Write( file, setname.str(), xsnf, d );
+                file.write( setname.str(), xsnf, d );
             }
             {
                 std::stringstream setname;
                 setname << "/xsmesh/xsch/" << ig;
-                HDF::Write( file, setname.str(), xsch, d );
+                file.write( setname.str(), xsch, d );
             }
             {
                 std::stringstream setname;
                 setname << "/xsmesh/xskf/" << ig;
-                HDF::Write( file, setname.str(), xskf, d );
+                file.write( setname.str(), xskf, d );
             }
 
         }
@@ -459,7 +462,7 @@ namespace mocc {
         dims[1] = ng_;
         dims[2] = ng_;
 
-        HDF::Write( file, "/xsmesh/xssc", scat, dims );
+        file.write( "/xsmesh/xssc", scat, dims );
 
 
         return;

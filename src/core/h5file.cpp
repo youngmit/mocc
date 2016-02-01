@@ -62,7 +62,7 @@ namespace mocc {
         }
     }
 
-    void H5Node::write( std::string path, VecF data, VecI dims ) {
+    void H5Node::write( std::string path, const VecF &data, VecI dims ) {
         hsize_t *dims_a = new hsize_t[dims.size()];
         for ( size_t i=0; i<dims.size(); i++ ) {
             dims_a[i] = dims[i];
@@ -80,6 +80,27 @@ namespace mocc {
         }
 
         delete[] dims_a;
+
+        return;
+    }
+
+    void H5Node::write( std::string path, const ArrayB1 &data, VecI dims ) {
+        std::vector<hsize_t> dims_a;
+        dims_a.reserve(dims.size());
+        for( const auto &v: dims ) {
+            dims_a.push_back(v);
+        }
+
+        try {
+            H5::DataSpace space( dims.size(), dims_a.data() );
+            H5::DataSet dataset = node_->createDataSet( path,
+                    H5::PredType::NATIVE_DOUBLE, space );
+            dataset.write( data.data(), H5::PredType::NATIVE_DOUBLE );
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to write dataset: " << path;
+            throw EXCEPT( msg.str().c_str() );
+        }
 
         return;
     }

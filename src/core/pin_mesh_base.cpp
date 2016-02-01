@@ -15,7 +15,7 @@ namespace mocc {
             inBuf >> id_;
 
             if(inBuf.fail()) {
-                Error( "Failed to read pin ID." );
+                throw EXCEPT( "Failed to read pin ID." );
             }
             if(!inBuf.eof()) {
                 Warn( "Dangling data after pin ID." );
@@ -29,7 +29,7 @@ namespace mocc {
             // Just treat square pitch for now
             pitch_y_ = pitch_x_;
             if( inBuf.fail() ) {
-                Error( "Failed to read pin pitch." );
+                throw EXCEPT( "Failed to read pin pitch." );
             }
             if( !inBuf.eof() ) {
                 Warn( "Dangling data after pin pitch." );

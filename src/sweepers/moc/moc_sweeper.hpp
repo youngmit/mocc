@@ -44,7 +44,7 @@ namespace mocc { namespace moc {
 
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux );
 
-        void output( H5::CommonFG *node ) const;
+        void output( H5Node &node ) const;
 
         void homogenize( CoarseData &data ) const {
             throw EXCEPT("Not Implemented");

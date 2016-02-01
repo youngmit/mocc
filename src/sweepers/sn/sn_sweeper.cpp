@@ -83,12 +83,12 @@ namespace sn {
         return;
     }
 
-    void SnSweeper::output( H5::CommonFG *node ) const {
+    void SnSweeper::output( H5Node &node ) const {
         auto dims = mesh_.dimensions();
         std::reverse( dims.begin(), dims.end() );
 
         // Make a group in the file to store the flux
-        node->createGroup("flux");
+        node.create_group("flux");
 
         ArrayB2 flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
@@ -99,7 +99,7 @@ namespace sn {
 
             ArrayB1 flux_1g = flux(blitz::Range::all(), ig);
 
-            HDF::Write( node, setname.str(), flux_1g.begin(), flux_1g.end(),
+            node.write( setname.str(), flux_1g.begin(), flux_1g.end(),
                     dims);
         }
 

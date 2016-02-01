@@ -8,13 +8,15 @@
 #include "global_config.hpp"
 #include "error.hpp"
 
+using namespace mocc;
+
 // Hide all of these constants from the rest of the world
 namespace {
-    mocc::real_t mu_base[] = {0.577350269189626, 0.350021000000000,
+    real_t mu_base[] = {0.577350269189626, 0.350021000000000,
         0.266636000000000, 0.218218218218218, 0.192450089729876,
         0.174077655955702, 0.161575000000000, 0.149071198499989};
 
-    mocc::real_t w_unique[] = {
+    real_t w_unique[] = {
         1.0,
         1.0/3.0,
         0.1761262, 0.1572071,
@@ -44,24 +46,24 @@ namespace {
 
 // Produce a vector of angles matching the level-symmetric quadrature of order
 // 'order'
-std::vector<mocc::Angle> GenSn( int order ){
+std::vector<Angle> GenSn( int order ){
 
     if( order%2 != 0 ) {
-        mocc::Error("Sn quadrature order must be even.");
+        throw EXCEPT("Sn quadrature order must be even.");
     }
     if( order > 16 ) {
-        mocc::Error("Max supported Sn quadrature order is 16.");
+        throw EXCEPT("Max supported Sn quadrature order is 16.");
     }
 
     // n is the number of base cosines to use
     const int n = order/2;
 
     // set up the list of base cosines
-    mocc::VecF mu;
+    VecF mu;
     mu.push_back(mu_base[n-1]);
     if( order > 2) {
-        const mocc::real_t delta_mu = 2.0 * ( 1.0 -
-                3.0*(mu[0]*mu[0]) ) / (mocc::real_t)(order-2);
+        const real_t delta_mu = 2.0 * ( 1.0 -
+                3.0*(mu[0]*mu[0]) ) / (real_t)(order-2);
         for (int i=1; i<n; i++) {
             mu.push_back( sqrt(mu[0]*mu[0] + i*delta_mu) );
         }
@@ -69,20 +71,20 @@ std::vector<mocc::Angle> GenSn( int order ){
 
     // Alias the w_unique array to get a slice for the order we are interested
     // in.
-    mocc::real_t* weights = &w_unique[w_offset[n-1]];
+    real_t* weights = &w_unique[w_offset[n-1]];
     // Alias into the w_map to get our indices
     int* map = &w_map[w_map_offset[n-1]];
 
     // Apply the permutations of the base cosines to get actual angles. We will
     // do this once for the first octant, then reflect around.
-    std::vector<mocc::Angle> angles;
+    std::vector<Angle> angles;
     int k=0;
     for( int i=0; i<n; i++ ) {
         for( int j=0; j<=i; j++ ) {
-            mocc::Angle angle( mu[i-j],
-                               mu[j],
-                               mu[n-i-1],
-                               weights[map[k]-1]);
+            Angle angle( mu[i-j],
+                         mu[j],
+                         mu[n-i-1],
+                         weights[map[k]-1]);
 
             // Look up and apply the proper weight
 //            angle.weight = weights[map[k]-1];

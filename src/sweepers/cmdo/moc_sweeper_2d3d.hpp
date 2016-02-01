@@ -43,7 +43,7 @@ namespace mocc {
          * cross sections if the sweeper is internally coupled. Again, this is
          * only for the one-way coupling case to output data.
          */
-        void output( H5::CommonFG *node ) const;
+        void output( H5Node &node ) const;
 
     private:
         void sweep1g_final( int group );
