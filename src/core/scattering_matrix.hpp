@@ -10,7 +10,13 @@ namespace mocc {
     struct ScatteringRow {
     public:
         ScatteringRow(int min, int max, real_t const * const from):
-            min_g(min), max_g(max), from(from){}
+            min_g(min),
+            max_g(max),
+            from(from)
+        {
+            return;
+        }
+
         int min_g;
         int max_g;
         real_t const * const from;
@@ -205,7 +211,9 @@ namespace mocc {
                 const ScatteringMatrix &scat_mat);
     private:
         int ng_;
+        // Densified scattering cross sections
         VecF scat_;
+        // Group-wise outscatter cross sections
         VecF out_;
         std::vector<ScatteringRow> rows_;
     };
