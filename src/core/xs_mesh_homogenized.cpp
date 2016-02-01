@@ -78,6 +78,8 @@ namespace mocc {
         }
 
         ng_ = mesh.mat_lib().n_group();
+
+        eubounds_.resize(ng_);
         
         int nreg_plane = mesh.nx()*mesh.ny();
 
@@ -88,7 +90,7 @@ namespace mocc {
             for( auto data = input.child("data"); data;
                 data = data.next_sibling("data") )
             {
-                int top_plane = data.attribute("top_plane").as_int(-1);
+                int top_plane = data.attribute("top_plane").as_int();
                 if( top_plane < 0 ) {
                     throw EXCEPT("Invalid top_plane in <data />");
                 }
@@ -149,6 +151,8 @@ namespace mocc {
         {
             int plane = data.attribute("top_plane").as_int();
             H5Node h5d( data.attribute("file").value(), H5Access::READ );
+
+            h5d.read("//xsmesh/eubounds", eubounds_ );
 
             // Get all the group data out to memory first
             for( unsigned ig=0; ig<ng_; ig++ ) {
@@ -409,6 +413,8 @@ namespace mocc {
         file.create_group( "/xsmesh/xsnf" );
         file.create_group( "/xsmesh/xskf" );
         file.create_group( "/xsmesh/xsch" );
+
+        file.write("/xsmesh/eubounds", eubounds_, VecI(1, ng_) );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());

@@ -44,9 +44,10 @@ namespace mocc {
             os << "[ " << p.x << ", " << p.y << " ]";
             return os;
         }
-
-        // Overload the < operator. A point is considered "less than" another
-        // point if it has a smaller x-coordinate
+        /**
+         * A point is considered "less than" another point if it has a smaller
+         * y-coordinate.
+         */
         bool operator<(const Point2 &other) const {
             return y < other.y;
         }

@@ -93,6 +93,8 @@ TEST( fromdata )
 
     XSMeshHomogenized xs_mesh( mesh, xsmesh_xml );
 
+    CHECK_EQUAL( 7, xs_mesh.eubounds().size() );
+
     CHECK_EQUAL( 72, xs_mesh.size() );
 
     CHECK_CLOSE( 2.005998E-02, xs_mesh[48].xsmacnf(0),

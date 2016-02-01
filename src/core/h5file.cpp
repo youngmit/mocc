@@ -58,11 +58,13 @@ namespace mocc {
             return dims;
         }
         catch(...) {
-            throw EXCEPT("Failed to get dataset dimensions");
+            std::stringstream msg;
+            msg << "Failed to get dataset dimensions: " << path;
+            throw EXCEPT(msg.str());
         }
     }
 
-    void H5Node::write( std::string path, VecF data, VecI dims ) {
+    void H5Node::write( std::string path, const VecF &data, VecI dims ) {
         hsize_t *dims_a = new hsize_t[dims.size()];
         for ( size_t i=0; i<dims.size(); i++ ) {
             dims_a[i] = dims[i];
@@ -80,6 +82,68 @@ namespace mocc {
         }
 
         delete[] dims_a;
+
+        return;
+    }
+
+    void H5Node::write( std::string path, const ArrayB1 &data, VecI dims ) {
+        std::vector<hsize_t> dims_a;
+        dims_a.reserve(dims.size());
+        for( const auto &v: dims ) {
+            dims_a.push_back(v);
+        }
+
+        try {
+            H5::DataSpace space( dims.size(), dims_a.data() );
+            H5::DataSet dataset = node_->createDataSet( path,
+                    H5::PredType::NATIVE_DOUBLE, space );
+            dataset.write( data.data(), H5::PredType::NATIVE_DOUBLE );
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to write dataset: " << path;
+            throw EXCEPT( msg.str().c_str() );
+        }
+
+        return;
+    }
+
+    void H5Node::read( std::string path, std::vector<double> &data ) const {
+
+        H5::DataSet dataset;
+        H5::DataSpace dataspace;
+        int h5size = -1;
+        int ndim = -1;
+
+        try {
+            dataset = node_->openDataSet( path );
+            dataspace = dataset.getSpace();
+            ndim = dataspace.getSimpleExtentNdims();
+            h5size = dataspace.getSimpleExtentNpoints();
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to access dataset: " << path;
+            throw EXCEPT(msg.str());
+        }
+
+        if( ndim != 1) {
+            throw EXCEPT("Vector input only supports single-dimensional data");
+        }
+
+        if( data.size() == 0 ) {
+            data.resize(h5size);
+        } else {
+            if( data.size() != h5size ) {
+                throw EXCEPT("Incompatible data sizes");
+            }
+        }
+
+        try {
+            dataset.read( data.data(), H5::PredType::NATIVE_DOUBLE );
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to read dataset: " << path;
+            throw EXCEPT(msg.str());
+        }
 
         return;
     }

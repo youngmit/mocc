@@ -7,6 +7,7 @@
 #include <string>
 
 #include "error.hpp"
+#include "blitz_typedefs.hpp"
 #include "global_config.hpp"
 
 namespace mocc {
@@ -28,6 +29,7 @@ namespace mocc {
          */
         APPEND,
     };
+
     /**
      * Wrapper class for the HDF5 library. An instance of this class is similar
      * to the HDF5 CommonFG class, with extra stuff to make it easier to work
@@ -78,7 +80,12 @@ namespace mocc {
          * \brief Write an std::vector<double> to the file, using specified
          * dimensions.
          */
-        void write( std::string path, VecF data, VecI dims );
+        void write( std::string path, const VecF &data, VecI dims );
+
+        /**
+         * \brief Write a 1-D Blitz array to an HDF5 file, possibly reshaping
+         */
+        void write( std::string path, const ArrayB1 &data, VecI dims );
 
         /**
          * \brief Write a Blitz++ array to the HDF5 node.
@@ -148,6 +155,11 @@ namespace mocc {
         }
 
         /**
+         * \brief Read data from an \ref H5Node into an STL vector
+         */
+        void read( std::string path, std::vector<double> &data ) const;
+
+        /**
          * \brief Read data from an \ref H5Node into a Blitz++ array.
          *
          * This will attempt to read the dataset specified by the path relative
@@ -161,7 +173,7 @@ namespace mocc {
          *  the HDF5 dataset, and \c isStorageContiguous() must return \c true.
          */
         template<class BlitzArray>
-        void read( std::string path, BlitzArray &data ) {
+        void read( std::string path, BlitzArray &data ) const {
             if( (data.size() > 0) && !data.isStorageContiguous() ) {
                 throw EXCEPT("Blitz data is not contiguous");
             }
@@ -226,7 +238,7 @@ namespace mocc {
             } catch(...) {
                 std::stringstream msg;
                 msg << "Failed to read dataset: " << path;
-                throw EXCEPT(msg.str().c_str());
+                throw EXCEPT(msg.str());
             }
 
             return;
@@ -235,7 +247,6 @@ namespace mocc {
         /**
          * Write data to an HDF5 location using iterators.
          *
-         * \param node the location in the file to write to
          * \param path the path to the dataset, relative to \c node. If
          * preceeded by a '/', the path is absolute and will resolve to a
          * location relative to the root of the HDF5 file.

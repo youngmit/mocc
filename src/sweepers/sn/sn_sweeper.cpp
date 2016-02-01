@@ -23,13 +23,6 @@ namespace sn {
     {
         LogFile << "Constructing a base Sn sweeper" << std::endl;
 
-        core_mesh_ = &mesh;
-        n_reg_ = mesh.n_pin();
-        n_group_ = xs_mesh_->n_group();
-        flux_.resize( n_reg_, n_group_ );
-        flux_old_.resize( n_reg_, n_group_ );
-        vol_.resize( n_reg_ );
-
         // Set up the cross-section mesh. If there is <data> specified, try to
         // use that, otherwise generate volume-weighted cross sections
         if( input.child("data").empty() ) {
@@ -43,6 +36,14 @@ namespace sn {
                 throw EXCEPT("Failed to create XSMesh for Sn Sweeper.");
             }
         }
+
+        core_mesh_ = &mesh;
+        n_reg_ = mesh.n_pin();
+        n_group_ = xs_mesh_->n_group();
+        flux_.resize( n_reg_, n_group_ );
+        flux_old_.resize( n_reg_, n_group_ );
+        vol_.resize( n_reg_ );
+
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;

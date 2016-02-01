@@ -21,6 +21,8 @@ namespace mocc {
      * \brief Compare two floats using ULP.
      *
      * See <a
+     * href="http://www.cygnus-software.com/papers/comparingfloats/Comparing%20floating%20point%20numbers.htm">
+     * this page</a> and <a
      * href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">
      * this page</a> for more info about testing floating point equivalence.
      */

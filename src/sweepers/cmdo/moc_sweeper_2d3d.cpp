@@ -66,6 +66,7 @@ namespace mocc {
         MoCSweeper::output( node );
         if( internal_coupling_ ) {
             corrections_->output( node );
+            sn_xs_mesh_->output( node );
         }
     }
 }
