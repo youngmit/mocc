@@ -139,6 +139,11 @@ will not extend past that of the \ref mocc::PinMesh we are pointing to, which
 is easy to enforce. Were that not the case, it might make more sense to use
 shared pointers all around.
 
+Arrays
+------
+For most arrays, we use the Blitz++ library. For more information about how we
+use blitz, check out \ref blitz.
+
 
 Coordinate Systems
 ------------------
