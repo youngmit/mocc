@@ -29,7 +29,7 @@ namespace mocc { namespace sn {
      * known to the client code. In uses where the differencing scheme is indeed
      * known, the client code may instantiate their own sweeper of this class
      * and have access to a fully-typed \ref CellWorker member. This is useful
-     * in the \ref PlaneSweeper_2D3D class, which knows what type of \ref
+     * in the \ref cmdo::PlaneSweeper_2D3D class, which knows what type of \ref
      * CellWorker it is using.
      */
     template <class Worker>
