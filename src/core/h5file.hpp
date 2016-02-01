@@ -155,6 +155,11 @@ namespace mocc {
         }
 
         /**
+         * \brief Read data from an \ref H5Node into an STL vector
+         */
+        void read( std::string path, std::vector<double> &data ) const;
+
+        /**
          * \brief Read data from an \ref H5Node into a Blitz++ array.
          *
          * This will attempt to read the dataset specified by the path relative
@@ -168,7 +173,7 @@ namespace mocc {
          *  the HDF5 dataset, and \c isStorageContiguous() must return \c true.
          */
         template<class BlitzArray>
-        void read( std::string path, BlitzArray &data ) {
+        void read( std::string path, BlitzArray &data ) const {
             if( (data.size() > 0) && !data.isStorageContiguous() ) {
                 throw EXCEPT("Blitz data is not contiguous");
             }
@@ -233,7 +238,7 @@ namespace mocc {
             } catch(...) {
                 std::stringstream msg;
                 msg << "Failed to read dataset: " << path;
-                throw EXCEPT(msg.str().c_str());
+                throw EXCEPT(msg.str());
             }
 
             return;
