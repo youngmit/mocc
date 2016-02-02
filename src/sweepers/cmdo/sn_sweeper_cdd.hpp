@@ -11,7 +11,7 @@
 #include "sn/correction_data.hpp"
 #include "sn/sn_sweeper.hpp"
 
-namespace mocc { namespace sn {
+namespace mocc { namespace cmdo {
     /**
      * An extension of \ref sn::CellWorker to propagate flux through an
      * orthogonal mesh region with the corrected diamond difference (CDD)
@@ -181,5 +181,15 @@ namespace mocc { namespace sn {
 
             return psi;
         }
+    };
+
+    class SnSweeper_CDD : public sn::SnSweeperVariant<CellWorker_CDD_DD> {
+    public:
+        SnSweeper_CDD( const pugi::xml_node &input, const CoreMesh &mesh ):
+            SnSweeperVariant<CellWorker_CDD_DD>( input, mesh )
+        {
+            return;
+        }
+        
     };
 } }

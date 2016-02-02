@@ -9,8 +9,8 @@
 
 #include "sn/correction_data.hpp"
 #include "sn/sn_sweeper_variant.hpp"
-#include "sn/sn_sweeper_cdd.hpp"
 
+#include "sn_sweeper_cdd.hpp"
 #include "moc_sweeper_2d3d.hpp"
 #include "source_2d3d.hpp"
 
@@ -115,7 +115,7 @@ namespace mocc { namespace cmdo {
 
 
         const CoreMesh& mesh_;
-        sn::SnSweeperVariant<sn::CellWorker_CDD_DD> sn_sweeper_;
+        SnSweeper_CDD sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
         std::shared_ptr<CorrectionData> corrections_;

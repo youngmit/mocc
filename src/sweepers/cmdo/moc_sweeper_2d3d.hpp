@@ -61,4 +61,4 @@ namespace mocc { namespace cmdo {
 
         bool internal_coupling_;
     };
-} } // Namespace mocc:cmdo
+} } // Namespace mocc::cmdo

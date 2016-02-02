@@ -28,6 +28,11 @@ namespace mocc { namespace cmdo {
         assert(source_);
         assert(sn_xs_mesh_);
 
+        if( !coarse_data_ ) {
+            throw EXCEPT("2D3D MoC sweeper needs coarse data to collect "
+                    "calculate correction factors. Try enabling CMFD.");
+        }
+
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
             real_t xstr = xsr.xsmactr()[group];

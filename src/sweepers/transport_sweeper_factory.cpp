@@ -6,7 +6,7 @@
 #include "core/mesh.hpp"
 
 #include "moc/moc_sweeper.hpp"
-#include "sn/sn_sweeper_factory.hpp"
+#include "sn_sweeper_factory.hpp"
 #include "cmdo/plane_sweeper_2d3d.hpp"
 
 namespace mocc {

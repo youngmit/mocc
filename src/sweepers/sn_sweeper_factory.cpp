@@ -8,11 +8,12 @@
 
 #include "sweepers/transport_sweeper.hpp"
 
-#include "correction_data.hpp"
-#include "sn_sweeper.hpp"
-#include "sn_sweeper_variant.hpp"
-#include "sn_sweeper_cdd.hpp"
-#include "sn_sweeper_dd.hpp"
+#include "sn/correction_data.hpp"
+#include "sn/sn_sweeper.hpp"
+#include "sn/sn_sweeper_variant.hpp"
+#include "sn/sn_sweeper_dd.hpp"
+
+#include "cmdo/sn_sweeper_cdd.hpp"
 
 using mocc::sn::UP_SnSweeper_t;
 
@@ -35,8 +36,7 @@ namespace mocc {
             // this factory that it is not getting correction data from another
             // coupled sweeper. Therefore, we should make some correction
             // factors for it here.
-            sn::SnSweeperVariant<sn::CellWorker_CDD_DD> *swp =
-                new sn::SnSweeperVariant<sn::CellWorker_CDD_DD>( input, mesh );
+            cmdo::SnSweeper_CDD *swp = new cmdo::SnSweeper_CDD( input, mesh );
             auto corrections = std::shared_ptr<CorrectionData>(
                 new CorrectionData( mesh, swp->ang_quad().ndir()/2,
                 swp->n_group()) );
