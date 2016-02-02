@@ -52,7 +52,7 @@ namespace mocc { namespace cmdo {
         }
 
         /**
-         * \copydoc CellWorker::evaluate_2d()
+         * \copydoc sn::CellWorker::evaluate_2d()
          *
          * Since the variants of the CDD worker are all for different axial
          * treatments, the 2-D version of \ref CellWorker::evaluate() can live
