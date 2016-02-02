@@ -55,8 +55,8 @@ namespace mocc { namespace cmdo {
          * \copydoc sn::CellWorker::evaluate_2d()
          *
          * Since the variants of the CDD worker are all for different axial
-         * treatments, the 2-D version of \ref CellWorker::evaluate() can live
-         * here.
+         * treatments, the 2-D version of \ref sn::CellWorker::evaluate() can
+         * live here.
          */
         inline real_t evaluate_2d( real_t &flux_x, real_t &flux_y, real_t q,
                 real_t xstr, size_t i )
