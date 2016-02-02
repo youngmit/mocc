@@ -42,7 +42,7 @@ namespace mocc {
                 swp->n_group()) );
             corrections->from_data( input );
 
-            swp->worker()->set_corrections( corrections );
+            swp->set_corrections( corrections );
 
             return UP_SnSweeper_t( std::move(swp) );
         } else {

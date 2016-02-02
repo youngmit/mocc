@@ -60,7 +60,7 @@ namespace mocc { namespace sn {
             return std::static_pointer_cast<XSMeshHomogenized>( xs_mesh_ );
         }
 
-        void output( H5Node &node ) const;
+        virtual void output( H5Node &node ) const;
 
     protected:
         /** 

@@ -186,10 +186,27 @@ namespace mocc { namespace cmdo {
     class SnSweeper_CDD : public sn::SnSweeperVariant<CellWorker_CDD_DD> {
     public:
         SnSweeper_CDD( const pugi::xml_node &input, const CoreMesh &mesh ):
-            SnSweeperVariant<CellWorker_CDD_DD>( input, mesh )
+            SnSweeperVariant<CellWorker_CDD_DD>( input, mesh ),
+            correction_data_(nullptr)
         {
             return;
         }
+
+        void set_corrections( std::shared_ptr<const CorrectionData> data ) {
+            correction_data_ = data;
+            cell_worker_.set_corrections( data );
+        }
+
+        void output( H5Node &node ) const {
+std::cout << __FILE__ << __func__ << std::endl;
+            assert(correction_data_);
+            SnSweeper::output( node );
+            correction_data_->output( node );
+            return;
+        }
+
+    private:
+        std::shared_ptr<const CorrectionData> correction_data_;
         
     };
 } }

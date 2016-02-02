@@ -39,8 +39,6 @@ namespace mocc { namespace sn {
                 SnSweeper( input, mesh ),
                 cell_worker_( mesh_, ang_quad_ )
         {
-
-            
             return;
         }
 
@@ -212,8 +210,6 @@ namespace mocc { namespace sn {
             return;
         }
 
-
-    private:
         Worker cell_worker_;
     };
 } }
