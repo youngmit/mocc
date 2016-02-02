@@ -35,9 +35,19 @@ namespace mocc{
         }
         std::string matLibName =
             input.attribute( "path" ).value();
-        LogFile << "Found material library specification: " << matLibName
+        LogFile << "Using material library at: " << matLibName
                 << std::endl;
-        FileScrubber matLibFile( matLibName.c_str(), "!" );
+        FileScrubber matLibFile;
+
+        try {
+            matLibFile = FileScrubber( matLibName.c_str(), "!" );
+        } catch( Exception e ) {
+            std::stringstream msg;
+            std::cerr << e.what() << std::endl;
+            msg << "Failed to open the cross-section library at: "
+                << matLibName;
+            throw EXCEPT(msg.str());
+        }
 
 
         string line;
