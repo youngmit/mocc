@@ -11,8 +11,16 @@ namespace mocc {
     public:
         FileScrubber(){}
         /**
-         * Ininialize from a file name. Passees fName into the constructor of
+         * Ininialize from a file name. Passes fName into the constructor of
          * the underlying ifstream object.
+         *
+         * \param fName the name of the file to read.
+         * \param commentFlag a C-style string containing the sequence of
+         * characters that signify a comment.
+         *
+         * This class only supports single-line comments, in which the \p
+         * commentFlag and all characters following are ignored for the rest of
+         * the line. Think '//' comments in C-style languages
          */
         FileScrubber(const char* fName, const char* commentFlag);
 
