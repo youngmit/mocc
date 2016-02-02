@@ -2,11 +2,11 @@
 #include <string>
 #include <fstream>
 
-/**
- * A simple class that extends ifstream to provide a safe/easy way to scrub
- * comments from an input file as it is read
- */
 namespace mocc {
+    /**
+     * A simple class that extends ifstream to provide a safe/easy way to scrub
+     * comments from an input file as it is read
+     */
     class FileScrubber {
     public:
         FileScrubber(){}
