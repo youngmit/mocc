@@ -80,7 +80,12 @@ namespace mocc { namespace cmdo {
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
 
         // Sn sweeper
-        sn_sweeper_.get_homogenized_xsmesh()->update( );
+        // For now, we are assuming that the Sn cross sections are being updated
+        // in the last inner iteration of the MoC. We should come up with
+        // something better, since that actually ignores the change to the fine
+        // mesh flux in the last MoC inner. For low numbers of MoC inners, this
+        // essentially constitutes an outer-iteration lag of the updated cross
+        // sections :-/
         sn_sweeper_.sweep( group );
 
         if( do_snproject_ ) {

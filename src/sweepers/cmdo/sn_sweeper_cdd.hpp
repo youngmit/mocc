@@ -198,7 +198,6 @@ namespace mocc { namespace cmdo {
         }
 
         void output( H5Node &node ) const {
-std::cout << __FILE__ << __func__ << std::endl;
             assert(correction_data_);
             SnSweeper::output( node );
             correction_data_->output( node );

@@ -59,6 +59,7 @@ namespace mocc { namespace cmdo {
             // a CoarseData object.
             if( inner == n_inner_-1 && coarse_data_ ) {
                 coarse_data_->zero_data_radial( group );
+                sn_xs_mesh_->update();
                 this->sweep1g( group, ccw );
                 coarse_data_->set_has_radial_data(true);
             } else {
