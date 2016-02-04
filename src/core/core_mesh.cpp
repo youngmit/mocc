@@ -17,6 +17,7 @@ using std::stringstream;
 
 namespace mocc {
     CoreMesh::CoreMesh( const pugi::xml_node &input ) {
+        LogFile << " Building core mesh... " << std::endl;
         // Parse meshes
         pin_meshes_ = ParsePinMeshes( input );
 
@@ -162,6 +163,8 @@ namespace mocc {
 
         // calculate surface indices
         this->prepare_surfaces();
+
+        LogFile << "Done building Core Mesh.";
 
         return;
     } // constructor

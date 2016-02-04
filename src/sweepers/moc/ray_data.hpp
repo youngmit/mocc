@@ -71,7 +71,7 @@ namespace mocc { namespace moc {
         }
 
         /**
-         * Return a const reference to the angular quadratre.
+         * Return a const reference to the angular quadrature.
          *
          * The internal \ref AngularQuadrature is a modularized form of the one
          * passed in at construction time, and it is often necessary to retrieve

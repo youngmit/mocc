@@ -11,11 +11,13 @@
 #include "constants.hpp"
 #include "global_config.hpp"
 
+using namespace mocc;
+
 TEST( raydata ) {
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file( "square.xml" );
 
-    mocc::CoreMesh mesh( geom_xml );
+    CoreMesh mesh( geom_xml );
 
     pugi::xml_document angquad_xml;
     result =
@@ -23,22 +25,22 @@ TEST( raydata ) {
 
     CHECK(result);
 
-    mocc::AngularQuadrature ang_quad( angquad_xml.child("ang_quad") );
+    AngularQuadrature ang_quad( angquad_xml.child("ang_quad") );
 
     pugi::xml_document ray_xml;
     ray_xml.load_string("<rays spacing=\"0.01\" />");
 
-    mocc::moc::RayData ray_data( ray_xml.child("rays"), ang_quad, mesh );
+    moc::RayData ray_data( ray_xml.child("rays"), ang_quad, mesh );
 
     for( auto &plane_rays: ray_data ) {
         int iang = 0;
         double wsum = 0.0;
-        mocc::VecF vol(mesh.n_reg(), 0.0);
+        VecF vol(mesh.n_reg(), 0.0);
         for( auto &angle_rays: plane_rays ) {
 
             wsum += ang_quad[iang].weight*2.0*PI;
-            mocc::real_t space = ray_data.spacing(iang);
-            mocc::real_t wt_ang = space * ang_quad[iang].weight * 2.0*PI;
+            real_t space = ray_data.spacing(iang);
+            real_t wt_ang = space * ang_quad[iang].weight * 2.0*PI;
             for( auto &ray: angle_rays ) {
                 for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
                     int ireg = ray.seg_index(iseg);
@@ -49,7 +51,7 @@ TEST( raydata ) {
             iang++;
         }
         for( auto &v: vol ) {
-            std::cout << v/0.1764 << std::endl;
+            CHECK_CLOSE(0.1764*4.0*PI, v, 0.00000000000001);
         }
         std::cout << "angle weight sum: " << wsum << std::endl;
     }

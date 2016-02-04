@@ -52,9 +52,9 @@ TEST( assembly )
     pugi::xml_document xml;
     auto result = xml.load_string( test_xml.c_str() );
 
-    if( !result ){
-        return 1;
-    }
+    CHECK(result);
+
+
 }
 
 int main(int, const char*[]) {

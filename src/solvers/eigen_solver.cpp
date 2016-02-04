@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "error.hpp"
+#include "files.hpp"
 
 using std::endl;
 using std::cout;
@@ -18,6 +19,9 @@ namespace mocc{
         fission_source_prev_( fss_.n_reg() ),
         min_iterations_( 0 )
     {
+        LogFile << "Initializing Eigenvalue solver..." << std::endl;
+
+
         if( input.empty() ) {
             throw EXCEPT("No input specified for the eigenvalue solver.");
         }
@@ -67,6 +71,10 @@ namespace mocc{
             CoarseData * const cd = cmfd_->get_data();
             fss_.sweeper()->set_coarse_data( cd );
         }
+
+        LogFile << "Done initializing Eigenvalue solver." << std::endl;
+
+        return;
     }
 
     // Perform a full-blown eigenvalue solve. Start with a guess for the

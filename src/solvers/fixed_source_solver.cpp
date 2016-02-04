@@ -19,6 +19,8 @@ namespace mocc {
         ng_( sweeper_->n_group() ),
         fixed_source_( false )
     {
+        LogFile << "Initializing Fixed-Source solver..." << std::endl;
+
         std::string type = input.attribute("type").value();
         // See if we are creating a fully-specified FSS. If the passed-in input
         // is type="fixed_source" do extra stuff.
@@ -53,6 +55,9 @@ namespace mocc {
         }
 
         sweeper_->assign_source( source_.get() );
+
+        LogFile << "Done initializing Fixed-Source solver." << std::endl;
+
         return;
     }
     catch (Exception e) {

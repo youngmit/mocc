@@ -5,6 +5,7 @@
 #include <map>
 
 #include "blitz_typedefs.hpp"
+#include "files.hpp"
 #include "global_config.hpp"
 
 using std::cout;
@@ -12,6 +13,9 @@ using std::endl;
 
 namespace mocc {
     XSMesh::XSMesh( const CoreMesh& mesh ) {
+
+        LogFile << "Initializing XS Mesh... "; 
+
         const MaterialLib& mat_lib = mesh.mat_lib();
 
         // Assume the same number of groups as the source material library
@@ -72,6 +76,8 @@ namespace mocc {
                     mat.xssc() );
             imat++;
         }
+
+        LogFile << "done." << std::endl;
 
         return;
     }

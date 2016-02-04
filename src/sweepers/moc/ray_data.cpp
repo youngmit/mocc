@@ -86,7 +86,6 @@ namespace mocc { namespace moc {
             LogFile << "Ray modularity: PIN" << std::endl;
         }
 
-
         // Store some necessary stuff from the CoreMesh
         n_planes_ = mesh.n_unique_planes();
 
