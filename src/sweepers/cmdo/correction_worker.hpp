@@ -83,7 +83,7 @@ namespace mocc {
                     // Hopefully branch prediction saves me here.
                     if( crd->fw != Surface::INVALID ) {
                         // Store forward volumetric stuff
-                        for( int i=0; i<crd->nseg_fw; i++ ) {
+                        for( unsigned i=0; i<crd->nseg_fw; i++ ) {
                             int ireg = ray.seg_index(iseg_fw) + first_reg;
                             real_t xstr = xstr_[ireg];
                             real_t t = ang_.rsintheta * ray.seg_len(iseg_fw);
@@ -107,7 +107,7 @@ namespace mocc {
 
                     if( crd->bw != Surface::INVALID ) {
                         // Store backward volumetric stuff
-                        for( int i=0; i<crd->nseg_bw; i++ ) {
+                        for( unsigned i=0; i<crd->nseg_bw; i++ ) {
                             iseg_bw--;
                             int ireg = ray.seg_index(iseg_bw) + first_reg;
                             real_t xstr = xstr_[ireg];
