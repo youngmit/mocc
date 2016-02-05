@@ -112,8 +112,8 @@ namespace mocc {
         return;
     }
 
-    int Mesh::coarse_surf_point( Point2 p, int cell, int (&s)[2] )
-            const
+    int Mesh::coarse_surf_point( Point2 p, int cell,
+            std::array<int, 2> &s ) const
     {
         bool on_x = false;
         bool on_y = false;

@@ -363,8 +363,8 @@ namespace mocc {
          * \param[in] p the \ref Point2 to check for surface.
          * \param[in] cell the index of a cell that the point should be
          * bordering.
-         * \param[out] s and array[2] to store the indices of the surface(s)
-         * crossed.
+         * \param[out] s an std::array<int, 2> to store the indices of the
+         * surface(s) crossed.
          *
          * This will return the number of surfaces that a point lies on, either
          * 0, 1 or 2.
@@ -375,7 +375,8 @@ namespace mocc {
          * in the bottom-most plane; the code using the resulting indices is
          * therefore required to offset them to the appropriate plane.
         */
-        int coarse_surf_point( Point2 p, int cell, int (&s)[2] ) const;
+        int coarse_surf_point( Point2 p, int cell,
+                std::array<int, 2> &s ) const;
 
         /**
          * \brief Return the coarse cell indices straddling the surface
