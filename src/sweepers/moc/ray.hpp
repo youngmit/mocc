@@ -140,6 +140,21 @@ namespace mocc { namespace moc {
             return bc_[dir];
         }
 
+        /**
+         * \brief Ray magnitude for > and < operators is based on number of
+         * segments.
+         */
+        bool operator<( const Ray &other ) const {
+            return nseg_ < other.nseg_;
+        }
+
+        /**
+         * \copybrief operator<()
+         */
+        bool operator>( const Ray &other ) const {
+            return nseg_ > other.nseg_;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const Ray &ray );
 
     private:
@@ -160,11 +175,11 @@ namespace mocc { namespace moc {
         size_t nseg_;
 
         // Boundary condition index for the forward and backward directions
-        const size_t bc_[2];
+        std::array<size_t, 2> bc_;
 
         // Store the points that were used to initialize the ray. You know...
         // for posterity
-        const Point2 p1_;
-        const Point2 p2_;
+        Point2 p1_;
+        Point2 p2_;
     };
 } }
