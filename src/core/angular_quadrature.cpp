@@ -20,6 +20,10 @@ namespace mocc {
         if( input.empty() ) {
             throw EXCEPT("No input provided for angular quadrature.");
         }
+        if( input.name() != std::string("ang_quad") ) {
+            std::cerr << input.name() << std::endl;
+            throw EXCEPT("Input is not an <ang_quad/> tag");
+        }
 
         // Extract the quadrature type
         std::string type_str = input.attribute("type").value();
@@ -32,7 +36,7 @@ namespace mocc {
             // Generate angles for octant 1
             angles_ = GenSn( order );
         } else {
-            std::cout << "'" << type_str << "'" << std::endl;
+            std::cerr << "'" << type_str << "'" << std::endl;
             throw EXCEPT("Unrecognized angular quadrature type specified.");
         }
 
