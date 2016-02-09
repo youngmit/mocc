@@ -77,7 +77,7 @@ namespace mocc { namespace cmdo {
          * Override the default \ref TransportSweeper implementation to call the
          * method on one of the sub-sweepers.
          */
-        void calc_fission_source( real_t k, ArrayF &fission_source ) const {
+        void calc_fission_source( real_t k, ArrayB1 &fission_source ) const {
             moc_sweeper_.calc_fission_source( k, fission_source );
             return;
         }

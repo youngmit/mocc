@@ -38,7 +38,7 @@ namespace mocc { namespace moc {
 
         // Parse the number of inner iterations
         int int_in = input.attribute("n_inner").as_int(-1);
-        if(int_in < 0) {
+        if(int_in <= 0) {
             throw EXCEPT("Invalid number of inner iterations specified "
                 "(n_inner).");
         }
@@ -99,9 +99,9 @@ namespace mocc { namespace moc {
 
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
-            real_t xstr = xsr.xsmactr()[group];
+            real_t xstr = xsr.xsmactr(group);
             for( auto &ireg: xsr.reg() ) {
-                xstr_[ireg] = xstr;
+                xstr_(ireg) = xstr;
             }
         }
 
@@ -231,7 +231,6 @@ namespace mocc { namespace moc {
     real_t MoCSweeper::set_pin_flux_1g( int group,
             const ArrayB1 &pin_flux)
     {
-
         real_t resid = 0.0;
         size_t ipin = 0;
         int ireg = 0;
@@ -260,14 +259,16 @@ namespace mocc { namespace moc {
     }
 
     void MoCSweeper::check_balance( int group ) const {
-        ArrayF b(0.0, mesh_.n_pin());
+        ArrayB1 b(mesh_.n_pin());
+        b = 0.0;
 
         // Get the removal cross section in a nice format
-        ArrayF xsrm(0.0, n_reg_);
+        ArrayB1 xsrm(n_reg_);
+        xsrm = 0.0;
         for( auto &xsr: *xs_mesh_ ) {
-            real_t rm = xsr.xsmacrm()[group];
+            real_t rm = xsr.xsmacrm(group);
             for( auto &ireg: xsr.reg() ) {
-                xsrm[ireg] = rm;
+                xsrm(ireg) = rm;
             }
         }
 
@@ -280,7 +281,7 @@ namespace mocc { namespace moc {
             real_t bi = 0.0;
 
             for( int ireg_pin=0; ireg_pin<pin->n_reg(); ireg_pin++ ) {
-                bi -= flux_(ireg, group)*vol_[ireg]*xsrm[ireg];
+                bi -= flux_(ireg, group)*vol_[ireg]*xsrm(ireg);
                 bi += (*source_)[ireg]*vol_[ireg];
                 ireg++;
             }
@@ -299,7 +300,7 @@ namespace mocc { namespace moc {
             bi += current_1g( mesh_.coarse_surf(icell, Surface::BOTTOM) ) *
                 mesh_.coarse_area(icell, Surface::BOTTOM);
 
-            b[icell] = bi;
+            b(icell) = bi;
             ipin++;
         }
 

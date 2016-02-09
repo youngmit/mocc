@@ -10,8 +10,8 @@ namespace mocc {
         if( scale_transport_ ) {
             for( auto &xsr: *xs_mesh_ ) {
                 const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
-                real_t xssc = scat_row.from[ig-scat_row.min_g];
-                real_t r_fpi_tr = 1.0/(xsr.xsmactr()[ig]*FPI);
+                real_t xssc = scat_row[ig];
+                real_t r_fpi_tr = 1.0/(xsr.xsmactr(ig)*FPI);
                 for ( auto &ireg: xsr.reg() ) {
                     q_[ireg] = ( source_1g_[ireg] + flux_1g((int)ireg)*xssc ) *
                         r_fpi_tr;
@@ -21,7 +21,7 @@ namespace mocc {
             real_t r_fpi = 1.0/(FPI);
             for( auto &xsr: *xs_mesh_ ) {
                 const ScatteringRow& scat_row = xsr.xsmacsc().to(ig);
-                real_t xssc = scat_row.from[ig-scat_row.min_g];
+                real_t xssc = scat_row[ig];
                 for ( auto &ireg: xsr.reg() ) {
                     q_[ireg] = ( source_1g_[ireg] + flux_1g((int)ireg)*xssc ) *
                         r_fpi;

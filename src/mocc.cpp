@@ -12,10 +12,8 @@
 #include "core/files.hpp"
 #include "core/global_config.hpp"
 #include "core/h5file.hpp"
-
-#include "solvers/solver.hpp"
-
-#include "sweepers/transport_sweeper.hpp"
+#include "core/solver.hpp"
+#include "core/transport_sweeper.hpp"
 
 #include "input_proc.hpp"
 

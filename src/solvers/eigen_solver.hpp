@@ -8,8 +8,7 @@
 #include "core/core_mesh.hpp"
 #include "core/h5file.hpp"
 #include "core/cmfd.hpp"
-
-#include "sweepers/transport_sweeper.hpp"
+#include "core/transport_sweeper.hpp"
 
 #include "fixed_source_solver.hpp"
 #include "solver.hpp"
@@ -66,8 +65,8 @@ namespace mocc{
         FixedSourceSolver fss_;
 
         // Fission source, and previous iterate
-        ArrayF fission_source_;
-        ArrayF fission_source_prev_;
+        ArrayB1 fission_source_;
+        ArrayB1 fission_source_prev_;
 
         // Current guess for k
         real_t keff_;

@@ -7,13 +7,13 @@
 
 #include "moc/ray_data.hpp"
 
-#include "sweepers/transport_sweeper.hpp"
 
 #include "core/angular_quadrature.hpp"
 #include "core/coarse_data.hpp"
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
 #include "core/exponential.hpp"
+#include "core/transport_sweeper.hpp"
 #include "core/xs_mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
 
@@ -89,7 +89,7 @@ namespace mocc { namespace moc {
         BCSet_Out_t boundary_out_;
 
         // Array of one group transport cross sections
-        ArrayF xstr_;
+        ArrayB1 xstr_;
 
         // Reference to a one-group slice of flux_. This should be
         // default-constructed, so that it only references data in flux_
@@ -126,10 +126,11 @@ namespace mocc { namespace moc {
 
 #pragma omp parallel default(shared)
             {
-            ArrayF e_tau(rays_.max_segments());
-            ArrayF psi1(rays_.max_segments()+1);
-            ArrayF psi2(rays_.max_segments()+1);
-            ArrayF t_flux(n_reg_);
+            ArrayB1 e_tau(rays_.max_segments());
+            ArrayB1 psi1(rays_.max_segments()+1);
+            ArrayB1 psi2(rays_.max_segments()+1);
+            ArrayB1 t_flux(n_reg_);
+            t_flux = 0.0;
 
             int iplane = 0;
             for( const auto plane_ray_id: mesh_.unique_planes() ) {
@@ -153,7 +154,7 @@ namespace mocc { namespace moc {
                     real_t wt_v_st = ang.weight * rays_.spacing(iang) *
                         stheta * PI;
 
-#pragma omp for
+#pragma omp for schedule(static, 1)
                     for( int iray=0; iray<(int)ang_rays.size(); iray++ ) {
                         const auto& ray = ang_rays[iray];
 
@@ -161,42 +162,42 @@ namespace mocc { namespace moc {
                         int bc2 = ray.bc(1);
 
                         // Compute exponentials
-                        for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                        for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            e_tau[iseg] = 1.0 - exp_.exp( -xstr_[ireg] *
+                            e_tau(iseg) = 1.0 - exp_.exp( -xstr_(ireg) *
                                     ray.seg_len(iseg) * rstheta );
                         }
 
                         // Forward direction
                         // Initialize from bc
-                        psi1[0] = boundary_[group][iplane][iang1][bc1];
+                        psi1(0) = boundary_[group][iplane][iang1][bc1];
 
                         // Propagate through core geometry
-                        for( unsigned int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                        for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            real_t psi_diff = (psi1[iseg] - qbar[ireg]) *
-                                e_tau[iseg];
-                            psi1[iseg+1] = psi1[iseg] - psi_diff;
-                            t_flux[ireg] += psi_diff*wt_v_st;
+                            real_t psi_diff = (psi1(iseg) - qbar[ireg]) *
+                                e_tau(iseg);
+                            psi1(iseg+1) = psi1(iseg) - psi_diff;
+                            t_flux(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        boundary_out_[iplane][iang1][bc2] = psi1[ ray.nseg() ];
+                        boundary_out_[iplane][iang1][bc2] = psi1( ray.nseg() );
 
                         // Backward direction
                         // Initialize from bc
-                        psi2[ray.nseg()] =
+                        psi2(ray.nseg()) =
                             boundary_[group][iplane][iang2][bc2];
 
                         // Propagate through core geometry
                         for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
                             int ireg = ray.seg_index(iseg) + first_reg;
-                            real_t psi_diff = (psi2[iseg+1] - qbar[ireg]) *
-                                e_tau[iseg];
-                            psi2[iseg] = psi2[iseg+1] - psi_diff;
-                            t_flux[ireg] += psi_diff*wt_v_st;
+                            real_t psi_diff = (psi2(iseg+1) - qbar[ireg]) *
+                                e_tau(iseg);
+                            psi2(iseg) = psi2(iseg+1) - psi_diff;
+                            t_flux(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        boundary_out_[iplane][iang2][bc1] = psi2[0];
+                        boundary_out_[iplane][iang2][bc1] = psi2(0);
 
                         // Stash currents
                         cw.post_ray( psi1, psi2, e_tau, ray, first_reg, group );
@@ -212,7 +213,7 @@ namespace mocc { namespace moc {
             {
                 /// \todo make an array operation after refactoring out valarray
                 for( int i=0; i<(int)n_reg_; i++ ) {
-                    flux_1g_(i) += t_flux[i];
+                    flux_1g_(i) += t_flux(i);
                 }
             }
 #pragma omp barrier
@@ -223,7 +224,7 @@ namespace mocc { namespace moc {
                 auto &qbar = source_->get_transport( 0 );
                 for( int i=0; i<(int)n_reg_; i++)
                 {
-                    flux_1g_(i) = flux_1g_(i)/(xstr_[i]*vol_[i]) + qbar[i]*FPI;
+                    flux_1g_(i) = flux_1g_(i)/(xstr_(i)*vol_[i]) + qbar[i]*FPI;
                 }
             } // OMP single
 

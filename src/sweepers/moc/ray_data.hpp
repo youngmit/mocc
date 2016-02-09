@@ -116,7 +116,7 @@ namespace mocc { namespace moc {
          * collection. This is useful for defining the size of the scratch
          * space for MoC.
          */
-        size_t max_segments() const {
+        int max_segments() const {
             return max_seg_;
         }
 
@@ -160,7 +160,7 @@ namespace mocc { namespace moc {
         size_t n_planes_;
 
         // Maximum number of ray segments in a single ray
-        size_t max_seg_;
+        int max_seg_;
 
         /**
          * Perform a volume-correction of the ray segment lengths. This can be

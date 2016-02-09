@@ -24,7 +24,7 @@ namespace mocc {
         public:
             CurrentCorrections( CoarseData *coarse_data, const Mesh *mesh,
                     CorrectionData *corrections, const VectorX &qbar,
-                    const ArrayF &xstr, const AngularQuadrature &ang_quad,
+                    const ArrayB1 &xstr, const AngularQuadrature &ang_quad,
                     const XSMeshHomogenized &sn_xs_mesh,
                     const moc::RayData &rays ):
                 moc::Current( coarse_data, mesh ),
@@ -43,8 +43,8 @@ namespace mocc {
                 return;
             }
 
-            inline void post_ray( const ArrayF &psi1, const ArrayF &psi2,
-                    const ArrayF &e_tau, const moc::Ray &ray, int first_reg,
+            inline void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
+                    const ArrayB1 &e_tau, const moc::Ray &ray, int first_reg,
                     int group ) {
 #pragma omp critical
             {
@@ -56,26 +56,26 @@ namespace mocc {
                 size_t cell_bw = ray.cm_cell_bw();
                 int surf_fw = ray.cm_surf_fw();
                 int surf_bw = ray.cm_surf_bw();
-                size_t iseg_fw = 0;
-                size_t iseg_bw = ray.nseg();
+                int iseg_fw = 0;
+                int iseg_bw = ray.nseg();
 
                 // Use an offset for the current contributions, but NOT for the
                 // correction factors, which use plane-by-plane indexing
                 Normal norm_fw = mesh_->surface_normal( surf_fw );
                 Normal norm_bw = mesh_->surface_normal( surf_bw );
                 current( surf_fw+surf_offset_, group ) +=
-                    psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                    psi1(iseg_fw) * current_weights_[(int)norm_fw];
                 current( surf_bw+surf_offset_, group ) -=
-                    psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                    psi2(iseg_bw) * current_weights_[(int)norm_bw];
                 surface_flux( surf_fw+surf_offset_, group ) +=
-                    psi1[iseg_fw] * flux_weights_[(int)norm_fw];
+                    psi1(iseg_fw) * flux_weights_[(int)norm_fw];
                 surface_flux( surf_bw+surf_offset_, group ) -=
-                    psi2[iseg_bw] * flux_weights_[(int)norm_bw];
+                    psi2(iseg_bw) * flux_weights_[(int)norm_bw];
 
-                surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
-                surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
-                surf_norm_[surf_fw*2+0] += 1.0;
-                surf_norm_[surf_bw*2+1] += 1.0;
+                surf_sum_(surf_fw*2+0) += psi1(iseg_fw);
+                surf_sum_(surf_bw*2+1) += psi2(iseg_bw);
+                surf_norm_(surf_fw*2+0) += 1.0;
+                surf_norm_(surf_bw*2+1) += 1.0;
 
                 auto begin = ray.cm_data().cbegin();
                 auto end = ray.cm_data().cend();
@@ -85,24 +85,24 @@ namespace mocc {
                         // Store forward volumetric stuff
                         for( unsigned i=0; i<crd->nseg_fw; i++ ) {
                             int ireg = ray.seg_index(iseg_fw) + first_reg;
-                            real_t xstr = xstr_[ireg];
+                            real_t xstr = xstr_(ireg);
                             real_t t = ang_.rsintheta * ray.seg_len(iseg_fw);
-                            real_t fluxvol = t * qbar_[ireg] + e_tau[iseg_fw]*
-                                (psi1[iseg_fw]-qbar_[ireg])/xstr;
-                            vol_sum_[cell_fw*2+0] += fluxvol;
-                            vol_norm_[cell_fw] += t;
-                            sigt_sum_[cell_fw*2+0] += xstr*fluxvol;
+                            real_t fluxvol = t * qbar_(ireg) + e_tau(iseg_fw)*
+                                (psi1(iseg_fw)-qbar_(ireg))/xstr;
+                            vol_sum_(cell_fw*2+0) += fluxvol;
+                            vol_norm_(cell_fw) += t;
+                            sigt_sum_(cell_fw*2+0) += xstr*fluxvol;
                             iseg_fw++;
                         }
                         // Store FW surface stuff
                         norm_fw = surface_to_normal( crd->fw );
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
                         current( surf_fw+surf_offset_, group ) +=
-                            psi1[iseg_fw] * current_weights_[(int)norm_fw];
+                            psi1(iseg_fw) * current_weights_[(int)norm_fw];
                         surface_flux( surf_fw+surf_offset_, group ) +=
-                            psi1[iseg_fw] * flux_weights_[(int)norm_fw];
-                        surf_sum_[surf_fw*2+0] += psi1[iseg_fw];
-                        surf_norm_[surf_fw*2+0] += 1.0;
+                            psi1(iseg_fw) * flux_weights_[(int)norm_fw];
+                        surf_sum_(surf_fw*2+0) += psi1(iseg_fw);
+                        surf_norm_(surf_fw*2+0) += 1.0;
                     }
 
                     if( crd->bw != Surface::INVALID ) {
@@ -110,22 +110,22 @@ namespace mocc {
                         for( unsigned i=0; i<crd->nseg_bw; i++ ) {
                             iseg_bw--;
                             int ireg = ray.seg_index(iseg_bw) + first_reg;
-                            real_t xstr = xstr_[ireg];
+                            real_t xstr = xstr_(ireg);
                             real_t t = ang_.rsintheta * ray.seg_len(iseg_bw);
-                            real_t fluxvol = t * qbar_[ireg] + e_tau[iseg_bw] *
-                                (psi2[iseg_bw+1]-qbar_[ireg])/xstr;
-                            vol_sum_[cell_bw*2+1] += fluxvol;
-                            sigt_sum_[cell_bw*2+1] += xstr*fluxvol;
+                            real_t fluxvol = t * qbar_(ireg) + e_tau(iseg_bw) *
+                                (psi2(iseg_bw+1)-qbar_(ireg))/xstr;
+                            vol_sum_(cell_bw*2+1) += fluxvol;
+                            sigt_sum_(cell_bw*2+1) += xstr*fluxvol;
                         }
                         // Store BW surface stuff
                         norm_bw = surface_to_normal( crd->bw );
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
                         current( surf_bw+surf_offset_, group ) -=
-                            psi2[iseg_bw] * current_weights_[(int)norm_bw];
+                            psi2(iseg_bw) * current_weights_[(int)norm_bw];
                         surface_flux( surf_bw+surf_offset_, group ) -=
-                            psi2[iseg_bw] * flux_weights_[(int)norm_bw];
-                        surf_sum_[surf_bw*2+1] += psi2[iseg_bw];
-                        surf_norm_[surf_bw*2+1] += 1.0;
+                            psi2(iseg_bw) * flux_weights_[(int)norm_bw];
+                        surf_sum_(surf_bw*2+1) += psi2(iseg_bw);
+                        surf_norm_(surf_bw*2+1) += 1.0;
                     }
 
                     cell_fw = mesh_->coarse_neighbor( cell_fw, (crd)->fw );
@@ -156,10 +156,10 @@ namespace mocc {
                 // Normalize the flux and sigt values and calculate
                 // correction factors for the current angle/energy
                 for( size_t i=0; i<vol_norm_.size(); i++ ) {
-                    sigt_sum_[2*i+0] /= vol_sum_[2*i+0];
-                    sigt_sum_[2*i+1] /= vol_sum_[2*i+1];
-                    vol_sum_[2*i+0] /= vol_norm_[i];
-                    vol_sum_[2*i+1] /= vol_norm_[i];
+                    sigt_sum_(2*i+0) /= vol_sum_(2*i+0);
+                    sigt_sum_(2*i+1) /= vol_sum_(2*i+1);
+                    vol_sum_(2*i+0) /= vol_norm_(i);
+                    vol_sum_(2*i+1) /= vol_norm_(i);
                 }
 
                 // Doing area-based normalization
@@ -174,15 +174,15 @@ namespace mocc {
         private:
             CorrectionData *corrections_;
             const VectorX &qbar_;
-            const ArrayF &xstr_;
+            const ArrayB1 &xstr_;
             const AngularQuadrature &ang_quad_;
             const XSMeshHomogenized &sn_xs_mesh_;
 
-            ArrayF surf_sum_;
-            ArrayF vol_sum_;
-            ArrayF vol_norm_;
-            ArrayF sigt_sum_;
-            ArrayF surf_norm_;
+            ArrayB1 surf_sum_;
+            ArrayB1 vol_sum_;
+            ArrayB1 vol_norm_;
+            ArrayB1 sigt_sum_;
+            ArrayB1 surf_norm_;
 
             Angle ang_;
 

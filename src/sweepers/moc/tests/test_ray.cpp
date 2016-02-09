@@ -74,7 +74,7 @@ TEST( simple_ray )
             };
 
             VecI nseg = { 3, 0, 3, 0, 3, 0, 3, 0 };
-            for( size_t i=0; i<ray.ncseg(); i++ ) {
+            for( int i=0; i<ray.ncseg(); i++ ) {
                 auto rcd = ray.cm_data()[i];
                 CHECK_EQUAL( rcd.fw, fw_surf[i] );
                 CHECK_EQUAL( rcd.bw, bw_surf[i] );

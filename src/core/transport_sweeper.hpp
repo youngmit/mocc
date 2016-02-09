@@ -113,7 +113,7 @@ namespace mocc{
          * group-independent fission source and store in the passed array
          */
         virtual void calc_fission_source( real_t k,
-                ArrayF& fission_source) const;
+                ArrayB1& fission_source) const;
 
         /**
          * \brief Construct and return a source object which conforms to the
@@ -142,7 +142,7 @@ namespace mocc{
          */
         virtual SP_XSMeshHomogenized_t get_homogenized_xsmesh() = 0;
 
-        unsigned int n_reg() const {
+        int n_reg() const {
             return n_reg_;
         }
 

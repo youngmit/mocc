@@ -59,7 +59,7 @@ namespace mocc {
          * \brief Add the group's contribution from the multi-group fission
          * source.
          */
-        virtual void fission( const ArrayF& fs, int ig );
+        virtual void fission( const ArrayB1& fs, int ig );
 
         /**
          * Add the contribution from in-scattering from other groups. At some

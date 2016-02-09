@@ -37,7 +37,7 @@ namespace mocc { namespace cmdo {
         for( auto &xsr: *xs_mesh_ ) {
             real_t xstr = xsr.xsmactr()[group];
             for( auto &ireg: xsr.reg() ) {
-                xstr_[ireg] = xstr;
+                xstr_(ireg) = xstr;
             }
         }
 

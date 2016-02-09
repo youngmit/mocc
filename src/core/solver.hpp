@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "transport_sweeper.hpp"
-#include "output_interface.hpp"
+#include "core/output_interface.hpp"
+#include "core/transport_sweeper.hpp"
 
 /**
  * \page input Input Specification

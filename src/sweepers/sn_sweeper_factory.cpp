@@ -5,8 +5,7 @@
 #include <string>
 
 #include "core/error.hpp"
-
-#include "sweepers/transport_sweeper.hpp"
+#include "core/transport_sweeper.hpp"
 
 #include "sn/correction_data.hpp"
 #include "sn/sn_sweeper.hpp"

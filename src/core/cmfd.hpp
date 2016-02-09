@@ -90,8 +90,8 @@ namespace mocc {
         bool is_enabled_;
 
         // Single-group fission source
-        ArrayF fs_;
-        ArrayF fs_old_;
+        ArrayB1 fs_;
+        ArrayB1 fs_old_;
 
         SourceIsotropic source_;
 

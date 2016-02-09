@@ -10,10 +10,9 @@
 #include "core/files.hpp"
 #include "core/global_config.hpp"
 #include "core/mesh.hpp"
+#include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"
 #include "core/xs_mesh_homogenized.hpp"
-
-#include "sweepers/transport_sweeper.hpp"
 
 #include "sn_boundary.hpp"
 #include "sn_current_worker.hpp"

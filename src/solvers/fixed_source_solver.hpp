@@ -5,8 +5,7 @@
 #include "core/core_mesh.hpp"
 #include "core/h5file.hpp"
 #include "core/source.hpp"
-
-#include "sweepers/transport_sweeper.hpp"
+#include "core/transport_sweeper.hpp"
 
 #include "solver.hpp"
 
@@ -62,9 +61,11 @@ namespace mocc{
 
         /**
          * Set the group-independent fission source. The group-dependent fission
-         * source is calculated internally by the \ref Source object.
+         * source is calculated internally by the \ref Source object, typically
+         * at the behest of an \ref EigenSolver
          */
-        void set_fission_source( const ArrayF* fs) {
+        void set_fission_source( const ArrayB1 *fs) {
+            assert(fs->size() == sweeper()->n_reg());
             fs_ = fs;
         }
 
@@ -101,7 +102,7 @@ namespace mocc{
         UP_Source_t source_;
         // Pointer to the group-independent fission source. Usually comes from
         // an eigenvalue solver, if present
-        const ArrayF* fs_;
+        const ArrayB1 *fs_;
         size_t ng_;
 
         // Stuff that we should only need if we are doing a standalone FS solve

@@ -17,7 +17,7 @@ typedef double real_t;
 
 // General purpose vector of floats, ints, etc
 typedef std::vector<real_t> VecF;
-typedef std::vector<unsigned int> VecI;
+typedef std::vector<int> VecI;
 typedef std::vector<int> VecSI;
 
 // valarray of floats

@@ -42,11 +42,11 @@ namespace mocc { namespace moc {
         Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane,
                 const CoreMesh &mesh );
 
-        size_t nseg() const {
+        int nseg() const {
             return nseg_;
         }
 
-        size_t ncseg() const {
+        int ncseg() const {
             return cm_data_.size();
         }
 

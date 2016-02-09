@@ -58,7 +58,7 @@ namespace mocc { namespace cmdo {
          * should be sufficient to use the size of the \p fs array to decide
          * which we are getting.
          */
-        void fission( const ArrayF &fs, int ig ) {
+        void fission( const ArrayB1 &fs, int ig ) {
             assert( (fs.size() == n_reg_) ||
                     (fs.size() == sn_source_.n_reg()) );
 
@@ -66,17 +66,17 @@ namespace mocc { namespace cmdo {
 
             if( fs.size() == n_reg_ ) {
                 // We need to homogenize the fission source to the Sn mesh
-                ArrayF sn_fs(sn_source_.n_reg());
+                ArrayB1 sn_fs(sn_source_.n_reg());
                 int ireg_fsr = 0;
                 int ipin = 0;
                 for( const auto &pin: mesh_ ) {
                     auto pos = mesh_.pin_position(ipin);
                     int ireg = mesh_.index_lex( pos );
                     for( const auto v: pin->vols() ) {
-                        sn_fs[ireg] += v*fs[ireg_fsr];
+                        sn_fs(ireg) += v*fs(ireg_fsr);
                         ireg_fsr++;
                     }
-                    sn_fs[ireg] /= pin->vol();
+                    sn_fs(ireg) /= pin->vol();
                     ipin++;
                 }
 

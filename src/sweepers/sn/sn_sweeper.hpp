@@ -3,9 +3,9 @@
 #include "pugixml.hpp"
 
 #include "core/angular_quadrature.hpp"
+#include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"
 
-#include "sweepers/transport_sweeper.hpp"
 
 #include "sn_boundary.hpp"
 #include "cell_worker.hpp"

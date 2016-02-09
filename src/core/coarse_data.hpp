@@ -78,6 +78,8 @@ namespace mocc {
          * Y-normal surfaces, but leaves data for the other surfaces untouched.
          */
         void zero_data_radial( int group ) {
+            assert(group < n_group_ );
+
             ArrayB1 current_g = current(blitz::Range::all(), group);
             ArrayB1 surface_flux_g = surface_flux(blitz::Range::all(), group);
             for( size_t plane=0; plane<mesh_.nz(); plane++ ) {

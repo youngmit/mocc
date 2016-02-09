@@ -131,7 +131,7 @@ namespace mocc {
             // Convergence check
             real_t psi_err = 0.0;
             for( int i=0; i<(int)fs_.size(); i++ ) {
-                real_t e = fs_[i] - fs_old_[i];
+                real_t e = fs_(i) - fs_old_(i);
                 psi_err += e*e;
             }
             psi_err = std::sqrt(psi_err);
@@ -178,7 +178,7 @@ namespace mocc {
         for( int i=0; i<n_cell_; i++ ) {
             for( int ig=0; ig<ng; ig++ ) {
                 real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
-                fs_[i] += r_keff*xsnf*coarse_data_.flux(i, ig);
+                fs_(i) += r_keff*xsnf*coarse_data_.flux(i, ig);
             }
         }
         return;
@@ -200,11 +200,13 @@ namespace mocc {
     }
 
     void CMFD::setup_solve() {
+
         const Mesh::BCArray_t bc = mesh_->boundary_array();
         // Construct the system matrix
         size_t n_surf = mesh_->n_surf();
         int group = 0;
         for( auto &m: m_ ) {
+coarse_data_.zero_data(group);
             // Diffusion coefficients
             VecF d_coeff( n_cell_ );
             for( int i=0; i<n_cell_; i++ ) {

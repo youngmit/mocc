@@ -248,6 +248,10 @@ namespace mocc { namespace moc {
                     }
                 }
 
+                // Sort the rays by length. This might improve threading
+                // performance
+                std::sort(rays.begin(), rays.end());
+
                 // Move the stack of rays into the vector of angular ray sets.
                 angle_rays.push_back(std::move(rays));
                 ++iang;
@@ -276,9 +280,8 @@ namespace mocc { namespace moc {
                         VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         real_t space = spacing_[iang];
-
                         for( auto &ray: rays ) {
-                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( int iseg=0; iseg<ray.nseg(); iseg++ )
                             {
                                 size_t ireg = ray.seg_index(iseg);
                                 fsr_vol[ireg] += ray.seg_len(iseg) * space;
@@ -287,9 +290,9 @@ namespace mocc { namespace moc {
 
                         // Correct
                         for( auto &ray: rays ) {
-                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( int iseg=0; iseg<ray.nseg(); iseg++ )
                             {
-                                size_t ireg = ray.seg_index(iseg);
+                                int ireg = ray.seg_index(iseg);
                                 ray.seg_len(iseg) = ray.seg_len(iseg) *
                                     true_vol[ireg]/fsr_vol[ireg];
                             }
@@ -312,8 +315,8 @@ namespace mocc { namespace moc {
                         real_t wgt = ang->weight*0.5;
 
                         for( auto &ray: rays ) {
-                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ ) {
-                                size_t ireg = ray.seg_index(iseg);
+                            for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
+                                int ireg = ray.seg_index(iseg);
                                 fsr_vol[ireg] += ray.seg_len(iseg) * space *
                                     wgt;
                             }
@@ -321,7 +324,7 @@ namespace mocc { namespace moc {
                         ++iang;
                     }
                     // Convert fsr_vol into a correction factor
-                    for( size_t ireg=0; ireg<mesh.plane(iplane).n_reg();
+                    for( int ireg=0; ireg<(int)mesh.plane(iplane).n_reg();
                             ireg++ )
                     {
                         fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
@@ -333,9 +336,9 @@ namespace mocc { namespace moc {
                          ++ang ) {
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         for( auto &ray: rays ){
-                            for( size_t iseg=0; iseg<ray.nseg(); iseg++ )
+                            for( int iseg=0; iseg<ray.nseg(); iseg++ )
                             {
-                                size_t ireg = ray.seg_index(iseg);
+                                int ireg = ray.seg_index(iseg);
                                 ray.seg_len(iseg) = ray.seg_len(iseg) *
                                     fsr_vol[ireg];
                             }

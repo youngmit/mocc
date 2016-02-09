@@ -38,7 +38,7 @@ namespace mocc {
         /**
          * Return the number of materials in the library
          */
-        unsigned int n_materials() const {
+        int n_materials() const {
             return n_material_;
         }
 
@@ -52,7 +52,7 @@ namespace mocc {
         /**
          * Return the index of the material given a material ID
          */
-        unsigned int get_index_by_id( unsigned int id ) const {
+        int get_index_by_id( unsigned int id ) const {
             return material_dense_index_.at(id);
         }
 
@@ -73,7 +73,7 @@ namespace mocc {
         /**
          * Return the number of groups spanned by the library
          */
-        unsigned int n_group() const {
+        int n_group() const {
             return n_grp_;
         }
 

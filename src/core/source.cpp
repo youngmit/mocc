@@ -36,15 +36,15 @@ namespace mocc {
     // Multiply the group-independent fission source by \c chi[ig] to get the
     // fission source into the current group. If an external source is defines,
     // start with that.
-    void Source::fission( const ArrayF& fs, int ig ) {
+    void Source::fission( const ArrayB1& fs, int ig ) {
         assert(fs.size() == n_reg_);
         assert(!state_.has_fission);
         assert(!state_.is_scaled);
 
         for( auto &xsr: *xs_mesh_ ) {
-            real_t xsch = xsr.xsmacch()[ig];
-            for( auto &ireg: xsr.reg() ) {
-                source_1g_[ireg] +=  xsch * fs[ireg];
+            real_t xsch = xsr.xsmacch(ig);
+            for( const int &ireg: xsr.reg() ) {
+                source_1g_[ireg] +=  xsch * fs(ireg);
             }
         }
 
@@ -106,10 +106,10 @@ namespace mocc {
         VecI dims;
         HDF::Read( srcfile.get(), "/source", src, dims );
 
-        if( dims[0] != n_group_ ) {
+        if( dims[0] != (int)n_group_ ) {
             throw EXCEPT("Wrong group dimensions for source");
         }
-        if( dims[1] != n_reg_ ) {
+        if( dims[1] != (int)n_reg_ ) {
             throw EXCEPT("Wrong regions dimensions for source");
         }
 

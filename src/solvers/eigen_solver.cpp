@@ -110,8 +110,11 @@ namespace mocc{
             // use the old fission source to store the difference between new
             // and old, since we will be filling it with new in the next
             // iteration anyways.
-            error_psi = std::sqrt(
-                    std::pow(fission_source_-fission_source_prev_, 2).sum() );
+            real_t e = 0.0;
+            for( int i=0; i<(int)fission_source_.size(); i++ ) {
+                e += std::pow((fission_source_(i)-fission_source_prev_(i)), 2);
+            }
+            error_psi = std::sqrt( e );
 
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k, error_psi) );
