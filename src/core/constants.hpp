@@ -64,7 +64,7 @@ namespace mocc {
          */
         PARALLEL,
         /**
-         * Self-explanatory
+         * Flux exiting one face enters the opposite face, same angle
          */
         PERIODIC,
         INVALID
