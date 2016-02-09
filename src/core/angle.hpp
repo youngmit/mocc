@@ -64,7 +64,7 @@ namespace mocc {
          * \brief Return the upwind surface of the angle, given a \ref Normal
          * direction.
          */
-        Surface upwind_surface( Normal norm ) {
+        Surface upwind_surface( Normal norm ) const {
             switch( norm ) {
                 case Normal::X_NORM:
                     return (ox > 0.0) ? Surface::WEST : Surface::EAST;
