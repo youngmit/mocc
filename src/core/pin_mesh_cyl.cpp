@@ -126,7 +126,7 @@ namespace mocc {
             double vn = (xs_radii_[ixs]*xs_radii_[ixs] - rxsi*rxsi) /
                         sub_rad_[ixs];
 
-            for(unsigned int ir=0; ir<sub_rad_[ixs]; ir++){
+            for(int ir=0; ir<sub_rad_[ixs]; ir++){
                 double r = sqrt(vn + ri*ri);
                 radii_.push_back(r);
                 ri = r;
