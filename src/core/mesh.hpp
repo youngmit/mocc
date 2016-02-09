@@ -224,30 +224,34 @@ namespace mocc {
          * mesh.
          */
         VecI dimensions() const {
-            VecI d = { (unsigned int)nx_,
-                       (unsigned int)ny_,
-                       (unsigned int)nz_ };
+            VecI d = { (int)nx_,
+                       (int)ny_,
+                       (int)nz_ };
             return d;
         }
 
         /**
          * \brief Return the lowest coarse cell index in a given plane
          */
-        size_t plane_cell_begin( size_t plane ) const {
+        int plane_cell_begin( size_t plane ) const {
             return nx_*ny_*plane;
         }
 
         /**
          * \brief Return the highest coarse cell index in a given plane, plus 1
          */
-        size_t plane_cell_end( size_t plane ) const {
+        int plane_cell_end( size_t plane ) const {
             return nx_*ny_*(plane+1);
         }
 
         /**
-         * \brief Return the lowest coarse surface index in a given plane
+         * \brief Return the lowest coarse surface index in a given plane.
+         *
+         * It should be considered possible for the return value to be of any
+         * direction normal (e.g. X, Y, or Z). Under the current indexing
+         * scheme, it will always be Z-normal, but this could change.
          */
-        size_t plane_surf_begin( size_t plane ) const {
+        int plane_surf_begin( size_t plane ) const {
             return n_surf_plane_*plane;
         }
 
@@ -255,7 +259,7 @@ namespace mocc {
          * \brief Return the highest coarse surface index in a given plane, plus
          * 1
          */
-        size_t plane_surf_end( size_t plane ) const {
+        int plane_surf_end( size_t plane ) const {
             return n_surf_plane_*(plane+1);
         }
 
@@ -266,7 +270,7 @@ namespace mocc {
          * Iterating from here to \ref plane_surf_end() is safe, since the x/y
          * surfaces are guaranteed contiguous.
          */
-        size_t plane_surf_xy_begin( size_t plane ) const {
+        int plane_surf_xy_begin( size_t plane ) const {
             return n_surf_plane_*plane + nx_*ny_;
         }
 
@@ -279,6 +283,13 @@ namespace mocc {
 
         /**
          * \brief Return the number of surfaces in each plane
+         *
+         * The "number of surfaces in each plane" can be a little confusing.
+         * This really means the number of surfaces you need to offset one
+         * surface index by to end up with the same plane-local surface, but in
+         * the plane above. This means that \c n_surf_plane does not include the
+         * "top" surfaces of each plane. For a concrete example, a 3x3 array of
+         * regions per plane would yield an \c n_surf_plane of 33.
          */
         size_t n_surf_plane() const {
             return n_surf_plane_;
@@ -289,7 +300,7 @@ namespace mocc {
          *
          * Cell indexing is natural in x, y z.
         */
-        inline size_t coarse_cell( Position pos ) const {
+        inline int coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
         }
 
@@ -354,7 +365,7 @@ namespace mocc {
          *
          * This follows the conventions described in \ref coarseraypage.
          */
-        size_t coarse_boundary_cell( Point2 p, int octant ) const;
+        int coarse_boundary_cell( Point2 p, int octant ) const;
 
         /**
          * \brief Return the number of surfaces coincident with the passed
@@ -468,7 +479,7 @@ namespace mocc {
          * \brief Return an index offset to the zero-th coarse cell in a given
          * plane.
          */
-        size_t coarse_cell_offset( size_t plane ) const {
+        int coarse_cell_offset( size_t plane ) const {
             return nx_*ny_*plane;
         }
 
@@ -484,7 +495,7 @@ namespace mocc {
          * interact with X- and Y-normal faces (e.g. 2-D MoC) should expect
          * this.
          */
-        size_t coarse_surf_offset( size_t plane ) const {
+        int coarse_surf_offset( size_t plane ) const {
             return n_surf_plane_*plane;
         }
 

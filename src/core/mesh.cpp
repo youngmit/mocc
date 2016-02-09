@@ -518,7 +518,7 @@ namespace mocc {
         return 0;
     }
 
-    size_t Mesh::coarse_boundary_cell( Point2 p, int octant ) const {
+    int Mesh::coarse_boundary_cell( Point2 p, int octant ) const {
         assert( octant < 5 );
 
         bool on_x = false;
