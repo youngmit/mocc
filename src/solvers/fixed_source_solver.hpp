@@ -65,7 +65,7 @@ namespace mocc{
          * at the behest of an \ref EigenSolver
          */
         void set_fission_source( const ArrayB1 *fs) {
-            assert(fs->size() == sweeper()->n_reg());
+            assert((int)fs->size() == sweeper()->n_reg());
             fs_ = fs;
         }
 
