@@ -142,7 +142,7 @@ namespace mocc {
          * \brief Update the boundary condition for all angles for a single
          * group using a passed-in "outgoing" condition.
          *
-         * \param int the energy group to update
+         * \param group the energy group to update
          * \param out the "outgoing" angular flux boundary condition to use in
          * the update. It should only have one group of storage
          *
