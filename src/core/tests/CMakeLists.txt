@@ -20,6 +20,10 @@ if(${BUILD_TESTS})
     add_executable(testExp test_exponential.cpp)
     target_link_libraries(testExp core pugixml UnitTest++)
     add_test(testExp testExp)
+
+    add_executable(testBoundaryCondition test_boundary_condition.cpp)
+    target_link_libraries(testBoundaryCondition core pugixml UnitTest++)
+    add_test(testBoundaryCondition testBoundaryCondition)
     
     add_executable(testXSMeshHom test_xsmeshhomogenized.cpp)
     target_link_libraries(testXSMeshHom core pugixml hdf5_cpp UnitTest++)

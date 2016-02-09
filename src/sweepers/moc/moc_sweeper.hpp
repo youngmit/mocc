@@ -9,6 +9,7 @@
 
 
 #include "core/angular_quadrature.hpp"
+#include "core/boundary_condition.hpp"
 #include "core/coarse_data.hpp"
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
