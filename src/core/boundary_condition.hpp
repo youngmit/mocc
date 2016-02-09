@@ -24,7 +24,10 @@ namespace mocc {
          * same number of conditions per face/angle (Sn case).
          *
          * \param n_group the number of groups
-         * \param n_angle the number of angles
+         * \param angquad the \ref AngularQuadrature to use for reflections and
+         * such
+         * \param bc the \ref Boundary condition to enforce at each domain
+         * boundary
          * \param n_bc the number of conditions to store for each direction
          * normal.
          *
@@ -45,8 +48,11 @@ namespace mocc {
          * \brief Construct a more complicated boundary condition, where each
          * angle can have a different number of conditions (MoC case).
          *
-         * \param n_group the number of energy groups
-         * \param n_ang the number of angles
+         * \param n_group the number of groups
+         * \param angquad the \ref AngularQuadrature to use for reflections and
+         * such
+         * \param bc the \ref Boundary condition to enforce at each domain
+         * boundary
          * \param n_bc a vector containing the number of BCs needed for each
          * angle.
          */
