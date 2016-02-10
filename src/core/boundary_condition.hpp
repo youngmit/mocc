@@ -151,52 +151,60 @@ namespace mocc {
          */
         void update( int group, const BoundaryCondition &out ) {
             assert( out.n_group_ == 1 );
-            int group_offset = bc_per_group_*group;
 
             for( int iang=0; iang<n_angle_; iang++ ) {
-                const auto &ang = ang_quad_[iang];
-                for( Normal n: AllNormals ) {
-                    int size = size_[iang][(int)n];
-                    int offset = group_offset + offset_(iang, (int)n);
-
-                    int iang_out;
-                    int out_offset;
-
-                    switch( bc_[(int)(ang.upwind_surface(n))] ) {
-                    case Boundary::VACUUM:
-                        data_(blitz::Range(offset, offset+size)) = 0.0;
-                        break;
-
-                    case Boundary::REFLECT:
-                        // Make sure there are actually BCs here to copy
-                        if(size == 0) {
-                            break;
-                        }
-                        iang_out = ang_quad_.reflect(iang, n);
-                        out_offset = offset_(iang_out, (int)n);
-                        data_(blitz::Range(offset, offset+size)) =
-                            out.data_(blitz::Range(out_offset,
-                                        out_offset+size));
-                        break;
-
-                    default:
-                        throw EXCEPT("Unsupported boundary condition type");
-                    }
-                }
-                
+                this->update( group, iang, out );
             }
             
             return;
         }
 
         /**
-         * \brief Update the boundary condition for a single outgoing angle for
+         * \brief Update the boundary condition from a single outgoing angle for
          * a single group using a passed-in "outgoing" condition.
+         *
+         * \param group the energy group to treat
+         * \param angle the angle index of the outgoing angle. See below.
+         * \param out a single-group \ref BoundaryCondition object storing the
+         * outgoing boundary values to use.
          *
          * This would be used for a Gauss-Seidel-style iteration on the boundary
          * source.
+         *
+         * The passed angle indicates the angle of the outgoing angle. Depending
+         * on the various domain boundary conditions, corresponding boundary
+         * values may be updated on \c this
          */
         void update( int group, int angle, const BoundaryCondition &out ) {
+            int group_offset = bc_per_group_*group;
+            const auto &ang = ang_quad_[angle];
+            for( Normal n: AllNormals ) {
+                int size = size_[angle][(int)n];
+                int offset = group_offset + offset_(angle, (int)n);
+
+                int iang_out;
+                int out_offset;
+
+                switch( bc_[(int)(ang.upwind_surface(n))] ) {
+                case Boundary::VACUUM:
+                    data_(blitz::Range(offset, offset+size)) = 0.0;
+                    break;
+
+                case Boundary::REFLECT:
+                    // Make sure there are actually BCs here to copy
+                    if(size == 0) {
+                        break;
+                    }
+                    iang_out = ang_quad_.reflect(angle, n);
+                    out_offset = offset_(iang_out, (int)n);
+                    data_(blitz::Range(offset, offset+size)) =
+                        out.data_(blitz::Range(out_offset, out_offset+size));
+                    break;
+
+                default:
+                    throw EXCEPT("Unsupported boundary condition type");
+                }
+            }
             return;
         }
 
