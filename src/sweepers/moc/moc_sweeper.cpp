@@ -15,6 +15,22 @@ using std::cin;
 
 mocc::VecF temp;
 
+std::vector<mocc::BC_Size_t> bc_size_helper( const mocc::moc::RayData &rays )
+{
+    std::vector<mocc::BC_Size_t> bc_dims( rays.ang_quad().ndir_oct()*4 );
+    for( int iang=0; iang<(int)rays.begin()->size(); iang++ ) {
+        int iang1 = iang;
+        int iang2 = rays.ang_quad().reverse(iang);
+        int nx = rays.ny(iang);
+        int ny = rays.nx(iang);
+        bc_dims[iang1] = {nx, ny, 0};
+        bc_dims[iang2] = {nx, ny, 0};
+    }
+
+    assert( bc_dims.size() == bc_dims.capacity() );
+    return bc_dims;
+}
+
 namespace mocc { namespace moc {
     MoCSweeper::MoCSweeper( const pugi::xml_node& input,
             const CoreMesh& mesh ):
@@ -24,6 +40,18 @@ namespace mocc { namespace moc {
                ang_quad_,
                mesh
              ),
+        boundary_( mesh.nz(), BoundaryCondition( n_group_,
+                                           ang_quad_,
+                                           mesh_.boundary(),
+                                           bc_size_helper(rays_)
+                                         )
+                 ),
+        boundary_out_( mesh.nz(), BoundaryCondition( 1,
+                                               ang_quad_,
+                                               mesh_.boundary(),
+                                               bc_size_helper(rays_)
+                                             )
+                     ),
         xstr_( n_reg_ ),
         flux_1g_( ),
         bc_type_( mesh_.boundary() )
@@ -54,35 +82,6 @@ namespace mocc { namespace moc {
             for( auto &v: pin_vols ) {
                 vol_[ireg] = v;
                 ireg++;
-            }
-        }
-
-        // allocate space to store the boundary conditions
-        boundary_.resize( n_group_ );
-        for( auto &group_rays: boundary_ ) {
-            group_rays.resize( mesh_.nz() );
-            for( auto &angle_rays: group_rays ) {
-                // We actually allocate BCs for all 4 octants to make things a
-                // little simpler.
-                angle_rays.resize( ang_quad_.ndir_oct()*4 );
-                int iang = 0;
-                for( auto ang_it=ang_quad_.octant(1);
-                        ang_it!=ang_quad_.octant(5); ang_it++ ) {
-                    angle_rays[iang].resize(rays_.n_rays(iang));
-                    iang++;
-                }
-            }
-        }
-        boundary_out_.resize( mesh_.nz() );
-        for( auto &angle_rays: boundary_out_ ) {
-            // We actually allocate BCs for all 4 octants to make things a
-            // little simpler.
-            angle_rays.resize( ang_quad_.ndir_oct()*4 );
-            int iang = 0;
-            for( auto ang_it=ang_quad_.octant(1);
-                    ang_it!=ang_quad_.octant(5); ang_it++ ) {
-                angle_rays[iang].resize(rays_.n_rays(iang));
-                iang++;
             }
         }
 
@@ -131,57 +130,6 @@ namespace mocc { namespace moc {
         return;
     }
 
-
-    void MoCSweeper::update_boundary( int group ) {
-        int iplane = 0;
-        for( auto &plane_bcs: boundary_[group] ) {
-            for( unsigned int iang=0; iang<plane_bcs.size(); iang++ ) {
-                int nx = rays_.nx(iang);
-                int ny = rays_.ny(iang);
-
-                // Determine based on the angle quadrant which surfaces are
-                // upwind and need to be updated for the given angle
-                Surface upwind[2];
-                if(ang_quad_[iang].ox > 0.0) {
-                    upwind[0] = Surface::WEST;
-                } else {
-                    upwind[0] = Surface::EAST;
-                }
-                if(ang_quad_[iang].oy > 0.0) {
-                    upwind[1] = Surface::SOUTH;
-                } else {
-                    upwind[1] = Surface::NORTH;
-                }
-
-                // Treat the two surfaces that were determined above
-                if( bc_type_[(int)upwind[0]] == Boundary::REFLECT ) {
-                    int ang_ref = ang_quad_.reflect(iang, upwind[0]);
-                    for( int ibc=0; ibc<ny; ibc++ ) {
-                        plane_bcs[iang][ibc] =
-                            boundary_out_[iplane][ang_ref][ibc];
-                    }
-                } else {
-                    for( int ibc=0; ibc<ny; ibc++ ) {
-                        plane_bcs[iang][ibc] = 0.0;
-                    }
-                }
-
-                if( bc_type_[(int)upwind[1]] == Boundary::REFLECT ) {
-                    int ang_ref = ang_quad_.reflect(iang, upwind[1]);
-                    for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
-                        plane_bcs[iang][ibc] =
-                            boundary_out_[iplane][ang_ref][ibc];
-                    }
-                } else {
-                    for( int ibc=ny; ibc<(nx+ny); ibc++ ) {
-                        plane_bcs[iang][ibc] = 0.0;
-                    }
-                }
-            } // angle loop
-            iplane++;
-        } // plane loop
-    }
-
     void MoCSweeper::initialize() {
         // Set the flux on the coarse mesh
         if( coarse_data_ ) {
@@ -192,15 +140,10 @@ namespace mocc { namespace moc {
 
         // Walk through the boundary conditions and initialize them the 1/4pi
         real_t val = 1.0/FPI;
-        for( auto &group_rays: boundary_ ) {
-            for( auto &plane_rays: group_rays ) {
-                for( auto &angle_rays: plane_rays ) {
-                    for( auto &ray: angle_rays ) {
-                        ray = val;
-                    }
-                }
-            }
+        for( auto boundary: boundary_ ) {
+            boundary.initialize_scalar(val);
         }
+
         return;
     }
 
@@ -214,7 +157,7 @@ namespace mocc { namespace moc {
         int ipin = 0;
         for( auto &pin: mesh_ ) {
             Position pos = mesh_.pin_position(ipin);
-            int i = mesh_.index_lex(pos);
+            int i = mesh_.coarse_cell(pos);
             real_t v = 0.0;
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 v += vol_[ireg];
@@ -235,7 +178,7 @@ namespace mocc { namespace moc {
         size_t ipin = 0;
         int ireg = 0;
         for( const auto &pin: mesh_ ) {
-            size_t i_coarse = mesh_.index_lex( mesh_.pin_position(ipin) );
+            size_t i_coarse = mesh_.coarse_cell( mesh_.pin_position(ipin) );
             real_t fm_flux = 0.0;
 
             int stop = ireg+pin->n_reg();

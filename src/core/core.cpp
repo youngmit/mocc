@@ -27,8 +27,7 @@ namespace mocc {
     Core::Core( const pugi::xml_node &input,
                 const std::map<int, UP_Assembly_t> &assemblies):
         nx_( input.attribute("nx").as_int(0) ),
-        ny_( input.attribute("ny").as_int(0) ),
-        bc_(6, Boundary::INVALID)
+        ny_( input.attribute("ny").as_int(0) )
     {
         // Make sure that we read the a proper ID
         if( (nx_ < 1) | (ny_ < 1) ) {

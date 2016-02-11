@@ -16,6 +16,11 @@ namespace mocc {
      * each dimension-normal, angle, and energy. It is the responsibility of the
      * sweeper itself to determine what the indices of the actual conditions
      * mean.
+     *
+     * This class shall make one important guarantee; that all faces of the BC
+     * in an angle/group are stored consecutively. This potentially allows
+     * client code to eschew the concept of surface normals entirely. See \ref
+     * MoCSweeper for an example of this.
      */
     class BoundaryCondition {
     public:
@@ -39,7 +44,8 @@ namespace mocc {
             BoundaryCondition( n_group,
                                angquad,
                                bc,
-                               std::vector<BC_Size_t>(angquad.ndir(), n_bc) )
+                               std::vector<BC_Size_t>(angquad.ndir(), n_bc)
+                             )
         {
             return;
         }
@@ -126,6 +132,8 @@ namespace mocc {
          * condition face
          */
         const real_t* get_face( int group, int angle, Normal norm ) const {
+            assert(angle < n_angle_);
+            assert(group < n_group_ );
             int off = bc_per_group_*group + offset_(angle, (int)norm);
             return &data_(off);
         }
@@ -134,7 +142,31 @@ namespace mocc {
          * \brief Return a pointer to the beginning of a boundary condition face
          */
         real_t* get_face( int group, int angle, Normal norm ) {
+            assert(angle < n_angle_);
+            assert(group < n_group_ );
             int off = bc_per_group_*group + offset_(angle, (int)norm);
+            return &data_(off);
+        }
+
+        /**
+         * \brief Return a pointer to the beginning of the boundary values for
+         * the given group and angle
+         */
+        const real_t* get_boundary( int group, int angle ) const {
+            assert(angle < n_angle_);
+            assert(group < n_group_ );
+            int off = bc_per_group_*group + offset_(angle, 0);
+            return &data_(off);
+        }
+        
+        /**
+         * \brief Return a pointer to the beginning of the boundary values for
+         * the given group and angle
+         */
+        real_t* get_boundary( int group, int angle ) {
+            assert(angle < n_angle_);
+            assert(group < n_group_ );
+            int off = bc_per_group_*group + offset_(angle, 0);
             return &data_(off);
         }
 
@@ -155,7 +187,6 @@ namespace mocc {
             for( int iang=0; iang<n_angle_; iang++ ) {
                 this->update( group, iang, out );
             }
-            
             return;
         }
 
@@ -176,29 +207,29 @@ namespace mocc {
          * values may be updated on \c this
          */
         void update( int group, int angle, const BoundaryCondition &out ) {
+            assert( angle < ang_quad_.ndir()/2 );
             int group_offset = bc_per_group_*group;
-            const auto &ang = ang_quad_[angle];
+
             for( Normal n: AllNormals ) {
                 int size = size_[angle][(int)n];
-                int offset = group_offset + offset_(angle, (int)n);
+                int iang_in = ang_quad_.reflect(angle, n);
+                if( size == 0 ) {
+                    break;
+                }
+                assert( size == out.size_[iang_in][(int)n]);
+                assert( iang_in < n_angle_ );
+                const auto &angle_in = ang_quad_[iang_in];
+                int offset_in = group_offset + offset_(iang_in, (int)n);
+                int offset_out = out.offset_(angle, (int)n);;
 
-                int iang_out;
-                int out_offset;
-
-                switch( bc_[(int)(ang.upwind_surface(n))] ) {
+                switch( bc_[(int)(angle_in.upwind_surface(n))] ) {
                 case Boundary::VACUUM:
-                    data_(blitz::Range(offset, offset+size)) = 0.0;
+                    data_(blitz::Range(offset_in, offset_in+size-1)) = 0.0;
                     break;
 
                 case Boundary::REFLECT:
-                    // Make sure there are actually BCs here to copy
-                    if(size == 0) {
-                        break;
-                    }
-                    iang_out = ang_quad_.reflect(angle, n);
-                    out_offset = offset_(iang_out, (int)n);
-                    data_(blitz::Range(offset, offset+size)) =
-                        out.data_(blitz::Range(out_offset, out_offset+size));
+                    data_(blitz::Range(offset_in, offset_in+size-1)) =
+                        out.data_(blitz::Range(offset_out, offset_out+size-1));
                     break;
 
                 default:

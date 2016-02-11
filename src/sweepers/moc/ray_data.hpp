@@ -26,10 +26,13 @@ namespace mocc { namespace moc {
     * use in a 2-D MoC sweeper, only the first two octants are treated, with
     * octants 3 and 4 being treated by sweeping the rays backwards.
     *
-    * Boundary condition indexing is somewhat arbitrary, so here's how it goes:
+    * Boundary condition indexing is set up to be conformant with corresponding
+    * instances of \ref BoundaryCondition objects. The \ref BoundaryCondition
+    * class handles boundary values on a surface-by-surface basis, and therefore
+    * \ref Ray ends are indexed from zero for each face as below:
     *
     * \verbatim
-    +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
+    +- 0-- 1-- 2-- 3-- 4-- 5-- 6-- 7-+
     |                                |
     3                                3
     |                                |
@@ -39,25 +42,22 @@ namespace mocc { namespace moc {
     |                                |
     0                                0
     |                                |
-    +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+ \endverbatim
+    +- 0-- 1-- 2-- 3-- 4-- 5-- 6-- 7-+ \endverbatim
     *
-    * There are technically 4 angles that share a set of boundary conditions: an
-    * angle in quadrant 1, its reflected angle in quadrant 2, and the two angles
-    * pointing opposite those angles.
     */
     class RayData {
         /**
          * A set of planes of \ref Ray
          */
-        typedef std::vector< std::vector <std::vector<Ray> > > RaySet_t;
         typedef std::vector< std::vector<Ray> > PlaneRays_t;
+        typedef std::vector< PlaneRays_t > RaySet_t;
     public:
         RayData( const pugi::xml_node &input,
                  const AngularQuadrature &ang_quad,
                  const CoreMesh &mesh );
 
         /**
-         * Iterator to the begining of the ray data (by plane)
+         * Iterator to the beginning of the ray data (by plane)
          */
         RaySet_t::const_iterator begin() const {
             return rays_.cbegin();
@@ -165,7 +165,7 @@ namespace mocc { namespace moc {
         /**
          * Perform a volume-correction of the ray segment lengths. This can be
          * done in two ways: using an angular integral of the ray volumes, or
-         * using an angle-wice correction, which ensures that for each angle,
+         * using an angle-wise correction, which ensures that for each angle,
          * the ray segment volumes reproduce the region volumes. The first way
          * is technically more correct, however the latter is useful for
          * debugging purposes sometimes.

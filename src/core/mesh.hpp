@@ -52,7 +52,7 @@ namespace mocc {
          * externally.
          */
         Mesh( size_t n_reg, size_t n_xsreg,
-                VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] );
+                VecF &hx, VecF &hy, VecF &hz, std::array<Boundary, 6> bc );
 
         /**
          * \brief Return the total number of regions in the computational mesh.
@@ -88,7 +88,7 @@ namespace mocc {
         /**
         * \brief Return a vector containing the core boundary conditions.
         */
-        const std::vector<Boundary>& boundary() const {
+        const std::array<Boundary, 6>& boundary() const {
             return bc_;
         }
 
@@ -728,7 +728,7 @@ namespace mocc {
         size_t n_surf_plane_;
 
         /// Boundary condition for each side of the mesh
-        std::vector<Boundary> bc_;
+        std::array<Boundary, 6> bc_;
 
     private:
         /// Vector storing densely-packed coarse mesh surface indices for each

@@ -18,12 +18,16 @@ inline int get_octant( mocc::Point2 p1, mocc::Point2 p2 ) {
 namespace mocc { namespace moc {
     /**
      * \param p1 the starting point of the \ref Ray.
+     *
      * \param p2 the ending point of the \ref Ray.
-     * \param bc1 the boundary condition index corresponding to p1.
-     * \param bc2 the boundary condition index corresponding to p2.
+     *
+     * \param bc an \c std::array<RayBC, 2> containing entries for the boundary
+     * condition indices for the beginning and end of the ray.
+     *
      * \param iplane the index of the geometry to trace. This corresponds to an
      * index in the \ref CoreMesh of unique geometries, which does not
      * necessarily correspond to a physical location.
+     *
      * \param mesh a reference to the CoreMesh to trace.
      *
      * A Ray is defined by two \ref Point2 structs, specifying the beginning and
@@ -32,9 +36,9 @@ namespace mocc { namespace moc {
      * with the pin cell edges (using \ref CoreMesh::trace()), then the internal
      * surface crossings for each pin (using \ref PinMesh::trace()).
      */
-    Ray::Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane,
+    Ray::Ray( Point2 p1, Point2 p2, std::array<int, 2> bc, int iplane,
             const CoreMesh &mesh ):
-        bc_{bc1, bc2},
+        bc_(bc),
         p1_(p1),
         p2_(p2)
     {

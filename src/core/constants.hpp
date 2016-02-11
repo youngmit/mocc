@@ -24,7 +24,7 @@ namespace mocc {
 
 
 
-    enum class Direction {
+    enum class Direction : unsigned char {
         EAST  = 0,
         NORTH = 1,
         WEST  = 2,
@@ -40,10 +40,10 @@ namespace mocc {
 
     extern const Surface AllSurfaces[6];
 
-    enum class Normal {
+    enum class Normal : unsigned char {
         X_NORM = 0,
-        Y_NORM,
-        Z_NORM
+        Y_NORM = 1,
+        Z_NORM = 2
     };
 
     extern const Normal AllNormals[3];

@@ -7,7 +7,6 @@
 
 #include "moc/ray_data.hpp"
 
-
 #include "core/angular_quadrature.hpp"
 #include "core/boundary_condition.hpp"
 #include "core/coarse_data.hpp"
@@ -20,17 +19,6 @@
 
 namespace mocc { namespace moc {
     class MoCSweeper: public TransportSweeper {
-        struct BC {
-            real_t fw;
-            real_t bw;
-        };
-        typedef std::vector< // group
-                std::vector< // plane
-                std::vector< // angle
-                std::vector< real_t > > > > BCSet_t;   // BCs
-        typedef std::vector< // plane
-                std::vector< // angle
-                std::vector< real_t > > > BCSet_Out_t; // BCs
     public:
         MoCSweeper( const pugi::xml_node &input,
                     const CoreMesh& mesh );
@@ -85,9 +73,10 @@ namespace mocc { namespace moc {
 
         RayData rays_;
 
-        // Boundary condition. ordered by energy, plane, angle, ray
-        BCSet_t boundary_;
-        BCSet_Out_t boundary_out_;
+        // Multi-group, incoming boundary flux. One for each plane
+        std::vector<BoundaryCondition> boundary_;
+        // One-group, outgoing boundary flux
+        std::vector<BoundaryCondition> boundary_out_;
 
         // Array of one group transport cross sections
         ArrayB1 xstr_;
@@ -100,10 +89,7 @@ namespace mocc { namespace moc {
         unsigned int n_inner_;
 
         // Boundary condition enumeration
-        std::vector<Boundary> bc_type_;
-
-        // Update the boundary conditions
-        void update_boundary( int group );
+        std::array<Boundary, 6> bc_type_;
 
         // Exponential table
         Exponential exp_;
@@ -135,6 +121,8 @@ namespace mocc { namespace moc {
 
             int iplane = 0;
             for( const auto plane_ray_id: mesh_.unique_planes() ) {
+                auto &boundary_in = boundary_[iplane];
+                auto &boundary_out = boundary_out_[iplane];
                 cw.set_plane( iplane );
                 const auto &plane_rays = rays_[plane_ray_id];
                 int first_reg = mesh_.first_reg_plane(iplane);
@@ -146,6 +134,16 @@ namespace mocc { namespace moc {
                     int iang1 = iang;
                     int iang2 = ang_quad_.reverse(iang);
                     Angle ang = ang_quad_[iang];
+
+                    // Get the boundary condition storage
+                    const real_t *bc_in_1 = 
+                        boundary_in.get_boundary( group, iang1 );
+                    real_t *bc_out_1 = 
+                        boundary_out.get_boundary( 0, iang1 );
+                    const real_t *bc_in_2 = 
+                        boundary_in.get_boundary( group, iang2 );
+                    real_t *bc_out_2 = 
+                        boundary_out.get_boundary( 0, iang2 );
 
                     // Set up the current worker for sweeping this angle
                     cw.set_angle( ang, rays_.spacing(iang) );
@@ -159,6 +157,7 @@ namespace mocc { namespace moc {
                     for( int iray=0; iray<(int)ang_rays.size(); iray++ ) {
                         const auto& ray = ang_rays[iray];
 
+                        /// \todo make this easier. maybe implement on RayData?
                         int bc1 = ray.bc(0);
                         int bc2 = ray.bc(1);
 
@@ -171,7 +170,7 @@ namespace mocc { namespace moc {
 
                         // Forward direction
                         // Initialize from bc
-                        psi1(0) = boundary_[group][iplane][iang1][bc1];
+                        psi1(0) = bc_in_1[bc1];
 
                         // Propagate through core geometry
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
@@ -182,12 +181,11 @@ namespace mocc { namespace moc {
                             t_flux(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        boundary_out_[iplane][iang1][bc2] = psi1( ray.nseg() );
+                        bc_out_1[bc2] = psi1( ray.nseg() );
 
                         // Backward direction
                         // Initialize from bc
-                        psi2(ray.nseg()) =
-                            boundary_[group][iplane][iang2][bc2];
+                        psi2(ray.nseg()) = bc_in_2[bc2];
 
                         // Propagate through core geometry
                         for( int iseg=ray.nseg()-1; iseg>=0; iseg-- ) {
@@ -198,14 +196,27 @@ namespace mocc { namespace moc {
                             t_flux(ireg) += psi_diff*wt_v_st;
                         }
                         // Store boundary condition
-                        boundary_out_[iplane][iang2][bc1] = psi2(0);
+                        bc_out_2[bc1] = psi2(0);
 
                         // Stash currents
                         cw.post_ray( psi1, psi2, e_tau, ray, first_reg, group );
                     } // Rays
                     cw.post_angle( iang, group );
+
+                    // Try tasks?
+#pragma omp single
+                    {
+                        boundary_in.update( group, iang1, boundary_out );
+                        boundary_in.update( group, iang2, boundary_out );
+                    }
+
                     iang++;
                 } // angles
+#pragma omp single
+                {
+                    //boundary_in.update( group, boundary_out );
+                }
+
                 iplane++;
             } // planes
 
@@ -231,8 +242,7 @@ namespace mocc { namespace moc {
 
             cw.post_sweep( group );
 
-            this->update_boundary( group );
-            }
+            } // OMP Parallel
 
             return;
         }

@@ -56,7 +56,7 @@ std::string ihm_xml =
 "</material_lib>"
 ""
 "<source scattering=\"P0\" />"
-"<sweeper type=\"moc\" n_inner=\"10\">"
+"<sweeper type=\"moc\" n_inner=\"800\">"
 "    <ang_quad type=\"ls\" order=\"2\" />"
 "    <rays spacing=\"0.01\" />"
 "</sweeper>";
@@ -128,7 +128,11 @@ TEST( moc_ihm )
         source->fission(fission_source, ig);
         source->in_scatter(ig);
         sweeper.sweep(ig);
-        cout << sweeper.flux()(blitz::Range::all(),ig) << endl;
+
+        for( int ireg=0; ireg<sweeper.n_reg(); ireg++ ) {
+            CHECK_CLOSE(flux_ref(ig), sweeper.flux(ig,ireg), 0.005*flux_ref(ig));
+        }
+        cout << sweeper.flux()(blitz::Range::all(), ig) << endl;
     }
 
 }

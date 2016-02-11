@@ -20,7 +20,7 @@ TEST( testboundary )
 {
     // Start with the necessary boundary conditions, Mesh, and angular
     // quadrature to construct an Sn boundary condition.
-    Boundary bc[6] = {
+    std::array<Boundary, 6> bc = {
         Boundary::REFLECT,
         Boundary::REFLECT,
         Boundary::REFLECT,

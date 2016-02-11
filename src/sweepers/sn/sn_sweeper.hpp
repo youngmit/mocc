@@ -73,7 +73,7 @@ namespace mocc { namespace sn {
         unsigned int n_inner_;
 
         // Boundary condition enumeration
-        std::vector<Boundary> bc_type_;
+        std::array<Boundary, 6> bc_type_;
 
         // One-group slice of flux_. Should be default-constructed, and assigned
         // slices using .reference()

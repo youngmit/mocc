@@ -111,7 +111,7 @@ namespace mocc {
         int group_stride_;
         int face_offset_[3];
         int n_face_[3];
-        std::vector<Boundary> bc_;
+        std::array<Boundary, 6> bc_;
         ArrayF data_;
     };
 }

@@ -37,9 +37,10 @@ namespace mocc { namespace moc {
                 return os;
             }
         };
+
     public:
         /** \brief Construct a ray from two starting points. */
-        Ray( Point2 p1, Point2 p2, size_t bc1, size_t bc2, int iplane,
+        Ray( Point2 p1, Point2 p2, std::array<int, 2> bc, int iplane,
                 const CoreMesh &mesh );
 
         int nseg() const {
@@ -136,7 +137,7 @@ namespace mocc { namespace moc {
         /**
          * Return the bc index for the start/stop of the ray
          */
-        size_t bc( int dir ) const {
+        int bc( int dir ) const {
             return bc_[dir];
         }
 
@@ -175,7 +176,7 @@ namespace mocc { namespace moc {
         size_t nseg_;
 
         // Boundary condition index for the forward and backward directions
-        std::array<size_t, 2> bc_;
+        std::array<int, 2> bc_;
 
         // Store the points that were used to initialize the ray. You know...
         // for posterity

@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include "core/error.hpp"
+#include "core/string_utils.hpp"
 #include "core/level_symmetric.hpp"
 
 
@@ -27,6 +28,7 @@ namespace mocc {
 
         // Extract the quadrature type
         std::string type_str = input.attribute("type").value();
+        sanitize(type_str);
         if (type_str == "ls") {
             type_ = SN;
 

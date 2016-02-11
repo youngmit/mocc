@@ -32,7 +32,7 @@ TEST( mesh )
     z.push_back(1.0);
     z.push_back(3.0);
 
-    Boundary bc[6] =
+    std::array<Boundary, 6> bc =
     {
         Boundary::REFLECT,
         Boundary::REFLECT,
@@ -119,7 +119,7 @@ TEST( test_irregular )
     z.push_back(1.0);
     z.push_back(3.0);
 
-    Boundary bc[6] =
+    std::array<Boundary, 6> bc =
     {
         Boundary::REFLECT,
         Boundary::REFLECT,

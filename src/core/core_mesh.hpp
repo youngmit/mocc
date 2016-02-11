@@ -186,20 +186,6 @@ namespace mocc {
         }
 
         /**
-        * \brief Return the 1-D lexicographic index of a \ref Position.
-        *
-        * It is often useful to flatten the index space of the entire geometry
-        * for, usually to facilitate output to the HDF5 file. This accepts a
-        * Position, which stores x, y, z indices for a \ref Pin in the mesh and
-        * returns a 1-D index. The 1-D index space is ordered lexicographically,
-        * meaning in ascending x, then y, then z. Otherwise called "natural"
-        * ordering.
-        */
-        unsigned int index_lex( Position pos ) const {
-            return pos.x + pos.y*nx_ + pos.z*nx_*ny_;
-        }
-
-        /**
         * \brief Return a \ref Position, indicating the global position of a pin in the
         * core geometry.
         *

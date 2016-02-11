@@ -47,9 +47,8 @@ namespace mocc {
             // should be replaced with some sort of Sn Mesh object, which both
             // the XS Mesh and the Sn sweeper will use to handle indexing.
             auto pos = mesh.pin_position(ipin);
-            int ireg = mesh.index_lex( pos );
-            int ixsreg = mesh_.index_lex( pos );
-            this->homogenize_region( ireg, *pin, regions_[ixsreg] );
+            int ireg = mesh.coarse_cell( pos );
+            this->homogenize_region( ireg, *pin, regions_[ireg] );
             ipin++;
         }
     }
@@ -231,7 +230,7 @@ namespace mocc {
         int ipin = 0;
         int first_reg = 0;
         for( const auto &pin: mesh_ ) {
-            int ireg = mesh_.index_lex( mesh_.pin_position(ipin) );
+            int ireg = mesh_.coarse_cell( mesh_.pin_position(ipin) );
             int ixsreg = ireg;
             this->homogenize_region_flux( ireg, first_reg, *pin,
                     regions_[ixsreg]);

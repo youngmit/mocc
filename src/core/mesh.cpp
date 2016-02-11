@@ -6,7 +6,7 @@ using std::cin;
 
 namespace mocc {
     Mesh::Mesh( size_t n_reg, size_t n_xsreg,
-            VecF &hx, VecF &hy, VecF &hz, Boundary bc[6] ):
+            VecF &hx, VecF &hy, VecF &hz, std::array<Boundary, 6> bc ):
         n_reg_( n_reg ),
         n_xsreg_( n_xsreg ),
         nx_( hx.size() - 1 ),
@@ -25,9 +25,7 @@ namespace mocc {
         assert( std::is_sorted( y_vec_.begin(), y_vec_.end() ) );
         assert( std::is_sorted( z_vec_.begin(), z_vec_.end() ) );
 
-        for( int i=0; i<6; i++ ) {
-            bc_.push_back( bc[i] );
-        }
+        bc_ = bc;
 
         hx_ = x_vec_.back();
         for( auto &xi: x_vec_ ) {

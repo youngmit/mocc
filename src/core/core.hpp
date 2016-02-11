@@ -85,7 +85,7 @@ namespace mocc {
         /**
          * Return the boundary condition array
          */
-        std::vector<Boundary> boundary() const {
+        std::array<Boundary, 6> boundary() const {
             return bc_;
         }
 
@@ -107,7 +107,7 @@ namespace mocc {
         std::vector<Assembly*> assemblies_;
 
         // boundary conditions
-        std::vector<Boundary> bc_;
+        std::array<Boundary, 6> bc_;
     };
 
     Core ParseCore( const pugi::xml_node &input,

@@ -39,7 +39,7 @@ TEST( test_bc )
         Boundary::REFLECT,
         Boundary::REFLECT,
         Boundary::REFLECT,
-        Boundary::VACUUM,
+        Boundary::REFLECT,
         Boundary::REFLECT,
         Boundary::REFLECT
     };

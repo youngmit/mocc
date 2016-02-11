@@ -165,8 +165,7 @@ namespace mocc { namespace moc {
                 // to cast it into the first octant.
                 int Nx = Nx_[iang];
                 int Ny = Ny_[iang];
-                int bc1 = 0;
-                int bc2 = 0;
+                std::array<int, 2> bc;
                 real_t space = spacing_[iang];
                 real_t space_x = std::abs( space/sin(ang->alpha) );
                 real_t space_y = std::abs( space/cos(ang->alpha) );
@@ -179,7 +178,7 @@ namespace mocc { namespace moc {
                 // Handle rays entering on the x-normal faces
                 for ( int iray=0; iray<Ny; iray++ ) {
                     Point2 p1;
-                    bc1 = iray;
+                    bc[0] = iray;
                     if( ang->ox > 0.0 ) {
                         // We are in octant 1, enter from the left/west
                         p1.x = 0.0;
@@ -191,18 +190,18 @@ namespace mocc { namespace moc {
                     Point2 p2 = core_box.intersect(p1, *ang);
                     if( fp_equiv_abs(p2.x, hx) ) {
                         // BC is on the right/east boundary of the core
-                        bc2 = p2.y/space_y;
+                        bc[1] = p2.y/space_y;
                     } else if ( fp_equiv_abs(p2.y, hy) ) {
                         // BC is on the top/north boundary of the core
-                        bc2 = p2.x/space_x + Ny;
+                        bc[1] = p2.x/space_x + Ny;
                     } else if ( fp_equiv_abs(p2.x, 0.0) ) {
                         // BC is on the left/west boundary of the core
-                        bc2 = p2.y/space_y;
+                        bc[1] = p2.y/space_y;
                     } else {
                         throw EXCEPT("Something has gone horribly wrong in the "
                                 "ray trace.");
                     }
-                    rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
+                    rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
                     max_seg_ = std::max( rays.back().nseg(), max_seg_ );
                 }
 
@@ -212,21 +211,21 @@ namespace mocc { namespace moc {
                     p1.x = (0.5 + iray)*space_x;
                     p1.y = 0.0;
                     Point2 p2 = core_box.intersect(p1, *ang);
-                    bc1 = iray+Ny;
+                    bc[0] = iray+Ny;
                     if( fp_equiv_abs(p2.x, hx) ) {
                         // BC is on the right/east boundary of the core
-                        bc2 = p2.y/space_y;
+                        bc[1] = p2.y/space_y;
                     } else if( fp_equiv_abs(p2.y, hy) ) {
                         // BC is on the top/north boundary of the core
-                        bc2 = p2.x/space_x + Ny;
+                        bc[1] = p2.x/space_x + Ny;
                     } else if( fp_equiv_abs(p2.x, 0.0) ) {
                         // BC is on the left/west boundary of the core
-                        bc2 = p2.y/space_y;
+                        bc[1] = p2.y/space_y;
                     } else {
                         throw EXCEPT("Something has gone horribly wrong in the "
                                 "ray trace.");
                     }
-                    rays.emplace_back(Ray(p1, p2, bc1, bc2, iplane, mesh));
+                    rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
                     max_seg_ = std::max( rays.back().nseg(), max_seg_ );
                 }
 
@@ -270,6 +269,8 @@ namespace mocc { namespace moc {
     void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )
     {
         switch(type) {
+            // Correct each angle independently, preserving volume integral of
+            // region for each angle
             case FLAT:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();
@@ -302,6 +303,8 @@ namespace mocc { namespace moc {
                 }
 
                 break;
+            // Correct all angles at the same time, preserving the angular
+            // integral of the region volumes for all angles
             case ANGLE:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();

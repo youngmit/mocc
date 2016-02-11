@@ -48,7 +48,7 @@ namespace sn {
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
         for( auto &pin: mesh_ ) {
-            int i = mesh_.index_lex( mesh_.pin_position(ipin) );
+            int i = mesh_.coarse_cell( mesh_.pin_position(ipin) );
             vol_[i] = pin->vol();
             ipin++;
         }

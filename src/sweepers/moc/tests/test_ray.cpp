@@ -31,7 +31,7 @@ TEST( simple_ray )
         // Test a few rays that starts on a corner, ends on a corner and crosses
         // a bunch of corners
         {
-            Ray ray( Point2(0.0,1.0), Point2(4.0,5.0), 0, 0, 0, mesh );
+            Ray ray( Point2(0.0,1.0), Point2(4.0,5.0), {0, 0}, 0, mesh );
 
             CHECK_EQUAL( ray.cm_surf_fw(), 37 );
             CHECK_EQUAL( ray.cm_cell_fw(), 6 );
@@ -84,7 +84,7 @@ TEST( simple_ray )
         }
 
         {
-            Ray ray( Point2(4.0,0.0), Point2(6.0,2.0), 0, 0, 0, mesh );
+            Ray ray( Point2(4.0,0.0), Point2(6.0,2.0), {0, 0}, 0, mesh );
 
             CHECK_EQUAL( ray.cm_surf_fw(), 89 );
             CHECK_EQUAL( ray.cm_cell_fw(), 4 );
@@ -96,15 +96,15 @@ TEST( simple_ray )
         }
 
         {
-            Ray ray( Point2(2.0,0.0), Point2(0.0,2.0), 0, 0, 0, mesh );
+            Ray ray( Point2(2.0,0.0), Point2(0.0,2.0), {0, 0}, 0, mesh );
         }
 
         {
-            Ray ray( Point2(6.0,3.0), Point2(4.0,5.0), 0, 0, 0, mesh );
+            Ray ray( Point2(6.0,3.0), Point2(4.0,5.0), {0, 0}, 0, mesh );
         }
 
         {
-            Ray ray( Point2(0.0,0.5), Point2(6.0,3.25), 0, 0, 0, mesh );
+            Ray ray( Point2(0.0,0.5), Point2(6.0,3.25), {0, 0}, 0, mesh );
         }
 
 
@@ -124,16 +124,16 @@ TEST( nasty_ray )
         angquad_xml.load_string("<ang_quad type=\"ls\" order=\"4\" />");
     // Make a nasty ray to exercise the coarse indexing
     {
-        Ray ray( Point2(1.26, 0.0), Point2(3.78, 2.52), 0, 0, 0, mesh );
+        Ray ray( Point2(1.26, 0.0), Point2(3.78, 2.52), {0, 0}, 0, mesh );
     }
     {
-        Ray ray( Point2(1.26, 0.0), Point2(0.0, 1.26), 0, 0, 0, mesh );
+        Ray ray( Point2(1.26, 0.0), Point2(0.0, 1.26), {0, 0}, 0, mesh );
     }
     {
-        Ray ray( Point2(0.0, 1.26), Point2(2.52, 3.78), 0, 0, 0, mesh );
+        Ray ray( Point2(0.0, 1.26), Point2(2.52, 3.78), {0, 0}, 0, mesh );
     }
     {
-        Ray ray( Point2(3.78, 2.52), Point2(2.52, 3.78), 0, 0, 0, mesh );
+        Ray ray( Point2(3.78, 2.52), Point2(2.52, 3.78), {0, 0}, 0, mesh );
     }
 }
 

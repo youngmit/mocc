@@ -71,7 +71,7 @@ namespace mocc { namespace cmdo {
                 int ipin = 0;
                 for( const auto &pin: mesh_ ) {
                     auto pos = mesh_.pin_position(ipin);
-                    int ireg = mesh_.index_lex( pos );
+                    int ireg = mesh_.coarse_cell( pos );
                     for( const auto v: pin->vols() ) {
                         sn_fs(ireg) += v*fs(ireg_fsr);
                         ireg_fsr++;
