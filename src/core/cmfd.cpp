@@ -206,7 +206,6 @@ namespace mocc {
         size_t n_surf = mesh_->n_surf();
         int group = 0;
         for( auto &m: m_ ) {
-coarse_data_.zero_data(group);
             // Diffusion coefficients
             VecF d_coeff( n_cell_ );
             for( int i=0; i<n_cell_; i++ ) {
