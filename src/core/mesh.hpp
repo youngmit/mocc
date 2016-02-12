@@ -189,8 +189,11 @@ namespace mocc {
          *
          */
         real_t cell_thickness( size_t cell, Normal norm ) const {
+            assert( cell < this->n_pin() );
+            assert( (norm == Normal::X_NORM) || (norm == Normal::Y_NORM) || 
+                    (norm == Normal::Z_NORM) );
             auto pos = this->coarse_position( cell );
-            real_t h;
+            real_t h = 0;
             switch( norm ) {
             case Normal::X_NORM:
                 h = dx_vec_[pos.x];
@@ -529,22 +532,31 @@ namespace mocc {
          */
         real_t coarse_area( size_t cell, Surface surf ) const {
             auto pos = this->coarse_position( cell );
+            real_t area = 0.0;
             switch( surf ) {
                 case( Surface::EAST ):
-                    return dy_vec_[pos.y] * dz_vec_[pos.z];
+                    area = dy_vec_[pos.y] * dz_vec_[pos.z];
+                    break;
                 case( Surface::WEST ):
-                    return dy_vec_[pos.y] * dz_vec_[pos.z];
+                    area = dy_vec_[pos.y] * dz_vec_[pos.z];
+                    break;
                 case( Surface::NORTH ):
-                    return dx_vec_[pos.x] * dz_vec_[pos.z];
+                    area = dx_vec_[pos.x] * dz_vec_[pos.z];
+                    break;
                 case( Surface::SOUTH ):
-                    return dx_vec_[pos.x] * dz_vec_[pos.z];
+                    area = dx_vec_[pos.x] * dz_vec_[pos.z];
+                    break;
                 case( Surface::TOP ):
-                    return dx_vec_[pos.x] * dy_vec_[pos.y];
+                    area = dx_vec_[pos.x] * dy_vec_[pos.y];
+                    break;
                 case( Surface::BOTTOM ):
-                    return dx_vec_[pos.x] * dy_vec_[pos.y];
+                    area = dx_vec_[pos.x] * dy_vec_[pos.y];
+                    break;
                 default:
-                    return -1;
+                    assert(false);
+                    area = -1;
             }
+            return area;
         }
 
         /**
