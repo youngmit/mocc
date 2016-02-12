@@ -40,18 +40,16 @@ namespace mocc { namespace moc {
                ang_quad_,
                mesh
              ),
-        boundary_( mesh.nz(), BoundaryCondition( n_group_,
-                                           ang_quad_,
-                                           mesh_.boundary(),
-                                           bc_size_helper(rays_)
-                                         )
-                 ),
-        boundary_out_( mesh.nz(), BoundaryCondition( 1,
-                                               ang_quad_,
-                                               mesh_.boundary(),
-                                               bc_size_helper(rays_)
-                                             )
-                     ),
+        boundary_( mesh.nz(),
+            BoundaryCondition( n_group_,
+                ang_quad_,
+                mesh_.boundary(),
+                bc_size_helper(rays_) ) ),
+        boundary_out_( mesh.nz(),
+            BoundaryCondition( 1,
+                ang_quad_,
+                mesh_.boundary(),
+                bc_size_helper(rays_) ) ),
         xstr_( n_reg_ ),
         flux_1g_( ),
         bc_type_( mesh_.boundary() )
