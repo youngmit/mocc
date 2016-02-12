@@ -7,6 +7,7 @@
 #include "error.hpp"
 #include "files.hpp"
 #include "moc_current_worker.hpp"
+#include "string_utils.hpp"
 #include "utils.hpp"
 
 using std::endl;
@@ -72,6 +73,20 @@ namespace mocc { namespace moc {
 
         // Parse the output options
         dump_rays_ = input.attribute("dump_rays").as_bool(false);
+
+        // Determine boundary update technique
+        gauss_seidel_boundary_ = true;
+        if( !input.attribute("boundary").empty() ) {
+            std::string in_string = input.attribute("boundary").value();
+            sanitize(in_string);
+            if( in_string == "jacobi" ) {
+                gauss_seidel_boundary_ = false;
+            } else if ( in_string == "gs" ) {
+
+            } else {
+                throw EXCEPT("Unrecognized boundary update option.");
+            }
+        }
 
         // Set up the array of volumes (surface area)
         int ireg = 0;
@@ -263,6 +278,13 @@ namespace mocc { namespace moc {
 
         ArrayB2 flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
+
+        LogFile << "Boundary update: ";
+        if( gauss_seidel_boundary_ ) {
+            LogFile << "Gauss-Seidel" << std::endl;
+        } else {
+            LogFile << "Jacobi" << std::endl;
+        }
 
         for( size_t ig=0; ig<n_group_; ig++ ){
             std::stringstream setname;

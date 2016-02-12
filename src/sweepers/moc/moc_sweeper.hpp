@@ -95,6 +95,7 @@ namespace mocc { namespace moc {
         Exponential exp_;
 
         bool dump_rays_;
+        bool gauss_seidel_boundary_;
 
         /**
          * \brief Perform an MoC sweep
@@ -204,6 +205,7 @@ namespace mocc { namespace moc {
                     cw.post_angle( iang, group );
 
                     // Try tasks?
+                    if( gauss_seidel_boundary_ )
 #pragma omp single
                     {
                         boundary_in.update( group, iang1, boundary_out );
@@ -212,6 +214,7 @@ namespace mocc { namespace moc {
 
                     iang++;
                 } // angles
+                if( !gauss_seidel_boundary_ )
 #pragma omp single
                 {
                     //boundary_in.update( group, boundary_out );
