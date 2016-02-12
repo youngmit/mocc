@@ -20,7 +20,7 @@ namespace mocc {
      * This class shall make one important guarantee; that all faces of the BC
      * in an angle/group are stored consecutively. This potentially allows
      * client code to eschew the concept of surface normals entirely. See \ref
-     * MoCSweeper for an example of this.
+     * moc::MoCSweeper for an example of this.
      */
     class BoundaryCondition {
     public:
