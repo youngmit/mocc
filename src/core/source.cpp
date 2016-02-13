@@ -15,7 +15,7 @@ namespace mocc {
         flux_( flux ),
         n_reg_( flux.size()/n_group_ )
     {
-        assert( n_reg_*n_group_ == flux_.size() );
+        assert( nreg*n_group_ == flux_.size() );
         state_.reset();
         return;
     }
