@@ -57,19 +57,22 @@ namespace mocc {
     }
 
     AngularQuadrature::AngularQuadrature( const H5Node &input ) {
-        VecF alpha;
-        VecF theta;
+        VecF ox;
+        VecF oy;
+        VecF oz;
         VecF weights;
 
-        input.read("ang_quad/alpha", alpha);
-        input.read("ang_quad/theta", theta);
+        input.read("ang_quad/omega_x", ox);
+        input.read("ang_quad/omega_y", oy);
+        input.read("ang_quad/omega_z", oz);
         input.read("ang_quad/weight", weights);
 
-        if( (alpha.size() != theta.size()) || alpha.size() != weights.size() ) {
+        if( (ox.size() != oy.size()) || (ox.size() != oz.size()) || 
+                (ox.size() != weights.size()) ) {
             throw EXCEPT("Incompatible data sizes");
         }
 
-        int size = alpha.size();
+        int size = ox.size();
         if( size%8 != 0 ) {
             throw EXCEPT("Size is not evenly-divisible by 8");
         }
@@ -78,7 +81,7 @@ namespace mocc {
 
         angles_.reserve(size);
         for( int iang=0; iang<size; iang++ ) {
-            angles_.emplace_back(alpha[iang], theta[iang], weights[iang]);
+            angles_.emplace_back(ox[iang], oy[iang], oz[iang], weights[iang]);
         }
 
         type_ = QuadratureType::MANUAL;

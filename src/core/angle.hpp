@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "core/constants.hpp"
+#include "core/fp_utils.hpp"
 #include "core/global_config.hpp"
 
 namespace mocc {
@@ -77,6 +78,39 @@ namespace mocc {
             }
         return Surface::INVALID;
         }
+
+        /**
+         * \brief Provide operator==
+         *
+         * Equivalence between two \ref Angle objects means that all angle
+         * components and weight are very close, within FP tolerance
+         */
+        bool operator==( const Angle &other ) const {
+            return !(*this != other);
+        }
+
+        /**
+         * \brief Provide operator!=
+         *
+         * \copydetail operator!=
+         *
+         * We only fully implement \c operator!=, since a bunch of OR'd
+         * not-equivalent conditions can short-circuit, wheras a bunch of AND'd
+         * equivalent conditions must all be evaluated.
+         */
+        bool operator!=( const Angle &other ) const {
+            return
+            (
+                !fp_equiv_ulp( ox, other.ox ) ||
+                !fp_equiv_ulp( oy, other.oy ) ||
+                !fp_equiv_ulp( oz, other.oz ) ||
+                !fp_equiv_ulp( alpha, other.alpha ) ||
+                !fp_equiv_ulp( theta, other.theta ) ||
+                !fp_equiv_ulp( weight, other.weight ) ||
+                !fp_equiv_ulp( rsintheta, other.rsintheta )
+            );
+        }
+
     };
 
     Angle ToOctant( Angle in, int octant );

@@ -14,20 +14,48 @@ using std::endl;
 
 using namespace mocc;
 
-TEST( angquad )
-{
-    std::string inp = "<ang_quad type=\"ls\" order=\"4\" />";
+class LevelSymmetric_4 {
+private:
+    static AngularQuadrature make_angquad() {
+        std::string inp = "<ang_quad type=\"ls\" order=\"4\" />";
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_string( inp.c_str() );
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_string( inp.c_str() );
+        if (!result) {
+            cout << "failed to parse xml" << endl;
+        }
 
-    if (!result) {
-        cout << "failed to parse xml" << endl;
+        return AngularQuadrature( doc.child("ang_quad") );
     }
+public:
+    AngularQuadrature ang_quad;
+    LevelSymmetric_4(): ang_quad(LevelSymmetric_4::make_angquad()) {
+        return;
+    }
+};
 
+class LevelSymmetric_6 {
+private:
+    static AngularQuadrature make_angquad() {
+        std::string inp = "<ang_quad type=\"ls\" order=\"6\" />";
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_string( inp.c_str() );
 
-    mocc::AngularQuadrature ang_quad( doc.child("ang_quad") );
+        if (!result) {
+            cout << "failed to parse xml" << endl;
+        }
 
+        return AngularQuadrature( doc.child("ang_quad") );
+    }
+public:
+    AngularQuadrature ang_quad;
+    LevelSymmetric_6(): ang_quad(LevelSymmetric_6::make_angquad()) {
+        return;
+    }
+};
+
+TEST_FIXTURE( LevelSymmetric_4, general )
+{
     cout << ang_quad << endl;
 
     CHECK_EQUAL(ang_quad.ndir_oct(), 3);
@@ -61,6 +89,25 @@ TEST( angquad )
     // Test the angle reversal capabilities
     CHECK_EQUAL(ang_quad.reverse(1), 7);
     CHECK_EQUAL(ang_quad.reverse(11), 5);
+}
+
+TEST_FIXTURE( LevelSymmetric_6, higher_order ) {
+    real_t wsum = 0.0;
+
+    for( auto a: ang_quad ) {
+        wsum += a.weight;
+    }
+
+    CHECK_CLOSE(8.0, wsum, 0.00000000000001);
+}
+
+TEST_FIXTURE( LevelSymmetric_6, input_output ) {
+    H5Node h5file("test_angquad.h5", H5Access::WRITE );
+    ang_quad.output(h5file);
+
+    AngularQuadrature new_ang_quad( h5file );
+
+    CHECK(new_ang_quad == ang_quad);
 }
 
 int main() {

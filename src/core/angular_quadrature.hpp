@@ -132,6 +132,18 @@ namespace mocc {
         }
 
         void output( H5Node &node ) const;
+
+        bool operator==( const AngularQuadrature &other ) const {
+            return
+            (
+                (ndir_oct_ == other.ndir_oct_) &&
+                (angles_ == other.angles_)
+            );
+        }
+
+        bool operator!=( const AngularQuadrature &other ) const {
+            return !(*this == other);
+        }
     private:
         static const int reflection_[3][8];
 
