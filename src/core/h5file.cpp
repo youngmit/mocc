@@ -63,6 +63,26 @@ namespace mocc {
             throw EXCEPT(msg.str());
         }
     }
+    
+    void H5Node::write( std::string path, const VecF &data ) {
+        hsize_t *dims_a = new hsize_t;
+        *dims_a = data.size();
+
+        try {
+            H5::DataSpace space( 1, dims_a );
+            H5::DataSet dataset = node_->createDataSet( path,
+                    H5::PredType::NATIVE_DOUBLE, space );
+            dataset.write( data.data(), H5::PredType::NATIVE_DOUBLE );
+        } catch (...) {
+            std::stringstream msg;
+            msg << "Failed to write dataset: " << path;
+            throw EXCEPT( msg.str().c_str() );
+        }
+
+        delete dims_a;
+
+        return;
+    }
 
     void H5Node::write( std::string path, const VecF &data, VecI dims ) {
         hsize_t *dims_a = new hsize_t[dims.size()];

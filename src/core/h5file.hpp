@@ -77,6 +77,12 @@ namespace mocc {
         std::vector<hsize_t> dimensions( std::string path );
 
         /**
+         * \brief Write an std::vector<double> to the file, assuming
+         * one dimension.
+         */
+        void write( std::string path, const VecF &data );
+
+        /**
          * \brief Write an std::vector<double> to the file, using specified
          * dimensions.
          */
