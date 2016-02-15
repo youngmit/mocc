@@ -103,6 +103,9 @@ namespace mocc { namespace moc {
             rayfile << rays_ << endl;
         }
 
+        // Replace the angular quadrature with the modularized version
+        ang_quad_ = rays_.ang_quad();
+
         return;
     }
 
@@ -294,6 +297,8 @@ namespace mocc { namespace moc {
             node.write( setname.str(), flux_1g.begin(),
                     flux_1g.end(), dims );
         }
+
+        ang_quad_.output( node );
 
         return;
     }

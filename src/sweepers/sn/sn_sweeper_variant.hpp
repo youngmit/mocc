@@ -19,7 +19,6 @@
 #include "sn_sweeper.hpp"
 
 namespace mocc { namespace sn {
-
     /**
      * The \ref SnSweeperVariant allows for the templating of an Sn sweeper upon
      * a specific differencing scheme. They are derived from the\ref SnSweeper
@@ -111,7 +110,6 @@ namespace mocc { namespace sn {
                 // Get the source for this angle
                 auto& q = source_->get_transport( iang );
 
-
                 cell_worker_.set_angle( iang, ang );
 
                 real_t wgt = ang.weight * HPI;
@@ -172,9 +170,6 @@ namespace mocc { namespace sn {
 
                             real_t psi = cell_worker_.evaluate( psi_x, psi_y,
                                     psi_z, q[i], xstr_[i], i );
-                            //real_t psi = cell_worker_.evaluate_2d( psi_x, psi_y,
-                            //        q[i], xstr_[i], i );
-
 
                             x_flux[ny*iz + iy] = psi_x;
                             y_flux[nx*iz + ix] = psi_y;
@@ -196,6 +191,7 @@ namespace mocc { namespace sn {
                 bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
                 bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
                 bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
+
                 if( gs_boundary_ ) {
                     bc_in_.update( group, iang, bc_out_ );
                 }

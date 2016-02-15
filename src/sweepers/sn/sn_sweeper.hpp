@@ -82,9 +82,6 @@ namespace mocc { namespace sn {
         // Temporary storage of the current-group transport cross section
         ArrayF xstr_;
 
-        // Single-group isotropic source, should include in-scatter
-        ArrayF q_;
-
         // Incomming boundary condition
         SnBoundary bc_in_;
 

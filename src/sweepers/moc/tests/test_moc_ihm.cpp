@@ -101,6 +101,7 @@ TEST( moc_ihm )
     ArrayB1 psi_ref(ng);
     real_t k_ref;
     reference_solution( k_ref, flux_ref, psi_ref );
+    cout << "reference k-inf: " << k_ref << endl;
     cout << "reference flux: " << flux_ref << endl;
 
 

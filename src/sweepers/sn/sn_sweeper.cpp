@@ -16,7 +16,6 @@ namespace sn {
             bc_type_( mesh.boundary() ),
             flux_1g_( ),
             xstr_( mesh.n_pin() ),
-            q_( mesh_.n_pin() ),
             bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
             bc_out_( 1, ang_quad_, mesh_ ),
             gs_boundary_( true )
@@ -43,7 +42,6 @@ namespace sn {
         flux_.resize( n_reg_, n_group_ );
         flux_old_.resize( n_reg_, n_group_ );
         vol_.resize( n_reg_ );
-
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
@@ -105,6 +103,8 @@ namespace sn {
         }
 
         LogFile << "Sn Sweeper:" << std::endl;
+        LogFile << "Angular Quadrature:" << std::endl;
+        LogFile << ang_quad_ << std::endl;
 
         LogFile << "Boundary update: ";
         if( gs_boundary_ ) {

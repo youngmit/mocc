@@ -217,7 +217,7 @@ namespace mocc { namespace moc {
                 if( !gauss_seidel_boundary_ )
 #pragma omp single
                 {
-                    //boundary_in.update( group, boundary_out );
+                    boundary_in.update( group, boundary_out );
                 }
 
                 iplane++;

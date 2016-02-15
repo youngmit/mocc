@@ -127,16 +127,10 @@ namespace mocc { namespace cmdo {
                                   tz_* flux_z );
             psi /= tx/gx + ty_/gy + 2.0*tz_ + xstr;
 
-//std::cout << ax << " " << ay << " " << b << std::endl;
-//std::cout << flux_x << " " << flux_y << " " << flux_z << std::endl << psi << std::endl;
-
-
             flux_x = (psi - gx*flux_x) / gx;
             flux_y = (psi - gy*flux_y) / gy;
             flux_z = 2.0*psi - flux_z;
 
-//std::cout << flux_x << " " << flux_y << " " << flux_z << std::endl;
-//std::cin.ignore();
             return psi;
         }
     };
@@ -189,6 +183,18 @@ namespace mocc { namespace cmdo {
             SnSweeperVariant<CellWorker_CDD_DD>( input, mesh ),
             correction_data_(nullptr)
         {
+            // Look for data to set the angular quadrature
+            if( !input.child("data").empty() ) {
+                std::string fname =
+                    input.child("data").attribute("file").value();
+                H5Node file( fname, H5Access::READ );
+                ang_quad_ = AngularQuadrature( file );
+                real_t wsum = 0.0;
+                for( auto a: ang_quad_ ) {
+                    wsum += a.weight;
+                }
+                std::cout << "Weight sum: " << wsum << std::endl;
+            }
             return;
         }
 
