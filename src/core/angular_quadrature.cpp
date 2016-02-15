@@ -30,7 +30,7 @@ namespace mocc {
         std::string type_str = input.attribute("type").value();
         sanitize(type_str);
         if (type_str == "ls") {
-            type_ = SN;
+            type_ = QuadratureType::SN;
 
             // extract the quadrature order
             int order = input.attribute("order").as_int(-1);
@@ -56,6 +56,36 @@ namespace mocc {
         return;
     }
 
+    AngularQuadrature::AngularQuadrature( const H5Node &input ) {
+        VecF alpha;
+        VecF theta;
+        VecF weights;
+
+        input.read("ang_quad/alpha", alpha);
+        input.read("ang_quad/theta", theta);
+        input.read("ang_quad/weight", weights);
+
+        if( (alpha.size() != theta.size()) || alpha.size() != weights.size() ) {
+            throw EXCEPT("Incompatible data sizes");
+        }
+
+        int size = alpha.size();
+        if( size%8 != 0 ) {
+            throw EXCEPT("Size is not evenly-divisible by 8");
+        }
+
+        ndir_oct_ = size/8;
+
+        angles_.reserve(size);
+        for( int iang=0; iang<size; iang++ ) {
+            angles_.emplace_back(alpha[iang], theta[iang], weights[iang]);
+        }
+
+        type_ = QuadratureType::MANUAL;
+        
+        return;
+    }
+
     void AngularQuadrature::modify_angle(int iang, Angle ang ) {
         for ( int ioct=0; ioct<8; ioct++ ){
             angles_[iang + ioct*ndir_oct_] = ToOctant(ang, ioct+1);
@@ -74,5 +104,34 @@ namespace mocc {
             os << ang << std::endl;
         }
         return os;
+    }
+
+    void AngularQuadrature::output( H5Node &node ) const {
+        VecF alpha; alpha.reserve(this->ndir());
+        VecF theta; theta.reserve(this->ndir());
+        VecF ox;    ox.reserve(this->ndir());
+        VecF oy;    oy.reserve(this->ndir());
+        VecF oz;    oz.reserve(this->ndir());
+        VecF w;     w.reserve(this->ndir());
+        
+        for( auto a: angles_ ) {
+            alpha.push_back(a.alpha);
+            theta.push_back(a.theta);
+            ox.push_back(a.ox);
+            oy.push_back(a.oy);
+            oz.push_back(a.oz);
+            w.push_back(a.weight);
+        }
+
+        auto g = node.create_group("ang_quad");
+
+        g.write("alpha", alpha);
+        g.write("theta", theta);
+        g.write("omega_x", ox);
+        g.write("omega_y", oy);
+        g.write("omega_z", oz);
+        g.write("weight", w);
+
+        return;
     }
 }

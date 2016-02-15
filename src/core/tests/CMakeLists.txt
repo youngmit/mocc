@@ -4,7 +4,7 @@ if(${BUILD_TESTS})
     add_test(testH5File testH5File)
 
     add_executable(testAngularQuadrature test_angular_quadrature.cpp)
-    target_link_libraries(testAngularQuadrature core pugixml UnitTest++)
+    target_link_libraries(testAngularQuadrature core pugixml hdf5_cpp UnitTest++)
     add_test(testAngularQuadratrue testAngularQuadrature)
     
     add_executable(testMaterial test_material.cpp)
@@ -22,7 +22,7 @@ if(${BUILD_TESTS})
     add_test(testExp testExp)
 
     add_executable(testBoundaryCondition test_boundary_condition.cpp)
-    target_link_libraries(testBoundaryCondition core pugixml UnitTest++)
+    target_link_libraries(testBoundaryCondition hdf5_cpp core pugixml UnitTest++)
     add_test(testBoundaryCondition testBoundaryCondition)
     
     add_executable(testXSMeshHom test_xsmeshhomogenized.cpp)

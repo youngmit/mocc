@@ -8,17 +8,28 @@
 
 #include "angle.hpp"
 #include "global_config.hpp"
+#include "output_interface.hpp"
 
 namespace mocc {
 
-    enum quad_t {
-        SN // Level-symmetric
+    enum class QuadratureType {
+        SN, // Level-symmetric
+        MANUAL // User-defined
     };
 
 
-    class AngularQuadrature {
+    class AngularQuadrature : HasOutput {
     public:
+        /**
+         * \brief Intialize an \ref AngularQuadrature from scratch using XML
+         * input
+         */
         AngularQuadrature( const pugi::xml_node &input );
+
+        /**
+         * \brief Initialize an \ref AngularQuadrature from an HDF5 file
+         */
+        AngularQuadrature( const H5Node &input );
 
         ~AngularQuadrature() {
         }
@@ -119,11 +130,13 @@ namespace mocc {
             }
             return 0;
         }
+
+        void output( H5Node &node ) const;
     private:
         static const int reflection_[3][8];
 
         // Enumerated quadrature type
-        quad_t type_;
+        QuadratureType type_;
 
         // Number of angles per octant
         int ndir_oct_;
