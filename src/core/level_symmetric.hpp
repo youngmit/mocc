@@ -78,6 +78,7 @@ std::vector<Angle> GenSn( int order ){
     // Apply the permutations of the base cosines to get actual angles. We will
     // do this once for the first octant, then reflect around.
     std::vector<Angle> angles;
+    real_t wsum = 0.0;
     int k=0;
     for( int i=0; i<n; i++ ) {
         for( int j=0; j<=i; j++ ) {
@@ -86,12 +87,18 @@ std::vector<Angle> GenSn( int order ){
                          mu[n-i-1],
                          weights[map[k]-1]);
 
-            // Look up and apply the proper weight
-//            angle.weight = weights[map[k]-1];
-
             angles.push_back(angle);
+            wsum += angle.weight;
             k++;
         }
+    }
+
+    // One of these days, i should calculate the weights algorithmically, rather
+    // than storing in a table. For now, make sure the angular integral comes
+    // out to 4*PI. We defined the angles above for one octant, so make sure
+    // that the weights sum to 1 to machine precision.
+    for( auto &a: angles ) {
+        a.weight /= wsum;
     }
 
     return angles;
