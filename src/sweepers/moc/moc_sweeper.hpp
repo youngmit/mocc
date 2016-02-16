@@ -13,6 +13,7 @@
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
 #include "core/exponential.hpp"
+#include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/xs_mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
@@ -69,6 +70,9 @@ namespace mocc { namespace moc {
 
     protected:
         // Data
+        Timer &timer_;
+        Timer &timer_init_;
+        Timer &timer_sweep_;
         const CoreMesh& mesh_;
 
         RayData rays_;

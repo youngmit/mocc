@@ -19,6 +19,10 @@ using std::cin;
 namespace mocc {
     CMFD::CMFD( const pugi::xml_node &input, const Mesh *mesh,
             SP_XSMeshHomogenized_t xsmesh):
+        timer_(RootTimer.new_timer("CMFD", true)),
+        timer_init_(timer_.new_timer("Initialization", true)),
+        timer_setup_(timer_.new_timer("Setup Linear System")),
+        timer_solve_(timer_.new_timer("Solve")),
         mesh_(mesh),
         xsmesh_( xsmesh ),
         n_cell_( mesh->n_pin() ),
@@ -87,6 +91,9 @@ namespace mocc {
                 is_enabled_ = input.attribute("enabled").as_bool(true);
             }
         }
+
+        timer_.toc();
+        timer_init_.toc();
         return;
     }
 
@@ -96,6 +103,7 @@ namespace mocc {
         if( !xsmesh_ ) {
             throw EXCEPT("No XS Mesh data! Need!");
         }
+        timer_.tic();
 
         // Update homogenized cross sections
         xsmesh_->update();
@@ -103,6 +111,8 @@ namespace mocc {
 
         // Set up the linear systems
         this->setup_solve();
+
+        timer_solve_.tic();
 
         real_t k_old = k;
         real_t tfis = this->total_fission();
@@ -152,6 +162,8 @@ namespace mocc {
         // Calculate the resultant currents and store back onto the coarse data
         this->store_currents();
 
+        timer_solve_.toc();
+        timer_.toc();
         return;
     }
 
@@ -200,6 +212,7 @@ namespace mocc {
     }
 
     void CMFD::setup_solve() {
+        timer_setup_.tic();
 
         const Mesh::BCArray_t bc = mesh_->boundary_array();
         // Construct the system matrix
@@ -337,6 +350,7 @@ namespace mocc {
             solvers_[group].compute(m);
             group++;
         } // group loop
+        timer_setup_.toc();
         return;
     }
 

@@ -12,6 +12,7 @@
 #include "core/files.hpp"
 #include "core/material_lib.hpp"
 #include "core/pin_mesh.hpp"
+#include "core/timers.hpp"
 
 #include "auxiliary/geometry_output.hpp"
 
@@ -21,7 +22,12 @@ using std::endl;
 using std::shared_ptr;
 
 namespace mocc{
-    InputProc::InputProc(const char* filename){
+    InputProc::InputProc(const char* filename) {
+        Timer &timer = RootTimer.new_timer( "Initialization" );
+        timer.tic();
+        Timer &input_timer = timer.new_timer( "Input processing" );
+        input_timer.tic();
+
         LogFile << "Processing input" << endl;
         LogFile << "Parsing: " << filename << endl;
 
@@ -35,8 +41,15 @@ namespace mocc{
             throw EXCEPT("Error encountered in parsing XML file.");
         }
 
+        input_timer.toc();
+
+        Timer &mesh_timer = timer.new_timer("Core Mesh");
+        mesh_timer.tic();
+
         // Generate the core mesh
         core_mesh_ = std::make_shared<CoreMesh>( doc );
+
+        mesh_timer.toc();
 
         // Generate a top-level solver
         solver_ = SolverFactory( doc.child("solver"), *core_mesh_.get() );
@@ -48,6 +61,7 @@ namespace mocc{
         }
 
         LogFile << endl;
+        timer.toc();
         return;
     }
 };

@@ -12,6 +12,9 @@ namespace mocc {
 namespace sn {
     SnSweeper::SnSweeper( const pugi::xml_node &input, const CoreMesh& mesh ):
             TransportSweeper( input ),
+            timer_( RootTimer.new_timer("Sn Sweeper", true) ),
+            timer_init_( timer_.new_timer("Initialization", true) ),
+            timer_sweep_( timer_.new_timer("Sweep", false) ),
             mesh_( mesh ),
             bc_type_( mesh.boundary() ),
             flux_1g_( ),
@@ -78,6 +81,9 @@ namespace sn {
                 throw EXCEPT("Unrecognized option for BC update!");
             }
         }
+
+        timer_.toc();
+        timer_init_.toc();
 
         return;
     }

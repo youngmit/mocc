@@ -9,6 +9,7 @@
 #include "global_config.hpp"
 #include "mesh.hpp"
 #include "source_isotropic.hpp"
+#include "timers.hpp"
 #include "xs_mesh_homogenized.hpp"
 
 namespace mocc {
@@ -83,6 +84,11 @@ namespace mocc {
         real_t total_fission();
 
         // Private data
+        Timer &timer_;
+        Timer &timer_init_;
+        Timer &timer_setup_;
+        Timer &timer_solve_;
+
         const Mesh* mesh_;
         SP_XSMeshHomogenized_t xsmesh_;
         int n_cell_;

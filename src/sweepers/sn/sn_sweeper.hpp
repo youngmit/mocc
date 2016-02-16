@@ -3,6 +3,7 @@
 #include "pugixml.hpp"
 
 #include "core/angular_quadrature.hpp"
+#include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"
 
@@ -63,11 +64,9 @@ namespace mocc { namespace sn {
         virtual void output( H5Node &node ) const;
 
     protected:
-        /** 
-         * \brief Grab data (XS, etc.) from one or more external files
-         */
-        void add_data( const pugi::xml_node &input );
-
+        Timer &timer_;
+        Timer &timer_init_;
+        Timer &timer_sweep_;
         const CoreMesh &mesh_;
 
         unsigned int n_inner_;
@@ -90,6 +89,12 @@ namespace mocc { namespace sn {
 
         // Gauss-Seidel BC update?
         bool gs_boundary_;
+        
+        // Protected methods
+        /** 
+         * \brief Grab data (XS, etc.) from one or more external files
+         */
+        void add_data( const pugi::xml_node &input );
 
         /**
          * \brief Check the neutron balance in all of the cells of the sweeper

@@ -47,7 +47,9 @@ namespace mocc { namespace sn {
         }
 
         void sweep( int group ) {
-            /// \todo add an is_read() method to the worker, and make sure that
+            timer_.tic();
+            timer_sweep_.tic();
+            /// \todo add an is_ready() method to the worker, and make sure that
             /// it's ready before continuing.
 
             // Store the transport cross section somewhere useful
@@ -75,6 +77,8 @@ namespace mocc { namespace sn {
                 }
             }
 
+            timer_.toc();
+            timer_sweep_.toc();
             return;
         }
 

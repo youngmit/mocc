@@ -36,6 +36,9 @@ namespace mocc { namespace moc {
     MoCSweeper::MoCSweeper( const pugi::xml_node& input,
             const CoreMesh& mesh ):
         TransportSweeper( input, mesh ),
+        timer_(RootTimer.new_timer( "MoC Sweeper", true) ),
+        timer_init_(timer_.new_timer( "Initialization", true) ),
+        timer_sweep_(timer_.new_timer( "Sweep" )),
         mesh_( mesh ),
         rays_( input.child("rays"),
                ang_quad_,
@@ -106,11 +109,17 @@ namespace mocc { namespace moc {
         // Replace the angular quadrature with the modularized version
         ang_quad_ = rays_.ang_quad();
 
+        timer_init_.toc();
+        timer_.toc();
+
         return;
     }
 
     void MoCSweeper::sweep( int group ) {
         assert(source_);
+
+        timer_.tic();
+        timer_sweep_.tic();
 
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
@@ -143,6 +152,8 @@ namespace mocc { namespace moc {
             }
         }
 
+        timer_.toc();
+        timer_sweep_.toc();
         return;
     }
 

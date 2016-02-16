@@ -13,6 +13,7 @@
 #include "core/global_config.hpp"
 #include "core/h5file.hpp"
 #include "core/solver.hpp"
+#include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 
 #include "input_proc.hpp"
@@ -60,7 +61,7 @@ int main(int argc, char* argv[]){
     print_banner();
 
     try {
-        auto time_begin = omp_get_wtime();
+        RootTimer.tic();
         
         // Spin up the log file. For now, just use the name of the input file.
         StartLogFile(argv[1]);
@@ -90,9 +91,9 @@ int main(int argc, char* argv[]){
         generate_output();
 
 
-        auto time_end = omp_get_wtime();
-        std::cout << "Time: " << time_end - time_begin << " sec" << endl;
-        LogFile   << "Time: " << time_end - time_begin << " sec" << endl;
+        RootTimer.toc();
+        std::cout << RootTimer << std::endl;
+        RootTimer.print(LogFile);
 
         StopLogFile();
     }

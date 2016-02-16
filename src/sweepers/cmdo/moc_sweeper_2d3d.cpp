@@ -25,6 +25,8 @@ namespace mocc { namespace cmdo {
     };
 
     void MoCSweeper_2D3D::sweep( int group ) {
+        timer_.tic();
+        timer_sweep_.tic();
         assert(source_);
         assert(sn_xs_mesh_);
 
@@ -67,6 +69,8 @@ namespace mocc { namespace cmdo {
             }
         }
 
+        timer_.toc();
+        timer_sweep_.toc();
         return;
     }
 
