@@ -10,7 +10,7 @@ namespace mocc {
     /**
      * The \ref Timer class provides functionality for measuring the amount of
      * runtime spent on various tasks. Each \ref Timer can have a number of
-     * "children," which comprise sub-\ref Timers for individual tasks of
+     * "children," which comprise sub-\ref Timer for individual tasks of
      * interest.
      *
      * There is a global \ref RootTimer, which is treated as the parent \ref

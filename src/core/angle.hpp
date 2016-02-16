@@ -92,7 +92,7 @@ namespace mocc {
         /**
          * \brief Provide operator!=
          *
-         * \copydetail operator!=
+         * \copydetails operator!=
          *
          * We only fully implement \c operator!=, since a bunch of OR'd
          * not-equivalent conditions can short-circuit, wheras a bunch of AND'd
