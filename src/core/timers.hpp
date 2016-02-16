@@ -13,6 +13,12 @@ namespace mocc {
      * "children," which comprise sub-\ref Timer for individual tasks of
      * interest.
      *
+     * Every \ref Timer maintains a total elapsed time, which may be accessed
+     * via the \ref Timer::time() method. A \ref Timer can be thought of as a
+     * stopwatch that is started with the \ref Timer::tic() method, and stopped
+     * with the \ref Timer::toc() method. The elapsed time is a sum of all time
+     * spent between calls the \ref Timer::tic() and \ref Timer::toc().
+     *
      * There is a global \ref RootTimer, which is treated as the parent \ref
      * Timer for the entire executable.
      */
