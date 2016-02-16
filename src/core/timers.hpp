@@ -40,25 +40,56 @@ namespace mocc {
          */
         Timer(std::string name, bool start );
 
+        /**
+         * \brief Start the \ref Timer
+         *
+         * This starts the \ref Timer "running," by logging the wall time at
+         * which the \ref tic() function was called. The timer can then be
+         * stopped with a call to \ref toc().
+         */
         void tic();
 
+        /**
+         * \brief Stop the \ref Timer
+         *
+         * This stops the \ref Timer and returns the amount of time that elapsed
+         * between the calls to \ref tic() and the \ref toc(). The running
+         * sum of time for the \ref Timer is also incremented by this duration.
+         */
         real_t toc();
 
+        /**
+         * \brief Return a reference the child Timer of the passed name
+         */
         Timer &operator[]( const std::string &name ) {
             return children_.at(name);
         }
 
+        /**
+         * \brief Return a const reference the child Timer of the passed name
+         */
         const Timer &operator[]( const std::string &name ) const {
             return children_.at(name);
         }
 
+        /**
+         * \brief Print the entire \ref Timer tree to the provided output
+         * stream.
+         */
         void print( std::ostream &os, int level=0 ) const;
 
+        /**
+         * \brief Create a new child \ref Timer and return a reference to it.
+         */
         Timer &new_timer( const std::string &name ) {
             children_.emplace( name, Timer(name) );
             return children_.at(name);
         }
         
+        /**
+         * \brief Create and return a new child \ref Timer, possibly starting it
+         * automatically
+         */
         Timer &new_timer( const std::string &name, bool start ) {
             children_.emplace( name, Timer(name, start) );
             return children_.at(name);
