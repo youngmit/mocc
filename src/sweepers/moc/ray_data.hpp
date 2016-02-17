@@ -22,17 +22,20 @@ namespace mocc { namespace moc {
     * The \ref RayData class is a collection of \ref Ray objects, organized by
     * plane, then by angle. Rays are traced only for the set of
     * geometrically-unique planes as determined by the \ref CoreMesh object used
-    * to construct a \ref RayData object.  Since the rays are only intended for
+    * to construct a \ref RayData object. Since the rays are only intended for
     * use in a 2-D MoC sweeper, only the first two octants are treated, with
     * octants 3 and 4 being treated by sweeping the rays backwards.
     *
     * Boundary condition indexing is set up to be conformant with corresponding
     * instances of \ref BoundaryCondition objects. The \ref BoundaryCondition
     * class handles boundary values on a surface-by-surface basis, and therefore
-    * \ref Ray ends are indexed from zero for each face as below:
+    * \ref Ray ends indexed in such a way to correspond to the appropriate faces
+    * on the \ref BoundaryBondition. Since the \ref BoundaryCondition stores all
+    * boundary values for a given angle contiguously in the X_NORM, Y_NORM,
+    * Z_NORM order, the ray indices should look like this:
     *
     * \verbatim
-    +- 0-- 1-- 2-- 3-- 4-- 5-- 6-- 7-+
+    +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+
     |                                |
     3                                3
     |                                |
@@ -42,7 +45,7 @@ namespace mocc { namespace moc {
     |                                |
     0                                0
     |                                |
-    +- 0-- 1-- 2-- 3-- 4-- 5-- 6-- 7-+ \endverbatim
+    +- 4-- 5-- 6-- 7-- 8-- 9--10--11-+ \endverbatim
     *
     */
     class RayData {
