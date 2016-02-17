@@ -65,6 +65,16 @@ namespace mocc {
         real_t toc();
 
         /**
+         * \brief Return the time accumulated so far for the timer.
+         *
+         * If the timer is currently running, this will not include time since
+         * last call to \ref tic().
+         */
+        real_t time() const {
+            return time_;
+        }
+
+        /**
          * \brief Return a reference the child Timer of the passed name
          */
         Timer &operator[]( const std::string &name ) {
