@@ -31,8 +31,8 @@ namespace mocc {
              * Store the upwind boundary condition as a contribution to the
              * coarse mesh current.
              */
-            inline void upwind_work( const ArrayF &x, const ArrayF &y,
-                    const ArrayF &z, const Angle &ang, int group ) {
+            inline void upwind_work( const real_t *x, const real_t *y,
+                    const real_t *z, const Angle &ang, int group ) {
 
                 size_t nx = mesh_->nx();
                 size_t ny = mesh_->ny();
@@ -198,8 +198,8 @@ namespace mocc {
                 return;
             }
 
-            inline void upwind_work( const ArrayF &x, const ArrayF &y,
-                    const ArrayF &z, const Angle &ang, int group )
+            inline void upwind_work( const real_t *x, const real_t *y,
+                    const real_t *z, const Angle &ang, int group )
             {
                 return;
             }

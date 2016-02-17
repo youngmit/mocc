@@ -3,10 +3,10 @@
 #include "pugixml.hpp"
 
 #include "core/angular_quadrature.hpp"
+#include "core/boundary_condition.hpp"
 #include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"
-
 
 #include "sn_boundary.hpp"
 #include "cell_worker.hpp"
@@ -19,7 +19,7 @@ namespace mocc { namespace sn {
         void initialize() {
             flux_ = 1.0;
             flux_old_ = 1.0;
-            bc_in_.initialize(1.0/FPI);
+            bc_in_.initialize_scalar(1.0/FPI);
 
             return;
         }
@@ -82,10 +82,10 @@ namespace mocc { namespace sn {
         ArrayF xstr_;
 
         // Incomming boundary condition
-        SnBoundary bc_in_;
+        BoundaryCondition bc_in_;
 
         // Outgoing boundary condition. Only difined for one group
-        SnBoundary bc_out_;
+        BoundaryCondition bc_out_;
 
         // Gauss-Seidel BC update?
         bool gs_boundary_;

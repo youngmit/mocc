@@ -102,9 +102,9 @@ namespace mocc { namespace sn {
             int ny = mesh_.ny();
             int nz = mesh_.nz();
 
-            ArrayF x_flux(ny*nz);
-            ArrayF y_flux(nx*nz);
-            ArrayF z_flux(nx*ny);
+            real_t *x_flux;
+            real_t *y_flux;
+            real_t *z_flux;
 
             int iang = 0;
             for( auto ang: ang_quad_ ) {
@@ -154,9 +154,12 @@ namespace mocc { namespace sn {
                 }
 
                 // initialize upwind condition
-                x_flux = bc_in_.get_face( group, iang, Normal::X_NORM );
-                y_flux = bc_in_.get_face( group, iang, Normal::Y_NORM );
-                z_flux = bc_in_.get_face( group, iang, Normal::Z_NORM );
+                x_flux = bc_out_.get_face( 0, iang, Normal::X_NORM );
+                y_flux = bc_out_.get_face( 0, iang, Normal::Y_NORM );
+                z_flux = bc_out_.get_face( 0, iang, Normal::Z_NORM );
+                bc_in_.copy_face( group, iang, Normal::X_NORM, x_flux );
+                bc_in_.copy_face( group, iang, Normal::Y_NORM, y_flux );
+                bc_in_.copy_face( group, iang, Normal::Z_NORM, z_flux );
 
                 cw.upwind_work( x_flux, y_flux, z_flux, ang, group);
 
@@ -190,11 +193,6 @@ namespace mocc { namespace sn {
                         }
                     }
                 }
-
-                // store the downwind boundary condition
-                bc_out_.set_face(0, iang, Normal::X_NORM, x_flux);
-                bc_out_.set_face(0, iang, Normal::Y_NORM, y_flux);
-                bc_out_.set_face(0, iang, Normal::Z_NORM, z_flux);
 
                 if( gs_boundary_ ) {
                     bc_in_.update( group, iang, bc_out_ );

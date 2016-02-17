@@ -8,6 +8,18 @@
 #include "files.hpp"
 #include "string_utils.hpp"
 
+
+namespace {
+    using namespace mocc;
+    BC_Size_t boundary_helper( const Mesh &mesh ) {
+        BC_Size_t bc_size = { (int)mesh.ny()*(int)mesh.nz(),
+                              (int)mesh.nx()*(int)mesh.nz(),
+                              (int)mesh.nx()*(int)mesh.ny() };
+        return bc_size;
+    }
+}
+
+
 namespace mocc {
 namespace sn {
     SnSweeper::SnSweeper( const pugi::xml_node &input, const CoreMesh& mesh ):
@@ -19,8 +31,9 @@ namespace sn {
             bc_type_( mesh.boundary() ),
             flux_1g_( ),
             xstr_( mesh.n_pin() ),
-            bc_in_( mesh.mat_lib().n_group(), ang_quad_, mesh_ ),
-            bc_out_( 1, ang_quad_, mesh_ ),
+            bc_in_( mesh.mat_lib().n_group(), ang_quad_, bc_type_,
+                    boundary_helper(mesh) ),
+            bc_out_( 1, ang_quad_, bc_type_, boundary_helper(mesh) ),
             gs_boundary_( true )
     {
         LogFile << "Constructing a base Sn sweeper" << std::endl;
