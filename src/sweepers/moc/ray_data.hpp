@@ -30,7 +30,7 @@ namespace mocc { namespace moc {
     * instances of \ref BoundaryCondition objects. The \ref BoundaryCondition
     * class handles boundary values on a surface-by-surface basis, and therefore
     * \ref Ray ends indexed in such a way to correspond to the appropriate faces
-    * on the \ref BoundaryBondition. Since the \ref BoundaryCondition stores all
+    * on the \ref BoundaryCondition. Since the \ref BoundaryCondition stores all
     * boundary values for a given angle contiguously in the X_NORM, Y_NORM,
     * Z_NORM order, the ray indices should look like this:
     *
