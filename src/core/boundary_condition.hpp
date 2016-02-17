@@ -149,6 +149,15 @@ namespace mocc {
         }
 
         /**
+         * \breif Copy boundary values to external array
+         */
+        void copy_face( int group, int angle, Normal norm, real_t *out ) {
+            int n = size_[angle][(int)norm];
+            const real_t *face = this->get_face( group, angle, norm );
+            std::copy( face, face+n, out );
+        }
+
+        /**
          * \brief Return a pointer to the beginning of the boundary values for
          * the given group and angle
          */
