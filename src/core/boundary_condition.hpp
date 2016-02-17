@@ -110,7 +110,34 @@ namespace mocc {
          * \brief Initialize all BC points with a given value
          */
         void initialize_scalar( real_t val ) {
-            data_ = val;
+            // Start with all zeros
+            data_ = 0.0;
+            for( int group=0; group<n_group_; group++ ) {
+                for( int ang=0; ang<n_angle_; ang++ ) {
+                    for( auto norm: AllNormals ) {
+                        const auto &angle = ang_quad_[ang];
+                        Surface surf = angle.upwind_surface(norm);
+                        int size = size_[ang][(int)norm];
+                        real_t *face = this->get_face( group, ang, norm );
+
+                        switch( bc_[(int)surf] ) {
+                        case Boundary::VACUUM:
+                            // Leave surface as all zeros
+                            break;
+                        case Boundary::PARALLEL:
+                        case Boundary::REFLECT:
+                        case Boundary::PERIODIC:
+                            // initialize with the prescribed scalar
+                            for( int i=0; i<size; i++ ) {
+                                face[i] = val;
+                            }   
+                            break;
+                        case Boundary::INVALID:
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         /**
@@ -149,7 +176,7 @@ namespace mocc {
         }
 
         /**
-         * \breif Copy boundary values to external array
+         * \brief Copy boundary values to external array
          */
         void copy_face( int group, int angle, Normal norm, real_t *out ) {
             int n = size_[angle][(int)norm];
@@ -170,7 +197,7 @@ namespace mocc {
         
         /**
          * \brief Return a pointer to the beginning of the boundary values for
-         * the given group and angle
+         * the given group and angle. Includes all faces
          */
         real_t* get_boundary( int group, int angle ) {
             assert(angle < n_angle_);
