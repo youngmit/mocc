@@ -25,6 +25,7 @@ namespace mocc {
     class CorrectionData : public HasOutput {
     public:
         CorrectionData( ):
+            mesh_( nullptr ),
             nreg_( 0 ),
             nang_( 0 ),
             ngroup_( 0 )
@@ -33,6 +34,7 @@ namespace mocc {
         }
 
         CorrectionData( Mesh mesh, size_t nang, size_t ngroup ):
+            mesh_( &mesh ),
             nreg_( mesh.n_pin() ),
             nx_( mesh.nx() ),
             ny_( mesh.ny() ),
@@ -90,6 +92,7 @@ namespace mocc {
         void output( H5Node &file ) const;
         
     private:
+        const Mesh *mesh_;
         int nreg_;
         int nx_;
         int ny_;

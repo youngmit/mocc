@@ -86,8 +86,8 @@ TEST( fromdata )
 
     pugi::xml_document xsmesh_xml;
     std::string xml = 
-        "<data file=\"xsmesh_2.h5\" top_plane=\"7\"/>"
-        "<data file=\"xsmesh_1.h5\" top_plane=\"11\"/>"
+        "<data file=\"xsmesh_2.h5\" bottom_plane=\"0\" top_plane=\"7\"/>"
+        "<data file=\"xsmesh_1.h5\" bottom_plane=\"8\" top_plane=\"11\"/>"
         "";
     xsmesh_xml.load_string( xml.c_str() );
 

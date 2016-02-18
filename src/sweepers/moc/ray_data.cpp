@@ -175,7 +175,8 @@ namespace mocc { namespace moc {
 
 
                 std::vector<Ray> rays;
-                // Handle rays entering on the x-normal faces ( along the y-axis)
+                // Handle rays entering on the x-normal faces ( along the
+                // y-axis)
                 for ( int iray=0; iray<Ny; iray++ ) {
                     Point2 p1;
                     bc[0] = iray;

@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "core/files.hpp"
+#include "core/string_utils.hpp"
 
 using std::setfill;
 using std::setw;
@@ -13,34 +14,58 @@ namespace mocc {
         // First, validate the data tags. Make sure that they are the right
         // size and have cover all planes in the mesh.
         {
-            int last_plane = -1;
+            std::vector<bool> plane_data(nz_, false);
             for( auto data = input.child("data"); data;
                 data = data.next_sibling("data") )
             {
-                int top_plane = data.attribute("top_plane").as_int(0);
-                if( top_plane < 0 ) {
-                    throw EXCEPT("Invalid top_plane in <data />");
+                int top_plane = 0;
+                int bot_plane = 0;
+                if( !data.attribute("top_plane").empty() ) {
+                    top_plane = data.attribute("top_plane").as_int();
                 }
-                if( top_plane <= last_plane ) {
-                    throw EXCEPT("Out-of-order or duplicate top_plane in "
-                            "<data> tags" );
+                if( !data.attribute("bottom_plane").empty() ) {
+                    bot_plane = data.attribute("bottom_plane").as_int();
                 }
-                
+
+                if( (bot_plane < 0) || (bot_plane >= (int)mesh_->nz()) ) {
+                    throw EXCEPT("Invalid bottom_plane");
+                }
+                if( (top_plane < 0) || (top_plane >= (int)mesh_->nz()) ) {
+                    throw EXCEPT("Invalid top_plane");
+                }
+
                 if(data.attribute("file").empty()) {
                     throw EXCEPT("No file specified.");
                 }
-                last_plane = top_plane;
+                
+                for( int ip=bot_plane; ip<=top_plane; ip++ ) {
+                    if( plane_data[ip] ) {
+                        std::stringstream msg;
+                        msg << "Plane data is over-specified. Look at plane "
+                            << ip;
+                        throw EXCEPT(msg.str());
+                    }
+                    plane_data[ip] = true;
+                }
             }
-            if( last_plane != (nz_-1) ) {
-                throw EXCEPT("Data do not span entire mesh.");
-            }
+            LogFile << "Correction data is being specified for the following "
+                "planes:" << std::endl;
+            LogFile << print_range(plane_data) << std::endl;
         }
 
-        ArrayB1 slice(nreg_);
+        ArrayB1 slice(mesh_->n_cell_plane());
 
         for( auto data = input.child("data"); data;
             data = data.next_sibling("data") )
         {
+            int top_plane = 0;
+            int bot_plane = 0;
+            if( !data.attribute("top_plane").empty() ) {
+                top_plane = data.attribute("top_plane").as_int();
+            }
+            if( !data.attribute("bottom_plane").empty() ) {
+                bot_plane = data.attribute("bottom_plane").as_int();
+            }
             H5Node h5f( data.attribute("file").value(), H5Access::READ );
 
             for( int ig=0; ig<ngroup_; ig++ ) {
@@ -52,8 +77,13 @@ namespace mocc {
                             "_" << setfill('0') << setw(3) << iang;
 
                         h5f.read_1d( path.str(), slice );
-                        alpha_(ig, iang, blitz::Range::all(), 
-                                (int)Normal::X_NORM) = slice;
+                        for( int ip=bot_plane; ip<=top_plane; ip++ ) {
+                            int stt = mesh_->plane_cell_begin(ip);
+                            int stp = mesh_->plane_cell_end(ip)-1;
+                            alpha_(ig, iang, blitz::Range(stt, stp), 
+                                    (int)Normal::X_NORM) = slice;
+                            
+                        }
                     }
                     
                     {
@@ -61,15 +91,23 @@ namespace mocc {
                         path << "/alpha_y/" << setfill('0') << setw(3) << ig <<
                             "_" << setfill('0') << setw(3) << iang;
                         h5f.read_1d( path.str(), slice );
-                        alpha_(ig, iang, blitz::Range::all(), 
-                                (int)Normal::Y_NORM) = slice;
+                        for( int ip=bot_plane; ip<=top_plane; ip++ ) {
+                            int stt = mesh_->plane_cell_begin(ip);
+                            int stp = mesh_->plane_cell_end(ip)-1;
+                            alpha_(ig, iang, blitz::Range(stt, stp), 
+                                    (int)Normal::Y_NORM) = slice;
+                        }
                     }
                     {
                         std::stringstream path;
                         path << "/beta/" << setfill('0') << setw(3) << ig << "_"
                             << setfill('0') << setw(3) << iang;
                         h5f.read_1d( path.str(), slice );
-                        beta_(ig, iang, blitz::Range::all()) = slice;
+                        for( int ip=bot_plane; ip<=top_plane; ip++ ) {
+                            int stt = mesh_->plane_cell_begin(ip);
+                            int stp = mesh_->plane_cell_end(ip)-1;
+                            beta_(ig, iang, blitz::Range(stt, stp)) = slice;
+                        }
                     }
                 }
             }
