@@ -150,6 +150,7 @@ namespace mocc {
             data.resize(h5size);
         } else {
             if( (int)data.size() != h5size ) {
+                std::cerr << data.size() << " " << h5size << std::endl;
                 throw EXCEPT("Incompatible data sizes");
             }
         }
