@@ -163,7 +163,8 @@ namespace mocc{
     }
 
     void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
-        cout << std::setw(out_w) << std::fixed << std::setprecision(5)
+        teestream tee(std::cout, LogFile);
+        LogScreen << std::setw(out_w) << std::fixed << std::setprecision(5)
              << RootTimer.time() << std::setw(out_w)
              << iter << conv << endl;
         return;

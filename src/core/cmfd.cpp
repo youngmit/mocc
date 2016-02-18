@@ -7,6 +7,7 @@
 #include "pugixml.hpp"
 
 #include "core/error.hpp"
+#include "core/files.hpp"
 #include "core/global_config.hpp"
 
 typedef Eigen::Triplet<mocc::real_t> T;
@@ -153,11 +154,11 @@ namespace mocc {
             }
 
         }
-        auto flags = cout.flags();
-        std::cout << "CMFD : " << iter << " "
+        auto flags = LogScreen.flags();
+        LogScreen << "CMFD : " << iter << " "
                   << std::setprecision(12) << k << " "
                   << std::abs(k-k_old) << std::endl;
-        cout.flags(flags);
+        LogScreen.flags(flags);
 
 
         // Calculate the resultant currents and store back onto the coarse data
