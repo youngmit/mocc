@@ -94,7 +94,8 @@ namespace mocc{
         real_t error_k = 1.0; // K residual
         real_t error_psi = 1.0; // L-2 norm of the fission source residual
 
-        cout << std::setw(out_w) << "Iter."
+        cout << std::setw(out_w) << "Time"
+             << std::setw(out_w) << "Iter."
              << std::setw(out_w) << "k"
              << std::setw(out_w) << "k error"
              << std::setw(out_w) << "psi error" << endl;
@@ -162,7 +163,9 @@ namespace mocc{
     }
 
     void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
-        cout  << std::setw(out_w) << iter << conv << endl;;
+        cout << std::setw(out_w) << std::fixed << std::setprecision(5)
+             << RootTimer.time() << std::setw(out_w)
+             << iter << conv << endl;
         return;
     }
 
