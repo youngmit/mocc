@@ -243,7 +243,6 @@ namespace mocc {
          * values may be updated on \c this
          */
         void update( int group, int angle, const BoundaryCondition &out ) {
-            assert( angle < ang_quad_.ndir()/2 );
             int group_offset = bc_per_group_*group;
 
             for( Normal n: AllNormals ) {
