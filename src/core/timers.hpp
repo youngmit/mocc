@@ -67,11 +67,13 @@ namespace mocc {
         /**
          * \brief Return the time accumulated so far for the timer.
          *
-         * If the timer is currently running, this will not include time since
-         * last call to \ref tic().
          */
         real_t time() const {
-            return time_;
+            if( running_ ) {
+                return time_ + omp_get_wtime() - wtime_;
+            } else {
+                return time_;
+            }
         }
 
         /**
