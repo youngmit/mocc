@@ -4,7 +4,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "files.hpp"
 #include "h5file.hpp"
+#include "string_utils.hpp"
 
 using std::cout;
 using std::cin;
@@ -69,35 +71,37 @@ namespace mocc {
      */
     XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh, 
             const pugi::xml_node &input ):
-        mesh_( mesh ),
-        flux_( nullptr )
+        XSMeshHomogenized( mesh )
     {
         if( input.child("data").empty() ) {
             throw EXCEPT("No data found in input tag.");
         }
-
-        ng_ = mesh.mat_lib().n_group();
-
-        eubounds_.resize(ng_);
         
         int nreg_plane = mesh.nx()*mesh.ny();
 
         // First, validate the data tags. Make sure that they are the right
-        // size and have cover all planes in the mesh.
+        // size and cover valid planes in the mesh.
         {
-            int last_plane = -1;
+            std::vector<bool> plane_data(mesh_.nz(), false);
             for( auto data = input.child("data"); data;
                 data = data.next_sibling("data") )
             {
-                int top_plane = data.attribute("top_plane").as_int();
-                if( top_plane < 0 ) {
-                    throw EXCEPT("Invalid top_plane in <data />");
+                int top_plane = 0;
+                int bot_plane = 0;
+                if( !data.attribute("top_plane").empty() ) {
+                    top_plane = data.attribute("top_plane").as_int();
                 }
-                if( top_plane <= last_plane ) {
-                    throw EXCEPT("Out-of-order or duplicate top_plane in "
-                            "<data> tags" );
+                if( !data.attribute("bottom_plane").empty() ) {
+                    bot_plane = data.attribute("bottom_plane").as_int();
                 }
-                
+
+                if( (bot_plane < 0) || (bot_plane >= (int)mesh_.nz()) ) {
+                    throw EXCEPT("Invalid bottom_plane");
+                }
+                if( (top_plane < 0) || (top_plane >= (int)mesh_.nz()) ) {
+                    throw EXCEPT("Invalid top_plane");
+                }
+
                 if(data.attribute("file").empty()) {
                     throw EXCEPT("No file specified.");
                 }
@@ -121,21 +125,22 @@ namespace mocc {
                     throw EXCEPT("Data should only have one plane");
                 }
 
-                last_plane = top_plane;
+                for( int ip=bot_plane; ip<=top_plane; ip++ ) {
+                    if( plane_data[ip] ) {
+                        std::stringstream msg;
+                        msg << "Plane data is over-specified. Look at plane "
+                            << ip;
+                        throw EXCEPT(msg.str());
+                    }
+                    plane_data[ip] = true;
+                }
             }
-            if( last_plane != ((int)mesh.nz()-1) ) {
-                throw EXCEPT("Data do not span entire mesh.");
-            }
+
+            LogFile << "Data is being specified for the following planes:"
+                    << std::endl;
+            LogFile << print_range(plane_data) << std::endl;
+
         }
-
-        // If we made it this far, things should be kosher
-        int n_xsreg = mesh.n_pin();
-
-        // Allocate space to store the cross sections
-        this->allocate_xs(n_xsreg, ng_);
-
-        // Reserve space for the XSMeshRegions
-        regions_.reserve(n_xsreg);
 
         // We are going to want a nice contiguous buffer for storing xs as they
         // come in from the file
@@ -144,11 +149,18 @@ namespace mocc {
         ArrayB1 ch_buf(nreg_plane);
         ArrayB1 kf_buf(nreg_plane);
 
-        int last_plane = 0;
         for( auto data = input.child("data"); data;
             data = data.next_sibling("data") )
         {
-            int plane = data.attribute("top_plane").as_int();
+            int top_plane = 0;
+            int bot_plane = 0;
+            if( !data.attribute("top_plane").empty() ) {
+                top_plane = data.attribute("top_plane").as_int();
+            }
+            if( !data.attribute("bottom_plane").empty() ) {
+                bot_plane = data.attribute("bottom_plane").as_int();
+            }
+
             H5Node h5d( data.attribute("file").value(), H5Access::READ );
 
             h5d.read("//xsmesh/eubounds", eubounds_ );
@@ -178,7 +190,7 @@ namespace mocc {
 
                 // Apply the above to the appropriate planes of the actual xs
                 // mesh
-                for( int ip = last_plane; ip<=plane; ip++ ) {
+                for( int ip = bot_plane; ip<=top_plane; ip++ ) {
                     int stt = ip*nreg_plane;
                     int stp = stt+nreg_plane-1;
                     xstr_(blitz::Range(stt, stp), ig) = tr_buf;
@@ -195,22 +207,21 @@ namespace mocc {
 
             // Set up the regions for the appropriate planes
             VecI fsrs(1);
-            for( int i=last_plane*nreg_plane; i<(plane+1)*nreg_plane; i++ ) {
+            for( int i=bot_plane*nreg_plane; i<(top_plane+1)*nreg_plane; i++ ) {
                 int reg_in_plane = i%nreg_plane;
                 ArrayB2 scat_reg = scat( reg_in_plane, blitz::Range::all(),
                         blitz::Range::all() );
                 fsrs[0] = i;
-                regions_.emplace_back( fsrs,
-                        &xstr_(i, 0),
-                        &xsnf_(i, 0),
-                        &xsch_(i, 0),
-                        &xskf_(i, 0),
-                        &xsrm_(i, 0),
-                        ScatteringMatrix(scat_reg) );
+                regions_[i] = XSMeshRegion( fsrs,
+                                &xstr_(i, 0),
+                                &xsnf_(i, 0),
+                                &xsch_(i, 0),
+                                &xskf_(i, 0),
+                                &xsrm_(i, 0),
+                                ScatteringMatrix(scat_reg) );
             }
 
-            last_plane = plane+1;
-        } // data entry loop
+        } // <data> tag loop
 
         
 
