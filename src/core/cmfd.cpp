@@ -30,6 +30,7 @@ namespace mocc {
         is_enabled_( true ),
         fs_( n_cell_ ),
         fs_old_( n_cell_ ),
+        x0_( n_cell_ ),
         source_( n_cell_, xsmesh_.get(), coarse_data_.flux ),
         m_( xsmesh->n_group(), Eigen::SparseMatrix<real_t>(n_cell_, n_cell_) ),
         solvers_( xsmesh->n_group() ),
@@ -37,8 +38,8 @@ namespace mocc {
         d_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
-        k_tol_( 1.0e-4 ),
-        psi_tol_( 1.0e-4 ),
+        k_tol_( 1.0e-8 ),
+        psi_tol_( 1.0e-8 ),
         max_iter_( 100 )
     {
         // Set up the structure of the matrix
@@ -168,13 +169,15 @@ namespace mocc {
     }
 
     void CMFD::solve_1g( int group ) {
-        // Not sure exactly how expensive this is. Maybe it would be better to
-        // store a collection of BiCGSTAB objects rather than/along with the
-        // matrices?
-        VectorX x = solvers_[group].solve(source_.get());
+        ArrayB1 flux_1g = coarse_data_.flux( blitz::Range::all(), group );
+
+        for( int i=0; i<n_cell_; i++ ) {
+            x0_[i] = flux_1g(i);
+        }
+
+        VectorX x = solvers_[group].solveWithGuess(source_.get(), x0_);
 
         // Store the result of the LS solution onto the CoarseData
-        ArrayB1 flux_1g = coarse_data_.flux( blitz::Range::all(), group );
         for( int i=0; i<n_cell_; i++ ) {
             flux_1g(i) = x[i];
         }
@@ -348,6 +351,9 @@ namespace mocc {
             } // matrix element loop
 
             solvers_[group].compute(m);
+            solvers_[group].setMaxIterations(1500);
+            solvers_[group].setTolerance(psi_tol_);
+
             group++;
         } // group loop
         timer_setup_.toc();

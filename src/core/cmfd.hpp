@@ -99,6 +99,9 @@ namespace mocc {
         ArrayB1 fs_;
         ArrayB1 fs_old_;
 
+        // Single-group flux guess
+        VectorX x0_;
+
         SourceIsotropic source_;
 
         // Vector of one-group sparse matrix
