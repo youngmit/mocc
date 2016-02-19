@@ -60,6 +60,7 @@ namespace mocc {
         // Private methods
         void solve_1g( int group );
         void fission_source( real_t k );
+        void print( int iter, real_t k, real_t k_err );
 
         /**
          * \brief Calculate CMFD-derived currents after a CMFD solve and store

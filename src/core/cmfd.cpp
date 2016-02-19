@@ -117,7 +117,10 @@ namespace mocc {
         timer_solve_.tic();
 
         real_t k_old = k;
+        this->fission_source( k );
         real_t tfis = this->total_fission();
+
+        LogScreen << "CMFD Solve" << std::endl;
 
         int iter = 0;
         while( true ) {
@@ -153,13 +156,12 @@ namespace mocc {
                 break;
             }
 
-        }
-        auto flags = LogScreen.flags();
-        LogScreen << "CMFD : " << iter << " "
-                  << std::setprecision(12) << k << " "
-                  << std::abs(k-k_old) << std::endl;
-        LogScreen.flags(flags);
+            if( (iter % 10) == 0 ) {
+                this->print(iter, k, std::abs(k-k_old));
+            }
 
+        }
+        this->print(iter, k, std::abs(k-k_old) );
 
         // Calculate the resultant currents and store back onto the coarse data
         this->store_currents();
@@ -353,7 +355,7 @@ namespace mocc {
 
             solvers_[group].compute(m);
             solvers_[group].setMaxIterations(1500);
-            solvers_[group].setTolerance(psi_tol_);
+            solvers_[group].setTolerance(psi_tol_/10.0);
 
             group++;
         } // group loop
@@ -380,5 +382,15 @@ namespace mocc {
             }
         }
         return;
+    }
+
+    void CMFD::print( int iter, real_t k, real_t k_err ) {
+        auto flags = LogScreen.flags();
+        LogScreen << "       " 
+            << std::setprecision(4) << std::setw(6) << RootTimer.time() << " "
+            << iter << " "
+            << std::setprecision(10) << k << " "
+            << std::scientific << k_err << std::endl;
+        LogScreen.flags(flags);
     }
 }
