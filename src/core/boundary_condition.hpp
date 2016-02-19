@@ -10,6 +10,9 @@ namespace mocc {
     typedef std::array<int, 3> BC_Size_t;
     typedef std::array<Boundary, 6> BC_Type_t;
 
+    typedef std::pair<int, real_t*> BVal_t;
+    typedef std::pair<int, const real_t*> BVal_const_t;
+
     /**
      * This defines a general boundary condition container, which can store an
      * angular flux condition as a 1-dimensional collection of values for
@@ -118,7 +121,8 @@ namespace mocc {
                         const auto &angle = ang_quad_[ang];
                         Surface surf = angle.upwind_surface(norm);
                         int size = size_[ang][(int)norm];
-                        real_t *face = this->get_face( group, ang, norm );
+                        real_t *face =
+                            this->get_face( group, ang, norm ).second;
 
                         switch( bc_[(int)surf] ) {
                         case Boundary::VACUUM:
@@ -158,21 +162,21 @@ namespace mocc {
          * \brief Return a const pointer to the beginning of a boundary
          * condition face
          */
-        const real_t* get_face( int group, int angle, Normal norm ) const {
+        BVal_const_t get_face( int group, int angle, Normal norm ) const {
             assert(angle < n_angle_);
             assert(group < n_group_ );
             int off = bc_per_group_*group + offset_(angle, (int)norm);
-            return &data_(off);
+            return BVal_const_t(size_[angle][(int)norm], &data_(off));
         }
 
         /**
          * \brief Return a pointer to the beginning of a boundary condition face
          */
-        real_t* get_face( int group, int angle, Normal norm ) {
+        BVal_t get_face( int group, int angle, Normal norm ) {
             assert(angle < n_angle_);
             assert(group < n_group_ );
             int off = bc_per_group_*group + offset_(angle, (int)norm);
-            return &data_(off);
+            return BVal_t(size_[angle][(int)norm], &data_(off));
         }
 
         /**
@@ -180,7 +184,7 @@ namespace mocc {
          */
         void copy_face( int group, int angle, Normal norm, real_t *out ) {
             int n = size_[angle][(int)norm];
-            const real_t *face = this->get_face( group, angle, norm );
+            const real_t *face = this->get_face( group, angle, norm ).second;
             std::copy( face, face+n, out );
         }
 
@@ -188,22 +192,24 @@ namespace mocc {
          * \brief Return a pointer to the beginning of the boundary values for
          * the given group and angle
          */
-        const real_t* get_boundary( int group, int angle ) const {
+        BVal_const_t get_boundary( int group, int angle ) const {
             assert(angle < n_angle_);
             assert(group < n_group_ );
+            int size = size_[angle][0] + size_[angle][1] + size_[angle][2];
             int off = bc_per_group_*group + offset_(angle, 0);
-            return &data_(off);
+            return BVal_const_t( size, &data_(off) );
         }
         
         /**
          * \brief Return a pointer to the beginning of the boundary values for
          * the given group and angle. Includes all faces
          */
-        real_t* get_boundary( int group, int angle ) {
+        BVal_t get_boundary( int group, int angle ) {
             assert(angle < n_angle_);
             assert(group < n_group_ );
+            int size = size_[angle][0] + size_[angle][1] + size_[angle][2];
             int off = bc_per_group_*group + offset_(angle, 0);
-            return &data_(off);
+            return BVal_t(size, &data_(off));
         }
 
         /**

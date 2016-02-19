@@ -51,9 +51,10 @@ TEST( test_bc )
     in.initialize_scalar( 7.345 );
     for( int ig=0; ig<ngroup; ig++ ) {
         for( int ia=0; ia<nang; ia++ ) {
-            const real_t *face = in.get_face( ig, ia, Normal::X_NORM );
+            auto face = in.get_face( ig, ia, Normal::X_NORM );
+            CHECK_EQUAL(nbc[ia][(int)Normal::X_NORM], face.first);
             for( int ibc=0; ibc<8; ibc++ ) {
-                CHECK_EQUAL( 7.345, face[ibc] );
+                CHECK_EQUAL( 7.345, face.second[ibc] );
             }
         }
     }
@@ -63,35 +64,37 @@ TEST( test_bc )
     spectrum(1) = 4.4444;
     in.initialize_spectrum( spectrum );
     for( int ia=0; ia<nang; ia++ ) {
-        const real_t *face = in.get_face( 0, ia, Normal::X_NORM );
+        auto face = in.get_face( 0, ia, Normal::X_NORM );
+        CHECK_EQUAL(nbc[ia][(int)Normal::X_NORM], face.first);
         for( int ibc=0; ibc<8; ibc++ ) {
-            CHECK_EQUAL( 2.2222, face[ibc] );
+            CHECK_EQUAL( 2.2222, face.second[ibc] );
         }
     }
     for( int ia=0; ia<nang; ia++ ) {
-        const real_t *face = in.get_face( 1, ia, Normal::X_NORM );
+        auto face = in.get_face( 1, ia, Normal::X_NORM );
+        CHECK_EQUAL(nbc[ia][(int)Normal::X_NORM], face.first);
         for( int ibc=0; ibc<8; ibc++ ) {
-            CHECK_EQUAL( 4.4444, face[ibc] );
+            CHECK_EQUAL( 4.4444, face.second[ibc] );
         }
     }
 
     BoundaryCondition out( 1, angquad, bc, nbc );
     out.initialize_scalar(0.0);
 
-    real_t *outface = out.get_face(0, 0, Normal::X_NORM);
+    auto outface = out.get_face(0, 0, Normal::X_NORM);
     for( int i=0; i<nbc[0][(int)Normal::X_NORM]; i++ ) {
-        outface[i] = 3.3333;
+        outface.second[i] = 3.3333;
     }
 
     in.update(0, out);
 
     int iang_refl = angquad.reflect(0, Normal::X_NORM);
-    real_t *inface = in.get_face(0, iang_refl, Normal::X_NORM);
+    auto inface = in.get_face(0, iang_refl, Normal::X_NORM);
     for( int ibc=0; ibc<5; ibc++ ) {
-        CHECK_EQUAL(3.3333, inface[ibc]);
+        CHECK_EQUAL(3.3333, inface.second[ibc]);
     }
     for( int ibc=5; ibc<8; ibc++ ) {
-        CHECK_EQUAL(0.0, inface[ibc]);
+        CHECK_EQUAL(0.0, inface.second[ibc]);
     }
 }
 

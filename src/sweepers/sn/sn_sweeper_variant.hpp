@@ -94,9 +94,16 @@ namespace mocc { namespace sn {
          */
         template <typename CurrentWorker>
         void sweep_1g( int group ) {
-            CurrentWorker cw( coarse_data_, &mesh_ );
             flux_1g_ = 0.0;
-            cell_worker_.set_group( group );
+#pragma omp parallel default(shared)
+            {
+            CurrentWorker cw( coarse_data_, &mesh_ );
+
+            Worker cell_worker = cell_worker_;
+            cell_worker.set_group( group );
+
+            ArrayB1 t_flux(n_reg_);
+            t_flux = 0.0;
 
             int nx = mesh_.nx();
             int ny = mesh_.ny();
@@ -106,15 +113,16 @@ namespace mocc { namespace sn {
             real_t *y_flux;
             real_t *z_flux;
 
-            int iang = 0;
-            for( auto ang: ang_quad_ ) {
+#pragma omp for
+            for( int iang=0; iang<ang_quad_.ndir(); iang++ ) {
+                Angle ang = ang_quad_[iang];
                 // Configure the current worker for this angle
                 cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
 
                 // Get the source for this angle
                 auto& q = source_->get_transport( iang );
 
-                cell_worker_.set_angle( iang, ang );
+                cell_worker.set_angle( iang, ang );
 
                 real_t wgt = ang.weight * HPI;
                 real_t ox = ang.ox;
@@ -154,9 +162,12 @@ namespace mocc { namespace sn {
                 }
 
                 // initialize upwind condition
-                x_flux = bc_out_.get_face( 0, iang, Normal::X_NORM );
-                y_flux = bc_out_.get_face( 0, iang, Normal::Y_NORM );
-                z_flux = bc_out_.get_face( 0, iang, Normal::Z_NORM );
+                auto xf = bc_out_.get_face( 0, iang, Normal::X_NORM );
+                x_flux = xf.second;
+                auto yf = bc_out_.get_face( 0, iang, Normal::Y_NORM );
+                y_flux = yf.second;
+                auto zf = bc_out_.get_face( 0, iang, Normal::Z_NORM ); 
+                z_flux = zf.second;
                 bc_in_.copy_face( group, iang, Normal::X_NORM, x_flux );
                 bc_in_.copy_face( group, iang, Normal::Y_NORM, y_flux );
                 bc_in_.copy_face( group, iang, Normal::Z_NORM, z_flux );
@@ -164,9 +175,9 @@ namespace mocc { namespace sn {
                 cw.upwind_work( x_flux, y_flux, z_flux, ang, group);
 
                 for( int iz=sttz; iz!=stpz; iz+=zdir ) {
-                    cell_worker_.set_z(iz);
+                    cell_worker.set_z(iz);
                     for( int iy=stty; iy!=stpy; iy+=ydir ) {
-                        cell_worker_.set_y(iy);
+                        cell_worker.set_y(iy);
                         for( int ix=sttx; ix!=stpx; ix+=xdir ) {
                             // Gross. really need an Sn mesh abstraction
                             real_t psi_x = x_flux[ny*iz + iy];
@@ -175,14 +186,14 @@ namespace mocc { namespace sn {
 
                             size_t i = mesh_.coarse_cell( Position( ix, iy, iz ) );
 
-                            real_t psi = cell_worker_.evaluate( psi_x, psi_y,
+                            real_t psi = cell_worker.evaluate( psi_x, psi_y,
                                     psi_z, q[i], xstr_[i], i );
 
                             x_flux[ny*iz + iy] = psi_x;
                             y_flux[nx*iz + ix] = psi_y;
                             z_flux[nx*iy + ix] = psi_z;
 
-                            flux_1g_(i) += psi*wgt;
+                            t_flux(i) += psi*wgt;
 
                             // Stash currents (or not, depending on the
                             // CurrentWorker template parameter)
@@ -197,12 +208,20 @@ namespace mocc { namespace sn {
                 if( gs_boundary_ ) {
                     bc_in_.update( group, iang, bc_out_ );
                 }
-                iang++;
             }
             // Update the boundary condition
+#pragma omp single
             if( !gs_boundary_ ) {
                 bc_in_.update( group, bc_out_ );
             }
+
+            // Reduce scalar flux
+#pragma omp critical
+            {
+                flux_1g_ += t_flux;
+            }
+
+            } // OMP Parallel
 
             return;
         }
