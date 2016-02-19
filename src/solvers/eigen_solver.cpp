@@ -87,12 +87,15 @@ namespace mocc{
         // initialize the fixed source solver and calculation the initial
         // fission source
         fss_.initialize();
+        
 
         // Hand a reference to the fission source to the fixed source solver
         fss_.set_fission_source(&fission_source_);
 
         real_t error_k = 1.0; // K residual
         real_t error_psi = 1.0; // L-2 norm of the fission source residual
+
+        fss_.sweeper()->calc_fission_source(keff_, fission_source_);
 
         cout << std::setw(out_w) << "Time"
              << std::setw(out_w) << "Iter."
