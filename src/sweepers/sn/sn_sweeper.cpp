@@ -93,16 +93,16 @@ namespace sn {
             } else {
                 throw EXCEPT("Unrecognized option for BC update!");
             }
-
-            // For now, the BC doesnt support parallel boundary updates, so
-            // disable Gauss-Seidel boundary update if we are using multiple
-            // threads.
-            /// \todo Add support for multi-threaded G-S boundary update in Sn
-            if( (omp_get_max_threads() > 1) && gs_boundary_ ) {
-                gs_boundary_ = false;
-                LogScreen << "WARNING: Disabling Gauss-Seidel boundary update "
-                    "in parallel Sn" << std::endl;
-            }
+        }
+        // For now, the BC doesnt support parallel boundary updates, so
+        // disable Gauss-Seidel boundary update if we are using multiple
+        // threads.
+        /// \todo Add support for multi-threaded G-S boundary update in Sn
+        LogScreen << omp_get_max_threads() << " " << gs_boundary_ << std::endl;
+        if( (omp_get_max_threads() > 1) && gs_boundary_ ) {
+            gs_boundary_ = false;
+            LogScreen << "WARNING: Disabling Gauss-Seidel boundary update "
+                "in parallel Sn" << std::endl;
         }
 
         timer_.toc();
