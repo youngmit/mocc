@@ -31,9 +31,12 @@ SP_Solver_t solver;
 // Global core mesh
 SP_CoreMesh_t mesh;
 
+// Input processor
+std::unique_ptr<InputProc> input_proc;
+
 // Generate output from the solver
 void generate_output() {
-    std::string out_name = CaseName;
+    std::string out_name = input_proc->case_name();
     out_name.append(".h5");
     H5Node outfile( out_name, H5Access::WRITE );
     solver->output( outfile );
@@ -63,8 +66,16 @@ int main(int argc, char* argv[]){
     try {
         RootTimer.tic();
         
-        // Spin up the log file. For now, just use the name of the input file.
-        StartLogFile(argv[1]);
+       
+
+        // Set up an input processor
+        input_proc.reset( new InputProc(argv[1]) );
+
+        // Spin up the log file. We do this after we peek at the input
+        // processor for a case_name tag
+        StartLogFile(input_proc->case_name());
+
+        LogScreen << "Running case: " << input_proc->case_name() << std::endl;
 
 #pragma omp parallel
         {
@@ -75,16 +86,18 @@ int main(int argc, char* argv[]){
             }
         }
 
+        // Actually process the XML input. We waited until now to do this,
+        // because we want to be able to log the progress to a file, but needed
+        // a case_name from the input file to be processed.
+        input_proc->process();
 
-        // Parse the input file
-        InputProc inProc(argv[1]);
 
         // Get an SP to the core mesh
-        mesh = inProc.core_mesh();
+        mesh = input_proc->core_mesh();
         LogFile << *mesh << endl;
 
         // Pull a shared pointer to the top-level solver and make it go
-        solver = inProc.solver();
+        solver = input_proc->solver();
         solver->solve();
 
         // Output stuff

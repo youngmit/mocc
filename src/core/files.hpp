@@ -7,11 +7,10 @@
 
 extern std::fstream LogFile;
 extern std::fstream OutFile;
-extern std::string CaseName;
 
 // Print to both the log file and standard output
 extern teestream LogScreen;
 
-void StartLogFile(const char* arg);
+void StartLogFile(std::string arg);
 
 void StopLogFile();

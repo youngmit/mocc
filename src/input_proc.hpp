@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "core/core_mesh.hpp"
+#include "core/timers.hpp"
 
 #include "solvers/solver_factory.hpp"
 
@@ -22,6 +23,12 @@ namespace mocc{
         InputProc(const char* filename);
 
         /**
+         * \brief Actually process the contents of the file and construct
+         * associated objects.
+         */
+        void process();
+
+        /**
         * Return a shared pointer to the CoreMesh.
         */
         SP_CoreMesh_t core_mesh() {
@@ -35,12 +42,31 @@ namespace mocc{
             return solver_;
         }
 
+        /**
+         * \brief Return the case name
+         *
+         * The case name assumes a value of the input file name, without the
+         * '.xml' extension, unless another case name is specified using a
+         * \<case_name\> tag in the input file.
+         */
+        std::string case_name() const {
+            return case_name_;
+        }
+
     private:
+        // Timer for all input processing activities
+        Timer &timer_;
+
         // Master core mesh object. Can be passed back to the driver or wherever
         SP_CoreMesh_t core_mesh_;
 
         // Top-level solver
         SP_Solver_t solver_;
+
+        // XML document
+        pugi::xml_document doc_;
+
+        std::string case_name_;
 
     };
 }

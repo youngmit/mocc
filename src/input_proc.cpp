@@ -21,18 +21,27 @@ using std::cout;
 using std::endl;
 using std::shared_ptr;
 
+std::string strip_extension( std::string input ) {
+    std::string ret = input;
+    size_t pos = ret.rfind(".");
+    return ret.substr(0, pos);
+}
+
 namespace mocc{
-    InputProc::InputProc(const char* filename) {
-        Timer &timer = RootTimer.new_timer( "Initialization" );
-        timer.tic();
-        Timer &input_timer = timer.new_timer( "Input processing" );
-        input_timer.tic();
+    InputProc::InputProc(const char* filename):
+        timer_(RootTimer.new_timer("Input Processor", true)),
+        core_mesh_(nullptr),
+        solver_(nullptr),
+        case_name_(strip_extension(filename))
+    {
+
+        Timer &xml_timer = timer_.new_timer("XML parsing");
+        xml_timer.tic();
 
         LogFile << "Processing input" << endl;
         LogFile << "Parsing: " << filename << endl;
 
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_file( filename );
+        pugi::xml_parse_result result = doc_.load_file( filename );
 
         // Make sure this worked
         if( result.status != pugi::status_ok ) {
@@ -41,27 +50,48 @@ namespace mocc{
             throw EXCEPT("Error encountered in parsing XML file.");
         }
 
-        input_timer.toc();
 
-        Timer &mesh_timer = timer.new_timer("Core Mesh");
+        // Get problem-global stuff
+        if( !doc_.child("case_name").empty() ) {
+            case_name_ = doc_.child("case_name").child_value();
+            if( case_name_.empty() ) {
+                throw EXCEPT("<case_name> was provided, yet empty");
+            }
+        }
+
+        xml_timer.toc();
+        timer_.toc();
+
+        return;
+    }
+
+    void InputProc::process() {
+        timer_.tic();
+        Timer &mesh_timer = timer_.new_timer("Core Mesh");
         mesh_timer.tic();
 
         // Generate the core mesh
-        core_mesh_ = std::make_shared<CoreMesh>( doc );
+        core_mesh_ = std::make_shared<CoreMesh>( doc_ );
 
         mesh_timer.toc();
 
+        Timer &solver_timer = timer_.new_timer("Solver");
+        solver_timer.tic();
+
         // Generate a top-level solver
-        solver_ = SolverFactory( doc.child("solver"), *core_mesh_.get() );
+        solver_ = SolverFactory( doc_.child("solver"), *core_mesh_.get() );
 
         // Perform geometry output if necessary
-        if( !doc.child("geometry_output").empty() ) {
-            aux::output_geometry( doc.child("geometry_output"),
+        if( !doc_.child("geometry_output").empty() ) {
+            aux::output_geometry( doc_.child("geometry_output"),
                     *core_mesh_.get() );
         }
 
         LogFile << endl;
-        timer.toc();
+
+        solver_timer.toc();
+        timer_.toc();
+
         return;
     }
 };
