@@ -29,8 +29,8 @@ namespace mocc {
         // Extract the quadrature type
         std::string type_str = input.attribute("type").value();
         sanitize(type_str);
-        if (type_str == "ls") {
-            type_ = QuadratureType::SN;
+        if ( (type_str == "ls") || (type_str="level-symmetric") ) {
+            type_ = QuadratureType::LS;
 
             // extract the quadrature order
             int order = input.attribute("order").as_int(-1);
@@ -49,7 +49,7 @@ namespace mocc {
         for ( int ioct=2; ioct<=8; ioct++ ) {
             for ( int iang=0; iang < ndir_oct_; iang++ ) {
                 Angle a = angles_[iang];
-                angles_.push_back( ToOctant(a, ioct) );
+                angles_.push_back( a.to_octant(ioct) );
             }
         }
 
@@ -91,7 +91,7 @@ namespace mocc {
 
     void AngularQuadrature::modify_angle(int iang, Angle ang ) {
         for ( int ioct=0; ioct<8; ioct++ ){
-            angles_[iang + ioct*ndir_oct_] = ToOctant(ang, ioct+1);
+            angles_[iang + ioct*ndir_oct_] = ang.to_octant(ioct+1);
         }
     }
 

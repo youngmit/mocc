@@ -58,6 +58,8 @@ namespace mocc {
             rsintheta = 1.0/sin(theta);
         }
 
+        Angle to_octant( int octant ) const;
+
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, const Angle &ang );
 
@@ -113,7 +115,6 @@ namespace mocc {
 
     };
 
-    Angle ToOctant( Angle in, int octant );
 
     Angle ModifyAlpha ( Angle in, real_t new_alpha );
 

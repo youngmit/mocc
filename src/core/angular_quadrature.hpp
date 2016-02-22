@@ -13,11 +13,16 @@
 namespace mocc {
 
     enum class QuadratureType {
-        SN, // Level-symmetric
+        LS, // Level-symmetric
+        CHEB_GAUSS,
+        CHEB_YAMAMOTO,
         MANUAL // User-defined
     };
 
 
+    /**
+     * The weights over all octants shall sum to 8.
+     */
     class AngularQuadrature : HasOutput {
     public:
         /**
