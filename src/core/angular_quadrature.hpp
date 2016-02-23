@@ -14,8 +14,8 @@ namespace mocc {
 
     enum class QuadratureType {
         LS, // Level-symmetric
-        CHEB_GAUSS,
-        CHEB_YAMAMOTO,
+        CHEB_GAUSS, // Chebyshev for azimuthal and Gaussian for polar
+        CHEB_YAMAMOTO, // Chebyshev for azimuthal and Yamamoto for polar
         MANUAL // User-defined
     };
 
@@ -150,6 +150,9 @@ namespace mocc {
             return !(*this == other);
         }
     private:
+        /**
+         * \todo Document this
+         */
         static const int reflection_[3][8];
 
         // Enumerated quadrature type

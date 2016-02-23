@@ -29,7 +29,7 @@ namespace mocc {
         // Extract the quadrature type
         std::string type_str = input.attribute("type").value();
         sanitize(type_str);
-        if ( (type_str == "ls") || (type_str="level-symmetric") ) {
+        if ( (type_str == "ls") || (type_str == "level-symmetric") ) {
             type_ = QuadratureType::LS;
 
             // extract the quadrature order
@@ -37,6 +37,24 @@ namespace mocc {
 
             // Generate angles for octant 1
             angles_ = GenSn( order );
+        } else if ((type_str == "cg") || (type_str == "chebyshev-gaussian" )) {
+            type_ = QuadratureType::CHEB_GAUSS;
+
+            //extract the quadrature order
+            int azi_order = input.attribute("azimuthal-order").as_int(-1);
+            int pol_order = input.attribute("polar-order").as_int(-1);
+
+            //Generate angles for octant 1
+            angles_ = GenCG( azi_order, pol_order);
+        } else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto" )) {
+            type_ = QuadratureType::CHEB_YAMAMOTTO;
+
+            //extract the quadrature order
+            int azi_order = input.attribute("azimuthal-order").as_int(-1);
+            int pol_order = input.attribute("polar-order").as_int(-1);
+
+            //Generate angles from octant 1
+            angles_ = GenCY( azi_order, pol_order);
         } else {
             std::cerr << "'" << type_str << "'" << std::endl;
             throw EXCEPT("Unrecognized angular quadrature type specified.");
