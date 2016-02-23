@@ -104,3 +104,31 @@ std::vector<Angle> GenSn( int order ){
     return angles;
 
 }
+
+// Produce a vector of pairs for Yamamoto quadrature set of order 'order'.
+// Currently, only order 3 is supported. The first value in the pair is theta in
+// range (0, PI/2) and the second value is the corresponding weight. All weights
+// sum to 1.
+vector<pair<real_t,real_t>> genYamamoto( int order){
+
+    vector<pair<real_t,real_t>> thetaWeightPairVec;
+    if ( order != 3 ) {
+        throw EXCEPT("Only support Yamamoto quadrature of order 3");
+    }
+    thetaWeightPairVec.emplace_back(0.167429147795000,4.623300000000000E-002);
+    thetaWeightPairVec.emplace_back(0.567715121084000,0.283619000000000);
+    thetaWeightPairVec.emplace_back(1.20253314678900,0.670148000000000);
+}
+
+
+// Produce a vector of angles matching the Chebyshev-Gaussian quadrature of
+// order 'azi-order' for azimuthal angles and 'polar-order' for polar
+// angles.
+std::vector<Angle> GenCG( int azi_order, int polar_order ){
+    
+}
+
+
+// Produce a vector of angles matching the Chebyshev-Yamamoto quadrature of
+// order 'azimuthal-order' for azimuthal angles and 'polar-order' for polar
+// angles. 
