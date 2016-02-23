@@ -111,6 +111,35 @@ namespace sn {
         return;
     }
 
+    /**
+     * Watch out, this is potentially brittle, since it assumes parity between
+     * the mesh regions and XS Mesh regions.
+     */
+    ArrayB3 SnSweeper::pin_powers() const {
+        ArrayB3 powers(mesh_.nz(), mesh_.ny(), mesh_.nx());
+        powers = 0.0;
+
+        real_t tot_pow = 0.0;
+
+        for(int ireg=0; ireg<n_reg_; ireg++ ) {
+            auto pos = mesh_.coarse_position(ireg);
+            const XSMeshRegion &xsr = (*xs_mesh_)[ireg];
+            assert(xsr.reg().size() == 1);
+            assert(xsr.reg()[0] == ireg);
+            for( int ig=0; ig<n_group_; ig++ ) {
+                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmackf(ig);
+                powers(pos.z, pos.y, pos.x) += p;
+                tot_pow += p;
+            }
+        }
+        
+        tot_pow = powers.size()/tot_pow;
+
+        powers *= tot_pow;
+        
+        return powers;
+    }
+
     void SnSweeper::output( H5Node &node ) const {
         auto dims = mesh_.dimensions();
         std::reverse( dims.begin(), dims.end() );
@@ -121,7 +150,7 @@ namespace sn {
         ArrayB2 flux = this->get_pin_flux();
         Normalize( flux.begin(), flux.end() );
 
-        for( unsigned int ig=0; ig<n_group_; ig++ ) {
+        for( int ig=0; ig<n_group_; ig++ ) {
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
 
@@ -130,6 +159,8 @@ namespace sn {
             node.write( setname.str(), flux_1g.begin(), flux_1g.end(),
                     dims);
         }
+
+        node.write( "pin_powers", this->pin_powers() );
 
         LogFile << "Sn Sweeper:" << std::endl;
         LogFile << "Angular Quadrature:" << std::endl;

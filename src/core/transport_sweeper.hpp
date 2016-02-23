@@ -222,10 +222,27 @@ namespace mocc{
         virtual real_t total_fission( bool old=false ) const;
 
         /**
+         * \brief Return a 3-D array containing normalized pin powers
+         *
+         * The nature of the normalization is somewhat up in the air. There are
+         * different ways to do this. For instance, in the case of non-uniform
+         * plane thicknesses and uniform power distribution, should a thicker
+         * plane have a greater normalized pin power than a shorter plane? If
+         * the pin volumes are not uniform (e.g. annular fuel), should a smaller
+         * pin have less normalized power. Generally we would say "no" to the
+         * former and "yes" to the latter, but this is pretty arbitrary, so...
+         *
+         * \note for now the normalization used is really simple! All values are
+         * normalized uniformly such that the sum of all powers equals the
+         * number of elements in the array.
+         */
+        virtual ArrayB3 pin_powers() const;
+
+        /**
          * \brief Return a const reference to the region volumes
          */
         const ArrayF &volumes() const {
-            if( vol_.size() != n_reg_ ) {
+            if( (int)vol_.size() != n_reg_ ) {
                 throw EXCEPT("Volume array dimensions are wrong.");
             }
             return vol_;
@@ -236,8 +253,8 @@ namespace mocc{
 
         SP_XSMesh_t xs_mesh_;
 
-        unsigned int n_reg_;
-        unsigned int n_group_;
+        int n_reg_;
+        int n_group_;
 
         Source* source_;
 

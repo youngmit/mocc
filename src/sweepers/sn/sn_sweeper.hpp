@@ -25,18 +25,20 @@ namespace mocc { namespace sn {
         }
 
         void get_pin_flux_1g( int ig, ArrayB1& flux ) const {
-            assert( flux.size() == n_reg_ );
+            assert( (int)flux.size() == n_reg_ );
 
             flux = flux_(blitz::Range::all(), ig);
 
             return;
         }
 
+        ArrayB3 pin_powers() const;
+
         /**
          * Just copy the flux across, since no homogenization is necessary.
          */
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
-            assert( pin_flux.size() == n_reg_ );
+            assert( (int)pin_flux.size() == n_reg_ );
 
             real_t resid = 0.0;
             size_t i = 0;

@@ -11,7 +11,7 @@ namespace mocc {
         real_t tfis = 0.0;
         const auto &flux = old ? flux_old_: flux_;
         for( auto &xsr: *xs_mesh_ ) {
-            for( unsigned int ig=0; ig<n_group_; ig++ ) {
+            for( int ig=0; ig<n_group_; ig++ ) {
                 real_t xsnf = xsr.xsmacnf(ig);
                 for (auto &ireg: xsr.reg() ) {
                     tfis += flux((int)ireg, (int)ig)*vol_[ireg]*xsnf;
@@ -38,13 +38,57 @@ namespace mocc {
         return;
     }
 
+    ArrayB3 TransportSweeper::pin_powers() const {
+        assert(n_reg_ == (int)core_mesh_->n_reg());
+        ArrayB3 powers(core_mesh_->nz(), core_mesh_->ny(), core_mesh_->nx());
+        powers = 0.0;
+
+        // This isnt the most efficient way to do this, memory-wise, but its
+        // quick and simple. Calculate volume x flux x kappa-fission for all
+        // flat source regions, then reduce to the pin mesh.
+        ArrayB1 fsr_pow(n_reg_);
+        fsr_pow = 0.0;
+        for( const auto &xsr: *xs_mesh_ ) {
+            for( int ig=0; ig<n_group_; ig++ ) {
+                for( auto ireg: xsr.reg() ) {
+                    fsr_pow(ireg) += flux_(ireg, ig) * xsr.xsmackf(ig) *
+                        vol_[ireg];
+                }
+            }
+        }
+
+
+        int ipin = 0;
+        int ireg = 0;
+        real_t tot_pow = 0.0;
+        for( const auto pin: *core_mesh_ ) {
+            const PinMesh &pm = pin->mesh();
+            Position pos = core_mesh_->pin_position(ipin);
+            for( int ir=0; ir<pm.n_reg(); ir++ ) {
+                tot_pow += fsr_pow(ireg);
+                powers(pos.z, pos.y, pos.x) += fsr_pow(ireg);
+                ireg++;
+            }
+            ipin++;
+        }
+
+        // Normalize!
+        tot_pow = powers.size()/tot_pow;
+        for( auto &v: powers ) {
+            v *= tot_pow;
+        }
+
+
+        return powers;
+    }
+
     ArrayB2 TransportSweeper::get_pin_flux() const {
         assert( core_mesh_ );
         ArrayB2 flux( core_mesh_->n_pin(), n_group_ );
 
         auto flux_it = flux.begin();
 
-        for( size_t ig=0; ig<n_group_; ig++ ) {
+        for( int ig=0; ig<n_group_; ig++ ) {
             ArrayB1 flux_1g( flux(blitz::Range::all(), ig) );
             this->get_pin_flux_1g( ig, flux_1g );
         }

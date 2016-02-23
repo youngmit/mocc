@@ -300,7 +300,7 @@ namespace mocc { namespace moc {
             LogFile << "Jacobi" << std::endl;
         }
 
-        for( size_t ig=0; ig<n_group_; ig++ ){
+        for( int ig=0; ig<n_group_; ig++ ){
             std::stringstream setname;
             setname << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
 
@@ -308,6 +308,10 @@ namespace mocc { namespace moc {
             node.write( setname.str(), flux_1g.begin(),
                     flux_1g.end(), dims );
         }
+
+        // Pin powers
+        auto pow = this->pin_powers();
+        node.write("pin_powers", pow);
 
         ang_quad_.output( node );
 
