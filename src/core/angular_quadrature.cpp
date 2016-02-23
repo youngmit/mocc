@@ -29,7 +29,7 @@ namespace mocc {
         // Extract the quadrature type
         std::string type_str = input.attribute("type").value();
         sanitize(type_str);
-        if ( (type_str == "ls") || (type_str="level-symmetric") ) {
+        if ( (type_str == "ls") || (type_str == "level-symmetric") ) {
             type_ = QuadratureType::LS;
 
             // extract the quadrature order
