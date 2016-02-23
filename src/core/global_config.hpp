@@ -37,9 +37,9 @@ struct Position {
         y( y ),
         z( z )
     { }
-    unsigned int x;
-    unsigned int y;
-    unsigned int z;
+    int x;
+    int y;
+    int z;
 
     friend std::ostream& operator<<(std::ostream& os, const Position &pos ) {
         os << pos.x << " " << pos.y << " " << pos.z;

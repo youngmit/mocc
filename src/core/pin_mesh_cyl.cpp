@@ -109,7 +109,7 @@ namespace mocc {
             }
 
             // Make sure we have the same number of radial subdivs as rings
-            if(sub_rad_.size() != n_xsreg_ - 1){
+            if( (int)sub_rad_.size() != (n_xsreg_ - 1) ) {
                 throw EXCEPT("Wrong number of radial subdivisions specified.");
             }
         }
@@ -122,7 +122,7 @@ namespace mocc {
         // XS ring.
         double rxsi = 0.0;
         double ri = 0.0;
-        for(unsigned int ixs=0; ixs<n_xsreg_ - 1; ixs++){
+        for( int ixs=0; ixs<n_xsreg_ - 1; ixs++ ) {
             double vn = (xs_radii_[ixs]*xs_radii_[ixs] - rxsi*rxsi) /
                         sub_rad_[ixs];
 
@@ -174,7 +174,7 @@ namespace mocc {
         for( int ia=0; ia<n_azi; ia++ ) {
             vol_.push_back(v_outer);
         }
-        assert( vol_.size() == n_reg_ );
+        assert( (int)vol_.size() == n_reg_ );
 
         return;
     }
@@ -254,8 +254,8 @@ namespace mocc {
 
         // Find the azimuthal subdivision that the point is in.
         real_t azi = p.alpha();
-        unsigned int ia = azi/(TWOPI/sub_azi_[0]);
-        unsigned int ireg = ir*sub_azi_[0] + ia;
+        int ia = azi/(TWOPI/sub_azi_[0]);
+        int ireg = ir*sub_azi_[0] + ia;
 
         assert( (0 <= ireg) & (ireg < n_reg_ ) );
 

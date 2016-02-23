@@ -72,9 +72,9 @@ namespace mocc {
         int i = 0;
         coarse_surf_ = VecI(6*nx_*ny_*nz_, 0);
         int surf_offset = 0;
-        for( size_t iz=0; iz<nz_; iz++ ) {
-            for( size_t iy=0; iy<ny_; iy++ ) {
-                for( size_t ix=0; ix<nx_; ix++ ) {
+        for( int iz=0; iz<nz_; iz++ ) {
+            for( int iy=0; iy<ny_; iy++ ) {
+                for( int ix=0; ix<nx_; ix++ ) {
                     Surface surf;
                     int cell_offset = i*6;
 
@@ -116,7 +116,7 @@ namespace mocc {
         bool on_x = false;
         bool on_y = false;
 
-        unsigned int ix = 0;
+        int ix = 0;
         for( auto &xi: x_vec_ ) {
             if( fp_equiv_abs(p.x, xi) ) {
                 on_x = true;
@@ -129,7 +129,7 @@ namespace mocc {
             ix++;
         }
 
-        unsigned int iy = 0;
+        int iy = 0;
         for( auto &yi: y_vec_ ) {
             if( fp_equiv_abs(p.y, yi) ) {
                 on_y = true;
@@ -339,7 +339,7 @@ namespace mocc {
         bool on_x = false;
         bool on_y = false;
 
-        unsigned int ix = 0;
+        int ix = 0;
         for( auto &xi: x_vec_ ) {
             if( fp_equiv_abs(p.x, xi) ) {
                 on_x = true;
@@ -352,7 +352,7 @@ namespace mocc {
             ix++;
         }
 
-        unsigned int iy = 0;
+        int iy = 0;
         for( auto &yi: y_vec_ ) {
             if( fp_equiv_abs(p.y, yi) ) {
                 on_y = true;
