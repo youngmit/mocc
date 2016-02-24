@@ -122,28 +122,20 @@ std::vector<std::pair<real_t,real_t>> GenYamamoto( int order){
     return thetaWeightPairVec;
 }
 
-// Produce a vector of pairs for Chebyshev quadrature set of order 'order'.
-// The first value in the pair is alpha in the range (0, PI/2) and the second 
-// value is the corresponding weight. All weights sum to 1.
-std::vector<std::pair<real_t,real_t>> GenChebyshev( int order){
+// Produce a vector of <alpha,weight> pairs of size n_azimuthal with  Chebyshev 
+// quadrature within (0, PI/2). All weights sum to 1.
+std::vector<std::pair<real_t,real_t>> GenChebyshev( int n_azimuthal ) {
 
     std::vector<std::pair<real_t,real_t>> alphaWeightPairVec;
-    real_t weight;
+    real_t weight = 1.0/n_azimuthal;
+    real_t alpha;
+    real_t delAlpha = 0.5*PI/(2*n_azimuthal);
 
-    weight = 1.0/order;
-    
-
-    for( int i=1; i<order; i++ ) {
-        //alpha=0.5*PI/N*;
+    for( int i=0; i<n_azimuthal; i++ ) {
+        alpha = delAlpha*(2*i+1);
+        alphaWeightPairVec.emplace_back(alpha,weight);
     }
-
-    if ( order != 3 ) {
-        throw EXCEPT("Only support Yamamoto quadrature of order 3");
-    }
-    alphaWeightPairVec.emplace_back(0.167429147795000,4.623300000000000E-002);
-    alphaWeightPairVec.emplace_back(0.567715121084000,0.283619000000000);
-    alphaWeightPairVec.emplace_back(1.20253314678900,0.670148000000000);
-
+  
     return alphaWeightPairVec;
 }
 
