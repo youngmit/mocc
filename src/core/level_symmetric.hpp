@@ -202,17 +202,27 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
 }
 
 
-// Produce a vector of angles matching the Chebyshev-Gaussian quadrature of
-// order 'azi-order' for azimuthal angles and 'polar-order' for polar
-// angles.
-   std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>> 
+// Produce a vector of angles with azi and pol pair vectors to represent a
+// product quadrature set.
+std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>> 
            &azi, const std::vector<std::pair<real_t,real_t>> &pol){
        std::vector<Angle> angles;
+       int n_azimuthal=azi.size();
+       int n_polar=pol.size();
+       real_t wsum=0.0;
+       for( int i=0; i<n_azimuthal; i++ ) {
+           for( int j=0; j<n_polar; j++ ) {
+               Angle angle( azi[i].first, 
+                            pol[i].first,
+                            azi[i].second*pol[i].second );
+               angles.push_back(angle);
+               wsum += azi[i].second*pol[i].second;
+           }
+       }
+       
+       for( auto &a: angles ) {
+           a.weight /= wsum;
+       }
 
-   return angles;
+       return angles;
 }
-
-
-// Produce a vector of angles matching the Chebyshev-Yamamoto quadrature of
-// order 'azimuthal-order' for azimuthal angles and 'polar-order' for polar
-// angles. 
