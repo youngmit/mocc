@@ -8,6 +8,7 @@
 #include "core/error.hpp"
 #include "core/string_utils.hpp"
 #include "core/level_symmetric.hpp"
+#include "core/product_quadrature.hpp"
 
 
 namespace mocc {
