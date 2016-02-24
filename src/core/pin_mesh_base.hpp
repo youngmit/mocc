@@ -21,15 +21,15 @@ namespace mocc {
         virtual ~PinMesh() {
         }
 
-        unsigned int id() const {
+        int id() const {
             return id_;
         }
 
-        unsigned int n_reg() const {
+        int n_reg() const {
             return n_reg_;
         }
 
-        unsigned int n_xsreg() const {
+        int n_xsreg() const {
             return n_xsreg_;
         }
 
@@ -117,9 +117,9 @@ namespace mocc {
         }
 
     protected:
-        size_t id_;
-        size_t n_reg_;
-        size_t n_xsreg_;
+        int id_;
+        int n_reg_;
+        int n_xsreg_;
         real_t pitch_x_;
         real_t pitch_y_;
         VecF vol_;

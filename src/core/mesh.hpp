@@ -414,10 +414,10 @@ namespace mocc {
                 {
                     // iz and iy are the cell positions, ix is the surface
                     // position.
-                    size_t iz = surf / n_surf_plane_;
+                    int iz = surf / n_surf_plane_;
                     surf -= iz*n_surf_plane_;
-                    size_t iy = (surf - nx_*ny_) / (nx_+1);
-                    size_t ix = (surf - nx_*ny_) % (nx_+1);
+                    int iy = (surf - nx_*ny_) / (nx_+1);
+                    int ix = (surf - nx_*ny_) % (nx_+1);
 
                     if( ix > 0 ) {
                         cells.first = this->coarse_cell(Position(ix-1, iy, iz));
@@ -435,11 +435,11 @@ namespace mocc {
                 {
                     // iz and ix are the cell positions, iy is the surface
                     // position.
-                    size_t iz = surf / n_surf_plane_;
+                    int iz = surf / n_surf_plane_;
                     surf -= iz*n_surf_plane_;
                     surf -= nx_*ny_ + (nx_+1)*ny_;
-                    size_t iy = surf % (ny_+1);
-                    size_t ix = surf / (ny_+1);
+                    int iy = surf % (ny_+1);
+                    int ix = surf / (ny_+1);
 
                     if( iy > 0 ) {
                         cells.first = this->coarse_cell(Position(ix, iy-1, iz));
@@ -457,10 +457,10 @@ namespace mocc {
                 {
                     // ix and iy are the cell positions, iz is the surface
                     // position.
-                    size_t iz = surf / n_surf_plane_;
+                    int iz = surf / n_surf_plane_;
                     surf -= iz*n_surf_plane_;
-                    size_t iy = surf / nx_;
-                    size_t ix = surf % nx_;
+                    int iy = surf / nx_;
+                    int ix = surf % nx_;
 
                     if( iz > 0 ) {
                         cells.first = this->coarse_cell(Position(ix, iy, iz-1));
@@ -657,9 +657,9 @@ namespace mocc {
         /**
          * \brief Return the surface normal of the given surface.
          */
-        Normal surface_normal( size_t surface ) const {
+        Normal surface_normal( int surface ) const {
             // Number of surfaces per plane
-            size_t nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
+            int nsurfz = nx_*ny_ + (nx_+1)*ny_ + (ny_+1)*nx_;
 
             if( (surface % nsurfz) < nx_*ny_ ) {
                 return Normal::Z_NORM;
@@ -698,9 +698,9 @@ namespace mocc {
         /// Total number of XS regions in the entire geometry
         size_t n_xsreg_;
         // Numbers of pins/planes in each dimension
-        size_t nx_;
-        size_t ny_;
-        size_t nz_;
+        int nx_;
+        int ny_;
+        int nz_;
 
         /// Total core size in the x dimension
         real_t hx_;

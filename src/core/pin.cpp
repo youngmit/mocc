@@ -47,7 +47,7 @@ namespace mocc {
             throw EXCEPT( "Trouble reading material IDs in pin definition." );
         }
 
-        if ( mat_IDs_.size() != pin_mesh_->n_xsreg() ) {
+        if ( (int)mat_IDs_.size() != pin_mesh_->n_xsreg() ) {
             throw EXCEPT( "Wrong number of materials specified in pin "
                     "definition" );
         }

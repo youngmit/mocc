@@ -179,7 +179,7 @@ namespace mocc { namespace cmdo {
 
         // Write out the Sn-MoC residual convergence
         file.create_group("/SnResid");
-        for( size_t g=0; g<n_group_; g++ ) {
+        for( int g=0; g<n_group_; g++ ) {
             std::stringstream setname;
             setname << "/SnResid/" << setfill('0') << setw(3) << g;
             VecI niter(1, sn_resid_[g].size());
@@ -188,7 +188,7 @@ namespace mocc { namespace cmdo {
 
         // Write out the transverse leakages
         file.create_group("/TL");
-        for( size_t g=0; g<n_group_; g++ ) {
+        for( int g=0; g<n_group_; g++ ) {
             std::stringstream setname;
             setname << "/TL/" << setfill('0') << setw(3) << g;
 

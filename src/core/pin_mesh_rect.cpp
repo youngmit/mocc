@@ -106,20 +106,20 @@ namespace mocc {
             return -1;
         }
 
-        unsigned int ix;
-        for( ix=0; ix<hx_.size(); ix++ ) {
+        int ix;
+        for( ix=0; ix<(int)hx_.size(); ix++ ) {
             if( hx_[ix] > p.x ) {
                 break;
             }
         }
-        unsigned int iy;
-        for( iy=0; iy<hy_.size(); iy++ ) {
+        int iy;
+        for( iy=0; iy<(int)hy_.size(); iy++ ) {
             if( hy_[iy] > p.y ) {
                 break;
             }
         }
 
-        unsigned int ireg = (hx_.size()+1)*iy + ix;
+        int ireg = (hx_.size()+1)*iy + ix;
         assert(ireg < n_reg_);
         return ireg;
     }

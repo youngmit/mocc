@@ -180,7 +180,7 @@ namespace mocc {
         /**
         * \brief Return the index of the first FSR within the given plane.
         */
-        size_t first_reg_plane( size_t iz ) const {
+        size_t first_reg_plane( int iz ) const {
             assert( (0 <= iz ) & ( iz < nz_ ) );
             return first_reg_plane_[iz];
         }

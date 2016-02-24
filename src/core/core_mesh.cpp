@@ -57,7 +57,7 @@ namespace mocc {
         std::vector< VecI > unique;
         VecI plane_pins;
         int plane_reg = 0;
-        for ( unsigned int iz=0; iz<nz_; iz++) {
+        for ( int iz=0; iz<nz_; iz++) {
             first_reg_plane_.push_back(plane_reg);
             // Form a list of all pin meshes in the core plane iz
             for ( unsigned int iasy=0; iasy<nasy_; iasy++ ) {
