@@ -7,6 +7,7 @@
 #include "angle.hpp"
 #include "global_config.hpp"
 #include "error.hpp"
+#include "blitz_typedefs.hpp"
 
 using namespace mocc;
 
@@ -109,23 +110,111 @@ std::vector<Angle> GenSn( int order ){
 // Currently, only order 3 is supported. The first value in the pair is theta in
 // range (0, PI/2) and the second value is the corresponding weight. All weights
 // sum to 1.
-vector<pair<real_t,real_t>> genYamamoto( int order){
+std::vector<std::pair<real_t,real_t>> GenYamamoto( int order){
 
-    vector<pair<real_t,real_t>> thetaWeightPairVec;
+    std::vector<std::pair<real_t,real_t>> thetaWeightPairVec;
     if ( order != 3 ) {
         throw EXCEPT("Only support Yamamoto quadrature of order 3");
     }
     thetaWeightPairVec.emplace_back(0.167429147795000,4.623300000000000E-002);
     thetaWeightPairVec.emplace_back(0.567715121084000,0.283619000000000);
     thetaWeightPairVec.emplace_back(1.20253314678900,0.670148000000000);
+    return thetaWeightPairVec;
+}
+
+// Produce a vector of pairs for Chebyshev quadrature set of order 'order'.
+// The first value in the pair is alpha in the range (0, PI/2) and the second 
+// value is the corresponding weight. All weights sum to 1.
+std::vector<std::pair<real_t,real_t>> GenChebyshev( int order){
+
+    std::vector<std::pair<real_t,real_t>> alphaWeightPairVec;
+    real_t weight;
+
+    weight = 1.0/order;
+    
+
+    for( int i=1; i<order; i++ ) {
+        //alpha=0.5*PI/N*;
+    }
+
+    if ( order != 3 ) {
+        throw EXCEPT("Only support Yamamoto quadrature of order 3");
+    }
+    alphaWeightPairVec.emplace_back(0.167429147795000,4.623300000000000E-002);
+    alphaWeightPairVec.emplace_back(0.567715121084000,0.283619000000000);
+    alphaWeightPairVec.emplace_back(1.20253314678900,0.670148000000000);
+
+    return alphaWeightPairVec;
+}
+
+// Produce a vector of pairs for Gaussian quadrature set of order 'order'. The
+// first value in the pair is theta in range (0, PI/2) and the second value is
+// the corresponding weight. All weights sum to 1. 
+std::vector<std::pair<real_t,real_t>> GenGauss( int order ){
+    std::vector<std::pair<real_t,real_t>> thetaWeightPairVec;
+    int N = order - 1;
+    int N1 = order;
+    int N2 = order + 1;
+    
+    ArrayB1 xu(N1),y(N1),w(N1);
+    real_t delxu=2.0/N;
+    
+    // Initial guess for y
+    for( int i=0; i<N1; i++ ) {
+        xu(i)=-1.0+i*delxu;
+        y(i)=cos( (2*i+1)*PI/(2*N2) ) + 0.27/N1*sin(PI*xu(i)*N/N2);
+    }
+
+    // Legendre-Gauss Vandermonde Matrix
+    ArrayB2 L(N1,N2);
+
+    // Derivative of LGVM
+    ArrayB1 Lg(N1);
+    
+    // Compute the zeros of the N+1 Legendre Polynomial using the recursion
+    // relation and the Newton-Paphson method
+    
+    ArrayB1 y0(N1),Lp(N1);
+    y0=2;
+
+    // Iterate until new pioints are uniformly within epsilon of old points
+    while( max(abs(y-y0))>FLOAT_EPS ) {
+        L(blitz::Range::all(),0)=1;
+        L(blitz::Range::all(),1)=y;
+
+        for( int k=1; k<N2; k++ ) {
+            L(blitz::Range::all(),k+1) = ( (2*k-1)*DotProduct(y,L(blitz::Range::all(),k))-
+                    (k-1)*L(blitz::Range::all(),k-1) )/k;
+        }
+
+        for( int i=0; i<N1; i++ ) { 
+            Lp(i) = N2*(L(i,N1)-DotProduct(y,L(blitz::Range::all(),N2)))/(1-y(i)*y(i));
+        }
+
+        y0=y;
+        
+        for( int i=0; i<N1; i++ ) {
+            y(i) = y0(i)-L(i,N2)/Lp(i);
+        }
+    }
+    
+    for( int i=0; i<N1; i++ ) {
+        w(i)=2.0/((1-y(i)*y(i))*Lp(i)*Lp(i))*N2*N2/(N1*N1);
+        thetaWeightPairVec.emplace_back(y(i),w(i)); 
+    }
+    
+    return thetaWeightPairVec;
 }
 
 
 // Produce a vector of angles matching the Chebyshev-Gaussian quadrature of
 // order 'azi-order' for azimuthal angles and 'polar-order' for polar
 // angles.
-std::vector<Angle> GenCG( int azi_order, int polar_order ){
-    
+   std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>> 
+           &azi, const std::vector<std::pair<real_t,real_t>> &pol){
+       std::vector<Angle> angles;
+
+   return angles;
 }
 
 

@@ -45,16 +45,16 @@ namespace mocc {
             int pol_order = input.attribute("polar-order").as_int(-1);
 
             //Generate angles for octant 1
-            angles_ = GenCG( azi_order, pol_order);
+            angles_ = GenProduct(GenChebyshev(azi_order),GenGauss(pol_order));
         } else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto" )) {
-            type_ = QuadratureType::CHEB_YAMAMOTTO;
+            type_ = QuadratureType::CHEB_YAMAMOTO;
 
             //extract the quadrature order
             int azi_order = input.attribute("azimuthal-order").as_int(-1);
             int pol_order = input.attribute("polar-order").as_int(-1);
 
             //Generate angles from octant 1
-            angles_ = GenCY( azi_order, pol_order);
+            angles_ = GenProduct(GenChebyshev(azi_order),GenYamamoto(pol_order));
         } else {
             std::cerr << "'" << type_str << "'" << std::endl;
             throw EXCEPT("Unrecognized angular quadrature type specified.");
