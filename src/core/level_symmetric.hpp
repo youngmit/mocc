@@ -106,23 +106,24 @@ std::vector<Angle> GenSn( int order ){
 
 }
 
-// Produce a vector of pairs for Yamamoto quadrature set of order 'order'.
-// Currently, only order 3 is supported. The first value in the pair is theta in
-// range (0, PI/2) and the second value is the corresponding weight. All weights
-// sum to 1.
-std::vector<std::pair<real_t,real_t>> GenYamamoto( int order){
+// Produce a vector of <theta,weight> pairs of size n_polar with Yamamoto
+// quadrature within (0, PI/2). All weights sum to 1. Currently, only npol=3 
+// is supported. 
+std::vector<std::pair<real_t,real_t>> GenYamamoto( int n_polar ){
 
     std::vector<std::pair<real_t,real_t>> thetaWeightPairVec;
-    if ( order != 3 ) {
-        throw EXCEPT("Only support Yamamoto quadrature of order 3");
+    
+    if ( n_polar != 3 ) {
+        throw EXCEPT("Only support Yamamoto quadrature when npol=3");
     }
     thetaWeightPairVec.emplace_back(0.167429147795000,4.623300000000000E-002);
     thetaWeightPairVec.emplace_back(0.567715121084000,0.283619000000000);
     thetaWeightPairVec.emplace_back(1.20253314678900,0.670148000000000);
+    
     return thetaWeightPairVec;
 }
 
-// Produce a vector of <alpha,weight> pairs of size n_azimuthal with  Chebyshev 
+// Produce a vector of <alpha,weight> pairs of size n_azimuthal with Chebyshev 
 // quadrature within (0, PI/2). All weights sum to 1.
 std::vector<std::pair<real_t,real_t>> GenChebyshev( int n_azimuthal ) {
 
@@ -139,14 +140,13 @@ std::vector<std::pair<real_t,real_t>> GenChebyshev( int n_azimuthal ) {
     return alphaWeightPairVec;
 }
 
-// Produce a vector of pairs for Gaussian quadrature set of order 'order'. The
-// first value in the pair is theta in range (0, PI/2) and the second value is
-// the corresponding weight. All weights sum to 1. 
-std::vector<std::pair<real_t,real_t>> GenGauss( int order ){
+// Produce a vector of <theta,weight> pairs of size n_polar with Gaussian 
+// quadrature within (0, PI/2). All weights sum to 1.
+std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
     std::vector<std::pair<real_t,real_t>> thetaWeightPairVec;
-    int N = order - 1;
-    int N1 = order;
-    int N2 = order + 1;
+    int N = n_polar*2 - 1;
+    int N1 = n_polar*2;
+    int N2 = n_polar*2 + 1;
     
     ArrayB1 xu(N1),y(N1),w(N1);
     real_t delxu=2.0/N;
@@ -192,7 +192,10 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int order ){
     
     for( int i=0; i<N1; i++ ) {
         w(i)=2.0/((1-y(i)*y(i))*Lp(i)*Lp(i))*N2*N2/(N1*N1);
-        thetaWeightPairVec.emplace_back(y(i),w(i)); 
+    }
+
+    for ( int i=n_polar; i<N1; i++ ) { 
+        thetaWeightPairVec.emplace_back(y(i),w(i));
     }
     
     return thetaWeightPairVec;
