@@ -42,20 +42,20 @@ namespace mocc {
             type_ = QuadratureType::CHEB_GAUSS;
 
             //extract the quadrature order
-            int azi_order = input.attribute("azimuthal-order").as_int(-1);
-            int pol_order = input.attribute("polar-order").as_int(-1);
+            int n_azimuthal = input.attribute("azimuthal-order").as_int(-1);
+            int n_polar = input.attribute("polar-order").as_int(-1);
 
             //Generate angles for octant 1
-            angles_ = GenProduct(GenChebyshev(azi_order),GenGauss(pol_order));
+            angles_ = GenProduct(GenChebyshev(n_azimuthal),GenGauss(n_polar));
         } else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto" )) {
             type_ = QuadratureType::CHEB_YAMAMOTO;
 
             //extract the quadrature order
-            int azi_order = input.attribute("azimuthal-order").as_int(-1);
-            int pol_order = input.attribute("polar-order").as_int(-1);
+            int n_azimuthal = input.attribute("azimuthal-order").as_int(-1);
+            int n_polar = input.attribute("polar-order").as_int(-1);
 
             //Generate angles from octant 1
-            angles_ = GenProduct(GenChebyshev(azi_order),GenYamamoto(pol_order));
+            angles_ = GenProduct(GenChebyshev(n_azimuthal),GenYamamoto(n_polar));
         } else {
             std::cerr << "'" << type_str << "'" << std::endl;
             throw EXCEPT("Unrecognized angular quadrature type specified.");
