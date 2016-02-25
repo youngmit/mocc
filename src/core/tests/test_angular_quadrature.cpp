@@ -131,7 +131,7 @@ TEST_FIXTURE( AngQuadFixture, LevelSymmetric6 ) {
     CHECK(new_ang_quad == ang_quad);
 }
 
-
+/*
 TEST_FIXTURE( AngQuadFixture, Chebyshev16Gauss3 ) {
     std::string inp = "<ang_quad type=\"cg\" azimuthal-order=\"16\" polar-order=\"3\" />";
     make_angquad( inp );
@@ -139,7 +139,7 @@ TEST_FIXTURE( AngQuadFixture, Chebyshev16Gauss3 ) {
    // CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
 
 }
-
+*/
 /*
 TEST_FIXTURE( AngQuadFixture, Chebyshev16Yamamoto3 ) {
     std::string inp = "<ang_quad type=\"cy\" azimuthal-order=\"16\" polar-order=\"3\" />";
