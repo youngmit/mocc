@@ -59,6 +59,7 @@ public:
 class AngQuadFixture {
 public: 
     AngularQuadrature ang_quad;
+    
     void make_angquad( const std::string &inp_quad ) {
         pugi::xml_document doc;
         pugi::xml_parse_result result =  doc.load_string( inp_quad.c_str() );
@@ -68,6 +69,13 @@ public:
         }
 
         ang_quad = AngularQuadrature( doc.child("ang_quad") );
+    }
+    real_t total_weight() {
+        real_t wsum = 0.0;
+        for( auto a: ang_quad ) {
+            wsum += a.weight;
+        }
+        return wsum;
     }
 };
 
@@ -114,11 +122,7 @@ TEST_FIXTURE( AngQuadFixture, LevelSymmetric6 ) {
     make_angquad( inp );
    
     // Test the weight sum is 8.0
-    real_t wsum = 0.0;
-    for( auto a: ang_quad ) {
-        wsum += a.weight;
-    }
-    CHECK_CLOSE(8.0, wsum, 0.00000000000001);
+    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
     
     // Test the input/output
     H5Node h5file("test_angquad.h5", H5Access::WRITE );
@@ -126,6 +130,24 @@ TEST_FIXTURE( AngQuadFixture, LevelSymmetric6 ) {
     AngularQuadrature new_ang_quad( h5file );
     CHECK(new_ang_quad == ang_quad);
 }
+
+
+TEST_FIXTURE( AngQuadFixture, Chebyshev16Gauss3 ) {
+    std::string inp = "<ang_quad type=\"cg\" azimuthal-order=\"16\" polar-order=\"3\" />";
+    make_angquad( inp );
+    // Test the weight sum is 8.0
+   // CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
+
+}
+
+/*
+TEST_FIXTURE( AngQuadFixture, Chebyshev16Yamamoto3 ) {
+    std::string inp = "<ang_quad type=\"cy\" azimuthal-order=\"16\" polar-order=\"3\" />";
+    make_angquad( inp );
+    // Test the weight sum is 8.0
+//    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
+}
+*/
     
 /*    
 TEST_FIXTURE( LevelSymmetric_4, general )
