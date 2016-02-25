@@ -14,48 +14,6 @@ using std::endl;
 
 using namespace mocc;
 
-/*
-class LevelSymmetric_4 {
-private:
-    static AngularQuadrature make_angquad() {
-        std::string inp = "<ang_quad type=\"ls\" order=\"4\" />";
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_string( inp.c_str() );
-
-        if (!result) {
-            cout << "failed to parse xml" << endl;
-        }
-
-        return AngularQuadrature( doc.child("ang_quad") );
-    }
-public:
-    AngularQuadrature ang_quad;
-    LevelSymmetric_4(): ang_quad(LevelSymmetric_4::make_angquad()) {
-        return;
-    }
-};
-
-class LevelSymmetric_6 {
-private:
-    static AngularQuadrature make_angquad() {
-        std::string inp = "<ang_quad type=\"ls\" order=\"6\" />";
-        pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_string( inp.c_str() );
-
-        if (!result) {
-            cout << "failed to parse xml" << endl;
-        }
-
-        return AngularQuadrature( doc.child("ang_quad") );
-    }
-public:
-    AngularQuadrature ang_quad;
-    LevelSymmetric_6(): ang_quad(LevelSymmetric_6::make_angquad()) {
-        return;
-    }
-};
-*/
-
 class AngQuadFixture {
 public: 
     AngularQuadrature ang_quad;
@@ -70,14 +28,67 @@ public:
 
         ang_quad = AngularQuadrature( doc.child("ang_quad") );
     }
+
+    void test_reflect() {
+        int iang = 0;
+        for( auto &angle: ang_quad ) {
+            {
+                int refl = ang_quad.reflect(iang, Normal::Y_NORM);
+                auto &refl_ang = ang_quad[refl];
+
+                CHECK_CLOSE(angle.ox, refl_ang.ox, 0.0000000000001);
+                CHECK_CLOSE(angle.oy, -refl_ang.oy, 0.0000000000001);
+                CHECK_CLOSE(angle.oz, refl_ang.oz, 0.0000000000001);
+            }
+            {
+                int refl = ang_quad.reflect(iang, Normal::X_NORM);
+                auto &refl_ang = ang_quad[refl];
+
+                CHECK_CLOSE(angle.ox, -refl_ang.ox, 0.0000000000001);
+                CHECK_CLOSE(angle.oy, refl_ang.oy, 0.0000000000001);
+                CHECK_CLOSE(angle.oz, refl_ang.oz, 0.0000000000001);
+            }
+            {
+                int refl = ang_quad.reflect(iang, Normal::Z_NORM);
+                auto &refl_ang = ang_quad[refl];
+
+                CHECK_CLOSE(angle.ox, refl_ang.ox, 0.0000000000001);
+                CHECK_CLOSE(angle.oy, refl_ang.oy, 0.0000000000001);
+                CHECK_CLOSE(angle.oz, -refl_ang.oz, 0.0000000000001);
+            }
+
+            iang++;
+        }
+    }
+
     real_t total_weight() {
         real_t wsum = 0.0;
         for( auto a: ang_quad ) {
             wsum += a.weight;
         }
+
         return wsum;
     }
 };
+
+
+class LevelSymmetric_4 : public AngQuadFixture {
+public:
+    LevelSymmetric_4() {
+        this->make_angquad("<ang_quad type=\"ls\" order=\"4\" />");
+    }
+};
+
+
+class LevelSymmetric_6 : public AngQuadFixture {
+public:
+    LevelSymmetric_6() {
+        this->make_angquad("<ang_quad type=\"ls\" order=\"6\" />");
+    }
+};
+
+
+/*
 
 TEST_FIXTURE( AngQuadFixture, LevelSymmetric4 )
 {
@@ -87,6 +98,7 @@ TEST_FIXTURE( AngQuadFixture, LevelSymmetric4 )
     CHECK_EQUAL(3, ang_quad.ndir_oct());
     // Test the angle reflection capabilities
     // CHECK_EQUAL( expected, actual );
+    
     // octant 1
     CHECK_EQUAL(10, ang_quad.reflect(1, Surface::NORTH));
     CHECK_EQUAL(11, ang_quad.reflect(2, Surface::SOUTH));
@@ -131,6 +143,8 @@ TEST_FIXTURE( AngQuadFixture, LevelSymmetric6 ) {
     CHECK(new_ang_quad == ang_quad);
 }
 
+*/
+
 /*
 TEST_FIXTURE( AngQuadFixture, Chebyshev16Gauss3 ) {
     std::string inp = "<ang_quad type=\"cg\" azimuthal-order=\"16\" polar-order=\"3\" />";
@@ -149,12 +163,14 @@ TEST_FIXTURE( AngQuadFixture, Chebyshev16Yamamoto3 ) {
 }
 */
     
-/*    
 TEST_FIXTURE( LevelSymmetric_4, general )
 {
     cout << ang_quad << endl;
 
-    CHECK_EQUAL(ang_quad.ndir_oct(), 3);
+
+    test_reflect();
+
+    CHECK_EQUAL(3, ang_quad.ndir_oct());
 
     // Test the angle reflection capabilities
     // octant 1
@@ -187,6 +203,7 @@ TEST_FIXTURE( LevelSymmetric_4, general )
     CHECK_EQUAL(ang_quad.reverse(11), 5);
 }
 
+/*    
 TEST_FIXTURE( LevelSymmetric_6, higher_order ) {
     real_t wsum = 0.0;
 
