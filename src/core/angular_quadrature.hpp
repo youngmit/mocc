@@ -36,6 +36,9 @@ namespace mocc {
          */
         AngularQuadrature( const H5Node &input );
 
+        AngularQuadrature() {
+        };
+
         ~AngularQuadrature() {
         }
 
