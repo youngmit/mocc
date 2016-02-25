@@ -55,9 +55,9 @@ namespace mocc {
             vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
         }
 
-        assert( nx_ == hx.size()-1 );
-        assert( ny_ == hy.size()-1 );
-        assert( nz_ == hz.size()-1 );
+        assert( nx_ == (int)hx.size()-1 );
+        assert( ny_ == (int)hy.size()-1 );
+        assert( nz_ == (int)hz.size()-1 );
         this->prepare_surfaces();
         return;
     }
@@ -522,7 +522,7 @@ namespace mocc {
         bool on_x = false;
         bool on_y = false;
 
-        size_t ix = 0;
+        int ix = 0;
         for( auto &xi: x_vec_ ) {
             if( fp_equiv_abs(p.x, xi) ) {
                 on_x = true;
@@ -535,7 +535,7 @@ namespace mocc {
             ix++;
         }
 
-        size_t iy = 0;
+        int iy = 0;
         for( auto &yi: y_vec_ ) {
             if( fp_equiv_abs(p.y, yi) ) {
                 on_y = true;
