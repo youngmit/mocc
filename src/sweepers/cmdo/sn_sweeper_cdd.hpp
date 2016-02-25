@@ -12,6 +12,7 @@
 #include "sn/sn_sweeper.hpp"
 
 namespace mocc { namespace cmdo {
+    using namespace sn;
     /**
      * An extension of \ref sn::CellWorker to propagate flux through an
      * orthogonal mesh region with the corrected diamond difference (CDD)
@@ -177,10 +178,58 @@ namespace mocc { namespace cmdo {
         }
     };
 
-    class SnSweeper_CDD : public sn::SnSweeperVariant<CellWorker_CDD_DD> {
+
+    /**
+     * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
+     * mesh region with the corrected diamond difference (CDD) scheme in X and
+     * Y, with step characteristics in Z.
+     */
+    class CellWorker_CDD_SC: public CellWorker_CDD {
+    public:
+        CellWorker_CDD_SC( const Mesh &mesh,
+                const AngularQuadrature &ang_quad ):
+            CellWorker_CDD( mesh, ang_quad )
+        {
+            return;
+        }
+
+        inline real_t evaluate( real_t &flux_x, real_t &flux_y,
+                real_t &flux_z, real_t q, real_t xstr, size_t i )
+        {
+            size_t ix = i % mesh_.nx();
+            real_t tx = ox_/mesh_.dx(ix);
+
+            real_t ax = corrections_->alpha( i, iang_alpha_, group_,
+                    Normal::X_NORM);
+            real_t ay = corrections_->alpha( i, iang_alpha_, group_,
+                    Normal::Y_NORM);
+            real_t b = corrections_->beta( i, iang_alpha_, group_ );
+
+            real_t gx = ax*b;
+            real_t gy = ay*b;
+
+            real_t tau = xstr/tz_;
+            real_t rho = 1.0/tau - 1.0/(std::exp(tau) - 1.0);
+            real_t rhofac= rho/(1.0 - rho);
+
+            real_t psi = q + 2.0*(tx  * flux_x +
+                                  ty_ * flux_y ) +
+                                  tz_*(rhofac+1.0)*flux_z ;
+            psi /= tx/gx + ty_/gy + tz_/(1.0-rho) + xstr;
+
+            flux_x = (psi - gx*flux_x) / gx;
+            flux_y = (psi - gy*flux_y) / gy;
+            flux_z = (psi - rho*flux_z)/(1.0-rho);
+
+            return psi;
+        }
+    };
+
+    template <class T>
+    class SnSweeper_CDD : public sn::SnSweeperVariant<T> {
     public:
         SnSweeper_CDD( const pugi::xml_node &input, const CoreMesh &mesh ):
-            SnSweeperVariant<CellWorker_CDD_DD>( input, mesh ),
+            sn::SnSweeperVariant<T>( input, mesh ),
             correction_data_(nullptr)
         {
             // Look for data to set the angular quadrature
@@ -188,9 +237,9 @@ namespace mocc { namespace cmdo {
                 std::string fname =
                     input.child("data").attribute("file").value();
                 H5Node file( fname, H5Access::READ );
-                ang_quad_ = AngularQuadrature( file );
+                this->ang_quad_ = AngularQuadrature( file );
                 real_t wsum = 0.0;
-                for( auto a: ang_quad_ ) {
+                for( auto a: this->ang_quad_ ) {
                     wsum += a.weight;
                 }
                 std::cout << "Weight sum: " << wsum << std::endl;
@@ -200,7 +249,7 @@ namespace mocc { namespace cmdo {
 
         void set_corrections( std::shared_ptr<const CorrectionData> data ) {
             correction_data_ = data;
-            cell_worker_.set_corrections( data );
+            this->cell_worker_.set_corrections( data );
         }
 
         void output( H5Node &node ) const {
