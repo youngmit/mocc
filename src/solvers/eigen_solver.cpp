@@ -92,8 +92,8 @@ namespace mocc{
         // Hand a reference to the fission source to the fixed source solver
         fss_.set_fission_source(&fission_source_);
 
-        real_t error_k = 1.0; // K residual
-        real_t error_psi = 1.0; // L-2 norm of the fission source residual
+        error_k_ = tolerance_k_; // K residual
+        error_psi_ = tolerance_psi_; // L-2 norm of the fission source residual
 
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
 
@@ -109,7 +109,7 @@ namespace mocc{
             this->step();
 
             // Check for convergence
-            error_k = fabs(keff_-keff_prev_);
+            error_k_ = fabs(keff_-keff_prev_);
 
             // use the old fission source to store the difference between new
             // and old, since we will be filling it with new in the next
@@ -118,10 +118,10 @@ namespace mocc{
             for( int i=0; i<(int)fission_source_.size(); i++ ) {
                 e += std::pow((fission_source_(i)-fission_source_prev_(i)), 2);
             }
-            error_psi = std::sqrt( e );
+            error_psi_ = std::sqrt( e );
 
             convergence_.push_back(
-                    ConvergenceCriteria(keff_, error_k, error_psi) );
+                    ConvergenceCriteria(keff_, error_k_, error_psi_) );
 
             this->print( n_iterations+1, convergence_.back() );
 
@@ -131,7 +131,7 @@ namespace mocc{
                 break;
             }
 
-            if( (error_k < tolerance_k_) && (error_psi < tolerance_psi_ ) &&
+            if( (error_k_ < tolerance_k_) && (error_psi_ < tolerance_psi_ ) &&
                 (n_iterations >= min_iterations_) ) {
                 std::cout << "Convergence criteria met!" << std::endl;
                 break;
@@ -144,11 +144,7 @@ namespace mocc{
         fission_source_prev_ = fission_source_;
 
         if( cmfd_ && cmfd_->is_enabled() ) {
-            // push homogenized flux onto the coarse mesh, solve, and pull it
-            // back.
-            cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();
-            cmfd_->solve(keff_, fss_.sweeper()->flux());
-            fss_.sweeper()->set_pin_flux( cmfd_->flux() );
+            this->do_cmfd();
         }
 
 
@@ -170,6 +166,33 @@ namespace mocc{
         LogScreen << std::setw(out_w) << std::fixed << std::setprecision(5)
              << RootTimer.time() << std::setw(out_w)
              << iter << conv << endl;
+        return;
+    }
+
+    void EigenSolver::do_cmfd() {
+        assert(cmfd_);
+        assert(cmfd_->is_enabled());
+        // push homogenized flux onto the coarse mesh, solve, and pull it
+        // back.
+        cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();
+
+        // Set the convergence criteria for this solve, there are a few ways we
+        // can do this
+
+        CMFDConvergence conv = CMFDConvergence::FIXED;
+        switch( conv ) {
+        case CMFDConvergence::FIXED:
+            break;
+        case CMFDConvergence::FLOAT:
+            real_t k_tol = std::max(error_k_/1000.0, tolerance_k_/10.0);
+            cmfd_->set_k_tolerance( k_tol );
+
+            real_t psi_tol = std::max(error_psi_/1000.0, tolerance_psi_/10.0);
+            cmfd_->set_psi_tolerance( psi_tol );
+            break;
+        }
+        cmfd_->solve(keff_, fss_.sweeper()->flux());
+        fss_.sweeper()->set_pin_flux( cmfd_->flux() );
         return;
     }
 

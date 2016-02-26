@@ -14,6 +14,12 @@
 #include "solver.hpp"
 
 namespace mocc{
+    enum class CMFDConvergence {
+        FIXED, // Converge the cmfd to a fixed set of convergence criteria
+        FLOAT
+    };
+
+
     struct ConvergenceCriteria {
         ConvergenceCriteria( real_t k, real_t error_k, real_t error_psi ):
             k(k),
@@ -62,6 +68,7 @@ namespace mocc{
 
 
     private:
+        // Data
         FixedSourceSolver fss_;
 
         // Fission source, and previous iterate
@@ -80,12 +87,12 @@ namespace mocc{
         // Convergence criterion for the fission source distribution (L-2 norm)
         real_t tolerance_psi_;
 
+        real_t error_k_;
+        real_t error_psi_;
+
         // Maximum allowable outer iterations
         unsigned int max_iterations_;
         unsigned int min_iterations_;
-
-        // Print the current state of the eigenvalue solver
-        void print( int iter, ConvergenceCriteria conv );
 
         // Vector of the convergence criteria. We will export these to the HDF5
         // file at the end of the run for posterity
@@ -93,5 +100,16 @@ namespace mocc{
 
         // CMFD accelerator
         UP_CMFD_t cmfd_;
+
+
+        // Methods
+        // Print the current state of the eigenvalue solver
+        void print( int iter, ConvergenceCriteria conv );
+
+        /**
+         * \brief Perform a CMFD accelerator solve
+         */
+        void do_cmfd();
+
     };
 }
