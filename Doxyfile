@@ -58,6 +58,7 @@ PROJECT_LOGO           =
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
+#OUTPUT_DIRECTORY       = /usr/share/nginx/html/moccdoc
 OUTPUT_DIRECTORY       = /www/mocc-docs
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create 4096 sub-
