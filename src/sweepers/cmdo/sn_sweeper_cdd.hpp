@@ -9,7 +9,7 @@
 
 #include "sn/cell_worker.hpp"
 #include "sn/correction_data.hpp"
-#include "sn/sn_sweeper.hpp"
+#include "sn/sn_sweeper_variant.hpp"
 
 namespace mocc { namespace cmdo {
     using namespace sn;
@@ -255,7 +255,7 @@ namespace mocc { namespace cmdo {
         void output( H5Node &node ) const {
             assert(correction_data_);
             SnSweeper::output( node );
-            correction_data_->output( node );
+            //correction_data_->output( node );
             return;
         }
 
