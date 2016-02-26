@@ -56,11 +56,31 @@ namespace mocc {
             return is_enabled_;
         }
 
+        /**
+         * \brief Set the eigenvalue convergence tolerance
+         */
+        void set_k_tolerance( real_t tol ) {
+            assert( tol > FLOAT_EPS );
+
+            k_tol_ = tol;
+            return;
+        }
+
+        /**
+         * \brief Set the fission source convergence tolerance
+         */
+        void set_psi_tolerance( real_t tol ) {
+            assert( tol > FLOAT_EPS );
+
+            psi_tol_ = tol;
+            return;
+        }
+
     private:
         // Private methods
         void solve_1g( int group );
         void fission_source( real_t k );
-        void print( int iter, real_t k, real_t k_err );
+        void print( int iter, real_t k, real_t k_err, real_t psi_err );
 
         /**
          * \brief Calculate CMFD-derived currents after a CMFD solve and store

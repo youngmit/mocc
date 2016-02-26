@@ -107,6 +107,15 @@ namespace mocc {
         }
         timer_.tic();
 
+        // Make sure no negative flux
+        //for( int ig=0; ig<(int)m_.size(); ig++ ) {
+        //    ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), ig);
+        //    //assert( flux_1g.isStorageContiguous() );
+        //    for( int i=0; i<(int)flux_1g.size(); i++ ) {
+        //        flux_1g(i) = std::max(flux_1g(i), 0.0);
+        //    }
+        //}
+
         // Update homogenized cross sections
         xsmesh_->update();
         int ng = xsmesh_->n_group();
@@ -120,9 +129,14 @@ namespace mocc {
         this->fission_source( k );
         real_t tfis = this->total_fission();
 
-        LogScreen << "CMFD Solve" << std::endl;
+        auto flags = LogScreen.flags();
+        LogScreen << "CMFD Converging to " 
+                  << std::scientific << k_tol_ << " " 
+                  << std::scientific << psi_tol_ << std::endl;
+        LogScreen.flags(flags);
 
-        int iter = 0;
+        int iter = 0; 
+        real_t psi_err = 1.0;
         while( true ) {
             iter++;
             // Compute fission source
@@ -144,7 +158,7 @@ namespace mocc {
             k = k * tfis/tfis_old;
 
             // Convergence check
-            real_t psi_err = 0.0;
+            psi_err = 0.0;
             for( int i=0; i<(int)fs_.size(); i++ ) {
                 real_t e = fs_(i) - fs_old_(i);
                 psi_err += e*e;
@@ -157,11 +171,11 @@ namespace mocc {
             }
 
             if( (iter % 10) == 0 ) {
-                this->print(iter, k, std::abs(k-k_old));
+                this->print(iter, k, std::abs(k-k_old), psi_err );
             }
 
         }
-        this->print(iter, k, std::abs(k-k_old) );
+        this->print(iter, k, std::abs(k-k_old), psi_err );
 
         // Calculate the resultant currents and store back onto the coarse data
         this->store_currents();
@@ -384,13 +398,15 @@ namespace mocc {
         return;
     }
 
-    void CMFD::print( int iter, real_t k, real_t k_err ) {
+    void CMFD::print( int iter, real_t k, real_t k_err, real_t psi_err ) {
         auto flags = LogScreen.flags();
         LogScreen << "       " 
-            << std::setprecision(4) << std::setw(6) << RootTimer.time() << " "
+            << std::setprecision(5) << std::setw(6) << std::fixed
+                    << RootTimer.time() << " "
             << iter << " "
             << std::setprecision(10) << k << " "
-            << std::scientific << k_err << std::endl;
+            << std::scientific << k_err << " "
+            << std::scientific << psi_err << std::endl;
         LogScreen.flags(flags);
     }
 }
