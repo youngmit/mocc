@@ -44,7 +44,6 @@ namespace mocc {
             //extract the quadrature order
             int n_azimuthal = input.attribute("azimuthal-order").as_int(-1);
             int n_polar = input.attribute("polar-order").as_int(-1);
-
             //Generate angles for octant 1
             angles_ = GenProduct(GenChebyshev(n_azimuthal),GenGauss(n_polar));
         } else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto" )) {
@@ -121,7 +120,9 @@ namespace mocc {
            << std::setw(w) << "Theta"
            << std::setw(w) << "omega x"
            << std::setw(w) << "omega y"
-           << std::setw(w) << "omega z" << std::endl;
+           << std::setw(w) << "omega z"
+           << std::setw(w) << "weight"
+           << std::setw(w) << "rsintheta" << std::endl;
         for( auto &ang: angquad.angles_ ) {
             os << ang << std::endl;
         }
