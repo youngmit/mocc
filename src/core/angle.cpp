@@ -69,7 +69,8 @@ namespace mocc {
                << std::setw(w) << ang.ox
                << std::setw(w) << ang.oy
                << std::setw(w) << ang.oz
-               << std::setw(w) << ang.weight;
+               << std::setw(w) << ang.weight
+               << std::setw(w) << ang.rsintheta;
             return os;
         }
 }
