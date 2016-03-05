@@ -115,7 +115,7 @@ namespace mocc { namespace cmdo {
 
 
         const CoreMesh& mesh_;
-        SnSweeper_CDD sn_sweeper_;
+        SnSweeper_CDD<CellWorker_CDD_DD> sn_sweeper_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
         std::shared_ptr<CorrectionData> corrections_;
