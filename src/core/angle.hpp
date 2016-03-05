@@ -45,6 +45,7 @@ namespace mocc {
             ox = sin(theta)*cos(alpha);
             oy = sin(theta)*sin(alpha);
             oz = cos(theta);
+            rsintheta = 1.0/sin(theta);
         }
 
         /**
