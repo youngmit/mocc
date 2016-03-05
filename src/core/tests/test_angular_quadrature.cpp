@@ -8,7 +8,6 @@
 #include "pugixml.hpp"
 
 #include "angular_quadrature.hpp"
-#include "product_quadrature.hpp"
 
 using std::cout;
 using std::endl;
