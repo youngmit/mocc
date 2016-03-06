@@ -59,18 +59,15 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
     // Initial guess for y
     for( int i=0; i<N1; i++ ) {
         xu(i)=-1.0+i*delxu;
-        y(i)=cos( (2*i+1)*PI/(2*N2) ) + 0.27/N1*sin(PI*xu(i)*N/N2);
+        y(i)=cos( (2*i+1)*PI/(2*N1) ) + 0.27/N1*sin(PI*xu(i)*N/N2);
     }
 
     // Legendre-Gauss Vandermonde Matrix
     ArrayB2 L(N1,N2);
-
     // Derivative of LGVM
     ArrayB1 Lg(N1);
-    
     // Compute the zeros of the N+1 Legendre Polynomial using the recursion
     // relation and the Newton-Paphson method
-    
     ArrayB1 y0(N1),Lp(N1);
     y0=2;
 
@@ -79,30 +76,42 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
         L(blitz::Range::all(),0)=1;
         L(blitz::Range::all(),1)=y;
 
-        for( int k=1; k<N2; k++ ) {
-            L(blitz::Range::all(),k+1) = ( (2*k-1)*DotProduct(y,L(blitz::Range::all(),k))-
-                    (k-1)*L(blitz::Range::all(),k-1) )/k;
+        for( int k=1; k<N1; k++ ) {
+            for( int m=0; m<N1; m++ ) {
+                L(m,k+1) = ( (2*k+1)*y(m)*L(m,k)-k*L(m,k-1) )/(k+1);
+            }
         }
-
+        
         for( int i=0; i<N1; i++ ) { 
-            Lp(i) = N2*(L(i,N1)-DotProduct(y,L(blitz::Range::all(),N2)))/(1-y(i)*y(i));
+            Lp(i) = N2*(L(i,N1-1)-y(i)*L(i,N2-1))/(1-y(i)*y(i));
         }
-
+        
         y0=y;
         
         for( int i=0; i<N1; i++ ) {
-            y(i) = y0(i)-L(i,N2)/Lp(i);
+            y(i) = y0(i)-L(i,N2-1)/Lp(i);
         }
     }
     
+    //weight sum is 1.0;
     for( int i=0; i<N1; i++ ) {
-        w(i)=2.0/((1-y(i)*y(i))*Lp(i)*Lp(i))*N2*N2/(N1*N1);
+        w(i)=1.0/((1-y(i)*y(i))*Lp(i)*Lp(i))*N2*N2/(N1*N1);
     }
 
-    for ( int i=n_polar; i<N1; i++ ) { 
-        thetaWeightPairVec.emplace_back(y(i),w(i));
+    // y should be scaled from (-1,1) to (-PI/2, PI/2)
+    y=y*PI/2.0;
+    // reverse order of y;
+    real_t t=0;
+    for( int i=0; i<n_polar; i++ ) {
+        t=y(i);
+        y(i)=y(N1-1-i);
+        y(N1-1-i)=t;
     }
     
+    for( int i=n_polar; i<N1; i++ ) { 
+        thetaWeightPairVec.emplace_back(y(i),w(i));
+    }
+
     return thetaWeightPairVec;
 }
 
@@ -118,16 +127,16 @@ std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>>
        for( int i=0; i<n_azimuthal; i++ ) {
            for( int j=0; j<n_polar; j++ ) {
                Angle angle( azi[i].first, 
-                            pol[i].first,
-                            azi[i].second*pol[i].second );
+                            pol[j].first,
+                            azi[i].second*pol[j].second );
                angles.push_back(angle);
-               wsum += azi[i].second*pol[i].second;
+               wsum += azi[i].second*pol[j].second;
            }
        }
        
+       // Product quadrature ensures this in nature, so this may be unnecessary.
        for( auto &a: angles ) {
            a.weight /= wsum;
        }
-
        return angles;
 }
