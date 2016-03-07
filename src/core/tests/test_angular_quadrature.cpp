@@ -98,21 +98,21 @@ public:
 class ChebyshevGauss_16_3 : public AngQuadFixture {
 public:
     ChebyshevGauss_16_3() {
-        this->make_angquad("<ang_quad type=\"cg\" azimuthal-order=\"16\" polar-order=\"3\" />");
+        this->make_angquad("<ang_quad type=\"cg\" azimuthal-order=\"16\" "
+                "polar-order=\"3\" />");
     }
 };
 
 class ChebyshevYamamoto_16_3 : public AngQuadFixture {
 public:
     ChebyshevYamamoto_16_3() {
-        this->make_angquad("<ang_quad type=\"cy\" azimuthal-order=\"16\" polar-order=\"3\" />");
+        this->make_angquad("<ang_quad type=\"cy\" azimuthal-order=\"16\" "
+                "polar-order=\"3\" />");
     }
 };
    
 TEST_FIXTURE( LevelSymmetric_4, general )
 {
-    //cout << ang_quad << endl;
-
     // Test the angle reflection capabilities
     test_reflect();
 
@@ -143,7 +143,6 @@ TEST_FIXTURE( LevelSymmetric_6, higher_order ) {
 
 
 TEST_FIXTURE( ChebyshevYamamoto_16_3, cy_general ) {
-    std::string inp = "<ang_quad type=\"cy\" azimuthal-order=\"16\" polar-order=\"3\" />";
     // Test the angle reflection capabilities
     test_reflect();
 
@@ -151,13 +150,8 @@ TEST_FIXTURE( ChebyshevYamamoto_16_3, cy_general ) {
     CHECK_EQUAL(48, ang_quad.ndir_oct());
     // Test the weight sum is 8.0
     CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
-/**
- * \todo isValidOutput() fails when Angle constructor used to generate the
- * output angular quadrature is different from the Angle constructor used in the
- * constructor that accepts a h5file node.
- */
     // Test input/output
-    // CHECK(isValidOutput());
+    CHECK(isValidOutput());
     // Test the first angle
     CHECK_CLOSE(0.049087385212340, ang_quad[0].alpha,    0.0000000000001); 
     CHECK_CLOSE(0.167429147795000, ang_quad[0].theta,    0.0000000000001); 
@@ -189,7 +183,7 @@ TEST_FIXTURE( ChebyshevGauss_16_3, cg_general ) {
     CHECK_CLOSE(2.731441720757410, ang_quad[0].rsintheta,0.000000000001); 
   
     // Test input/output
-    // CHECK(isValidOutput());
+    CHECK(isValidOutput());
 }
 
 

@@ -79,11 +79,16 @@ namespace mocc {
         VecF oy;
         VecF oz;
         VecF weights;
+        VecF alpha;
+        VecF theta;
+        VecF rsintheta;
 
         input.read("ang_quad/omega_x", ox);
         input.read("ang_quad/omega_y", oy);
         input.read("ang_quad/omega_z", oz);
         input.read("ang_quad/weight", weights);
+        input.read("ang_quad/alpha", alpha);
+        input.read("ang_quad/theta", theta);
 
         if( (ox.size() != oy.size()) || (ox.size() != oz.size()) || 
                 (ox.size() != weights.size()) ) {
@@ -100,6 +105,12 @@ namespace mocc {
         angles_.reserve(size);
         for( int iang=0; iang<size; iang++ ) {
             angles_.emplace_back(ox[iang], oy[iang], oz[iang], weights[iang]);
+            // This is a bit of a hack to force bit-for-bit conformance with the
+            // values in the HDF5 file. the standard trig functions will result
+            // in some weird precision problems
+            angles_.back().theta = theta[iang];
+            angles_.back().alpha = alpha[iang];
+
         }
 
         type_ = QuadratureType::MANUAL;

@@ -42,10 +42,10 @@ namespace mocc {
             theta(theta),
             weight(weight)
         {
-            ox = sin(theta)*cos(alpha);
-            oy = sin(theta)*sin(alpha);
-            oz = cos(theta);
-            rsintheta = 1.0/sin(theta);
+            ox = std::sin((long double)theta)*std::cos((long double)alpha);
+            oy = std::sin((long double)theta)*std::sin((long double)alpha);
+            oz = std::cos((long double)theta);
+            rsintheta = 1.0/std::sin((long double)theta);
         }
 
         /**
@@ -54,9 +54,13 @@ namespace mocc {
         Angle( real_t ox, real_t oy, real_t oz, real_t weight):
             ox(ox), oy(oy), oz(oz), weight(weight)
         {
-            theta = acos(oz);
-            alpha = acos(ox/sin(theta));
-            rsintheta = 1.0/sin(theta);
+            long double ox_big = ox;
+            long double oz_big = oz;
+            long double theta_big = std::acos(oz_big);
+            theta = theta_big;
+            alpha = std::acos(ox_big/std::sin(theta_big));
+            rsintheta = 1.0l/std::sin(theta_big);
+            return;
         }
 
         Angle to_octant( int octant ) const;
@@ -79,7 +83,7 @@ namespace mocc {
                 default:
                     return Surface::INVALID;
             }
-        return Surface::INVALID;
+            return Surface::INVALID;
         }
 
         /**
@@ -102,7 +106,7 @@ namespace mocc {
          * equivalent conditions must all be evaluated.
          */
         bool operator!=( const Angle &other ) const {
-            return
+            bool not_equal = 
             (
                 !fp_equiv_ulp( ox, other.ox ) ||
                 !fp_equiv_ulp( oy, other.oy ) ||
@@ -112,6 +116,7 @@ namespace mocc {
                 !fp_equiv_ulp( weight, other.weight ) ||
                 !fp_equiv_ulp( rsintheta, other.rsintheta )
             );
+            return not_equal;
         }
 
     };
