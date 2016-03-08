@@ -90,7 +90,7 @@ namespace mocc {
                 int &first_reg) const;
 
         /**
-        * R\brief eturn a const reference to the indexed plane.
+        * \brief Return a const reference to the indexed plane.
         *
         * These planes are not considered "unique;" it returns actual Plane that
         * fills the indezed axial region.
