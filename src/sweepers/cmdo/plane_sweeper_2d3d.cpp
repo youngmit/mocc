@@ -41,7 +41,7 @@ namespace mocc { namespace cmdo {
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
 
-        sn_sweeper_.worker()->set_corrections( corrections_ );
+        sn_sweeper_.set_corrections( corrections_ );
         auto sn_xs_mesh =
             sn_sweeper_.get_homogenized_xsmesh();
         moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
@@ -51,7 +51,6 @@ namespace mocc { namespace cmdo {
         sn_sweeper_.get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
 
         coarse_data_ = nullptr;
-
 
         return;
     }
@@ -231,7 +230,7 @@ namespace mocc { namespace cmdo {
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
         LogFile << "    Expose Sn pin flux: " << expose_sn_ << std::endl;
-        LogFile << "    Transversd Leakage: " << do_snproject_ << std::endl;
+        LogFile << "    Transverse Leakage: " << do_snproject_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
 

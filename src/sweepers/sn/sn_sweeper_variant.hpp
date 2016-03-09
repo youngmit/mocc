@@ -42,11 +42,8 @@ namespace mocc { namespace sn {
 
         ~SnSweeperVariant() { }
 
-        Worker* worker() {
-            return &cell_worker_;
-        }
-
         void sweep( int group ) {
+            assert(source_);
             timer_.tic();
             timer_sweep_.tic();
             /// \todo add an is_ready() method to the worker, and make sure that

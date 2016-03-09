@@ -65,7 +65,8 @@ namespace mocc { namespace cmdo {
         /**
          * Create a Source_2D3D object instead of the standard Source class.
          */
-        UP_Source_t create_source() const {
+        UP_Source_t create_source( const pugi::xml_node &input ) const {
+            std::cout << "creating 2d3d source" << std::endl;
             return UP_Source_t( new Source_2D3D( moc_sweeper_, sn_sweeper_ ) );
         }
 
