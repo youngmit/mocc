@@ -8,6 +8,7 @@
 #include "pugixml.hpp"
 
 #include "error.hpp"
+#include "files.hpp"
 #include "global_config.hpp"
 #include "string_utils.hpp"
 
@@ -61,7 +62,9 @@ namespace mocc {
         {
             // Construct the pin and add to the map
             UP_Pin_t pin_p( new Pin( pin, meshes ) );
+            int id = pin_p->id();
             pins.emplace( pin_p->id(), std::move(pin_p) );
+            LogFile << "Pin ID " << id << " done" << std::endl;
         }
         return pins;
     }
