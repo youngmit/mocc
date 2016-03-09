@@ -8,6 +8,7 @@
 #include "core/blitz_typedefs.hpp"
 #include "core/coarse_data.hpp"
 #include "core/eigen_interface.hpp"
+#include "core/error.hpp"
 #include "core/global_config.hpp"
 #include "core/output_interface.hpp"
 #include "core/source.hpp"
@@ -15,6 +16,38 @@
 #include "core/source_isotropic.hpp"
 #include "core/xs_mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
+
+namespace {
+    using namespace mocc;
+    // Locate an ang_quad tag in the XML tree. Start by looking in the current
+    // node, and consulte parent nodes until an <ang_quad> is found. Return a
+    // reference to the first <ang_quad> node found. Throw if we get to the
+    // document root and still dont find one.
+    const pugi::xml_node find_angquad( const pugi::xml_node &input ) {
+        if( input.empty() ) {
+            throw EXCEPT("Passed node is empty!");
+        }
+
+        pugi::xml_node current_node = input;
+        while( true ) {
+            if( !current_node.child("ang_quad").empty() ) {
+                // We found an <ang_quad>. Return it.
+                return current_node.child("ang_quad");
+            } else if( !current_node.parent().empty() ) {
+                // We didnt find an <ang_quad>, but there is a parent node.
+                // look there.
+                current_node = current_node.parent();
+            } else {
+                // We reached the end of the line, but still didnt find an
+                // <ang_quad>. Fail
+                throw EXCEPT("Reached document root without finding an "
+                        "angular quadrature specification.");
+                break;
+            }
+        }
+        return input;
+    }
+}
 
 namespace mocc{
     class TransportSweeper: public HasOutput {
@@ -24,17 +57,19 @@ namespace mocc{
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
             n_group_( xs_mesh_->n_group() ),
+            source_(nullptr),
             flux_( n_reg_, n_group_ ),
             flux_old_( n_reg_, n_group_ ),
             vol_( n_reg_ ),
-            ang_quad_( input.child("ang_quad") ),
+            ang_quad_( find_angquad(input) ),
             coarse_data_(nullptr)
         {
             return;
         }
 
         TransportSweeper( const pugi::xml_node &input ):
-            ang_quad_( input.child("ang_quad") ),
+            source_(nullptr),
+            ang_quad_( find_angquad(input) ),
             coarse_data_(nullptr)
         {
             return;
