@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -49,39 +48,7 @@ inline std::string trim_copy(std::string s, const char* t = " \t\n\r\f\v")
  * \brief Return a string, representing the ranges of a std::vector<bool> that
  * are true.
  */
-inline std::string print_range( const std::vector<bool> &input ) {
-    std::stringstream output;
-    bool left = false;
-    int left_bound = 0;
-    std::vector< std::pair<int, int> > ranges;
-    for( int i=0; i<(int)input.size(); i++ ) {
-        if( input[i] && !left ) {
-            left = true;
-            left_bound = i;
-        }
-        if( left && !input[i] ) {
-            left = false;
-            ranges.emplace_back(left_bound, i-1);
-        }
-        if( left && input[i] && (i == (int)input.size()-1) ) {
-            ranges.emplace_back(left_bound, i);
-        }
-    }
-
-    for( auto r: ranges ) {
-        if( r.first != r.second ) {
-            output << r.first << "-" << r.second;
-        } else {
-            output << r.first;
-        }
-
-        if( r != ranges.back() ) {
-            output << ", ";
-        }
-    }
-    return output.str();
-}
-
+std::string print_range( const std::vector<bool> &input );
 
 // Sanitize a string: remove whitespace and cast to lowercase.
 inline std::string& sanitize(std::string &s)
@@ -91,3 +58,11 @@ inline std::string& sanitize(std::string &s)
     return trim(s);
 }
 
+/**
+ * \brief Given a string, nominally containing whitespace-delimited integers,
+ * return a vector of those integers
+ *
+ * This will fail if the string contains characters that are not numererals or
+ * whitespace.
+ */
+std::vector<int> explode_ints(std::string data);
