@@ -87,6 +87,15 @@ namespace mocc {
         }
 
         /**
+         * \brief Change the azimuthal angle of this Angle, and update all other
+         * values accordingly.
+         */
+        void modify_alpha( real_t new_alpha ) {
+            *this = Angle(new_alpha, theta, weight);
+            return;
+        }
+
+        /**
          * \brief Provide operator==
          *
          * Equivalence between two \ref Angle objects means that all angle

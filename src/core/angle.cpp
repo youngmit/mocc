@@ -57,11 +57,6 @@ namespace mocc {
         return Angle(0.0, 0.0, 0.0);
     }
 
-    // Change alpha and update ox and oy accordingly
-    Angle ModifyAlpha(Angle in, real_t new_alpha) {
-        return Angle(new_alpha, in.theta, in.weight);
-    }
-
     std::ostream& operator<<(std::ostream& os, const Angle &ang ) {
         const int w = 12;
             os << std::setw(w) << RadToDeg(ang.alpha)

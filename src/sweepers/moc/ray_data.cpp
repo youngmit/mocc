@@ -127,7 +127,7 @@ namespace mocc { namespace moc {
             Nrays_.push_back(Nx+Ny);
 
             real_t new_alpha = atan( hy*Nx/(hx*Ny) );
-            ang = ModifyAlpha( ang, new_alpha );
+            ang.modify_alpha( new_alpha );
 
             ang_quad_.modify_angle( iang, ang );
             real_t space = cos(ang_it->alpha) * hy/Ny;
@@ -135,6 +135,9 @@ namespace mocc { namespace moc {
 
             iang++;
         }
+
+        // Update weights on the angular quadrature
+        ang_quad_.update_weights();
 
         // push more Nx, Ny, N, space onto their respective vectors, so we dont
         // have to wory about %'ing by ndir_oct
