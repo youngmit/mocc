@@ -98,8 +98,10 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
         w(i)=1.0/((1-y(i)*y(i))*Lp(i)*Lp(i))*N2*N2/(N1*N1);
     }
 
-    // y should be scaled from (-1,1) to (-PI/2, PI/2)
-    y=y*PI/2.0;
+    // y is distributed in cos(theta) space. Take arccos(y) to get angle in
+    // radians
+    y = acos(y);
+
     // reverse order of y;
     real_t t=0;
     for( int i=0; i<n_polar; i++ ) {
