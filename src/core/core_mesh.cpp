@@ -17,24 +17,30 @@ using std::stringstream;
 
 namespace mocc {
     CoreMesh::CoreMesh( const pugi::xml_node &input ) {
-        LogFile << " Building core mesh... " << std::endl;
+        LogScreen << " Building core mesh... " << std::endl;
         // Parse meshes
         pin_meshes_ = ParsePinMeshes( input );
+        LogFile << "Pin meshes done" << std::endl;
 
         // Parse Material Library
         mat_lib_ = MaterialLib( input.child("material_lib") );
+        LogFile << "Material library done" << std::endl;
 
         // Parse pins
         pins_ = ParsePins( input, pin_meshes_ );
+        LogFile << "Pins done" << std::endl;
 
         // Parse lattices
         lattices_ = ParseLattices( input, pins_ );
+        LogFile << "Lattices done" << std::endl;
 
         // Parse assemblies
         assemblies_ = ParseAssemblies( input, lattices_ );
+        LogFile << "Assemblies done" << std::endl;
 
         // Parse core
         core_ = ParseCore( input, assemblies_ );
+        LogFile << "Core done" << std::endl;
 
         nx_ = core_.npin_x();
         ny_ = core_.npin_y();
@@ -103,6 +109,8 @@ namespace mocc {
             }
             plane_pins.clear();
         } // Unique plane search
+        LogFile << "Unique plane search done" << std::endl;
+
 
         // Put together the list of pin boundaries. For now we are treating them
         // as independent of axial plane
@@ -164,7 +172,7 @@ namespace mocc {
         // calculate surface indices
         this->prepare_surfaces();
 
-        LogFile << "Done building Core Mesh.";
+        LogScreen << "Done building Core Mesh." << std::endl;
 
         return;
     } // constructor
