@@ -3,6 +3,8 @@
 
 #include "error.hpp"
 
+#include "util/stacktrace.hpp"
+
 using std::cout;
 using std::endl;
 using std::string;
@@ -30,10 +32,13 @@ namespace mocc {
         func_( func ),
         message_( msg )
     {
+        
         std::stringstream ret;
         ret << file_ << ":" << line_ << " in " << func_ << endl;
         ret << message_ << std::endl;
         print_message_ = ret.str();
+
+        print_stacktrace();
 
         return;
     }
