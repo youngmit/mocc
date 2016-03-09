@@ -19,14 +19,13 @@ namespace mocc {
         MANUAL // User-defined
     };
 
-
     /**
      * The weights over all octants shall sum to 8.
      */
     class AngularQuadrature : HasOutput {
     public:
         /**
-         * \brief Intialize an \ref AngularQuadrature from scratch using XML
+         * \brief Initialize an \ref AngularQuadrature from scratch using XML
          * input
          */
         AngularQuadrature( const pugi::xml_node &input );
@@ -152,9 +151,23 @@ namespace mocc {
         bool operator!=( const AngularQuadrature &other ) const {
             return !(*this == other);
         }
+
+        /**
+         * \brief Update weights post-modification
+         *
+         * This routine recomputes the weights for each angle to better
+         * represent a modified quadrature. This is typically called following
+         * modularization.
+         *
+         */
+        void update_weights();
     private:
         /**
-         * \todo Document this
+         * This array stores the octant index of an angle reflected from the
+         * second-dimension index octant across the first-dimension direction
+         * normal. For example, \c reflection_[Normal::Y_NORM][3] stores the
+         * octant that a 4th-octant (zero-based indexing) angle would be
+         * reflected into off of the y-normal (octant 1);
          */
         static const int reflection_[3][8];
 
@@ -167,5 +180,27 @@ namespace mocc {
         // Vector of all angles for all octants
         std::vector<Angle> angles_;
 
+        // number of polar and azimuthal angles. Used only for product-type
+        // quadratures.
+        int n_polar_;
+        int n_azimuthal_;
+
+        /*
+         * This performs a weight update for product quadratures. For now, all
+         * product quadratures are based upon the Chebyshev quadrature for the
+         * azimuthal angles. The weight update simply chops the unit circle into
+         * differently-sized wedges based on the spacing of the modularized
+         * angles and assigns angle weights based on the size of the wedges.
+         * 
+         * Imagine a unit circle, upon which are drawn all of the azimuthal
+         * angles in the quadrature as solid lines. Now, draw dotted lines
+         * between each of the solid lines, equidistant from the solid lines on
+         * each side. Assign a new weight to each azimuthal angle, corresponding
+         * to the fraction of the unit sphere comprised of the region between
+         * the dotted lines on each side.
+         */
+        void update_chebyshev_weights();
     };
+
+
 }
