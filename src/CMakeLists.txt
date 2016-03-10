@@ -8,6 +8,9 @@ add_subdirectory(sweepers)
 add_subdirectory(solvers)
 add_subdirectory(auxiliary)
 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/git_SHA1.cpp.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/git_SHA1.cpp" @ONLY)
+
 file(GLOB mocc_src "*.cpp")
 
 add_executable(mocc ${mocc_src})

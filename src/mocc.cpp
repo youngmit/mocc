@@ -1,5 +1,6 @@
 #include <csignal>
 #include <cstdlib>
+#include <ctime>
 #include <exception>
 #include <iostream>
 #include <iomanip>
@@ -16,6 +17,7 @@
 #include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 
+#include "git_SHA1.hpp"
 #include "input_proc.hpp"
 
 
@@ -76,6 +78,14 @@ int main(int argc, char* argv[]){
         StartLogFile(input_proc->case_name());
 
         LogScreen << "Running case: " << input_proc->case_name() << std::endl;
+        LogScreen << "Using MOCC executable built with GIT SHA1: " <<
+            g_GIT_SHA1 << std::endl;
+        {
+            time_t t;
+            time(&t);
+            LogScreen << "Local time: " << ctime(&t);
+        }
+        LogScreen << std::endl << std::endl;
 
 #pragma omp parallel
         {
