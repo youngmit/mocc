@@ -162,7 +162,6 @@ namespace mocc{
     }
 
     void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
-        teestream tee(std::cout, LogFile);
         LogScreen << std::setw(out_w) << std::fixed << std::setprecision(5)
              << RootTimer.time() << std::setw(out_w)
              << iter << conv << endl;
@@ -182,8 +181,8 @@ namespace mocc{
         CMFDConvergence conv = CMFDConvergence::FIXED;
         switch( conv ) {
         case CMFDConvergence::FIXED:
-            cmfd_->set_k_tolerance(tolerance_k_/10.0);
-            cmfd_->set_psi_tolerance(tolerance_psi_/10.0);
+            cmfd_->set_k_tolerance(tolerance_k_/100.0);
+            cmfd_->set_psi_tolerance(tolerance_psi_/100.0);
             break;
         case CMFDConvergence::FLOAT:
             real_t k_tol = std::max(error_k_/1000.0, tolerance_k_/10.0);
