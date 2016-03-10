@@ -54,11 +54,8 @@ endif()
 
 message("Flags: ${warnings} ${options}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}"
-    CACHE STRING "Flags used by the compiler during all build types." FORCE)
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}"
-    CACHE STRING "Flags used by the compiler during all build types." FORCE)
-#set(CMAKE_CXX_LINK_FLAGS ${link})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}" )
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}")
 
 
 find_package(HDF5)
