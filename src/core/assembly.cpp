@@ -31,7 +31,7 @@ namespace mocc {
 
         // Parse plane heights (scalar form)
         bool scalar_hz = false;
-        float hz = input.attribute("hz").as_float(0.0f);
+        real_t hz = input.attribute("hz").as_float(0.0f);
         if (hz > 0.0f) {
             scalar_hz = true;
             // Fill the hz vector with all entries the same.
