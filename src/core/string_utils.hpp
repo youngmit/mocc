@@ -65,4 +65,5 @@ inline std::string& sanitize(std::string &s)
  * This will fail if the string contains characters that are not numererals or
  * whitespace.
  */
-std::vector<int> explode_ints(std::string data);
+template<typename T>
+std::vector<T> explode_string(std::string data);

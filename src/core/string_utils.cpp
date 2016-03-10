@@ -3,6 +3,7 @@
 #include <sstream>
 #include <ctype.h>
 
+#include "core/global_config.hpp"
 #include "core/error.hpp"
 
 using mocc::Exception;
@@ -43,8 +44,8 @@ std::string print_range( const std::vector<bool> &input ) {
     return output.str();
 }
 
-std::vector<int> explode_ints(std::string data) {
-    std::cout << "data: " << data << std::endl; 
+template<typename T>
+std::vector<T> explode_string(std::string data) {
     sanitize(data);
     auto is_invalid_char = [](char c) {
         return !(isspace(c) || isdigit(c));
@@ -58,17 +59,15 @@ std::vector<int> explode_ints(std::string data) {
     }
 
 
-    std::vector<int> out;
+    std::vector<T> out;
     
     // Store the string as a stream and try to read all entries
     std::stringstream inBuf(data);
-    int i = 0;
+    T i;
     while ( !inBuf.eof() ) {
         inBuf >> i;
-        cout << "'" << i << "' ";
         out.push_back(i);
     }
-    cout << endl;
 
     // Make sure everything went okay
     if ( inBuf.fail() ) {
@@ -77,3 +76,6 @@ std::vector<int> explode_ints(std::string data) {
 
     return out;
 }
+
+template std::vector<int> explode_string(std::string data);
+template std::vector<mocc::real_t> explode_string(std::string data);
