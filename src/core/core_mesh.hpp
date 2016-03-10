@@ -78,7 +78,7 @@ namespace mocc {
         * location will be the \ref PinMesh origin, in the core-local (global)
         * coordinate
         * system. This is done because during the ray trace, the original vector
-        * of points coming from \ref CoreMesh::trace() are in core-local
+        * of points coming from \ref Mesh::trace() are in core-local
         * coordinates, while the \ref PinMesh::trace() routine needs its \ref
         * Point2 (s) to be defined in pin-local coordinates, since the \ref
         * PinMesh has no idea where it is in global space. By moving the point
