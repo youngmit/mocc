@@ -22,7 +22,7 @@ namespace mocc {
             max_error_( 0.0 )
         { }
 
-        inline virtual real_t exp( real_t v ) {
+        inline real_t exp( real_t v ) {
             return std::exp(v);
         }
 
@@ -34,6 +34,12 @@ namespace mocc {
         real_t max_error_;
     };
 
+    /*
+     * This version of \ref Exponential uses a linear lookup table to speed up
+     * the evaluations of \ref exp(). If the argument to \ref exp() is beyond
+     * the domain of the table, it will fall back to the result of the standard
+     * library \c exp() function.
+     */
     class Exponential_Linear: public Exponential {
     public:
         Exponential_Linear():
@@ -62,10 +68,33 @@ namespace mocc {
             v -= space_*i+min_;
             return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
         }
-    private:
+    protected:
         real_t min_;
         real_t space_;
         real_t rspace_;
         std::array<real_t, N> d_;
+    };
+
+    /**
+     * Same as \ref Exponential_Linear, but without the check to make sure the
+     * argument is within the limits of the table. This should only be used in
+     * situations where one knows that the arguments to \ref exp() won't spill
+     * the banks of the table. Even considering branch prediction, this manages
+     * to shave a little more time off of the \ref exp() evaluations over \ref
+     * Exponential_Linear.
+     */
+    class Exponential_UnsafeLinear : public Exponential_Linear {
+        Exponential_UnsafeLinear():
+            Exponential_Linear()
+        {
+            return;
+        }
+
+        inline real_t exp( real_t v ) {
+            int i = (v-min_)*rspace_;
+            v -= space_*i+min_;
+            return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
+        }
+
     };
 }
