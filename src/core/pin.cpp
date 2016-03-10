@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-#include <sstream>
 #include <iostream>
 
 #include "pugixml.hpp"
@@ -35,18 +34,7 @@ namespace mocc {
 
         // Get material IDs
         std::string mats_in = input.child_value();
-        std::stringstream inBuf( trim( mats_in ) );
-        int mat_id;
-
-        while( !inBuf.eof() ){
-            mat_id = -1;
-            inBuf >> mat_id;
-
-            mat_IDs_.push_back( mat_id );
-        }
-        if( inBuf.fail() ){
-            throw EXCEPT( "Trouble reading material IDs in pin definition." );
-        }
+        mat_IDs_ = explode_string<int>(mats_in);
 
         if ( (int)mat_IDs_.size() != pin_mesh_->n_xsreg() ) {
             throw EXCEPT( "Wrong number of materials specified in pin "

@@ -1,39 +1,24 @@
 #include "pin_mesh_base.hpp"
 
 #include <iostream>
-#include <sstream>
 
 #include "error.hpp"
-
-using std::stringstream;
 
 namespace mocc {
     PinMesh::PinMesh( const pugi::xml_node &input ) {
         // Extract pin id
-        {
-            stringstream inBuf(input.attribute( "id" ).value());
-            inBuf >> id_;
+        id_ = input.attribute( "id" ).as_int(-1);
 
-            if(inBuf.fail()) {
-                throw EXCEPT( "Failed to read pin ID." );
-            }
-            if(!inBuf.eof()) {
-                Warn( "Dangling data after pin ID." );
-            }
+        if(id_ < 0) {
+            throw EXCEPT( "Failed to read pin ID." );
         }
 
         // Extract pitch
-        {
-            stringstream inBuf( input.attribute( "pitch" ).value() );
-            inBuf >> pitch_x_;
-            // Just treat square pitch for now
-            pitch_y_ = pitch_x_;
-            if( inBuf.fail() ) {
-                throw EXCEPT( "Failed to read pin pitch." );
-            }
-            if( !inBuf.eof() ) {
-                Warn( "Dangling data after pin pitch." );
-            }
+        pitch_x_ = input.attribute( "pitch" ).as_float(-1.0);
+        // Just treat square pitch for now
+        pitch_y_ = pitch_x_;
+        if( pitch_x_ <= 0.0 ) {
+            throw EXCEPT( "Failed to read valid pin pitch." );
         }
 
         return;

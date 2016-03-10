@@ -3,14 +3,12 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <string>
 
 #include "error.hpp"
 #include "pin.hpp"
 #include "string_utils.hpp"
 
-using std::stringstream;
 using std::string;
 using std::cout;
 using std::endl;
@@ -33,14 +31,11 @@ namespace mocc {
 
         // Read in the pin IDs
         {
-            string pins_in = input.child_value();
-            stringstream inBuf( trim(pins_in) );
+            auto pin_ids = explode_string<int>(input.child_value());
 
             std::vector<Pin*> pin_vec;
-            while ( !inBuf.eof() ) {
-                int pin_id = 0;
-                inBuf >> pin_id;
-
+            pin_vec.reserve(pin_ids.size());
+            for( int pin_id: pin_ids ) {
                 // Make sure the pin ID is valid
                 if ( pins.count( pin_id ) == 0 ){
                     throw EXCEPT( "Unrecognized pin ID in lattice "
@@ -48,11 +43,7 @@ namespace mocc {
                 }
                 pin_vec.push_back( pins.at( pin_id ).get() );
             }
-            // Catch errors in reading
-            if ( inBuf.fail() ) {
-                throw EXCEPT( "Trouble reading pin IDs in lattice "
-                        "specification." );
-            }
+            
 
             // Make sure we have ther right number of pins
             if ( pin_vec.size() != nx_*ny_) {

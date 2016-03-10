@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <sstream>
 
 #include "error.hpp"
 #include "files.hpp"
@@ -12,8 +11,6 @@
 
 using std::cout;
 using std::endl;
-using std::stringstream;
-
 
 namespace mocc {
     CoreMesh::CoreMesh( const pugi::xml_node &input ) {
