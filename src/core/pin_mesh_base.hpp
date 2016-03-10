@@ -70,7 +70,7 @@ namespace mocc {
          * the true lengths of the rays as they pass through the mesh.
          * Therefore, summing the volume of the segments in each FSR is not
          * guaranteed to return the correct FSR volume. Make sure to correct for
-         * this after stracing all of the rays in a given angle.
+         * this after tracing all of the rays in a given angle.
         */
         virtual int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
                 VecI &reg ) const =0;
