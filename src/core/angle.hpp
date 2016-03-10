@@ -59,6 +59,9 @@ namespace mocc {
             long double theta_big = std::acos(oz_big);
             theta = theta_big;
             alpha = std::acos(ox_big/std::sin(theta_big));
+            if( oy < 0.0 ) {
+                alpha = TWOPI - alpha;
+            }
             rsintheta = 1.0l/std::sin(theta_big);
             return;
         }
