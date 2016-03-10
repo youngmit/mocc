@@ -14,7 +14,7 @@ namespace mocc {
         }
 
         // Extract pitch
-        pitch_x_ = input.attribute( "pitch" ).as_float(-1.0);
+        pitch_x_ = input.attribute( "pitch" ).as_double(-1.0);
         // Just treat square pitch for now
         pitch_y_ = pitch_x_;
         if( pitch_x_ <= 0.0 ) {
