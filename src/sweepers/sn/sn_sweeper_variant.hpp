@@ -66,11 +66,19 @@ namespace mocc { namespace sn {
                 if( inner == n_inner_-1 && coarse_data_ ) {
                     // Wipe out the existing currents
                     coarse_data_->zero_data( group );
-                    this->sweep_1g<sn::Current>( group );
+                    if( core_mesh_->is_2d() ) {
+                        this->sweep_1g_2d<sn::Current>( group );
+                    } else {
+                        this->sweep_1g<sn::Current>( group );
+                    }
                     coarse_data_->set_has_axial_data(true);
                     coarse_data_->set_has_radial_data(true);
                 } else {
-                    this->sweep_1g<sn::NoCurrent>( group );
+                    if( core_mesh_->is_2d() ) {
+                        this->sweep_1g_2d<sn::NoCurrent>( group );
+                    } else {
+                        this->sweep_1g<sn::NoCurrent>( group );
+                    }
                 }
             }
 
@@ -199,6 +207,128 @@ namespace mocc { namespace sn {
                                              z_flux[nx*iy + ix],
                                              i, ang, group );
                         }
+                    }
+                }
+
+                if( gs_boundary_ ) {
+                    bc_in_.update( group, iang, bc_out_ );
+                }
+            }
+            // Update the boundary condition
+#pragma omp single
+            if( !gs_boundary_ ) {
+                bc_in_.update( group, bc_out_ );
+            }
+
+            // Reduce scalar flux
+#pragma omp critical
+            {
+                flux_1g_ += t_flux;
+            }
+
+            } // OMP Parallel
+
+            return;
+        }
+        
+        /**
+         * \brief Generic Sn sweep procedure for 2-D orthogonal mesh.
+         *
+         * This routine performs a single, one-group transport sweep with Sn. It
+         * is templated on two parameters to tailor it to different differencing
+         * schemes and current calculation requirements. To see examples of
+         * template parameters, look at \ref sn::CellWorker and \ref
+         * sn::Current.
+         */
+        template <typename CurrentWorker>
+        void sweep_1g_2d( int group ) {
+            flux_1g_ = 0.0;
+#pragma omp parallel default(shared)
+            {
+            CurrentWorker cw( coarse_data_, &mesh_ );
+
+            Worker cell_worker = cell_worker_;
+            cell_worker.set_group( group );
+
+            ArrayB1 t_flux(n_reg_);
+            t_flux = 0.0;
+
+            int nx = mesh_.nx();
+            int ny = mesh_.ny();
+
+            real_t *x_flux;
+            real_t *y_flux;
+
+#pragma omp for
+            for( int iang=0; iang<ang_quad_.ndir()/2; iang++ ) {
+                Angle ang = ang_quad_[iang];
+                // Configure the current worker for this angle
+                cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+
+                // Get the source for this angle
+                auto& q = source_->get_transport( iang );
+
+                cell_worker.set_angle( iang, ang );
+
+                real_t wgt = ang.weight * PI;
+                real_t ox = ang.ox;
+                real_t oy = ang.oy;
+
+                // Configure the loop direction. Could template the below for
+                // speed at some point.
+                int sttx = 0;
+                int stpx = nx;
+                int xdir = 1;
+                if( ox < 0.0 ) {
+                    ox = -ox;
+                    sttx = nx-1;
+                    stpx = -1;
+                    xdir = -1;
+                }
+
+                int stty = 0;
+                int stpy = ny;
+                int ydir = 1;
+                if( oy < 0.0 ) {
+                    oy = -oy;
+                    stty = ny-1;
+                    stpy = -1;
+                    ydir = -1;
+                }
+
+                // initialize upwind condition
+                auto xf = bc_out_.get_face( 0, iang, Normal::X_NORM );
+                x_flux = xf.second;
+                auto yf = bc_out_.get_face( 0, iang, Normal::Y_NORM );
+                y_flux = yf.second;
+                bc_in_.copy_face( group, iang, Normal::X_NORM, x_flux );
+                bc_in_.copy_face( group, iang, Normal::Y_NORM, y_flux );
+
+                cw.upwind_work( x_flux, y_flux, ang, group);
+
+                cell_worker.set_z(0);
+                for( int iy=stty; iy!=stpy; iy+=ydir ) {
+                    cell_worker.set_y(iy);
+                    for( int ix=sttx; ix!=stpx; ix+=xdir ) {
+                        // Gross. really need an Sn mesh abstraction
+                        real_t psi_x = x_flux[iy];
+                        real_t psi_y = y_flux[ix];
+
+                        size_t i = mesh_.coarse_cell( Position( ix, iy, 0 ) );
+
+                        real_t psi = cell_worker.evaluate_2d( psi_x, psi_y,
+                                q[i], xstr_[i], i );
+
+                        x_flux[iy] = psi_x;
+                        y_flux[ix] = psi_y;
+
+                        t_flux(i) += psi*wgt;
+
+                        // Stash currents (or not, depending on the
+                        // CurrentWorker template parameter)
+                        cw.current_work( x_flux[iy],
+                                         y_flux[ix],
+                                         i, ang, group );
                     }
                 }
 
