@@ -68,7 +68,7 @@ namespace mocc {
         Position pin_position( size_t ipin ) const;
 
         /**
-         * \breif Return the number of \ref Pins in this \ref Plane marked as
+         * \brief Return the number of \ref Pin s in this \ref Plane marked as
          * fuel.
          */
         int n_fuel() const {
