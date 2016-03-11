@@ -56,9 +56,15 @@ namespace mocc {
         // Accumulate the number of FSRs and XS mesh regions
         n_reg_   = 0;
         n_xsreg_ = 0;
+        n_fuel_  = 0;
         for( auto &l: lattices_ ) {
             n_reg_   += l->n_reg();
             n_xsreg_ += l->n_xsreg();
+            for( const auto pin: *l ) {
+                if( pin->is_fuel() ) {
+                    n_fuel_++;
+                }
+            }
         }
     }
 

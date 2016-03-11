@@ -19,6 +19,7 @@
 namespace mocc {
     typedef std::shared_ptr<PinMesh> SP_PinMesh_t;
     typedef std::unique_ptr<PinMesh> UP_PinMesh_t;
+    typedef std::map<int, UP_PinMesh_t> PinMesh_Map_t;
 
     /**
      * \brief Construct a pin mesh, and return a \c unique_ptr to it.
@@ -40,5 +41,5 @@ namespace mocc {
      * This walks through the passed XML node, parsing each pin mesh specified
      * within.
      */
-    std::map<int, UP_PinMesh_t> ParsePinMeshes( const pugi::xml_node &input );
+     PinMesh_Map_t ParsePinMeshes( const pugi::xml_node &input );
 }
