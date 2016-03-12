@@ -42,6 +42,16 @@ void generate_output() {
     out_name.append(".h5");
     H5Node outfile( out_name, H5Access::WRITE );
     solver->output( outfile );
+
+    LogFile << std::endl;
+    LogFile << "Full input:" << std::endl;
+
+    std::stringstream filestream;
+
+    input_proc->document().save(filestream);
+    outfile.write("input_file", filestream.str());
+
+    outfile.write("git_sha1", std::string(g_GIT_SHA1));
 }
 
 // Print the MOCC banner. Pretty!
