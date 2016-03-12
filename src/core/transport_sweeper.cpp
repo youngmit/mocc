@@ -62,18 +62,20 @@ namespace mocc {
         int ireg = 0;
         real_t tot_pow = 0.0;
         for( const auto pin: *core_mesh_ ) {
-            const PinMesh &pm = pin->mesh();
-            Position pos = core_mesh_->pin_position(ipin);
-            for( int ir=0; ir<pm.n_reg(); ir++ ) {
-                tot_pow += fsr_pow(ireg);
-                powers(pos.z, pos.y, pos.x) += fsr_pow(ireg);
-                ireg++;
+            if( pin->is_fuel() ) {
+                const PinMesh &pm = pin->mesh();
+                Position pos = core_mesh_->pin_position(ipin);
+                for( int ir=0; ir<pm.n_reg(); ir++ ) {
+                    tot_pow += fsr_pow(ireg);
+                    powers(pos.z, pos.y, pos.x) += fsr_pow(ireg);
+                    ireg++;
+                }
             }
             ipin++;
         }
 
         // Normalize!
-        tot_pow = powers.size()/tot_pow;
+        tot_pow = powers.size()*core_mesh_->n_fuel_2d()/tot_pow;
         for( auto &v: powers ) {
             v *= tot_pow;
         }
