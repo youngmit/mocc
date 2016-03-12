@@ -53,6 +53,10 @@ namespace mocc{
             return case_name_;
         }
 
+        const pugi::xml_document &document() const {
+            return doc_;
+        }
+
     private:
         // Timer for all input processing activities
         Timer &timer_;
