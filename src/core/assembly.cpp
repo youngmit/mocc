@@ -9,7 +9,6 @@
 #include "string_utils.hpp"
 
 using std::string;
-using std::stringstream;
 using std::endl;
 using std::cout;
 
@@ -32,7 +31,7 @@ namespace mocc {
 
         // Parse plane heights (scalar form)
         bool scalar_hz = false;
-        float hz = input.attribute("hz").as_float(0.0f);
+        real_t hz = input.attribute("hz").as_float(0.0f);
         if (hz > 0.0f) {
             scalar_hz = true;
             // Fill the hz vector with all entries the same.
@@ -46,14 +45,8 @@ namespace mocc {
                 throw EXCEPT("Plane heights are over-specified for assembly.");
             }
             string hzs = hz_in.child_value();
-            stringstream hzstream(hzs);
+            dz_ = explode_string<real_t>(hzs);
 
-            while( !hzstream.eof() ) {
-                real_t hzi;
-                hzstream >> hzi;
-                dz_.push_back(hzi);
-
-            }
             // Lattice dimensions are read as top-to-bottom, but stored as
             // bottom-to-top.
             std::reverse( dz_.begin(), dz_.end() );
@@ -65,10 +58,9 @@ namespace mocc {
         }
         {
             string lat_str = input.child("lattices").child_value();
-            stringstream inBuf( trim(lat_str) );
-            while (!inBuf.eof()) {
-                int lat_id;
-                inBuf >> lat_id;
+            auto lattice_ids = explode_string<int>(lat_str);
+
+            for ( int lat_id: lattice_ids ) {
                 if ( lattices.count(lat_id) > 0 ) {
                     lattices_.push_back( lattices.at(lat_id).get() );
                 } else {

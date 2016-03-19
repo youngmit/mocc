@@ -67,6 +67,7 @@ namespace mocc { namespace cmdo {
             if( fs.size() == n_reg_ ) {
                 // We need to homogenize the fission source to the Sn mesh
                 ArrayB1 sn_fs(sn_source_.n_reg());
+                sn_fs = 0.0;
                 int ireg_fsr = 0;
                 int ipin = 0;
                 for( const auto &pin: mesh_ ) {
@@ -82,7 +83,7 @@ namespace mocc { namespace cmdo {
 
                 sn_source_.fission( sn_fs, ig );
             } else {
-                // Let's assume the fissions source is defined on the Sn mesh,
+                // Let's assume the fission source is defined on the Sn mesh,
                 // and set it directly
                 sn_source_.fission( fs, ig );
             }

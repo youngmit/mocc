@@ -1,7 +1,6 @@
 #include "core.hpp"
 
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #include "error.hpp"
@@ -50,19 +49,16 @@ namespace mocc {
 
         // Read in the assembly IDs
         std::string asy_str = input.child_value();
-        std::stringstream inBuf( trim(asy_str) );
-        std::vector<int> asy_vec;
-        for ( unsigned int i=0; i<nx_*ny_; ++i ) {
-            int id;
-            inBuf >> id;
-            asy_vec.push_back( id );
-            if (inBuf.fail()) {
-                throw EXCEPT("Trouble reading assembly IDs in core "
-                        "specification."); }
+        auto asy_vec = explode_string<int>(asy_str);
+
+        if( asy_vec.size() != nx_*ny_ ) {
+            throw EXCEPT("Wrong number of assemblies specified for core.");
         }
+
         // Store references to the assemblies in a 2D array. Make sure to flip
         // the y-index to get it into lower-left origin
         assemblies_.resize( nx_*ny_ );
+
         int iasy=0;
         for ( unsigned int iy=0; iy<ny_; iy++ ) {
             unsigned int row = ny_ - iy - 1;

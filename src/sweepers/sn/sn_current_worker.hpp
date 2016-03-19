@@ -106,6 +106,59 @@ namespace mocc {
             }
 
             /**
+             * Store the upwind boundary condition as a contribution to the
+             * coarse mesh current (2-D version).
+             */
+            inline void upwind_work( const real_t *x, const real_t *y,
+                    const Angle &ang, int group ) {
+
+                size_t nx = mesh_->nx();
+                size_t ny = mesh_->ny();
+
+                real_t w = ang.weight * PI;
+
+                real_t ox = ang.ox*w;
+                real_t oy = ang.oy*w;
+
+                // Configure the upwind directions based on the angle
+                size_t ixx = 0;
+                if( ang.ox < 0.0 ) {
+                    assert( upwind_x_ == Surface::EAST );
+                    ixx = mesh_->nx()-1;
+                }
+
+                size_t iyy = 0;
+                if( ang.oy < 0.0 ) {
+                    assert( upwind_y_ == Surface::NORTH );
+                    iyy = mesh_->ny()-1;
+                }
+
+                // X-normal
+                for( size_t iy=0; iy<ny; iy++ ) {
+                    Position pos( ixx, iy, 0);
+                    size_t i = mesh_->coarse_cell( pos );
+                    int surf = mesh_->coarse_surf( i, upwind_x_ );
+#pragma omp atomic update
+                    data_->current(surf, group) += ox*x[iy];
+#pragma omp atomic update
+                    data_->surface_flux(surf, group) += x[iy];
+                }
+
+                // Y-normal
+                for( size_t ix=0; ix<nx; ix++ ) {
+                    Position pos( ix, iyy, 0 );
+                    size_t i = mesh_->coarse_cell( pos );
+                    int surf = mesh_->coarse_surf( i, upwind_y_ );
+#pragma omp atomic update
+                    data_->current(surf, group) += oy*y[ix];
+#pragma omp atomic update
+                    data_->surface_flux(surf, group) += y[ix];
+                }
+
+                return;
+            } // Upwind work 2D
+
+            /**
              * Store the downwind surface flux of a single cell as a
              * contribution to the coarse mesh current.
              */
@@ -150,6 +203,42 @@ namespace mocc {
 
                 return;
             }
+
+            /**
+             * Store the downwind surface flux of a single cell as a
+             * contribution to the coarse mesh current. 2-D version.
+             */
+            inline void current_work( real_t psi_x, real_t psi_y,
+                    size_t i, Angle &ang, int group )
+            {
+                real_t w = ang.weight * PI;
+
+                real_t ox = ang.ox*w;
+                real_t oy = ang.oy*w;
+
+                // Watch out; we are assuming a direct mapping from the Sn mesh
+                // index to the CM index.
+
+                // X-normal
+                {
+                    int surf = mesh_->coarse_surf( i, downwind_x_ );
+#pragma omp atomic update
+                    data_->current( surf, group ) += psi_x*ox;
+#pragma omp atomic update
+                    data_->surface_flux( surf, group ) += psi_x;
+                }
+
+                // Y-normal
+                {
+                    int surf = mesh_->coarse_surf( i, downwind_y_ );
+#pragma omp atomic update
+                    data_->current( surf, group ) += psi_y*oy;
+#pragma omp atomic update
+                    data_->surface_flux( surf, group ) += psi_y;
+                }
+
+                return;
+            } // current_work (2-D)
 
             /*
              * Configure the Current object to use the proper octant for looking
@@ -216,8 +305,20 @@ namespace mocc {
                 return;
             }
 
+            inline void upwind_work( const real_t *x, const real_t *y,
+                    const Angle &ang, int group )
+            {
+                return;
+            }
+
             inline void current_work( real_t psi_x, real_t psi_y, real_t psi_z,
-                    size_t i, Angle &ang, int group )
+                    size_t i, const Angle &ang, int group )
+            {
+                return;
+            }
+
+            inline void current_work( real_t psi_x, real_t psi_y,
+                    size_t i, const Angle &ang, int group )
             {
                 return;
             }

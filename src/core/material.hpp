@@ -70,5 +70,6 @@ namespace mocc{
         ArrayB1 xskf_;
         ArrayB1 xsch_;
         ScatteringMatrix xssc_;
+        bool is_fissile_;
     };
 }

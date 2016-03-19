@@ -67,6 +67,14 @@ namespace mocc {
          */
         Position pin_position( size_t ipin ) const;
 
+        /**
+         * \brief Return the number of \ref Pin s in this \ref Plane marked as
+         * fuel.
+         */
+        int n_fuel() const {
+            return n_fuel_;
+        }
+
     private:
         /**
          * Number of lattices in the x direction
@@ -95,5 +103,7 @@ namespace mocc {
          * List of the starting FSR index for each \ref Lattice in the plane
          */
         VecI first_reg_lattice_;
+
+        int n_fuel_;
     };
 }

@@ -2,6 +2,9 @@ project(MOCC)
 cmake_minimum_required(VERSION 3.2)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+
 SET(BUILD_TESTS true CACHE BOOL "Enable compilation of tests")
 MESSAGE(STATUS "Tests: ${BUILD_TESTS}")
 SET(PROFILE false CACHE BOOL "Enable profiling")
@@ -51,11 +54,8 @@ endif()
 
 message("Flags: ${warnings} ${options}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}"
-    CACHE STRING "Flags used by the compiler during all build types." FORCE)
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}"
-    CACHE STRING "Flags used by the compiler during all build types." FORCE)
-#set(CMAKE_CXX_LINK_FLAGS ${link})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}" )
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}")
 
 
 find_package(HDF5)

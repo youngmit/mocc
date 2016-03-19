@@ -68,7 +68,7 @@ namespace mocc { namespace moc {
 
         // Parse the number of inner iterations
         int int_in = input.attribute("n_inner").as_int(-1);
-        if(int_in <= 0) {
+        if(int_in < 0) {
             throw EXCEPT("Invalid number of inner iterations specified "
                 "(n_inner).");
         }

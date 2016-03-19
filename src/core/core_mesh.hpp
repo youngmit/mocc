@@ -78,7 +78,7 @@ namespace mocc {
         * location will be the \ref PinMesh origin, in the core-local (global)
         * coordinate
         * system. This is done because during the ray trace, the original vector
-        * of points coming from \ref CoreMesh::trace() are in core-local
+        * of points coming from \ref Mesh::trace() are in core-local
         * coordinates, while the \ref PinMesh::trace() routine needs its \ref
         * Point2 (s) to be defined in pin-local coordinates, since the \ref
         * PinMesh has no idea where it is in global space. By moving the point
@@ -186,8 +186,8 @@ namespace mocc {
         }
 
         /**
-        * \brief Return a \ref Position, indicating the global position of a pin in the
-        * core geometry.
+        * \brief Return a \ref Position, indicating the global position of a pin
+        * in the core geometry.
         *
         * At some point it would be nifty to create a custom iterator class that
         * can return this, obviating the need to keep track of pin index when
@@ -205,6 +205,27 @@ namespace mocc {
          */
         const VecI& unique_planes() const {
             return unique_plane_;
+        }
+
+        /**
+         * \brief Return the number of fuel pins in the plane.
+         *
+         * Practically speaking, this is the maximum number of pins in all of
+         * the Planes of the core.
+         */
+        int n_fuel_2d() const {
+            return n_fuel_2d_;
+        }
+
+        /**
+         * \brief Returns true if this \ref CoreMesh represents a 2-D problem.
+         *
+         * A 2-D problem in this context means that there is only one plane, and
+         * that both axial boundary conditions are reflective.
+         */
+        bool is_2d() const {
+            return (nz_ == 1) && (bc_[Surface::TOP] == Boundary::REFLECT) &&
+                (bc_[Surface::BOTTOM] == Boundary::REFLECT);
         }
 
         /**
@@ -258,6 +279,8 @@ namespace mocc {
 
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
+
+        int n_fuel_2d_;
     };
 
     typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

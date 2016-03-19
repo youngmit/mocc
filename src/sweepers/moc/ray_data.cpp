@@ -48,7 +48,7 @@ namespace mocc { namespace moc {
             const CoreMesh &mesh ):
         ang_quad_(ang_quad)
     {
-        LogFile << "Generating ray data: " << std::endl;
+        LogScreen << "Generating ray data... " << std::endl;
         // Make sure we have reasonable input
         if ( input.empty() ) {
             throw EXCEPT("No input privided for ray spacing.");
@@ -267,7 +267,7 @@ namespace mocc { namespace moc {
         // so.
         this->correct_volume( mesh, FLAT );
 
-        LogFile << std::endl;
+        LogScreen << "Done ray tracing" << std::endl;
     }
 
     void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )

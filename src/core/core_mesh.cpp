@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-#include <sstream>
 
 #include "error.hpp"
 #include "files.hpp"
@@ -12,8 +11,6 @@
 
 using std::cout;
 using std::endl;
-using std::stringstream;
-
 
 namespace mocc {
     CoreMesh::CoreMesh( const pugi::xml_node &input ) {
@@ -27,7 +24,7 @@ namespace mocc {
         LogFile << "Material library done" << std::endl;
 
         // Parse pins
-        pins_ = ParsePins( input, pin_meshes_ );
+        pins_ = ParsePins( input, pin_meshes_, mat_lib_ );
         LogFile << "Pins done" << std::endl;
 
         // Parse lattices
@@ -62,6 +59,7 @@ namespace mocc {
         // Determine the set of geometricaly-unique axial planes
         std::vector< VecI > unique;
         VecI plane_pins;
+        n_fuel_2d_ = 0;
         int plane_reg = 0;
         for ( int iz=0; iz<nz_; iz++) {
             first_reg_plane_.push_back(plane_reg);
@@ -101,6 +99,7 @@ namespace mocc {
                     lattices.push_back(lat);
                 }
                 planes_.emplace_back(lattices, core_.nx(), core_.ny());
+                n_fuel_2d_ = std::max(n_fuel_2d_, planes_.back().n_fuel());
                 unique_plane_.push_back( planes_.size() - 1 );
                 first_unique_.push_back( iz );
             } else {

@@ -92,6 +92,13 @@ namespace mocc {
             return assigned_materials_.cend();
         }
 
+        /**
+         * \brief Return whether the passed material ID is defined
+         */
+        bool has( int id ) const {
+            return material_ids_.count(id) > 0;
+        }
+
     private:
         // Vector storing all of the materials in the library.
         MaterialVec lib_materials_;
