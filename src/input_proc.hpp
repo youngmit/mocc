@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "core/core_mesh.hpp"
 #include "core/timers.hpp"
@@ -20,7 +21,7 @@ namespace mocc{
         * Given the filename of an XML document, parses the document into a tree
         * structure, then uses it to generate a CoreMesh and top-level Solver.
         */
-        InputProc(const char* filename);
+        InputProc(std::string filename);
 
         /**
          * \brief Actually process the contents of the file and construct

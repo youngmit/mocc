@@ -28,7 +28,7 @@ std::string strip_extension( std::string input ) {
 }
 
 namespace mocc{
-    InputProc::InputProc(const char* filename):
+    InputProc::InputProc(std::string filename):
         timer_(RootTimer.new_timer("Input Processor", true)),
         core_mesh_(nullptr),
         solver_(nullptr),
@@ -41,7 +41,7 @@ namespace mocc{
         LogFile << "Processing input" << endl;
         LogFile << "Parsing: " << filename << endl;
 
-        pugi::xml_parse_result result = doc_.load_file( filename );
+        pugi::xml_parse_result result = doc_.load_file( filename.c_str() );
 
         // Make sure this worked
         if( result.status != pugi::status_ok ) {
