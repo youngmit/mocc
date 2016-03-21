@@ -43,15 +43,27 @@ namespace mocc {
                 return;
             }
 
+            inline void set_group( int group ) {
+                group_ = group;
+                residual_ = {0.0, 0.0, 0.0};
+            }
+
+            std::array<real_t, 3> residual() const {
+                auto resid = residual_;
+                resid[0] = std::sqrt(resid[0]);
+                resid[1] = std::sqrt(resid[1]);
+                resid[2] = std::sqrt(resid[2]);
+                return resid;
+            };
+
             inline void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
-                    const ArrayB1 &e_tau, const moc::Ray &ray, int first_reg,
-                    int group ) {
+                    const ArrayB1 &e_tau, const moc::Ray &ray, int first_reg ) {
 #pragma omp critical
             {
                 ArrayB1 current =
-                        coarse_data_->current(blitz::Range::all(), group);
+                        coarse_data_->current(blitz::Range::all(), group_);
                 ArrayB1 surface_flux =
-                        coarse_data_->surface_flux(blitz::Range::all(), group);
+                        coarse_data_->surface_flux(blitz::Range::all(), group_);
                 size_t cell_fw = ray.cm_cell_fw();
                 size_t cell_bw = ray.cm_cell_bw();
                 int surf_fw = ray.cm_surf_fw();
@@ -63,13 +75,13 @@ namespace mocc {
                 // correction factors, which use plane-by-plane indexing
                 Normal norm_fw = mesh_->surface_normal( surf_fw );
                 Normal norm_bw = mesh_->surface_normal( surf_bw );
-                current( surf_fw+surf_offset_, group ) +=
+                current( surf_fw+surf_offset_ ) +=
                     psi1(iseg_fw) * current_weights_[(int)norm_fw];
-                current( surf_bw+surf_offset_, group ) -=
+                current( surf_bw+surf_offset_ ) -=
                     psi2(iseg_bw) * current_weights_[(int)norm_bw];
-                surface_flux( surf_fw+surf_offset_, group ) +=
+                surface_flux( surf_fw+surf_offset_ ) +=
                     psi1(iseg_fw) * flux_weights_[(int)norm_fw];
-                surface_flux( surf_bw+surf_offset_, group ) -=
+                surface_flux( surf_bw+surf_offset_ ) -=
                     psi2(iseg_bw) * flux_weights_[(int)norm_bw];
 
                 surf_sum_(surf_fw*2+0) += psi1(iseg_fw);
@@ -97,9 +109,9 @@ namespace mocc {
                         // Store FW surface stuff
                         norm_fw = surface_to_normal( crd->fw );
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
-                        current( surf_fw+surf_offset_, group ) +=
+                        current( surf_fw+surf_offset_ ) +=
                             psi1(iseg_fw) * current_weights_[(int)norm_fw];
-                        surface_flux( surf_fw+surf_offset_, group ) +=
+                        surface_flux( surf_fw+surf_offset_ ) +=
                             psi1(iseg_fw) * flux_weights_[(int)norm_fw];
                         surf_sum_(surf_fw*2+0) += psi1(iseg_fw);
                         surf_norm_(surf_fw*2+0) += 1.0;
@@ -120,9 +132,9 @@ namespace mocc {
                         // Store BW surface stuff
                         norm_bw = surface_to_normal( crd->bw );
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
-                        current( surf_bw+surf_offset_, group ) -=
+                        current( surf_bw+surf_offset_ ) -=
                             psi2(iseg_bw) * current_weights_[(int)norm_bw];
-                        surface_flux( surf_bw+surf_offset_, group ) -=
+                        surface_flux( surf_bw+surf_offset_ ) -=
                             psi2(iseg_bw) * flux_weights_[(int)norm_bw];
                         surf_sum_(surf_bw*2+1) += psi2(iseg_bw);
                         surf_norm_(surf_bw*2+1) += 1.0;
@@ -150,7 +162,7 @@ namespace mocc {
                 return;
             }
 
-            void post_angle( int iang, int igroup ) {
+            void post_angle( int iang ) {
 #pragma omp single
             {
                 // Normalize the flux and sigt values and calculate
@@ -165,7 +177,7 @@ namespace mocc {
                 // Doing area-based normalization
                 //surf_sum_ /= surf_norm_;
 
-                calculate_corrections( iang, igroup );
+                calculate_corrections( iang, group_ );
             }
 #pragma omp barrier
                 return;
@@ -187,6 +199,8 @@ namespace mocc {
             Angle ang_;
 
 			const moc::RayData &rays_;
+
+            std::array<real_t, 3> residual_;
 
             /** \page surface_norm Surface Normalization
              * Surface normalization \todo discuss surface normalization

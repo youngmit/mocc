@@ -63,12 +63,14 @@ namespace mocc {
             };
             for( size_t ic=0; ic<mesh_->n_cell_plane(); ic++ )
             {
+                int icc = ic+cell_offset_;
+
 				auto pos = mesh_->coarse_position(ic);
 
 				real_t area_x = area[0]/mesh_->pin_dx()[pos.x];
                 real_t area_y = area[1]/mesh_->pin_dy()[pos.y];
 
-                real_t xstr = sn_xs_mesh_[ic+cell_offset_].xsmactr()[group];
+                real_t xstr = sn_xs_mesh_[icc].xsmactr()[group];
 
                 // FW direction
                 {
@@ -89,12 +91,20 @@ namespace mocc {
 
                     real_t b = sigt_sum_(ic*2+0)/xstr;
 
-                    corrections_->alpha( ic+cell_offset_, iang1, group,
-                            Normal::X_NORM ) = ax;
-                    corrections_->alpha( ic+cell_offset_, iang1, group,
-                            Normal::Y_NORM ) = ay;
+                    real_t e = ax - corrections_->alpha( icc, iang1, group,
+                            Normal::X_NORM );
+                    residual_[0] += e*e;
+                    e = ay - corrections_->alpha( icc, iang1, group,
+                            Normal::Y_NORM );
+                    residual_[1] += e*e;
+                    e = b - corrections_->beta( icc, iang1, group );
+                    residual_[2] += e*e;
 
-                    corrections_->beta( ic+cell_offset_, iang1, group ) = b;
+                    corrections_->alpha( icc, iang1, group, Normal::X_NORM ) =
+                        ax;
+                    corrections_->alpha( icc, iang1, group, Normal::Y_NORM ) =
+                        ay;
+                    corrections_->beta( icc, iang1, group ) = b;
                 }
 
                 // BW direction
@@ -116,13 +126,22 @@ namespace mocc {
                     real_t ay = vol_sum_(ic*2+1)/(psi_yl + psi_yr);
 
                     real_t b = sigt_sum_(ic*2+1)/xstr;
+                    
+                    real_t e = ax - corrections_->alpha( icc, iang2, group,
+                            Normal::X_NORM );
+                    residual_[0] += e*e;
+                    e = ay - corrections_->alpha( icc, iang2, group,
+                            Normal::Y_NORM );
+                    residual_[1] += e*e;
+                    e = b - corrections_->beta( icc, iang2, group );
+                    residual_[2] += e*e;
 
-                    corrections_->alpha( ic+cell_offset_, iang2, group,
-                            Normal::X_NORM ) = ax;
-                    corrections_->alpha( ic+cell_offset_, iang2, group,
-                            Normal::Y_NORM ) = ay;
+                    corrections_->alpha( icc, iang2, group, Normal::X_NORM ) =
+                        ax;
+                    corrections_->alpha( icc, iang2, group, Normal::Y_NORM ) =
+                        ay;
 
-                    corrections_->beta( ic+cell_offset_, iang2, group ) = b;
+                    corrections_->beta( icc, iang2, group ) = b;
                 }
             }
 
