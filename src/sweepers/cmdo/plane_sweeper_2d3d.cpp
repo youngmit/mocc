@@ -72,11 +72,14 @@ namespace mocc { namespace cmdo {
         }
 
         // MoC Sweeper
-        if( i_outer_ > n_inactive_moc_ ) {
+        bool do_moc = (i_outer_ > n_inactive_moc_) &&
+            ((i_outer_ % moc_modulo_) == 0);
+        if( do_moc ) {
             moc_sweeper_.sweep( group );
         }
         ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
+
 
         // Sn sweeper
         // For now, we are assuming that the Sn cross sections are being updated
@@ -209,9 +212,10 @@ namespace mocc { namespace cmdo {
     void PlaneSweeper_2D3D::parse_options( const pugi::xml_node &input ) {
         // Set defaults for everything
         expose_sn_ = false;
-        do_snproject_ = true;
+        do_snproject_ = false;
         do_tl_ = true;
         n_inactive_moc_ = 0;
+        moc_modulo_ = 1;
 
         // Override with entries in the input node
         if( !input.attribute("expose_sn").empty() ) {
@@ -226,6 +230,9 @@ namespace mocc { namespace cmdo {
         if( !input.attribute("inactive_moc").empty() ) {
             n_inactive_moc_ = input.attribute("inactive_moc").as_int();
         }
+        if( !input.attribute("moc_modulo").empty() ) {
+            moc_modulo_ = input.attribute("moc_modulo").as_int();
+        }
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
@@ -233,6 +240,7 @@ namespace mocc { namespace cmdo {
         LogFile << "    Transverse Leakage: " << do_snproject_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
+        LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;
 
 
     }

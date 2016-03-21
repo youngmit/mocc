@@ -79,7 +79,11 @@ namespace mocc { namespace cmdo {
          * method on one of the sub-sweepers.
          */
         void calc_fission_source( real_t k, ArrayB1 &fission_source ) const {
-            moc_sweeper_.calc_fission_source( k, fission_source );
+            if( expose_sn_ ) { 
+                sn_sweeper_.calc_fission_source( k, fission_source );
+            } else {
+                moc_sweeper_.calc_fission_source( k, fission_source );
+            }
             return;
         }
 
@@ -89,7 +93,11 @@ namespace mocc { namespace cmdo {
          * method on one of the sub-sweepers.
          */
         real_t total_fission( bool old ) const {
-            return sn_sweeper_.total_fission( old );
+            if( expose_sn_ ) {
+                return sn_sweeper_.total_fission( old );
+            } else {
+                return moc_sweeper_.total_fission( old );
+            }
         }
 
         /**
@@ -131,5 +139,6 @@ namespace mocc { namespace cmdo {
         bool do_tl_;
         int n_inactive_moc_;
         int i_outer_;
+        int moc_modulo_;
     };
 } } // Namespace mocc::cmdo
