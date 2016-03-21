@@ -61,8 +61,6 @@ namespace mocc { namespace cmdo {
 
         bool internal_coupling_;
 
-        std::vector<std::vector<std::array<real_t, 3>>> correction_entropy_;
-
         std::vector<std::vector<std::array<real_t, 3>>> correction_residuals_;
     };
 } } // Namespace mocc::cmdo

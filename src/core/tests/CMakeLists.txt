@@ -1,33 +1,19 @@
 if(${BUILD_TESTS})
-    add_executable(testH5File test_h5file.cpp)
-    target_link_libraries(testH5File core hdf5_cpp UnitTest++)
-    add_test(testH5File testH5File)
+    add_unit_test(test_h5file hdf5_cpp core)
 
-    add_executable(testAngularQuadrature test_angular_quadrature.cpp)
-    target_link_libraries(testAngularQuadrature core pugixml hdf5_cpp UnitTest++)
-    add_test(testAngularQuadratrue testAngularQuadrature)
+    add_unit_test(test_AngularQuadrature hdf5_cpp core)
     
-    add_executable(testMaterial test_material.cpp)
-    target_link_libraries(testMaterial core pugixml UnitTest++)
-    add_test(testMaterial testMaterial)
+    add_unit_test(test_Material core pugixml)
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/c5g7.xsl 
         ${CMAKE_CURRENT_BINARY_DIR}/c5g7.xsl testMaterial)
     
-    add_executable(testMesh test_mesh.cpp)
-    target_link_libraries(testMesh core pugixml UnitTest++)
-    add_test(testMesh testMesh)
+    add_unit_test(test_Mesh core pugixml)
     
-    add_executable(testExp test_exponential.cpp)
-    target_link_libraries(testExp core pugixml UnitTest++)
-    add_test(testExp testExp)
+    add_unit_test(test_Exponential core pugixml)
 
-    add_executable(testBoundaryCondition test_boundary_condition.cpp)
-    target_link_libraries(testBoundaryCondition hdf5_cpp core pugixml UnitTest++)
-    add_test(testBoundaryCondition testBoundaryCondition)
+    add_unit_test(test_BoundaryCondition core pugixml hdf5_cpp)
     
-    add_executable(testXSMeshHom test_xsmeshhomogenized.cpp)
-    target_link_libraries(testXSMeshHom core pugixml hdf5_cpp UnitTest++)
-    add_test(testXSMeshHom testXSMeshHom)
+    add_unit_test(test_XSMeshHomogenized core pugixml hdf5_cpp)
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/c5g7.xsl 
             ${CMAKE_CURRENT_BINARY_DIR}/c5g7.xsl testXSMeshHom)
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/2x3_stack.xml 

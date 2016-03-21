@@ -20,7 +20,6 @@ namespace mocc { namespace cmdo {
         corrections_( nullptr ),
         sn_xs_mesh_( nullptr ),
         internal_coupling_( false ),
-        correction_entropy_( n_group_ ),
         correction_residuals_( n_group_ )
     {
         LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
@@ -75,7 +74,6 @@ namespace mocc { namespace cmdo {
                 this->sweep1g( group, ncw );
             }
         }
-        correction_entropy_[group].push_back( corrections_->entropy(group) );
 
         timer_.toc();
         timer_sweep_.toc();
@@ -95,26 +93,6 @@ namespace mocc { namespace cmdo {
             sn_xs_mesh_->output( node );
         }
         
-        auto entropy_group = node.create_group("correction_entropy");
-
-        for( int ig=0; ig<n_group_; ig++ ) {
-            std::stringstream g_str;
-            g_str << ig+1;
-            auto g = entropy_group.create_group(g_str.str());
-            VecF ax;
-            VecF ay;
-            VecF b;
-            for( auto data: correction_entropy_[ig] ) {
-                ax.push_back(data[0]);
-                ay.push_back(data[1]);
-                b.push_back(data[2]);
-            }
-
-            g.write("alpha_x", ax);
-            g.write("alpha_y", ay);
-            g.write("beta", b);
-        }
-
         auto residual_group = node.create_group("correction_residual");
 
         for( int ig=0; ig<n_group_; ig++ ) {

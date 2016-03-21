@@ -13,6 +13,9 @@ SET(COVERAGE false CACHE BOOL "Enable code coverage instrumentation")
 MESSAGE(STATUS "Coverage: ${COVERAGE}")
 
 enable_testing()
+
+include(AddUnitTest)
+
 CONFIGURE_FILE("${CMAKE_MODULE_PATH}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake")
 
 include(CTest)
