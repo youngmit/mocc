@@ -19,9 +19,12 @@ namespace mocc { namespace cmdo {
         MoCSweeper( input, mesh ),
         corrections_( nullptr ),
         sn_xs_mesh_( nullptr ),
-        internal_coupling_( false )
+        internal_coupling_( false ),
+        correction_entropy_( n_group_ ),
+        correction_residuals_( n_group_ )
     {
         LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
+        return;
     };
 
     void MoCSweeper_2D3D::sweep( int group ) {
@@ -34,6 +37,8 @@ namespace mocc { namespace cmdo {
             throw EXCEPT("2D3D MoC sweeper needs coarse data to collect "
                     "calculate correction factors. Try enabling CMFD.");
         }
+
+        n_sweep_++;
 
         // set up the xstr_ array
         for( auto &xsr: *xs_mesh_ ) {
@@ -54,6 +59,7 @@ namespace mocc { namespace cmdo {
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
+            n_sweep_inner_++;
             // update the self-scattering source
             source_->self_scatter( group );
 
@@ -64,10 +70,12 @@ namespace mocc { namespace cmdo {
                 sn_xs_mesh_->update();
                 this->sweep1g( group, ccw );
                 coarse_data_->set_has_radial_data(true);
+                correction_residuals_[group].push_back(ccw.residual());
             } else {
                 this->sweep1g( group, ncw );
             }
         }
+        correction_entropy_[group].push_back( corrections_->entropy(group) );
 
         timer_.toc();
         timer_sweep_.toc();
@@ -75,11 +83,56 @@ namespace mocc { namespace cmdo {
     }
 
     void MoCSweeper_2D3D::output( H5Node &node ) const {
+        LogFile << "MoC Sweeper 2D3D output:" << std::endl;
+        LogFile << "    Number of sweeps, outer: " << n_sweep_ << std::endl;
+        LogFile << "    Number of sweeps, inner: " << n_sweep_inner_
+                << std::endl;;
+
         MoCSweeper::output( node );
         if( internal_coupling_ ) {
             corrections_->output( node );
             sn_xs_mesh_->update();
             sn_xs_mesh_->output( node );
+        }
+        
+        auto entropy_group = node.create_group("correction_entropy");
+
+        for( int ig=0; ig<n_group_; ig++ ) {
+            std::stringstream g_str;
+            g_str << ig+1;
+            auto g = entropy_group.create_group(g_str.str());
+            VecF ax;
+            VecF ay;
+            VecF b;
+            for( auto data: correction_entropy_[ig] ) {
+                ax.push_back(data[0]);
+                ay.push_back(data[1]);
+                b.push_back(data[2]);
+            }
+
+            g.write("alpha_x", ax);
+            g.write("alpha_y", ay);
+            g.write("beta", b);
+        }
+
+        auto residual_group = node.create_group("correction_residual");
+
+        for( int ig=0; ig<n_group_; ig++ ) {
+            std::stringstream g_str;
+            g_str << ig+1;
+            auto g = residual_group.create_group(g_str.str());
+            VecF ax;
+            VecF ay;
+            VecF b;
+            for( auto data: correction_residuals_[ig] ) {
+                ax.push_back(data[0]);
+                ay.push_back(data[1]);
+                b.push_back(data[2]);
+            }
+
+            g.write("alpha_x", ax);
+            g.write("alpha_y", ay);
+            g.write("beta", b);
         }
     }
 } } // Namespace mocc::cmdo

@@ -62,7 +62,9 @@ namespace mocc{
             flux_old_( n_reg_, n_group_ ),
             vol_( n_reg_ ),
             ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr)
+            coarse_data_(nullptr),
+            n_sweep_(0),
+            n_sweep_inner_(0)
         {
             return;
         }
@@ -70,7 +72,9 @@ namespace mocc{
         TransportSweeper( const pugi::xml_node &input ):
             source_(nullptr),
             ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr)
+            coarse_data_(nullptr),
+            n_sweep_(0),
+            n_sweep_inner_(0)
         {
             return;
         }
@@ -308,6 +312,13 @@ namespace mocc{
         // Reference to the CoarseData object that should be used to store
         // coarse mesh values. This is passed in from above.
         CoarseData *coarse_data_;
+
+        // Total number of calls to sweep in the lifetime of the sweeper. Should
+        // be n_group_ time the number of outer iterations
+        int n_sweep_;
+
+        // Total number of inner iteration sweeps
+        int n_sweep_inner_;
     };
 
     typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;

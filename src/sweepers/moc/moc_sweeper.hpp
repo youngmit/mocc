@@ -116,6 +116,8 @@ namespace mocc { namespace moc {
         void sweep1g( int group, CurrentWorker &cw ) {
             flux_1g_ = 0.0;
 
+            cw.set_group(group);
+
 #pragma omp parallel default(shared)
             {
             ArrayB1 e_tau(rays_.max_segments());
@@ -204,9 +206,9 @@ namespace mocc { namespace moc {
                         bc_out_2[bc1] = psi2(0);
 
                         // Stash currents
-                        cw.post_ray( psi1, psi2, e_tau, ray, first_reg, group );
+                        cw.post_ray( psi1, psi2, e_tau, ray, first_reg );
                     } // Rays
-                    cw.post_angle( iang, group );
+                    cw.post_angle( iang );
 
                     // Try tasks?
                     if( gauss_seidel_boundary_ )
@@ -247,7 +249,7 @@ namespace mocc { namespace moc {
                 }
             } // OMP single
 
-            cw.post_sweep( group );
+            cw.post_sweep();
 
             } // OMP Parallel
 
