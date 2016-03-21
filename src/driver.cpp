@@ -69,7 +69,7 @@ void int_handler(int p) {
 /**
  * This does the whole shebang: open and parse the input file pointed to by \p
  * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref 
- * mocc::Solver::Solve(), then calling \ref mocc::Solver::output().
+ * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
  *
  * To give some rhyme to the reason for why this isn't just \c main(): This is
  * so that integration tests can link against the driver, and call \c run(),

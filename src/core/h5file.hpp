@@ -272,7 +272,6 @@ namespace mocc {
          * written.
          * \param last an iterator past the end of the data to be written.
          * \param dims a vector of ints containing the dimensions of the data
-         * (see \ref hdf5_dimensions )
          */
         template<class InputIterator>
         InputIterator write( std::string path, InputIterator first,
