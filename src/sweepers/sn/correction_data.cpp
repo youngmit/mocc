@@ -115,7 +115,7 @@ namespace mocc {
 
         return;
     }
-    
+
     void CorrectionData::output( H5Node &file ) const {
         VecI dims;
         dims.push_back(nz_);
