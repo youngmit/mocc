@@ -30,8 +30,29 @@ namespace mocc {
             << equation << std::endl;
 
         if( equation == "dd") {
-            return UP_SnSweeper_t( new sn::SnSweeperVariant<sn::CellWorker_DD>(
-                        input, mesh ) );
+            std::string axial = "dd";
+            if( !input.attribute("axial").empty() ) {
+                axial = input.attribute("axial").value();
+            }
+            if( axial == "dd" ) {
+                LogScreen << "Using Diamond Difference axial treatment"
+                    << std::endl;
+                return UP_SnSweeper_t
+                    (
+                        new sn::SnSweeperVariant<sn::CellWorker_DD>(
+                            input, mesh )
+                    );
+            } else if( axial == "sc" ) {
+                LogScreen << "Using Step Characteristics axial treatment"
+                    << std::endl;
+                    return UP_SnSweeper_t
+                    (
+                        new sn::SnSweeperVariant<sn::CellWorker_DD_SC>(
+                            input, mesh )
+                    );
+            } else {
+                throw EXCEPT("Unsupported axial treatment");
+            }
         } else if( equation == "cdd" ) {
             // Make the sweeper
             std::string axial = "dd";
