@@ -145,6 +145,9 @@ namespace mocc {
         real_t psi_tol_;
         int max_iter_;
 
+        // Other options
+        bool zero_fixup_;
+
     };
     typedef std::unique_ptr<CMFD> UP_CMFD_t;
 }
