@@ -307,7 +307,5 @@ namespace mocc {
         // incremented by bc_per_group_*group to yield final starting index of a
         // face of BCs
         blitz::Array<int, 2> offset_;
-
-
     };
 }
