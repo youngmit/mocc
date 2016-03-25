@@ -56,6 +56,7 @@ namespace mocc { namespace cmdo {
 
         flux_1g_.reference( flux_( blitz::Range::all(), group ) );
 
+
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             n_sweep_inner_++;

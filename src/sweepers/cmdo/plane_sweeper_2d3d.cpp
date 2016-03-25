@@ -28,7 +28,7 @@ namespace mocc { namespace cmdo {
             sn_sweeper_.n_group() ) ),
         tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
         sn_resid_( sn_sweeper_.n_group() ),
-        i_outer_( 0 )
+        i_outer_( -1 )
     {
         this->parse_options( input );
         /// \todo initialize the rest of the data members on the TS base type
@@ -60,11 +60,12 @@ namespace mocc { namespace cmdo {
         if( !coarse_data_ ) {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
-
+        
         /// \todo do something less brittle
         if( group == 0 ) {
             i_outer_++;
         }
+
 
         // Calculate transverse leakage source
         if( do_tl_ ) {
@@ -72,7 +73,7 @@ namespace mocc { namespace cmdo {
         }
 
         // MoC Sweeper
-        bool do_moc = (i_outer_ > n_inactive_moc_) &&
+        bool do_moc = ((i_outer_+1) > n_inactive_moc_) &&
             ((i_outer_ % moc_modulo_) == 0);
         if( do_moc ) {
             moc_sweeper_.sweep( group );
@@ -97,7 +98,6 @@ namespace mocc { namespace cmdo {
         }
 
         // Compute Sn-MoC residual
-
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
             residual += (moc_flux(i) - sn_sweeper_.flux( group, i )) *
@@ -111,6 +111,7 @@ namespace mocc { namespace cmdo {
         }
         cout << endl;
         sn_resid_[group].push_back(residual);
+
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -189,15 +190,17 @@ namespace mocc { namespace cmdo {
         }
 
         // Write out the transverse leakages
-        file.create_group("/TL");
-        for( int g=0; g<n_group_; g++ ) {
-            std::stringstream setname;
-            setname << "/TL/" << setfill('0') << setw(3) << g;
+        {
+            auto group = file.create_group("/transverse_leakage");
+            for( int g=0; g<n_group_; g++ ) {
+                std::stringstream setname;
+                setname << setfill('0') << setw(3) << g;
 
-            const auto tl_slice = tl_((int)g, blitz::Range::all());
+                const auto tl_slice = tl_((int)g, blitz::Range::all());
 
-            file.write( setname.str(), tl_slice.begin(), tl_slice.end(),
-                    dims );
+                group.write( setname.str(), tl_slice.begin(), tl_slice.end(),
+                        dims );
+            }
         }
 
         // Write out the correction factors
