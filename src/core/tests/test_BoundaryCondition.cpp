@@ -68,9 +68,6 @@ class BCIrregularFixture {
             angquad_node.load_string(angquad_xml.c_str());
             return AngularQuadrature(angquad_node.child("ang_quad"));
         }
-
-        // Data
-
 };
 
 TEST_FIXTURE( BCIrregularFixture, test_bc )
@@ -124,8 +121,11 @@ TEST_FIXTURE( BCIrregularFixture, test_bc )
     for( int ibc=5; ibc<8; ibc++ ) {
         CHECK_EQUAL(0.0, inface.second[ibc]);
     }
+
+    std::cout << in << std::endl;
+
 }
 
-int main(int, const char*[]) {
+int main() {
     return UnitTest::RunAllTests();
 }
