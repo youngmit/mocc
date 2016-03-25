@@ -11,6 +11,7 @@
 #include "error.hpp"
 #include "files.hpp"
 #include "global_config.hpp"
+#include "string_utils.hpp"
 
 using std::string;
 using std::stringstream;
@@ -88,25 +89,8 @@ namespace mocc {
 
         // Read in the radial subdivisions
         {
-            stringstream inBuf(input.child("sub_radii").child_value());
-            while (!inBuf.eof()) {
-                int sub;
-                inBuf >> sub;
-                sub_rad_.push_back(sub);
-
-                if(inBuf.fail()){
-                    stringstream msg;
-                    msg << "Ran into a problem reading radial subdivisions for "
-                        "pin ID= "
-                        << id_;
-                    throw EXCEPT(msg.str());
-                }
-            }
-            if(!inBuf.eof()){
-                stringstream msg;
-                msg << "Dangling data in radial subdivisions for pin ID="
-                    << id_;
-            }
+            sub_rad_ = explode_string<int>( 
+                    input.child("sub_radii").child_value());
 
             // Make sure we have the same number of radial subdivs as rings
             if( (int)sub_rad_.size() != (n_xsreg_ - 1) ) {
