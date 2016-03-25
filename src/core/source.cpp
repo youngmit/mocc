@@ -16,6 +16,7 @@ namespace mocc {
         n_reg_( flux.size()/n_group_ )
     {
         assert( nreg*n_group_ == flux_.size() );
+        source_1g_.fill(0.0);
         state_.reset();
         return;
     }
@@ -68,7 +69,7 @@ namespace mocc {
             size_t min_g = scat_row.min_g;
             int igg = min_g;
             for( auto sc: scat_row ) {
-                // Dont add a contribution for self-scatter. TODO: it might be a
+                // Dont add a contribution for self-scatter. It might be a
                 // good idea to remove self-scatter from the scattering matrix
                 // and store it separately. May also benefit the self-scatter
                 // routine to have less indirection.
