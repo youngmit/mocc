@@ -46,26 +46,7 @@ namespace mocc{
         }
 
         // Implement the output interface
-        void output( H5Node &file ) const {
-            VecF k;
-            VecF error_k;
-            VecF error_psi;
-
-            for( auto &c: convergence_ ) {
-                k.push_back(c.k);
-                error_k.push_back(c.error_k);
-                error_psi.push_back(c.error_psi);
-            }
-
-            VecI dims(1, convergence_.size());
-
-            file.write( "k", k, dims );
-            file.write( "error_k", error_k, dims );
-            file.write( "error_psi", error_psi, dims );
-
-            fss_.output( file );
-        }
-
+        void output( H5Node &file ) const;
 
     private:
         // Data
@@ -110,6 +91,10 @@ namespace mocc{
          * \brief Perform a CMFD accelerator solve
          */
         void do_cmfd();
+
+        // Vector containing the time that each eigenvalue iteration completed
+        // at. Make useful absiccae for convergence plots and the like
+        VecF iteration_times_;
 
     };
 }

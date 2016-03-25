@@ -123,6 +123,8 @@ namespace mocc{
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k_, error_psi_) );
 
+            iteration_times_.push_back(RootTimer.time());
+
             this->print( n_iterations+1, convergence_.back() );
 
             if( n_iterations >= max_iterations_ ) {
@@ -194,6 +196,33 @@ namespace mocc{
         }
         cmfd_->solve(keff_, fss_.sweeper()->flux());
         fss_.sweeper()->set_pin_flux( cmfd_->flux() );
+        return;
+    }
+
+    void EigenSolver::output( H5Node &file ) const {
+        VecF k;
+        VecF error_k;
+        VecF error_psi;
+
+        for( auto &c: convergence_ ) {
+            k.push_back(c.k);
+            error_k.push_back(c.error_k);
+            error_psi.push_back(c.error_psi);
+        }
+
+        VecI dims(1, convergence_.size());
+
+        {
+            auto g = file.create_group("convergence");
+
+            g.write( "k", k, dims );
+            g.write( "error_k", error_k, dims );
+            g.write( "error_psi", error_psi, dims );
+            g.write( "iteration_time", iteration_times_ );
+            g.write( "abscissae", iteration_times_ );
+        }
+
+        fss_.output( file );
         return;
     }
 
