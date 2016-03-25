@@ -82,7 +82,7 @@ namespace mocc { namespace moc {
         if( !input.attribute("boundary").empty() ) {
             std::string in_string = input.attribute("boundary").value();
             sanitize(in_string);
-            if( in_string == "jacobi" ) {
+            if( in_string == "jacobi" || in_string == "j" ) {
                 gauss_seidel_boundary_ = false;
             } else if ( in_string == "gs" ) {
 
@@ -167,7 +167,7 @@ namespace mocc { namespace moc {
 
         // Walk through the boundary conditions and initialize them the 1/4pi
         real_t val = 1.0/FPI;
-        for( auto boundary: boundary_ ) {
+        for( auto &boundary: boundary_ ) {
             boundary.initialize_scalar(val);
         }
 

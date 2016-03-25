@@ -164,9 +164,10 @@ namespace mocc { namespace moc {
                     for( int iray=0; iray<(int)ang_rays.size(); iray++ ) {
                         const auto& ray = ang_rays[iray];
 
-                        /// \todo make this easier. maybe implement on RayData?
                         int bc1 = ray.bc(0);
                         int bc2 = ray.bc(1);
+                        assert(bc1 < boundary_in.get_boundary( group, iang1 ).first);
+                        assert(bc2 < boundary_in.get_boundary( group, iang1 ).first);
 
                         // Compute exponentials
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
