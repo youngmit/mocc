@@ -8,3 +8,4 @@ git_SHA1.cpp
 build/*
 bin/*
 mocc.sublime-workspace
+*.mine
