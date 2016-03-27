@@ -252,15 +252,9 @@ namespace mocc { namespace cmdo {
             this->cell_worker_.set_corrections( data );
         }
 
-        void output( H5Node &node ) const {
-            assert(correction_data_);
-            SnSweeper::output( node );
-            //correction_data_->output( node );
-            return;
-        }
-
     private:
         std::shared_ptr<const CorrectionData> correction_data_;
-        
     };
+
+
 } }
