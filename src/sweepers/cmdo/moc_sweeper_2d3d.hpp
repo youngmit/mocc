@@ -4,7 +4,7 @@
 
 #include "sweepers/moc/moc_sweeper.hpp"
 
-#include "sweepers/sn/correction_data.hpp"
+#include "correction_data.hpp"
 
 namespace mocc { namespace cmdo {
     class MoCSweeper_2D3D: public moc::MoCSweeper {

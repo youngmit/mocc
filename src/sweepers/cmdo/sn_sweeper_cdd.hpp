@@ -8,8 +8,9 @@
 #include "core/files.hpp"
 
 #include "sn/cell_worker.hpp"
-#include "sn/correction_data.hpp"
 #include "sn/sn_sweeper_variant.hpp"
+
+#include "correction_data.hpp"
 
 namespace mocc { namespace cmdo {
     using namespace sn;

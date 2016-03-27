@@ -10,7 +10,7 @@
 #include "sweepers/moc/ray.hpp"
 #include "sweepers/moc/ray_data.hpp"
 
-#include "sweepers/sn/correction_data.hpp"
+#include "correction_data.hpp"
 
 
 namespace mocc {
