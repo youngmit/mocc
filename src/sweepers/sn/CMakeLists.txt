@@ -1,5 +1,3 @@
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
 file(GLOB sn_src "*.cpp")
 
 add_library(sn ${sn_src})

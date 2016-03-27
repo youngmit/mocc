@@ -1,5 +1,0 @@
-if(${BUILD_TESTS})
-add_executable(testSnBoundary test_sn_boundary.cpp)
-target_link_libraries(testSnBoundary core sn UnitTest++)
-add_test(testSnBoundary testSnBoundary)
-endif()
