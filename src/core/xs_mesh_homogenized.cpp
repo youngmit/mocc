@@ -200,7 +200,7 @@ namespace mocc {
                 }
             }
 
-            // We dont try to plot the scattering cross sections in the same was
+            // We dont try to plot the scattering cross sections in the same way
             // as we do the others, so this can be read in more naturally.
             ArrayB3 scat;
             h5d.read("/xsmesh/xssc", scat);
