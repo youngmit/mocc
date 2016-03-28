@@ -200,10 +200,9 @@ namespace sn {
         }
 
         node.write( "pin_powers", this->pin_powers() );
+        ang_quad_.output( node );
 
         LogFile << "Sn Sweeper:" << std::endl;
-        LogFile << "Angular Quadrature:" << std::endl;
-        LogFile << ang_quad_ << std::endl;
 
         LogFile << "Boundary update: ";
         if( gs_boundary_ ) {
