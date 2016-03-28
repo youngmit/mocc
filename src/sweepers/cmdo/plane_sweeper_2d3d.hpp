@@ -70,7 +70,7 @@ namespace mocc { namespace cmdo {
         }
 
         /**
-         * \breif \copybrief TransportSweeper::create_source()
+         * \brief \copybrief TransportSweeper::create_source()
          *
          * Create a Source_2D3D object instead of the standard Source class.
          */
