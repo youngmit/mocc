@@ -1,5 +1,7 @@
 #include "sn_sweeper_factory_cdd.hpp"
 
+#include "sn_sweeper_factory.hpp"
+
 #include "string_utils.hpp"
 
 namespace mocc { namespace cmdo {
@@ -12,20 +14,27 @@ namespace mocc { namespace cmdo {
             sanitize(equation);
         }
 
-        if( equation != "cdd" ) {
-            throw EXCEPT("Input doesn't seem to want CDD. How did you get "
-                    "here?");
-        }
-
-        // Make the correction data. For now, just call from_data always. If
-        // there is no data, it will return and not do anything.
-        
-
-        // Determine the type of axial treatment and create the right type of
-        // sweeper.
         std::unique_ptr<SnSweeper> sweeper;
         std::shared_ptr<CorrectionData> corrections;
 
+        if( equation != "cdd" ) {
+            LogScreen << "Something wants a CDD sweeper, but the equation "
+                "specified is different. Keep in mind that the correction data "
+                "generated here probably isn't being used" << std::endl;
+            // \todo this is a cyclical dependency. While not illegal, figure a
+            // way around it. Maybe dont actually call the CDD factory from the
+            // one called below.
+            sweeper = SnSweeperFactory( input, mesh );
+            corrections = std::make_shared<CorrectionData>(
+                mesh, sweeper->ang_quad().ndir()/2,
+                sweeper->n_group());
+            corrections->from_data( input );
+            return CDDPair_t(std::move(sweeper), corrections);
+        }
+
+
+        // Determine the type of axial treatment and create the right type of
+        // sweeper.
         std::string axial = "dd";
         if( !input.attribute("axial").empty() ) {
             axial = input.attribute("axial").value();

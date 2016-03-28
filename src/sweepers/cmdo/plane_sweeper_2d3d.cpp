@@ -21,17 +21,16 @@ namespace mocc { namespace cmdo {
             const CoreMesh &mesh ):
         TransportSweeper(input),
         mesh_(mesh),
-        sn_sweeper_(input.child("sn_sweeper"), mesh),
+        pair_(SnSweeperFactory_CDD(input.child("sn_sweeper"), mesh)),
+        sn_sweeper_(std::move(pair_.first)),
+        corrections_( pair_.second ),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad()),
-        corrections_( new CorrectionData( mesh_, ang_quad_.ndir()/2,
-            sn_sweeper_.n_group() ) ),
-        tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
-        sn_resid_( sn_sweeper_.n_group() ),
+        tl_( sn_sweeper_->n_group(), mesh_.n_pin() ),
+        sn_resid_( sn_sweeper_->n_group() ),
         i_outer_( -1 )
     {
         this->parse_options( input );
-        /// \todo initialize the rest of the data members on the TS base type
         core_mesh_ = &mesh;
 
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
@@ -41,14 +40,14 @@ namespace mocc { namespace cmdo {
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
 
-        sn_sweeper_.set_corrections( corrections_ );
         auto sn_xs_mesh =
-            sn_sweeper_.get_homogenized_xsmesh();
+            sn_sweeper_->get_homogenized_xsmesh();
+        assert( corrections_ );
         moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
 
-        sn_sweeper_.set_ang_quad(ang_quad_);
+        sn_sweeper_->set_ang_quad(ang_quad_);
 
-        sn_sweeper_.get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
+        sn_sweeper_->get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
 
         coarse_data_ = nullptr;
 
@@ -89,19 +88,19 @@ namespace mocc { namespace cmdo {
         // mesh flux in the last MoC inner. For low numbers of MoC inners, this
         // essentially constitutes an outer-iteration lag of the updated cross
         // sections :-/
-        sn_sweeper_.sweep( group );
+        sn_sweeper_->sweep( group );
 
         if( do_snproject_ ) {
             ArrayB1 sn_flux(mesh_.n_pin());
-            sn_sweeper_.get_pin_flux_1g( group, sn_flux );
+            sn_sweeper_->get_pin_flux_1g( group, sn_flux );
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
 
         // Compute Sn-MoC residual
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
-            residual += (moc_flux(i) - sn_sweeper_.flux( group, i )) *
-                        (moc_flux(i) - sn_sweeper_.flux( group, i ));
+            residual += (moc_flux(i) - sn_sweeper_->flux( group, i )) *
+                        (moc_flux(i) - sn_sweeper_->flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
@@ -116,14 +115,14 @@ namespace mocc { namespace cmdo {
 
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::initialize() {
-        sn_sweeper_.initialize();
+        sn_sweeper_->initialize();
         moc_sweeper_.initialize();
     }
 
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, ArrayB1 &flux ) const {
         if( expose_sn_ ) {
-            sn_sweeper_.get_pin_flux_1g( ig, flux );
+            sn_sweeper_->get_pin_flux_1g( ig, flux );
         } else {
             moc_sweeper_.get_pin_flux_1g( ig, flux );
         }
@@ -166,7 +165,7 @@ namespace mocc { namespace cmdo {
         // Put the Sn data in its own location
         {
             auto g = file.create_group( "/Sn" );
-            sn_sweeper_.output( g );
+            sn_sweeper_->output( g );
         }
 
         // Put the MoC data in its own location

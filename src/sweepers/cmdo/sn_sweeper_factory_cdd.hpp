@@ -12,9 +12,6 @@
 
 
 namespace mocc { namespace cmdo {
-    typedef std::pair<std::unique_ptr<SnSweeper>,
-            std::shared_ptr<CorrectionData>> CDDPair_t;
-
     /**
      * Generate an \ref SnSweeper_CDD and associated correction data based on
      * the input provided.
