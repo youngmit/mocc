@@ -10,8 +10,9 @@ namespace mocc {
      */
     class HasOutput {
     public:
-        // Perform final output to a data file. Most output is probably
-        // delegated to supbordinate objects.
+        /**
+         * \brief Output relevant data to an HDF5 file node.
+         */
         virtual void output( H5Node &file ) const = 0;
     };
 }
