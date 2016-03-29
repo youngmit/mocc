@@ -41,7 +41,8 @@ namespace mocc {
         s_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         k_tol_( 1.0e-8 ),
         psi_tol_( 1.0e-8 ),
-        max_iter_( 100 )
+        max_iter_( 100 ),
+        zero_fixup_( false )
     {
         // Set up the structure of the matrix
         std::vector< T > structure;
@@ -88,6 +89,10 @@ namespace mocc {
                 }
             }
 
+            if( !input.attribute("zero_fixup").empty() ) {
+                zero_fixup_ = input.attribute("zero_fixup").as_bool(false);
+            }
+
             // Enabled
             if( !input.attribute("enabled").empty() ) {
                 is_enabled_ = input.attribute("enabled").as_bool(true);
@@ -108,13 +113,15 @@ namespace mocc {
         timer_.tic();
 
         // Make sure no negative flux
-        //for( int ig=0; ig<(int)m_.size(); ig++ ) {
-        //    ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), ig);
-        //    //assert( flux_1g.isStorageContiguous() );
-        //    for( int i=0; i<(int)flux_1g.size(); i++ ) {
-        //        flux_1g(i) = std::max(flux_1g(i), 0.0);
-        //    }
-        //}
+        if( zero_fixup_ ) {
+            for( int ig=0; ig<(int)m_.size(); ig++ ) {
+                ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), ig);
+                //assert( flux_1g.isStorageContiguous() );
+                for( int i=0; i<(int)flux_1g.size(); i++ ) {
+                    flux_1g(i) = std::max(flux_1g(i), 0.0);
+                }
+            }
+        }
 
         // Update homogenized cross sections
         xsmesh_->update();

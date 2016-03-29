@@ -8,7 +8,6 @@
 #include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"
 
-#include "sn_boundary.hpp"
 #include "cell_worker.hpp"
 
 namespace mocc { namespace sn {
@@ -101,44 +100,7 @@ namespace mocc { namespace sn {
         /**
          * \brief Check the neutron balance in all of the cells of the sweeper
          */
-        void check_balance( int group ) const {
-            if( !coarse_data_ ) {
-                throw EXCEPT("No coarse data. Need it to look at currents.");
-            }
-            for( size_t icell=0; icell<mesh_.n_pin(); icell++ ) {
-                real_t b = 0.0;
-
-                // Current
-                b -= coarse_data_->current(
-                        mesh_.coarse_surf(icell, Surface::EAST), group ) *
-                        mesh_.coarse_area( icell, Surface::EAST );
-                b -= coarse_data_->current(
-                        mesh_.coarse_surf(icell, Surface::NORTH), group ) *
-                        mesh_.coarse_area( icell, Surface::NORTH );
-                b -= coarse_data_->current(
-                        mesh_.coarse_surf(icell, Surface::TOP), group ) *
-                        mesh_.coarse_area( icell, Surface::TOP );
-                b += coarse_data_->current(
-                        mesh_.coarse_surf(icell, Surface::WEST), group ) *
-                        mesh_.coarse_area( icell, Surface::WEST );
-                b += coarse_data_->current(
-                        mesh_.coarse_surf(icell, Surface::SOUTH), group ) *
-                        mesh_.coarse_area( icell, Surface::SOUTH );
-                b += coarse_data_->current(
-                        mesh_.coarse_surf(icell, Surface::BOTTOM), group ) *
-                        mesh_.coarse_area( icell, Surface::BOTTOM );
-
-                // Source
-                b += (*source_)[icell]*vol_[icell];
-
-                // Internal removal
-                b -= flux_1g_(icell) *
-                    (*xs_mesh_)[icell].xsmacrm()[group] * vol_[icell];
-
-                std::cout << "Cell balance: " << b << std::endl;
-            }
-            std::cout << std::endl;
-        }
+        void check_balance( int group ) const;
 
     private:
 

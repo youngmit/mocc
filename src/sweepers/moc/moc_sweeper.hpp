@@ -116,6 +116,8 @@ namespace mocc { namespace moc {
         void sweep1g( int group, CurrentWorker &cw ) {
             flux_1g_ = 0.0;
 
+            cw.set_group(group);
+
 #pragma omp parallel default(shared)
             {
             ArrayB1 e_tau(rays_.max_segments());
@@ -162,9 +164,10 @@ namespace mocc { namespace moc {
                     for( int iray=0; iray<(int)ang_rays.size(); iray++ ) {
                         const auto& ray = ang_rays[iray];
 
-                        /// \todo make this easier. maybe implement on RayData?
                         int bc1 = ray.bc(0);
                         int bc2 = ray.bc(1);
+                        assert(bc1 < boundary_in.get_boundary( group, iang1 ).first);
+                        assert(bc2 < boundary_in.get_boundary( group, iang1 ).first);
 
                         // Compute exponentials
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
@@ -204,9 +207,9 @@ namespace mocc { namespace moc {
                         bc_out_2[bc1] = psi2(0);
 
                         // Stash currents
-                        cw.post_ray( psi1, psi2, e_tau, ray, first_reg, group );
+                        cw.post_ray( psi1, psi2, e_tau, ray, first_reg );
                     } // Rays
-                    cw.post_angle( iang, group );
+                    cw.post_angle( iang );
 
                     // Try tasks?
                     if( gauss_seidel_boundary_ )
@@ -247,7 +250,7 @@ namespace mocc { namespace moc {
                 }
             } // OMP single
 
-            cw.post_sweep( group );
+            cw.post_sweep();
 
             } // OMP Parallel
 

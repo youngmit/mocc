@@ -62,7 +62,9 @@ namespace mocc{
             flux_old_( n_reg_, n_group_ ),
             vol_( n_reg_ ),
             ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr)
+            coarse_data_(nullptr),
+            n_sweep_(0),
+            n_sweep_inner_(0)
         {
             return;
         }
@@ -70,7 +72,9 @@ namespace mocc{
         TransportSweeper( const pugi::xml_node &input ):
             source_(nullptr),
             ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr)
+            coarse_data_(nullptr),
+            n_sweep_(0),
+            n_sweep_inner_(0)
         {
             return;
         }
@@ -78,13 +82,13 @@ namespace mocc{
         virtual ~TransportSweeper(){ }
 
         /**
-         * Perform a transport sweep of the passed group.
+         * \brief Perform a transport sweep of the passed group.
          */
         virtual void sweep(int group) = 0;
 
         /**
-         * Initialize the solution variables (scalar, boundary flux, etc.) to
-         * reasonable initial guesses.
+         * \brief Initialize the solution variables (scalar, boundary flux,
+         * etc.) to reasonable initial guesses.
          */
         virtual void initialize() = 0;
 
@@ -103,8 +107,8 @@ namespace mocc{
         }
 
         /**
-         * Produce pin-homogenized scalar flux for the specified group and store
-         * in the passed vector.
+         * \brief Produce pin-homogenized scalar flux for the specified group
+         * and store in the passed array.
          */
         virtual void get_pin_flux_1g( int ig, ArrayB1& flux ) const = 0;
 
@@ -130,22 +134,22 @@ namespace mocc{
         }
 
         /**
-         * Return a const reference to the MG flux
+         * \brief Return a const reference to the multi-group flux
          */
         const ArrayB2& flux() const {
             return flux_;
         }
 
         /**
-         * Return a reference to the MG flux
+         * \brief Return a reference to the multi-group flux
          */
         ArrayB2& flux() {
             return flux_;
         }
 
         /**
-         * Given the current estimate of a system eigenvalue, calculate the
-         * group-independent fission source and store in the passed array
+         * \brief Given the current estimate of a system eigenvalue, calculate
+         * the group-independent fission source and store in the passed array
          */
         virtual void calc_fission_source( real_t k,
                 ArrayB1& fission_source) const;
@@ -171,9 +175,10 @@ namespace mocc{
         }
 
         /**
-         * Return a shared pointer to a homogenized XS mesh. This is
-         * polymorphic, because some sweepers already operate on a homogenized
-         * mesh, and there is no need to generate a new one.
+         * \brief Return a shared pointer to a homogenized XS mesh.
+         *
+         * This is polymorphic, because some sweepers already operate on a
+         * homogenized mesh, and there is no need to generate a new one.
          */
         virtual SP_XSMeshHomogenized_t get_homogenized_xsmesh() = 0;
 
@@ -182,28 +187,29 @@ namespace mocc{
         }
 
         /**
-         * Return a reference to the sweeper's XSMesh
+         * \brief Return a reference to the sweeper's XSMesh
          */
         const XSMesh& xs_mesh() const {
             return *(xs_mesh_.get());
         }
 
         /**
-         * Return a shared pointer to the sweeper's XSMesh. Use with caution
+         * \brief Return a shared pointer to the sweeper's XSMesh. Use with
+         * caution
          */
         SP_XSMesh_t get_xs_mesh() {
             return xs_mesh_;
         }
 
         /**
-         * Return a reference to the CoreMesh
+         * \brief Return a reference to the CoreMesh
          */
         const CoreMesh& mesh() const {
             return *core_mesh_;
         }
 
         /**
-         * Subscript and return a specific flux value
+         * \brief Subscript and return a specific flux value
          */
         real_t flux( int ig, int ireg ) const {
             assert( ig < (int)n_group_ );
@@ -213,23 +219,24 @@ namespace mocc{
         }
 
         /**
-         * Return the number of energy groups
+         * \brief Return the number of energy groups
          */
         unsigned int n_group() const {
             return n_group_;
         }
 
         /**
-         * Assign a CoarseData object to the sweeper, allowing it to store
-         * currents and such.
+         * \brief Assign a CoarseData object to the sweeper, allowing it to
+         * store currents and such.
          */
         virtual void set_coarse_data( CoarseData *cd ) {
             coarse_data_ = cd;
         }
 
         /**
-         * Associate the sweeper with a source. This is usually done by
-         * something like the FixedSourceSolver.
+         * \brief Associate the sweeper with a source.
+         *
+         * This is usually done by something like the \ref FixedSourceSolver.
          */
         virtual void assign_source( Source* source) {
             assert( source != nullptr );
@@ -308,6 +315,13 @@ namespace mocc{
         // Reference to the CoarseData object that should be used to store
         // coarse mesh values. This is passed in from above.
         CoarseData *coarse_data_;
+
+        // Total number of calls to sweep in the lifetime of the sweeper. Should
+        // be n_group_ time the number of outer iterations
+        int n_sweep_;
+
+        // Total number of inner iteration sweeps
+        int n_sweep_inner_;
     };
 
     typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;

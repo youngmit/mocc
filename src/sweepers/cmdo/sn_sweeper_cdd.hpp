@@ -8,11 +8,16 @@
 #include "core/files.hpp"
 
 #include "sn/cell_worker.hpp"
-#include "sn/correction_data.hpp"
+#include "sn/sn_sweeper.hpp"
 #include "sn/sn_sweeper_variant.hpp"
+
+#include "correction_data.hpp"
 
 namespace mocc { namespace cmdo {
     using namespace sn;
+    typedef std::pair<std::unique_ptr<SnSweeper>,
+            std::shared_ptr<CorrectionData>> CDDPair_t;
+    
     /**
      * An extension of \ref sn::CellWorker to propagate flux through an
      * orthogonal mesh region with the corrected diamond difference (CDD)
@@ -252,15 +257,9 @@ namespace mocc { namespace cmdo {
             this->cell_worker_.set_corrections( data );
         }
 
-        void output( H5Node &node ) const {
-            assert(correction_data_);
-            SnSweeper::output( node );
-            //correction_data_->output( node );
-            return;
-        }
-
     private:
         std::shared_ptr<const CorrectionData> correction_data_;
-        
     };
+
+
 } }

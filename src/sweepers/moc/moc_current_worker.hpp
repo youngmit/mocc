@@ -25,18 +25,19 @@ namespace mocc {
         class CurrentWorker {
         public:
             virtual void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
-                    const ArrayB1 &e_tau, const Ray &ray, int first_reg,
-                    int group) = 0;
+                    const ArrayB1 &e_tau, const Ray &ray, int first_reg ) = 0;
 
             virtual void set_angle( Angle ang, real_t spacing ) = 0;
 
-            virtual void post_angle( int iang, int igroup ) = 0;
+            virtual void post_angle( int iang ) = 0;
 
             virtual void set_plane( int iplane ) = 0;
 
-            virtual void post_sweep( int igroup ) = 0;
+            virtual void post_sweep() = 0;
 
-            virtual void post_plane( int igroup ) = 0;
+            virtual void post_plane() = 0;
+
+            virtual void set_group( int igroup ) = 0;
         };
 
         /**
@@ -57,8 +58,8 @@ namespace mocc {
              * flux.
              */
             inline void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
-                    const ArrayB1 &e_tau, const Ray &ray, int first_reg,
-                    int group ) {
+                    const ArrayB1 &e_tau, const Ray &ray, int first_reg )
+            {
                 return;
             }
 
@@ -72,19 +73,23 @@ namespace mocc {
             /**
              * Defines work to be done after sweeping all rays in a given angle.
              */
-            inline void post_angle( int iang, int igroup ) {
+            inline void post_angle( int iang ) {
                 return;
-            };
+            }
 
             inline void set_plane( int iplane ) {
                 return;
             }
 
-            inline void post_sweep( int igroup ) {
+            inline void post_sweep() {
                 return;
             }
 
-            inline void post_plane( int igroup ) {
+            inline void post_plane() {
+                return;
+            }
+
+            inline void set_group( int group ) {
                 return;
             }
         };
@@ -111,12 +116,16 @@ namespace mocc {
                 return;
             }
 
-            inline void post_angle( int iang, int igroup ) {
+            inline void post_angle( int iang ) {
                 return;
             };
 
-            inline void post_plane( int igroup ) {
+            inline void post_plane() {
                 return;
+            }
+
+            inline void set_group( int group ) {
+                group_ = group;
             }
 
             inline void set_plane( int plane ) {
@@ -147,14 +156,13 @@ namespace mocc {
             }
 
             inline void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
-                    const ArrayB1 &e_tau, const Ray &ray, int first_reg,
-                    int group ) {
+                    const ArrayB1 &e_tau, const Ray &ray, int first_reg ) {
 #pragma omp critical
                 {
                     ArrayB1 current =
-                        coarse_data_->current(blitz::Range::all(), group);
+                        coarse_data_->current(blitz::Range::all(), group_);
                     ArrayB1 surface_flux =
-                        coarse_data_->surface_flux(blitz::Range::all(), group);
+                        coarse_data_->surface_flux(blitz::Range::all(), group_);
                     size_t cell_fw = ray.cm_cell_fw()+cell_offset_;
                     size_t cell_bw = ray.cm_cell_bw()+cell_offset_;
                     int surf_fw = ray.cm_surf_fw()+surf_offset_;
@@ -205,13 +213,13 @@ namespace mocc {
             }
 
 
-            inline void post_sweep( int igroup ) {
+            inline void post_sweep() {
 #pragma omp single
             {
                 ArrayB1 current =
-                    coarse_data_->current( blitz::Range::all(), igroup );
+                    coarse_data_->current( blitz::Range::all(), group_ );
                 ArrayB1 surface_flux =
-                    coarse_data_->surface_flux( blitz::Range::all(), igroup );
+                    coarse_data_->surface_flux( blitz::Range::all(), group_ );
                 // Normalize the surface currents
                 for( size_t plane=0; plane<mesh_->nz(); plane++ ) {
                     for( int surf=mesh_->plane_surf_xy_begin(plane);
@@ -234,6 +242,7 @@ namespace mocc {
             std::array<real_t, 2> flux_weights_;
 
             int plane_;
+            int group_;
             int cell_offset_;
             int surf_offset_;
         };

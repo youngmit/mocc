@@ -14,9 +14,8 @@
 #include "core/utils.hpp"
 #include "core/xs_mesh_homogenized.hpp"
 
-#include "sn_boundary.hpp"
-#include "sn_current_worker.hpp"
 #include "sn_sweeper.hpp"
+#include "sn_current_worker.hpp"
 
 namespace mocc { namespace sn {
     /**

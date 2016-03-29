@@ -4,7 +4,7 @@
 
 #include "sweepers/moc/moc_sweeper.hpp"
 
-#include "sweepers/sn/correction_data.hpp"
+#include "correction_data.hpp"
 
 namespace mocc { namespace cmdo {
     class MoCSweeper_2D3D: public moc::MoCSweeper {
@@ -60,5 +60,7 @@ namespace mocc { namespace cmdo {
         std::shared_ptr<XSMeshHomogenized> sn_xs_mesh_;
 
         bool internal_coupling_;
+
+        std::vector<std::vector<std::array<real_t, 3>>> correction_residuals_;
     };
 } } // Namespace mocc::cmdo

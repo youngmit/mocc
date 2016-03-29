@@ -57,13 +57,8 @@ export Blitz=/path/to/blitz/installation
 \endverbatim
 Add the above to your shell startup script to make it stick.
 
-Boost
------
-The <a href="http://www.boost.org/">Boost library collection</a> contains many
-useful C++ libraries for all number of applications. We only use the Boost Unit
-Test Framework. Boost is popular enough that it can be found in most Linux
-package repositories, and installing it to your system using a package manager
-should be sufficient for the cmake build system to locate it.
+For more information about how we use Blitz++ and how to build it, refer to:
+\ref blitz.
 
 pugixml
 -------

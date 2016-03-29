@@ -16,6 +16,7 @@ namespace mocc {
         n_reg_( flux.size()/n_group_ )
     {
         assert( nreg*n_group_ == flux_.size() );
+        source_1g_.fill(0.0);
         state_.reset();
         return;
     }
@@ -68,7 +69,7 @@ namespace mocc {
             size_t min_g = scat_row.min_g;
             int igg = min_g;
             for( auto sc: scat_row ) {
-                // Dont add a contribution for self-scatter. TODO: it might be a
+                // Dont add a contribution for self-scatter. It might be a
                 // good idea to remove self-scatter from the scattering matrix
                 // and store it separately. May also benefit the self-scatter
                 // routine to have less indirection.
@@ -101,28 +102,16 @@ namespace mocc {
         }
 
         std::string srcfname = input.attribute("file").value();
-        HDF::H5File srcfile( srcfname, "r" );
-        VecF src;
-        VecI dims;
-        HDF::Read( srcfile.get(), "/source", src, dims );
+        H5Node srcfile( srcfname, H5Access::READ );
+        srcfile.read( "/source", external_source_ );
 
-        if( dims[0] != (int)n_group_ ) {
+        // I converted this from the old HDF5 routines, and the order of these
+        // could be wrong. make sure to test or change as necessary
+        if( external_source_.extent(0) != (int)n_group_ ) {
             throw EXCEPT("Wrong group dimensions for source");
         }
-        if( dims[1] != (int)n_reg_ ) {
+        if( external_source_.extent(1) != (int)n_reg_ ) {
             throw EXCEPT("Wrong regions dimensions for source");
-        }
-
-        external_source_.resize( n_reg_, n_group_ );
-        // Do a 1:1 copy. We are assuming that the data in the vector is laid
-        // out in the same order as the ArrayB2.
-        auto in_it = src.begin();
-        auto it = external_source_.begin();
-        auto end = src.end();
-        while( in_it != end ) {
-            *it = *in_it;
-            ++it;
-            ++in_it;
         }
 
         has_external_ = true;

@@ -10,5 +10,32 @@ class, sush as stencils (for PDEs) and the like, we only use the Array class.
 And even then, we only use a relatively small subset of the features of that
 class.
 
-I have provided an annotated version of the Blitz++ documentation <a href=""> </a>
+Building Blitz
+--------------
+Download the BLitz++ source:
+\verbatim
+wget http://downloads.sourceforge.net/project/blitz/blitz/Blitz%2B%2B%200.10/blitz-0.10.tar.gz
+\endverbatim
+
+Extract it:
+\verbatim
+tar xvf blitz-0.10.tar.gz
+\endverbatim
+
+Configure the build system:
+\verbatim
+cd blitz-0.10
+./configure --prefix=[path to blitz install]
+\endverbatim
+
+Compile the library and install it to the path specified in the configuration
+step:
+\verbatim
+make
+make install
+\endverbatim
+
+That should be it. Use the path specified in the configuration step as the \c
+Blitz environment variable discussed in \ref obtaining.
+
 */

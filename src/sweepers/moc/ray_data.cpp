@@ -192,19 +192,32 @@ namespace mocc { namespace moc {
                     }
                     p1.y = (0.5 + iray)*space_y;
                     Point2 p2 = core_box.intersect(p1, *ang);
+                    // The below indexing based on point position / spacing is
+                    // safer than it might appear at first. Since the rays are
+                    // laid out starting a half-spacing into the domain, the
+                    // i-th ray points lie between multiples of the ray spacing,
+                    // and are therefore sufficiently far away from multiples
+                    // of the spacing to permit a reliable division and cast to
+                    // int. Ray i will start (i+0.5)*spacing into the domain, so
+                    // dividing the ray position by the spacing and casting to
+                    // an int gives i.
                     if( fp_equiv_abs(p2.x, hx) ) {
-                        // BC is on the right/east boundary of the core
+                        // BC is on the right/east boundary of the domain
                         bc[1] = p2.y/space_y;
                     } else if ( fp_equiv_abs(p2.y, hy) ) {
-                        // BC is on the top/north boundary of the core
+                        // BC is on the top/north boundary of the domain
                         bc[1] = p2.x/space_x + Ny;
                     } else if ( fp_equiv_abs(p2.x, 0.0) ) {
-                        // BC is on the left/west boundary of the core
+                        // BC is on the left/west boundary of the domain
                         bc[1] = p2.y/space_y;
                     } else {
                         throw EXCEPT("Something has gone horribly wrong in the "
                                 "ray trace.");
                     }
+                    assert(bc[0] >= 0);
+                    assert(bc[1] >= 0);
+                    assert(bc[0] < Nx+Ny);
+                    assert(bc[1] < Nx+Ny);
                     rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
                     max_seg_ = std::max( rays.back().nseg(), max_seg_ );
                 }
@@ -229,6 +242,10 @@ namespace mocc { namespace moc {
                         throw EXCEPT("Something has gone horribly wrong in the "
                                 "ray trace.");
                     }
+                    assert(bc[0] >= 0);
+                    assert(bc[1] >= 0);
+                    assert(bc[0] < Nx+Ny);
+                    assert(bc[1] < Nx+Ny);
                     rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
                     max_seg_ = std::max( rays.back().nseg(), max_seg_ );
                 }

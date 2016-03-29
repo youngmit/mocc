@@ -10,6 +10,14 @@ using std::setw;
 
 namespace mocc {
     void CorrectionData::from_data( const pugi::xml_node &input ) {
+
+        if( input.empty() ) {
+            // There isn't actually any data. Go ahead and return
+            LogFile << "CorrectionData::from_data() was called, but <data/> "
+                "was empty or non-existent.";
+            return;
+        }
+
         LogFile << "Loading CDD data from file(s)." << std::endl;
         // First, validate the data tags. Make sure that they are the right
         // size and have cover all planes in the mesh.
@@ -115,7 +123,7 @@ namespace mocc {
 
         return;
     }
-    
+
     void CorrectionData::output( H5Node &file ) const {
         VecI dims;
         dims.push_back(nz_);

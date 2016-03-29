@@ -90,7 +90,7 @@ namespace mocc {
         void from_data( const pugi::xml_node &input );
 
         void output( H5Node &file ) const;
-        
+
     private:
         const Mesh *mesh_;
         int nreg_;

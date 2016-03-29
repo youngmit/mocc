@@ -1,0 +1,91 @@
+<!--
+    This input file describes a 3x3 array of pin cells using C5G7 geometry and
+    cross sections, surrounded by a reflector. The system boundaries touched
+    only by the reflector are vacuum, while the ones touching fuel pins are
+    reflective. This results in quarter-symmetry of a 6x6 pin array with
+    3-pin-pitch radial reflector.
+
+    There are two fuel pin types, one (ID=1) filled with UO2 and the other
+    (ID=2) filled with MOx.
+-->
+
+<solver type="eigenvalue" k_tol="1.e-7" psi_tol="1.e-6" max_iter="100" cmfd="t">
+    <source scattering="P0" />
+    <sweeper type="moc" n_inner="5">
+        <ang_quad type="ls" order="4" />
+        <rays spacing="0.01" />
+    </sweeper>
+</solver>
+
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-4.3" />
+    <material id="6" name="Moderator" />
+</material_lib>
+
+<!-- 
+    Regular, cylindrical fuel pin with extra meshing in the water. 5 mesh rings
+    in the active fuel region, 2 in the water ring. Divided into 8 azimuthal
+    regions.
+-->
+<mesh id="1" type="cyl" pitch="1.26">
+    <radii>0.54 0.62</radii>
+    <sub_radii>5 2</sub_radii>
+    <sub_azi>8</sub_azi>
+</mesh>
+<!-- Rectangular mesh for reflector -->
+<mesh id="2" type="rect" pitch="1.26">
+    <sub_x>5</sub_x>
+    <sub_y>5</sub_y>
+</mesh>
+
+<!-- UO2 Pin -->
+<pin id="1" mesh="1">
+    1 6 6
+</pin>
+<!-- MOx Pin -->
+<pin id="2" mesh="1">
+    2 6 6
+</pin>
+<!-- Reflector Pin -->
+<pin id="3" mesh="2">
+    6 6 6 6 6
+    6 6 6 6 6
+    6 6 6 6 6
+    6 6 6 6 6
+    6 6 6 6 6
+</pin>
+
+<lattice id="1" nx="3" ny="3">
+    1 2 1 
+    1 1 1 
+    1 2 2 
+</lattice>
+<lattice id="2" nx="3" ny="3">
+    3 3 3 
+    3 3 3 
+    3 3 3 
+</lattice>
+
+<assembly id="1" np="1" hz="1.0">
+    <lattices>
+        1
+    </lattices>
+</assembly>
+<assembly id="2" np="1" hz="1.0">
+    <lattices>
+        2
+    </lattices>
+</assembly>
+
+<core nx="2" ny="2"
+    north  = "reflect" 
+    south  = "vacuum" 
+    east   = "vacuum"
+    west   = "reflect"
+    top    = "reflect"
+    bottom = "reflect" >
+    1 2
+    2 2
+</core>
+

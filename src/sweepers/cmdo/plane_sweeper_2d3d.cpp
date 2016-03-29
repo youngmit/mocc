@@ -21,17 +21,16 @@ namespace mocc { namespace cmdo {
             const CoreMesh &mesh ):
         TransportSweeper(input),
         mesh_(mesh),
-        sn_sweeper_(input.child("sn_sweeper"), mesh),
+        pair_(SnSweeperFactory_CDD(input.child("sn_sweeper"), mesh)),
+        sn_sweeper_(std::move(pair_.first)),
+        corrections_( pair_.second ),
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad()),
-        corrections_( new CorrectionData( mesh_, ang_quad_.ndir()/2,
-            sn_sweeper_.n_group() ) ),
-        tl_( sn_sweeper_.n_group(), mesh_.n_pin() ),
-        sn_resid_( sn_sweeper_.n_group() ),
-        i_outer_( 0 )
+        tl_( sn_sweeper_->n_group(), mesh_.n_pin() ),
+        sn_resid_( sn_sweeper_->n_group() ),
+        i_outer_( -1 )
     {
         this->parse_options( input );
-        /// \todo initialize the rest of the data members on the TS base type
         core_mesh_ = &mesh;
 
         xs_mesh_ = moc_sweeper_.get_xs_mesh();
@@ -41,14 +40,14 @@ namespace mocc { namespace cmdo {
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
 
-        sn_sweeper_.set_corrections( corrections_ );
         auto sn_xs_mesh =
-            sn_sweeper_.get_homogenized_xsmesh();
+            sn_sweeper_->get_homogenized_xsmesh();
+        assert( corrections_ );
         moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
 
-        sn_sweeper_.set_ang_quad(ang_quad_);
+        sn_sweeper_->set_ang_quad(ang_quad_);
 
-        sn_sweeper_.get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
+        sn_sweeper_->get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
 
         coarse_data_ = nullptr;
 
@@ -60,11 +59,12 @@ namespace mocc { namespace cmdo {
         if( !coarse_data_ ) {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
-
+        
         /// \todo do something less brittle
         if( group == 0 ) {
             i_outer_++;
         }
+
 
         // Calculate transverse leakage source
         if( do_tl_ ) {
@@ -72,11 +72,14 @@ namespace mocc { namespace cmdo {
         }
 
         // MoC Sweeper
-        if( i_outer_ > n_inactive_moc_ ) {
+        bool do_moc = ((i_outer_+1) > n_inactive_moc_) &&
+            ((i_outer_ % moc_modulo_) == 0);
+        if( do_moc ) {
             moc_sweeper_.sweep( group );
         }
         ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
+
 
         // Sn sweeper
         // For now, we are assuming that the Sn cross sections are being updated
@@ -85,20 +88,19 @@ namespace mocc { namespace cmdo {
         // mesh flux in the last MoC inner. For low numbers of MoC inners, this
         // essentially constitutes an outer-iteration lag of the updated cross
         // sections :-/
-        sn_sweeper_.sweep( group );
+        sn_sweeper_->sweep( group );
 
         if( do_snproject_ ) {
             ArrayB1 sn_flux(mesh_.n_pin());
-            sn_sweeper_.get_pin_flux_1g( group, sn_flux );
+            sn_sweeper_->get_pin_flux_1g( group, sn_flux );
             moc_sweeper_.set_pin_flux_1g( group, sn_flux );
         }
 
         // Compute Sn-MoC residual
-
         real_t residual = 0.0;
         for( size_t i=0; i<moc_flux.size(); i++ ) {
-            residual += (moc_flux(i) - sn_sweeper_.flux( group, i )) *
-                        (moc_flux(i) - sn_sweeper_.flux( group, i ));
+            residual += (moc_flux(i) - sn_sweeper_->flux( group, i )) *
+                        (moc_flux(i) - sn_sweeper_->flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
@@ -108,18 +110,19 @@ namespace mocc { namespace cmdo {
         }
         cout << endl;
         sn_resid_[group].push_back(residual);
+
     }
 
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::initialize() {
-        sn_sweeper_.initialize();
+        sn_sweeper_->initialize();
         moc_sweeper_.initialize();
     }
 
 ////////////////////////////////////////////////////////////////////////////////
     void PlaneSweeper_2D3D::get_pin_flux_1g( int ig, ArrayB1 &flux ) const {
         if( expose_sn_ ) {
-            sn_sweeper_.get_pin_flux_1g( ig, flux );
+            sn_sweeper_->get_pin_flux_1g( ig, flux );
         } else {
             moc_sweeper_.get_pin_flux_1g( ig, flux );
         }
@@ -162,7 +165,7 @@ namespace mocc { namespace cmdo {
         // Put the Sn data in its own location
         {
             auto g = file.create_group( "/Sn" );
-            sn_sweeper_.output( g );
+            sn_sweeper_->output( g );
         }
 
         // Put the MoC data in its own location
@@ -186,15 +189,17 @@ namespace mocc { namespace cmdo {
         }
 
         // Write out the transverse leakages
-        file.create_group("/TL");
-        for( int g=0; g<n_group_; g++ ) {
-            std::stringstream setname;
-            setname << "/TL/" << setfill('0') << setw(3) << g;
+        {
+            auto group = file.create_group("/transverse_leakage");
+            for( int g=0; g<n_group_; g++ ) {
+                std::stringstream setname;
+                setname << setfill('0') << setw(3) << g;
 
-            const auto tl_slice = tl_((int)g, blitz::Range::all());
+                const auto tl_slice = tl_((int)g, blitz::Range::all());
 
-            file.write( setname.str(), tl_slice.begin(), tl_slice.end(),
-                    dims );
+                group.write( setname.str(), tl_slice.begin(), tl_slice.end(),
+                        dims );
+            }
         }
 
         // Write out the correction factors
@@ -209,9 +214,10 @@ namespace mocc { namespace cmdo {
     void PlaneSweeper_2D3D::parse_options( const pugi::xml_node &input ) {
         // Set defaults for everything
         expose_sn_ = false;
-        do_snproject_ = true;
+        do_snproject_ = false;
         do_tl_ = true;
         n_inactive_moc_ = 0;
+        moc_modulo_ = 1;
 
         // Override with entries in the input node
         if( !input.attribute("expose_sn").empty() ) {
@@ -226,6 +232,9 @@ namespace mocc { namespace cmdo {
         if( !input.attribute("inactive_moc").empty() ) {
             n_inactive_moc_ = input.attribute("inactive_moc").as_int();
         }
+        if( !input.attribute("moc_modulo").empty() ) {
+            moc_modulo_ = input.attribute("moc_modulo").as_int();
+        }
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
@@ -233,6 +242,7 @@ namespace mocc { namespace cmdo {
         LogFile << "    Transverse Leakage: " << do_snproject_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
+        LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;
 
 
     }

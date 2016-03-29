@@ -14,6 +14,7 @@ namespace mocc {
             q_( nreg )
 
         {
+            q_.fill(0.0);
             return;
         }
 

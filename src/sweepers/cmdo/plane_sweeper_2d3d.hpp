@@ -7,11 +7,12 @@
 #include "core/global_config.hpp"
 #include "core/output_interface.hpp"
 
-#include "sn/correction_data.hpp"
 #include "sn/sn_sweeper_variant.hpp"
 
-#include "sn_sweeper_cdd.hpp"
+#include "correction_data.hpp"
 #include "moc_sweeper_2d3d.hpp"
+#include "sn_sweeper_cdd.hpp"
+#include "sn_sweeper_factory_cdd.hpp"
 #include "source_2d3d.hpp"
 
 namespace mocc { namespace cmdo {
@@ -28,26 +29,32 @@ namespace mocc { namespace cmdo {
 
         void initialize();
 
+        /**
+         * \brief \copybrief TransportSweeper::get_pin_flux_1g()
+         */
         void get_pin_flux_1g( int ig, ArrayB1 &flux ) const;
 
         /**
+         * \brief \copybrief TransportSweeper::set_pin_flux_1g()
+         *
          * Delegate to the subbordinate \ref sn::SnSweeper and \ref
          * moc::MoCSweeper.  Return the error from the MoC sweeper.
          */
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
-            sn_sweeper_.set_pin_flux_1g( group, pin_flux );
+            sn_sweeper_->set_pin_flux_1g( group, pin_flux );
             real_t diff = moc_sweeper_.set_pin_flux_1g( group, pin_flux );
 
             return diff;
         }
 
+        /**
+         * \brief \copybrief HasOutput::output()
+         */
         void output( H5Node &file ) const;
 
-        void homogenize( CoarseData &data ) const {
-            throw EXCEPT("Not implemented");
-        }
-
         /**
+         * \brief \copybrief TransportSweeper::assign_source()
+         *
          * Associate the sweeper with a source. This has to do a little extra
          * work, since the Sn sweeper needs its own source.
          */
@@ -59,22 +66,26 @@ namespace mocc { namespace cmdo {
             /// ownership of the source by FSS and allow the TS to figure out
             /// the types more explicitly...
             Source_2D3D *s = static_cast<Source_2D3D*>(source);
-            sn_sweeper_.assign_source( s->get_sn_source() );
+            sn_sweeper_->assign_source( s->get_sn_source() );
         }
 
         /**
+         * \brief \copybrief TransportSweeper::create_source()
+         *
          * Create a Source_2D3D object instead of the standard Source class.
          */
         UP_Source_t create_source( const pugi::xml_node &input ) const {
             std::cout << "creating 2d3d source" << std::endl;
-            return UP_Source_t( new Source_2D3D( moc_sweeper_, sn_sweeper_ ) );
+            return UP_Source_t( new Source_2D3D( moc_sweeper_, *sn_sweeper_ ) );
         }
 
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
-            return sn_sweeper_.get_homogenized_xsmesh();
+            return sn_sweeper_->get_homogenized_xsmesh();
         }
 
         /**
+         * \brief \copybrief TransportSweeper::calc_fission_source()
+         *
          * Override the default \ref TransportSweeper implementation to call the
          * method on one of the sub-sweepers.
          */
@@ -84,27 +95,36 @@ namespace mocc { namespace cmdo {
         }
 
         /**
-         * \copybrief TransportSweeper::total_fission()
+         * \brief \copybrief TransportSweeper::total_fission()
+         *
          * Override the default \ref TransportSweeper implementation to call the
-         * method on one of the sub-sweepers.
+         * method on one of the sub-sweepers. For now, using the MoC
+         * implementation, since it's the finer mesh, generally speaking
          */
         real_t total_fission( bool old ) const {
-            return sn_sweeper_.total_fission( old );
+            return moc_sweeper_.total_fission( old );
         }
 
         /**
+         * \brief \copybrief TransportSweeper::store_old_flux()
+         *
          * Defer to the MoC and Sn sweepers.
          */
         void store_old_flux() {
             moc_sweeper_.store_old_flux();
-            sn_sweeper_.store_old_flux();
+            sn_sweeper_->store_old_flux();
             return;
         }
 
+        /**
+         * \brief \copybrief TransportSweeper::set_coarse_data()
+         *
+         * Delegate to subordinate sweepers.
+         */
         void set_coarse_data( CoarseData *cd ) {
             coarse_data_ = cd;
             moc_sweeper_.set_coarse_data( cd );
-            sn_sweeper_.set_coarse_data( cd );
+            sn_sweeper_->set_coarse_data( cd );
         }
 
     private:
@@ -116,10 +136,11 @@ namespace mocc { namespace cmdo {
 
 
         const CoreMesh& mesh_;
-        SnSweeper_CDD<CellWorker_CDD_DD> sn_sweeper_;
+        CDDPair_t pair_;
+        UP_SnSweeper_t sn_sweeper_;
+        std::shared_ptr<CorrectionData> corrections_;
         MoCSweeper_2D3D moc_sweeper_;
         AngularQuadrature ang_quad_;
-        std::shared_ptr<CorrectionData> corrections_;
         ArrayB2 tl_;
 
         // Sn-MoC residuals by group sweep
@@ -131,5 +152,6 @@ namespace mocc { namespace cmdo {
         bool do_tl_;
         int n_inactive_moc_;
         int i_outer_;
+        int moc_modulo_;
     };
 } } // Namespace mocc::cmdo

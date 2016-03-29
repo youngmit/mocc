@@ -1,6 +1,9 @@
 #pragma once
 
+#include <iostream>
+
 #include "blitz_typedefs.hpp"
+#include "angular_quadrature.hpp"
 #include "constants.hpp"
 #include "error.hpp"
 #include "global_config.hpp"
@@ -99,6 +102,19 @@ namespace mocc {
                 }
                 iang++;
             }
+            return;
+        }
+
+        /**
+         * \brief Replace the default copy constructor to avoid aliasing of the
+         * underlying data
+         */
+        BoundaryCondition( const BoundaryCondition &rhs ):
+            BoundaryCondition( rhs.n_group_,
+                               rhs.ang_quad_,
+                               rhs.bc_,
+                               rhs.size_ )
+        {
             return;
         }
 
@@ -280,6 +296,9 @@ namespace mocc {
             return;
         }
 
+        friend std::ostream& operator<<(std::ostream &os,
+                const BoundaryCondition &bc );
+
     private:
         // Number of energy groups
         int n_group_;
@@ -307,7 +326,5 @@ namespace mocc {
         // incremented by bc_per_group_*group to yield final starting index of a
         // face of BCs
         blitz::Array<int, 2> offset_;
-
-
     };
 }
