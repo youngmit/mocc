@@ -5,6 +5,7 @@
 #include "pugixml.hpp"
 
 #include "core/core_mesh.hpp"
+#include "core/exponential.hpp"
 #include "core/files.hpp"
 
 #include "sn/cell_worker.hpp"
@@ -193,7 +194,8 @@ namespace mocc { namespace cmdo {
     public:
         CellWorker_CDD_SC( const Mesh &mesh,
                 const AngularQuadrature &ang_quad ):
-            CellWorker_CDD( mesh, ang_quad )
+            CellWorker_CDD( mesh, ang_quad ),
+            exponential_()
         {
             return;
         }
@@ -214,7 +216,7 @@ namespace mocc { namespace cmdo {
             real_t gy = ay*b;
 
             real_t tau = xstr/tz_;
-            real_t rho = 1.0/tau - 1.0/(std::exp(tau) - 1.0);
+            real_t rho = 1.0/tau - 1.0/(exponential_.exp(tau) - 1.0);
             real_t rhofac= rho/(1.0 - rho);
 
             real_t psi = q + 2.0*(tx  * flux_x +
@@ -228,6 +230,9 @@ namespace mocc { namespace cmdo {
 
             return psi;
         }
+
+    private:
+        Exponential exponential_;
     };
 
     template <class T>
