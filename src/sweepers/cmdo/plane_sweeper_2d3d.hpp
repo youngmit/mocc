@@ -146,12 +146,23 @@ namespace mocc { namespace cmdo {
         // Sn-MoC residuals by group sweep
         std::vector<VecF> sn_resid_;
 
-        // Options! Buttons and knobs!!!
-        bool expose_sn_; // When asking the sweeper for pin flux, which one?
-        bool do_snproject_;
-        bool do_tl_;
-        int n_inactive_moc_;
+        // Outer iteration index. Starts at -1 and is incremented whenever group
+        // 0 is swept. This is kind of brittle.
         int i_outer_;
+
+        // Options! Buttons and knobs!!!
+        // When asking the sweeper for pin flux, which one?
+        bool expose_sn_;
+        // Project Sn flux to fine mesh after Sn sweeps? This is important when
+        // no CMFD acceleration is used.
+        bool do_snproject_; 
+        // Project MoC flux to Sn after MoC inners?
+        bool do_mocproject_;
+        // Enable transverse leakage? In most cases this will prevent
+        // convergence.
+        bool do_tl_;
+        // Number of outer iterations to skip MoC. Super experimental
+        int n_inactive_moc_;
         int moc_modulo_;
     };
 } } // Namespace mocc::cmdo

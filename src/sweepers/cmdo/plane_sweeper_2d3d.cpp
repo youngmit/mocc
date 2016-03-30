@@ -77,8 +77,13 @@ namespace mocc { namespace cmdo {
         if( do_moc ) {
             moc_sweeper_.sweep( group );
         }
+
         ArrayB1 moc_flux( mesh_.n_pin() );
         moc_sweeper_.get_pin_flux_1g( group, moc_flux );
+
+        if( do_mocproject_ ) {
+            sn_sweeper_->set_pin_flux_1g( group, moc_flux );
+        }
 
 
         // Sn sweeper
@@ -215,6 +220,7 @@ namespace mocc { namespace cmdo {
         // Set defaults for everything
         expose_sn_ = false;
         do_snproject_ = false;
+        do_mocproject_ = false;
         do_tl_ = true;
         n_inactive_moc_ = 0;
         moc_modulo_ = 1;
@@ -225,6 +231,9 @@ namespace mocc { namespace cmdo {
         }
         if( !input.attribute("sn_project").empty() ) {
             do_snproject_ = input.attribute("sn_project").as_bool();
+        }
+        if( !input.attribute("moc_project").empty() ) {
+            do_mocproject_ = input.attribute("moc_project").as_bool();
         }
         if( !input.attribute("tl").empty() ) {
             do_tl_ = input.attribute("tl").as_bool();
@@ -238,8 +247,9 @@ namespace mocc { namespace cmdo {
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
+        LogFile << "    MoC Projection: " << do_mocproject_ << std::endl;
         LogFile << "    Expose Sn pin flux: " << expose_sn_ << std::endl;
-        LogFile << "    Transverse Leakage: " << do_snproject_ << std::endl;
+        LogFile << "    Transverse Leakage: " << do_tl_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
         LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;
