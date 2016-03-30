@@ -33,7 +33,7 @@ namespace mocc {
             return;
         }
 
-        CorrectionData( Mesh mesh, size_t nang, size_t ngroup ):
+        CorrectionData( const Mesh &mesh, size_t nang, size_t ngroup ):
             mesh_( &mesh ),
             nreg_( mesh.n_pin() ),
             nx_( mesh.nx() ),
