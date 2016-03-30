@@ -53,6 +53,9 @@ void generate_output() {
     outfile.write("input_file", filestream.str());
 
     outfile.write("git_sha1", std::string(g_GIT_SHA1));
+
+    std::cout << "Output written to '" << input_proc->case_name() << "'"
+              << std::endl;
 }
 
 // Print the MOCC banner. Pretty!
