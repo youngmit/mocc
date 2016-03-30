@@ -102,7 +102,7 @@ namespace mocc {
     real_t TransportSweeper::flux_residual() const {
         real_t r = 0.0;
         auto it = flux_.begin();
-        auto it_old = flux_.begin();
+        auto it_old = flux_old_.begin();
         auto end = flux_.end();
         while( it != end ) {
             real_t e = *it - *it_old;
