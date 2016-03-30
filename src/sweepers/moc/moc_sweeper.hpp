@@ -96,7 +96,7 @@ namespace mocc { namespace moc {
         std::array<Boundary, 6> bc_type_;
 
         // Exponential table
-        Exponential_Linear exp_;
+        Exponential_Linear<10000> exp_;
 
         bool dump_rays_;
         bool gauss_seidel_boundary_;
