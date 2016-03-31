@@ -158,6 +158,10 @@ namespace mocc { namespace cmdo {
         bool do_snproject_; 
         // Project MoC flux to Sn after MoC inners?
         bool do_mocproject_;
+        // Whether we should replace the sn angular quadrature with the
+        // modularized quadrature from MoC. Technically we need to do this
+        // always, but turning this off sometimes is useful for debugging
+        bool keep_sn_quad_;
         // Enable transverse leakage? In most cases this will prevent
         // convergence.
         bool do_tl_;

@@ -45,7 +45,9 @@ namespace mocc { namespace cmdo {
         assert( corrections_ );
         moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
 
-        sn_sweeper_->set_ang_quad(ang_quad_);
+        if( !keep_sn_quad_ ) {
+            sn_sweeper_->set_ang_quad(ang_quad_);
+        }
 
         sn_sweeper_->get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
 
@@ -221,6 +223,7 @@ namespace mocc { namespace cmdo {
         expose_sn_ = false;
         do_snproject_ = false;
         do_mocproject_ = false;
+        keep_sn_quad_ = false;
         do_tl_ = true;
         n_inactive_moc_ = 0;
         moc_modulo_ = 1;
@@ -244,11 +247,15 @@ namespace mocc { namespace cmdo {
         if( !input.attribute("moc_modulo").empty() ) {
             moc_modulo_ = input.attribute("moc_modulo").as_int();
         }
+        if( !input.attribute("preserve_sn_quadrature").empty() ) {
+            keep_sn_quad_ = input.attribute("preserve_sn_quadrature").as_bool();
+        }
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
         LogFile << "    MoC Projection: " << do_mocproject_ << std::endl;
         LogFile << "    Expose Sn pin flux: " << expose_sn_ << std::endl;
+        LogFile << "    Keep original Sn quadrature: " << keep_sn_quad_ << std::endl;
         LogFile << "    Transverse Leakage: " << do_tl_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
