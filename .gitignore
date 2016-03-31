@@ -9,3 +9,4 @@ build/*
 bin/*
 mocc.sublime-workspace
 *.mine
+*.log
