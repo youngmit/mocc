@@ -1,0 +1,153 @@
+/**
+\page geom_input Geometry Specification
+The system is specified using a hierarchy of constructs:
+Pin Mesh -> Pin -> Lattice -> Assembly -> Core.
+
+\section pin_mesh \<mesh\>
+A "pin mesh" is a purely geometrical construct, which specifies the
+manner in which space is subdivided into discrete regions (often referred to as
+flat-source regions in the context of the Method of Characteristics). MOCC
+currently supports cylindrical and rectangular pin meshes.
+
+All \c \<mesh\> tags must specify an \c id attribute, which is used to reference
+them in \c \<pin\> tags, and a \c type attribute, specifying what type of pin
+mesh it should be, and a \c pitch attribute, specifying the size of the mesh.
+At present all pins are assumed to fit in a square of side length \c pitch.
+
+\subsection cyl_mesh Cylindrical Pin Mesh
+Cylindrical meshes are specified by a number of radii separating annular
+regions, each capable of being filled with a distinct material. For each radius
+specified, a number of radial subdivisions is also specified, which results in a
+radial refinement of the mesh within each material region. Azimuthal
+subdivisions can also be specified, and are applied to the entire pin mesh.
+When using a cylindrical mesh to define a pin, the number of materials specified
+shall be the number of radii plus one (a material inside each radial region,
+plus another material outside the outermost radius).
+Example:
+\code{xml}
+<mesh id="1" type="cyl" pitch="1.26">
+    <radii>0.54 0.62</radii>
+    <sub_radii>5 2</sub_radii>
+    <sub_azi>8</sub_azi>
+</mesh>
+\endcode
+When using a cylindrical mesh to specify a pin, the material IDs should be
+specified from the inner regions out.
+
+\subsection rect_mesh Rectangular Pin Mesh
+Rectangular meshes are specified by a pitch and a number of evenly-spaced x- and
+y- divisions, yielding a structured orthogonal grid. Each region of the grid may
+have a different material.
+Example:
+\code{xml}
+<mesh id="2" type="rect" pitch="1.26">
+    <sub_x>3</sub_x>
+    <sub_y>3</sub_y>
+</mesh>
+\endcode
+When using a rectangular mesh to specify pin, the material IDs should be
+specified in matrix-style order; the first entry is the upper-left region, and
+the last entry is the lower-right region.
+
+\section pin \<pin\>
+A "pin" is a pin mesh upon which material properties have been specified. A Pin
+tag shall have a unique \c id attribute for referencing from a \c \<lattice\>
+tag, and \c pin_mesh attribute, specifying the mesh ID to use. The child data of
+a pin tag should be a list of material IDs to apply to each region of the
+referenced mesh.
+Examples:
+\code{xml}
+<pin id="1" mesh="1">
+    1 6 6
+</pin>
+\endcode
+\code{xml}
+<pin id="2" mesh="2">
+    1 1 1
+    1 2 1
+    1 1 1
+</pin>
+\endcode
+
+\section lattice \<lattice\>
+A "lattice" is a 2-D rectangular lattice of pins. A lattice tag shall have a
+unique \c id attribute for referencing from an \<assembly\> tag. A lattice shall
+also specify \c nx and \c ny attributes, specifying the dimensions of the
+lattice. The child data of a lattice tag shall be the valid pin IDs, also
+specified in matrix order; the first entry is the northwest-most pin in the
+lattice and the last entry is the southeast-most pin.
+
+Example:
+\code{xml}
+<lattice id="1" nx="17" ny="17">
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 7 1 1 7 1 1 7 1 1 1 1 1
+        1 1 1 7 1 1 1 1 1 1 1 1 1 7 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 7 1 1 7 1 1 7 1 1 7 1 1 7 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 7 1 1 7 1 1 5 1 1 7 1 1 7 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 7 1 1 7 1 1 7 1 1 7 1 1 7 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 7 1 1 1 1 1 1 1 1 1 7 1 1 1
+        1 1 1 1 1 7 1 1 7 1 1 7 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+</lattice>
+\endcode
+
+\section assembly \<assembly\>
+An "assembly" is a 1-D stack of lattices. An assembly tag shall have a unique \c
+id attribute, which is used to reference the assembly in a core specification.
+An assembly must also specify \c np, the number of planes/lattices in the
+assembly, as well as the plane heights. The plane heights may be specified in
+one of two ways; as a single attribute, \c hz, which is applied uniformly to all
+lattices in the assembly, or as child data in a \<hz\> tag (see
+example below). The IDs of the lattices in the assemblies are specified as child
+data of a \<lattices\> tag. Lattice IDs are specified in order from the top of
+the assembly to the bottom.
+
+Examples:
+\code{xml}
+<assembly id="1" np="10" hz="1.428">
+    <lattices>
+        1 1 1 2 2 2 2 2 2 2
+    </lattices>
+</assembly>
+\endcode
+\code{xml}
+<assembly id="1" np="10">
+	<hz>
+        1.0 1.0 1.0 1.428 1.428 1.428 1.428 1.428 1.428 1.428 1.428 1.428 1.428 1.428
+	</hz>
+    <lattices>
+        1 1 1 2 2 2 2 2 2 2
+    </lattices>
+</assembly>
+\endcode
+
+\section core \<core\>
+A "core" is a 2-D, rectangular array of assemblies and appropriate boundary
+conditions.
+
+\todo More detail
+
+Example:
+\code{xml}
+<core nx="3" ny="3" enabled="t"
+    north  = "reflect"
+    south  = "vacuum"
+    east   = "vacuum"
+    west   = "reflect"
+    top    = "reflect"
+    bottom = "reflect" >
+    1 2 3
+    2 1 3
+    3 3 3
+</core>
+\endcode
+*/

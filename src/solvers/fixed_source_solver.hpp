@@ -26,15 +26,6 @@
 #include "solver.hpp"
 
 namespace mocc{
-    /**
-    * This \ref Solver attempts to solve the fixed source problem. For now, the
-    * fixed source must be provided by some solver above the FSS, in the form of
-    * a \ref Source object, however in the future it might be useful to be able
-    * to supply a user-defined Source for non-eigenvalue problems.
-    *
-    * Right now, the FSS is used by the \ref EigenSolver to converge the flux
-    * solution for intermediate "fixed" sources for each eigenvalue step.
-    */
     class FixedSourceSolver: public Solver {
     public:
         /**

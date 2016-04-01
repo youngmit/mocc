@@ -1,0 +1,109 @@
+/**
+\page input_file Input File Specification
+First and foremost, the MOCC input file shall be a well-formed XML document.
+Beyond that, the structure of the file can be quite general. The only required
+tags are a \<core\> tag, with all relevant constituent components (lattices,
+pins, and the like) properly defined elsewhere, and a single \<solver\> tag. Due
+to the hierarchical nature of MOCC, each of these tags will tend to require
+child tags in order to be well defined. Each tag and its various possible
+attributes and children are described on this page.
+
+\section geom Problem Geometry
+See \subpage geom_input for detail about how the geometry is specified.
+
+\section materials Material Specification
+Example:
+\code{xml}
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-4.3" />
+    <material id="3" name="MOX-7.0" />
+    <material id="4" name="MOX-8.7" />
+    <material id="5" name="FissCham" />
+    <material id="6" name="Moderator" />
+    <material id="7" name="GuideTube" />
+    <material id="8" name="CRod" />
+</material_lib>
+\endcode
+
+\todo More detail
+
+\section solver <solver> Tag
+
+The \c \<solver\> tag specifies the top level solver to use for the problem.
+All \c \<solver\> tags must supply at least a \c type attribute to specify
+the actual solver type, while each type may require further attributes to
+fully specify the solver. Currently supported solver types are:
+ - \c eigenvalue An eigenvalue solver
+ - \c fixed_source A fixed-source solver
+
+
+\subsection eigen_solver Eigenvalue Solver
+\todo More detail
+
+Example:
+\code{xml}
+<solver type="eigenvalue" k_tol="1.0e-8" psi_tol="1.0e-6" max_iter="20" cmfd="t">
+    <source scattering="P0"/>
+    <sweeper type="moc" n_inner="5">
+        <rays spacing="0.01" modularity="core" />
+        <ang_quad type="ls" order="6" />
+    </sweeper>
+</solver>
+\endcode
+
+\subsection fixed_source_solver Fixed-Source Solver
+This \ref mocc::Solver attempts to solve the fixed source problem. For now, the
+fixed source must be provided by some solver above the FSS, in the form
+of a \ref mocc::Source object, however in the future it might be useful to be
+able to supply a user-defined Source for non-eigenvalue problems.
+
+Right now, the FSS is used by the \ref mocc::EigenSolver to converge the flux
+solution for intermediate "fixed" sources for each eigenvalue step.
+
+
+\section sweeper \<sweeper\> Tag
+This tag is used to specify a sweeper to be used for a \ref mocc::Solver.
+Currently supported sweeper types are:
+ - \c moc: Method of Characteristics (2-D)
+ - \c sn: Sn (2-D or 3-D)
+ - \c 2d3d The 2-D/3-D method (2-D or 3-D)
+
+All transport sweepers require an \c \<ang_quad\> tag to define the angular
+quadrature to be used. The angular quadrature can be specified as a child of the
+\c \<sweeper\> tag, or in any of the parents of the \c \<sweeper\> tag. This
+allows a single \c \<ang_quad\> definition for the 2-D/3-D sweeper, which has
+two sweeper child tags, both of which need to be using the same angular
+quadrature.  See \ref cmdo_sweeper for an example of this.
+
+\subsection moc_sweeper MoC Sweeper
+Example:
+\code{xml}
+<sweeper type="moc" n_inner="5">
+    <rays spacing="0.01" modularity="core" />
+    <ang_quad type="ls" order="6" />
+</sweeper>
+\endcode
+
+\subsection sn_sweeper Sn Sweeper
+Example:
+\code{xml}
+<sweeper type="sn" equation="dd" axial="dd" n_inner="15">
+    <ang_quad type="ls" order="6" />
+</sweeper>
+\endcode
+
+\subsection cmdo_sweeper 2-D/3-D Sweeper
+Example:
+\code{xml}
+<sweeper type="2d3d">
+    <ang_quad type="chebychev-gauss" n_azimuthal="16" n_polar="3" />
+    <moc_sweeper n_inner="10">
+        <rays spacing="0.01" modularity="pin" />
+    </moc_sweeper>
+    <sn_sweeper equation="cdd" axial="sc" />
+</sweeper>
+\endcode
+
+
+*/
