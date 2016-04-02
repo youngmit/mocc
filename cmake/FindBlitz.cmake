@@ -12,13 +12,15 @@ include(LibFindMacros)
 
 FIND_PATH(Blitz_INCLUDE_DIR blitz/blitz.h
     "$ENV{Blitz}/include"
+    "$ENV{Blitz}/.."
     /usr/local/include
     /usr/include
 )
 
-FIND_LIBRARY(Blitz_LIBRARY libblitz.a
+FIND_LIBRARY(Blitz_LIBRARY NAMES libblitz.a blitz.lib
   PATHS
     "$ENV{Blitz}/lib"
+    "$ENV{Blitz}/Win32/Release"
     /usr/local/lib
     /usr/lib
 )

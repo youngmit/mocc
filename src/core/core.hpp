@@ -16,9 +16,10 @@
 
 #pragma once
 
+#include <array>
+#include <cassert>
 #include <map>
 #include <vector>
-#include <cassert>
 
 #include "pugixml.hpp"
 

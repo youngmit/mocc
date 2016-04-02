@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <array>
 #include <iostream>
 
 #include "blitz_typedefs.hpp"
