@@ -1,5 +1,5 @@
 if(${BUILD_TESTS})
-        set(link_tests "driver;auxiliary;core;sweepers;solvers;hdf5_cpp;pugixml")
+        set(link_tests "driver;auxiliary;core;sweepers;solvers;${HDF5_LIBRARIES};pugixml")
 
         #add_unit_test(test_3x3 ${link_tests})
         #copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/3x3.xml 

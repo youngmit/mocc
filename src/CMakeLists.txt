@@ -17,4 +17,4 @@ file(GLOB mocc_src "*.cpp")
 add_library(driver "driver.cpp" "git_SHA1.cpp" "input_proc.cpp")
 
 add_executable(mocc "mocc.cpp")
-target_link_libraries(mocc driver auxiliary core sweepers solvers hdf5_cpp ${Blitz_LIBRARY})
+target_link_libraries(mocc driver auxiliary core sweepers solvers ${HDF5_LIBRARIES} ${Blitz_LIBRARY})

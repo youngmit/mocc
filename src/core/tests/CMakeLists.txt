@@ -1,7 +1,7 @@
 if(${BUILD_TESTS})
-    add_unit_test(test_h5file hdf5_cpp core)
+    add_unit_test(test_h5file ${HDF5_LIBRARIES} core)
 
-    add_unit_test(test_AngularQuadrature hdf5_cpp core)
+    add_unit_test(test_AngularQuadrature ${HDF5_LIBRARIES} core)
     
     add_unit_test(test_Material core pugixml)
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/c5g7.xsl 
@@ -11,9 +11,9 @@ if(${BUILD_TESTS})
     
     add_unit_test(test_Exponential core pugixml)
 
-    add_unit_test(test_BoundaryCondition core pugixml hdf5_cpp)
+    add_unit_test(test_BoundaryCondition core pugixml ${HDF5_LIBRARIES})
     
-    add_unit_test(test_XSMeshHomogenized core pugixml hdf5_cpp)
+    add_unit_test(test_XSMeshHomogenized core pugixml ${HDF5_LIBRARIES})
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/c5g7.xsl 
             ${CMAKE_CURRENT_BINARY_DIR}/c5g7.xsl test_XSMeshHomogenized)
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/2x3_stack.xml 

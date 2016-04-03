@@ -60,8 +60,37 @@ message("Flags: ${warnings} ${options}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}" )
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}")
 
-
-find_package(HDF5)
+# What a shame...
+if(WIN32)
+    # windows cmake internal lookups are broken for now
+    # will lookup for headers and shared libs given HDF_DIR env
+    find_path(HDF5_INCLUDE_DIRS hdf5.h HINTS "$ENV{HDF5_DIR}\\..\\include")
+    find_library(HDF5_ZLIB_LIBRARY NAMES libzlib HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    find_library(HDF5_SZIP_LIBRARY NAMES libszip HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    find_library(HDF5_C_LIBRARY NAMES libhdf5 HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    find_library(HDF5_CXX_LIBRARY NAMES libhdf5_cpp HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    if(HDF5_INCLUDE_DIRS AND HDF5_C_LIBRARY)
+        MESSAGE(STATUS "Found HDF5!")
+        set(HDF5_FOUND "YES")
+        set(HDF5_LIBRARIES ${HDF5_SZIP_LIBRARY}
+                           ${HDF5_ZLIB_LIBRARY}
+                           ${HDF5_C_LIBRARY}
+                           ${HDF5_CXX_LIBRARY})
+        mark_as_advanced(HDF5_LIBRARIES)
+        mark_as_advanced(HDF5_C_LIBRARY)
+        mark_as_advanced(HDF5_CXX_LIBRARY)
+        mark_as_advanced(HDF5_INCLUDE_DIRS)
+        include_directories(${HDF5_INCLUDE_DIRS})
+    else()
+        message(STATUS "Could not find HDF5")
+        set(HDF5_FOUND "NO")
+    endif()
+    message(STATUS "HDF5_INCLUDE_DIRS: ${HDF5_INCLUDE_DIRS}")
+    message(STATUS "HDF5_C_LIBRARY: ${HDF5_C_LIBRARY}")
+    message(STATUS "HDF5_LIBRARIES: ${HDF5_LIBRARIES}")
+else()
+    find_package(HDF5)
+endif()
 
 find_package(Blitz REQUIRED)
 
