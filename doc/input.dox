@@ -34,8 +34,8 @@ The \c \<solver\> tag specifies the top level solver to use for the problem.
 All \c \<solver\> tags must supply at least a \c type attribute to specify
 the actual solver type, while each type may require further attributes to
 fully specify the solver. Currently supported solver types are:
- - \c eigenvalue An eigenvalue solver
- - \c fixed_source A fixed-source solver
+ - <tt>eigenvalue</tt>: A k-eigenvalue solver
+ - <tt>fixed_source</tt>: A fixed-source solver
 
 
 \subsection eigen_solver Eigenvalue Solver
@@ -61,20 +61,53 @@ able to supply a user-defined Source for non-eigenvalue problems.
 Right now, the FSS is used by the \ref mocc::EigenSolver to converge the flux
 solution for intermediate "fixed" sources for each eigenvalue step.
 
+\todo Provide more complete documentation once the stand-alone FSS is fully
+implemented
+
 
 \section sweeper \<sweeper\> Tag
 This tag is used to specify a sweeper to be used for a \ref mocc::Solver.
 Currently supported sweeper types are:
- - \c moc: Method of Characteristics (2-D)
- - \c sn: Sn (2-D or 3-D)
- - \c 2d3d The 2-D/3-D method (2-D or 3-D)
+ - <tt>moc</tt>: Method of Characteristics (2-D)
+ - <tt>sn</tt>: Sn (2-D or 3-D)
+ - <tt>2d3d</tt>: The 2-D/3-D method (2-D or 3-D)
+Examples of each can be found below.
 
+\subsection ang_quad \<ang_quad\> Tag
 All transport sweepers require an \c \<ang_quad\> tag to define the angular
-quadrature to be used. The angular quadrature can be specified as a child of the
-\c \<sweeper\> tag, or in any of the parents of the \c \<sweeper\> tag. This
-allows a single \c \<ang_quad\> definition for the 2-D/3-D sweeper, which has
-two sweeper child tags, both of which need to be using the same angular
-quadrature.  See \ref cmdo_sweeper for an example of this.
+quadrature to be used. The types of quadrature currently supported are:
+ - <tt>ls|level-symmetric</tt>: The canonical Sn level-symmetric quadrature
+ - <tt>cg|chebychev-gauss</tt>: A product quadrature, using the Chebychev 
+ (evenly-spaced) quadrature for the azimuthal angles, and the Gauss-Legendre
+ quadrature for the polar angles
+ - <tt>cy|chebychev-yamamoto</tt>: A product quadrature, using Chebychev for the
+ azimuthal angles and the Yamamoto quadrature for the polar angles
+Examples of each are given below:
+
+
+The angular quadrature tag is nominally specified as a
+child of the \c \<sweeper\> tag, however it may be specified in any of the
+parents of the \c \<sweeper\> tag. This allows a single \c \<ang_quad\>
+definition for the 2-D/3-D sweeper, which has two sweeper child tags, both of
+which need to be using the same angular quadrature.  See \ref cmdo_sweeper for
+an example where the angular quadrature is specified above the internal Sn and
+MoC sweepers, such that the same input is supplied to both. When looking for an
+angular quadrature tag, the parser will first look at the child tags of the
+corresponding transport sweeper tag. If none is found it will look in
+successively higher levels in the XML tree until if finds one.
+
+\code{xml}
+<!-- Level-symmetric quadrature of order 8 (10 angles per octant) -->
+<ang_quad type="ls" order="8" />
+
+<!-- Chebychev-Gauss quadrature with 12 azimuthal angles and 3 polar angles per 
+octant -->
+<ang_quad type="cg" n_azimuthal="12" n_polar="3" />
+
+<!-- Chebychev-Yamamoto quadrature with 12 azimuthal angles and 3 polar angles
+per octant -->
+<ang_quad type="cy" n_azimuthal="12" n_polar="3" />
+\endcode
 
 \subsection moc_sweeper MoC Sweeper
 Example:

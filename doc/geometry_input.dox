@@ -23,6 +23,7 @@ subdivisions can also be specified, and are applied to the entire pin mesh.
 When using a cylindrical mesh to define a pin, the number of materials specified
 shall be the number of radii plus one (a material inside each radial region,
 plus another material outside the outermost radius).
+
 Example:
 \code{xml}
 <mesh id="1" type="cyl" pitch="1.26">
@@ -38,6 +39,7 @@ specified from the inner regions out.
 Rectangular meshes are specified by a pitch and a number of evenly-spaced x- and
 y- divisions, yielding a structured orthogonal grid. Each region of the grid may
 have a different material.
+
 Example:
 \code{xml}
 <mesh id="2" type="rect" pitch="1.26">
@@ -55,6 +57,7 @@ tag shall have a unique \c id attribute for referencing from a \c \<lattice\>
 tag, and \c pin_mesh attribute, specifying the mesh ID to use. The child data of
 a pin tag should be a list of material IDs to apply to each region of the
 referenced mesh.
+
 Examples:
 \code{xml}
 <pin id="1" mesh="1">
