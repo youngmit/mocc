@@ -20,7 +20,9 @@
 #include <iostream>
 #include <iomanip>
 
-#include "error.hpp"
+#include "util/range.hpp"
+
+#include "core/error.hpp"
 
 using mocc::sn::SnSweeper;
 
@@ -44,6 +46,7 @@ namespace mocc { namespace cmdo {
         ang_quad_(moc_sweeper_.get_ang_quad()),
         tl_( sn_sweeper_->n_group(), mesh_.n_pin() ),
         sn_resid_( sn_sweeper_->n_group() ),
+        prev_moc_flux_( sn_sweeper_->n_group(), mesh_.n_pin()),
         i_outer_( -1 )
     {
         this->parse_options( input );
@@ -55,6 +58,7 @@ namespace mocc { namespace cmdo {
 
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
+        groups_ = Range(n_group_);
 
         auto sn_xs_mesh =
             sn_sweeper_->get_homogenized_xsmesh();
@@ -88,21 +92,33 @@ namespace mocc { namespace cmdo {
         if( do_tl_ ) {
             this->add_tl( group );
         }
-
+        
         // MoC Sweeper
         bool do_moc = ((i_outer_+1) > n_inactive_moc_) &&
             ((i_outer_ % moc_modulo_) == 0);
         if( do_moc ) {
             moc_sweeper_.sweep( group );
+
+            int n_negative = 0;
+            for( const auto v: moc_sweeper_.flux()( group, blitz::Range::all() )) {
+                if( v < 0.0 ) {
+                    n_negative++;
+                }
+            }
+            if( n_negative > 0 ) {
+                cout << n_negative << " negative fluxes in group " << group <<
+                    endl;
+            }
         }
 
-        ArrayB1 moc_flux( mesh_.n_pin() );
-        moc_sweeper_.get_pin_flux_1g( group, moc_flux );
+        ArrayB1 prev_moc_flux = prev_moc_flux_( group,
+                blitz::Range::all() );
+        prev_moc_flux(0) = 0.0;
+        moc_sweeper_.get_pin_flux_1g( group, prev_moc_flux );
 
         if( do_mocproject_ ) {
-            sn_sweeper_->set_pin_flux_1g( group, moc_flux );
+            sn_sweeper_->set_pin_flux_1g( group, prev_moc_flux );
         }
-
 
         // Sn sweeper
         // For now, we are assuming that the Sn cross sections are being updated
@@ -121,9 +137,9 @@ namespace mocc { namespace cmdo {
 
         // Compute Sn-MoC residual
         real_t residual = 0.0;
-        for( size_t i=0; i<moc_flux.size(); i++ ) {
-            residual += (moc_flux(i) - sn_sweeper_->flux( group, i )) *
-                        (moc_flux(i) - sn_sweeper_->flux( group, i ));
+        for( size_t i=0; i<prev_moc_flux.size(); i++ ) {
+            residual += (prev_moc_flux(i) - sn_sweeper_->flux( group, i )) *
+                        (prev_moc_flux(i) - sn_sweeper_->flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
@@ -211,6 +227,17 @@ namespace mocc { namespace cmdo {
             file.write( setname.str(), sn_resid_[g], niter );
         }
 
+        {
+            auto flux = prev_moc_flux_.copy();
+            Normalize( flux.begin(), flux.end());
+            auto h5g = file.create_group("moc_flux");
+            for( const auto &ig: groups_ ) {
+                std::stringstream setname;
+                setname << setfill('0') << setw(3) << ig+1;
+                h5g.write( setname.str(), flux(ig, blitz::Range::all()), dims );
+            }
+        }
+
         // Write out the transverse leakages
         {
             auto group = file.create_group("/transverse_leakage");
@@ -227,7 +254,6 @@ namespace mocc { namespace cmdo {
 
         // Write out the correction factors
         corrections_->output(file);
-        
     }
 
 ////////////////////////////////////////////////////////////////////////////////

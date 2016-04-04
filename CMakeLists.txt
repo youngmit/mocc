@@ -86,7 +86,7 @@ if(WIN32)
     message(STATUS "HDF5_C_LIBRARY: ${HDF5_C_LIBRARY}")
     message(STATUS "HDF5_LIBRARIES: ${HDF5_LIBRARIES}")
 else()
-    find_package(HDF5)
+        find_package(HDF5 COMPONENTS CXX)
 endif()
 
 find_package(Blitz REQUIRED)

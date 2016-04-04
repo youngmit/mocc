@@ -162,6 +162,10 @@ namespace mocc { namespace cmdo {
         // Sn-MoC residuals by group sweep
         std::vector<VecF> sn_resid_;
 
+        // Pre-Sn projection moc flux. Useful for keeping track of MoC-Sn
+        // residual
+        ArrayB2 prev_moc_flux_;
+
         // Outer iteration index. Starts at -1 and is incremented whenever group
         // 0 is swept. This is kind of brittle.
         int i_outer_;
