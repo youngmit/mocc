@@ -20,6 +20,8 @@
 #include <memory>
 #include <vector>
 
+#include "util/range.hpp"
+
 #include "core/angular_quadrature.hpp"
 #include "core/blitz_typedefs.hpp"
 #include "core/coarse_data.hpp"
@@ -73,6 +75,7 @@ namespace mocc{
             xs_mesh_( new XSMesh(mesh) ),
             n_reg_( mesh.n_reg() ),
             n_group_( xs_mesh_->n_group() ),
+            groups_(Range(0, n_group_)),
             source_(nullptr),
             flux_( n_reg_, n_group_ ),
             flux_old_( n_reg_, n_group_ ),
@@ -313,6 +316,7 @@ namespace mocc{
 
         int n_reg_;
         int n_group_;
+        std::vector<int> groups_;
 
         Source* source_;
 
