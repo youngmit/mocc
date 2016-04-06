@@ -136,78 +136,77 @@ public:
 };
 
    
-//TEST_FIXTURE( LevelSymmetric_4, general )
-//{
-//    // Test the angle reflection capabilities
-//    test_reflect();
-//
-//    // Test the angle reversal capabilities
-//    CHECK_EQUAL(7, ang_quad.reverse(1));
-//    CHECK_EQUAL(5, ang_quad.reverse(11));
-//    
-//    // Other tests
-//    CHECK_EQUAL(3, ang_quad.ndir_oct());
-//    // Test the weight sum is 8.0
-//    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
-//    // Test input/output
-//    CHECK(isValidOutput());
-//}
-//
-//TEST_FIXTURE( LevelSymmetric_6, higher_order ) {
-//    
-//    // Test the angle reflection capabilities
-//    test_reflect();
-//
-//    // Other tests
-//    CHECK_EQUAL(6, ang_quad.ndir_oct());
-//    // Test the weight sum is 8.0
-//    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
-//    // Test input/output
-//    CHECK(isValidOutput());
-//}
-//
-//
-//TEST_FIXTURE( ChebyshevYamamoto_16_3, cy_general ) {
-//    // Test the angle reflection capabilities
-//    test_reflect();
-//
-//    // Other tests
-//    CHECK_EQUAL(48, ang_quad.ndir_oct());
-//    // Test the weight sum is 8.0
-//    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
-//    // Test input/output
-//    CHECK(isValidOutput());
-//    // Test the first angle
-//    CHECK_CLOSE(0.049087385212340, ang_quad[0].alpha,    0.0000000000001); 
-//    CHECK_CLOSE(0.167429147795000, ang_quad[0].theta,    0.0000000000001); 
-//    CHECK_CLOSE(0.166447265186000, ang_quad[0].ox,       0.0000000000001); 
-//    CHECK_CLOSE(0.008177029791330, ang_quad[0].oy,       0.0000000000001); 
-//    CHECK_CLOSE(0.986016452244020, ang_quad[0].oz,       0.0000000000001); 
-//    CHECK_CLOSE(0.002889562500000, ang_quad[0].weight,   0.0000000000001); 
-//    CHECK_CLOSE(6.000672075260800, ang_quad[0].rsintheta,0.0000000000001); 
-//}
-//
-//
-//TEST_FIXTURE( ChebyshevGauss_16_3, cg_general ) {
-//    // Test the angle reflection capabilities
-//    test_reflect();
-//
-//    // Other tests
-//    CHECK_EQUAL(48, ang_quad.ndir_oct());
-//    // Test the weight sum is 8.0
-//    CHECK_CLOSE(8.0, total_weight(), 0.0000000000001);
-//    // Test the first angle
-//    CHECK_CLOSE(0.049087385212340, ang_quad[0].alpha,    0.000000000001); 
-//    CHECK_CLOSE(0.374822141002272, ang_quad[0].theta,    0.000000000001); 
-//    CHECK_CLOSE(0.365666032196437, ang_quad[0].ox,       0.000000000001); 
-//    CHECK_CLOSE(0.017964020229512, ang_quad[0].oy,       0.000000000001); 
-//    CHECK_CLOSE(0.930572752059133, ang_quad[0].oz,       0.000000000001); 
-//    CHECK_CLOSE(0.029244620910793, ang_quad[0].weight,   0.000000000001); 
-//    CHECK_CLOSE(2.731441720757410, ang_quad[0].rsintheta,0.000000000001); 
-//  
-//    // Test input/output
-//    CHECK(isValidOutput());
-//}
+TEST_FIXTURE( LevelSymmetric_4, general )
+{
+    // Test the angle reflection capabilities
+    test_reflect();
+
+    // Test the angle reversal capabilities
+    CHECK_EQUAL(7, ang_quad.reverse(1));
+    CHECK_EQUAL(5, ang_quad.reverse(11));
+
+    // Other tests
+    CHECK_EQUAL(3, ang_quad.ndir_oct());
+    // Test the weight sum is 8.0
+    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
+    // Test input/output
+    CHECK(isValidOutput());
+}
+
+TEST_FIXTURE( LevelSymmetric_6, higher_order ) {
+    // Test the angle reflection capabilities
+    test_reflect();
+
+    // Other tests
+    CHECK_EQUAL(6, ang_quad.ndir_oct());
+    // Test the weight sum is 8.0
+    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
+    // Test input/output
+    CHECK(isValidOutput());
+}
+
+
+TEST_FIXTURE( ChebyshevYamamoto_16_3, cy_general ) {
+    // Test the angle reflection capabilities
+    test_reflect();
+
+    // Other tests
+    CHECK_EQUAL(48, ang_quad.ndir_oct());
+    // Test the weight sum is 8.0
+    CHECK_CLOSE(8.0, total_weight(), 0.00000000000001);
+    // Test input/output
+    CHECK(isValidOutput());
+    // Test the first angle
+    CHECK_CLOSE(0.049087385212340, ang_quad[0].alpha,    0.0000000000001);
+    CHECK_CLOSE(0.167429147795000, ang_quad[0].theta,    0.0000000000001);
+    CHECK_CLOSE(0.166447265186000, ang_quad[0].ox,       0.0000000000001);
+    CHECK_CLOSE(0.008177029791330, ang_quad[0].oy,       0.0000000000001);
+    CHECK_CLOSE(0.986016452244020, ang_quad[0].oz,       0.0000000000001);
+    CHECK_CLOSE(0.002889562500000, ang_quad[0].weight,   0.0000000000001);
+    CHECK_CLOSE(6.000672075260800, ang_quad[0].rsintheta,0.0000000000001);
+}
+
+
+TEST_FIXTURE( ChebyshevGauss_16_3, cg_general ) {
+    // Test the angle reflection capabilities
+    test_reflect();
+
+    // Other tests
+    CHECK_EQUAL(48, ang_quad.ndir_oct());
+    // Test the weight sum is 8.0
+    CHECK_CLOSE(8.0, total_weight(), 0.0000000000001);
+    // Test the first angle
+    CHECK_CLOSE(0.049087385212340, ang_quad[0].alpha,    0.000000000001);
+    CHECK_CLOSE(1.329852612388110, ang_quad[0].theta,    0.000000000001);
+    CHECK_CLOSE(0.9699434705550130, ang_quad[0].ox,       0.000000000001);
+    CHECK_CLOSE(0.0476502671628313, ang_quad[0].oy,       0.000000000001);
+    CHECK_CLOSE(0.2386191860831970, ang_quad[0].oz,       0.000000000001);
+    CHECK_CLOSE(0.029244620910793, ang_quad[0].weight,   0.000000000001);
+    CHECK_CLOSE(1.029746048636890, ang_quad[0].rsintheta,0.000000000001);
+
+    // Test input/output
+    CHECK(isValidOutput());
+}
 
 TEST_FIXTURE( ChebyshevGauss_3_1, gc_update_wgt ) {
     CHECK_CLOSE(PI/4.0, ang_quad[1].alpha, 0.000000000001);
