@@ -47,6 +47,11 @@ namespace mocc {
                     break;
                 }
             }
+            // Handle empty scattering rows. If the min and max g end up on the
+            // other side of the group range, we didn't find any non-zero cross
+            // sections. Set min_g and max_g to the current group. When we pack
+            // the cross sections into their dense representations, we make sure
+            // to add a corresponding zero
             if( these_bounds.first==ng_-1 && these_bounds.second==0 ) {
                 these_bounds.first = to;
                 these_bounds.second = to;
@@ -107,6 +112,11 @@ namespace mocc {
                     break;
                 }
             }
+            // Handle empty scattering rows. If the min and max g end up on the
+            // other side of the group range, we didn't find any non-zero cross
+            // sections. Set min_g and max_g to the current group. When we pack
+            // the cross sections into their dense representations, we make sure
+            // to add a corresponding zero
             if( these_bounds.first==ng_-1 && these_bounds.second==0 ) {
                 these_bounds.first = to;
                 these_bounds.second = to;
