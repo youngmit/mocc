@@ -100,7 +100,8 @@ namespace mocc { namespace cmdo {
             moc_sweeper_.sweep( group );
 
             int n_negative = 0;
-            for( const auto v: moc_sweeper_.flux()( group, blitz::Range::all() )) {
+            const auto flux = moc_sweeper_.flux()( blitz::Range::all(), group );
+            for( const auto &v: flux ) {
                 if( v < 0.0 ) {
                     n_negative++;
                 }
