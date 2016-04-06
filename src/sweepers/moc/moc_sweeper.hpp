@@ -65,7 +65,6 @@ namespace mocc { namespace moc {
          */
         virtual UP_Source_t create_source( const pugi::xml_node &input ) const {
             auto source = TransportSweeper::create_source( input );
-            source->set_scale_transport(true);
             return source;
         }
 

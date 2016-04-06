@@ -77,7 +77,7 @@ namespace mocc { namespace cmdo {
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             n_sweep_inner_++;
             // update the self-scattering source
-            source_->self_scatter( group );
+            source_->self_scatter( group, xstr_ );
 
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.

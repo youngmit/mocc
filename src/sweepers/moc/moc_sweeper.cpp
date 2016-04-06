@@ -150,7 +150,7 @@ namespace mocc { namespace moc {
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
-            source_->self_scatter( group );
+            source_->self_scatter( group, xstr_ );
 
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
