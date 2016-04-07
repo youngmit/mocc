@@ -83,6 +83,12 @@ namespace mocc {
          * Flux exiting one face enters the opposite face, same angle
          */
         PERIODIC,
+        /**
+         * Boundary condition prescribed as incoming angular flux, namely,
+         * Dirichelet boundary.
+         */
+        PRESCRIBED,
+
         INVALID
     };
 
