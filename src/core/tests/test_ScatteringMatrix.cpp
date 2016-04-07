@@ -50,6 +50,8 @@ const std::vector<real_t> sc_dense
         0.0,0.0,0.0,0.0,0.0,0.0,0.3
     };
 
+const int NG = 7;
+
 // testing 1 group purely absorbing case
 const std::vector<VecF> sc3
     { {0.0} };
@@ -57,25 +59,18 @@ const std::vector<VecF> sc3
 ScatteringMatrix scat_matrix_ref(sc);
 
 ArrayB2 vec_to_array( const std::vector<VecF> &vec ) {
-    int ng = vec.size();
     ArrayB2 array(vec.size(),vec[0].size());
-    for( int i=0; i<ng; i++ ) {
-        for( int j=0; j<ng; j++ ) {
+    for( int i=0; i<NG; i++ ) {
+        for( int j=0; j<NG; j++ ) {
             array(i,j)=vec[i][j];
         }
     }
     return array;
 };
 
-//void printarray (real_t arg[], int length) {
-//      for (int n=0; n<length; ++n)
-//              cout << arg[n] << ' ';
-//        cout << '\n';
-//}
 
 TEST( scat_matrix_vecorVecF ) {
     ScatteringMatrix scat_matrix(sc);
-    int ng = sc.size();
 
     // test const ScatteringRow & to( int ig) const function
     ScatteringRow scat_row(0, 4, &sc[3][0]);
@@ -91,33 +86,28 @@ TEST( scat_matrix_vecorVecF ) {
     CHECK( scat_matrix_assigned == scat_matrix );
     
     // test real_t self_scat (int group) const
-    real_t self_scat_ref[ng];
+    real_t self_scat_ref[NG];
     int ig = 0;
     for( auto &row : sc ) {
         self_scat_ref[ig] = row[ig];
         ig++;
     }
     
-    real_t self_scat[ng];
-    for( ig=0; ig<ng; ig++ ) {
+    real_t self_scat[NG];
+    for( ig=0; ig<NG; ig++ ) {
         self_scat[ig] = scat_matrix.self_scat(ig);
     }
 
-    //printarray(self_scat_ref,ng);
-    //printarray(self_scat, ng);
-    //CHECK_ARRAY_CLOSE( self_scat_ref, self_scat, ng, 0.0000000000001 );
-    for( ig=0; ig<ng; ig++ ) {
+    // CHECK_ARRAY_CLOSE( self_scat_ref, self_scat, NG, 0.0000000000001 );
+    for( ig=0; ig<NG; ig++ ) {
         CHECK_CLOSE(self_scat_ref[ig], self_scat[ig], 0.0000000000001 );
     }
-    //real_t bar [5] = { 10, 20, 30 };
-    //real_t bar2 [5] = { 10, 20, 30 };
-    //CHECK_ARRAY_CLOSE( bar, bar2, 5, 0.0000000000001 );
     
     // test n_group() function 
-    CHECK_EQUAL( ng, scat_matrix.n_group() );
+    CHECK_EQUAL( NG, scat_matrix.n_group() );
     
     // test out(unsigned int ig) const function
-    real_t out_scat_ref[ng]={};
+    real_t out_scat_ref[NG]={};
     
     for( auto &i : sc) {
         ig = 0;
@@ -127,7 +117,7 @@ TEST( scat_matrix_vecorVecF ) {
         }
     }
 
-    for( ig=0; ig<ng; ig++ ) {
+    for( ig=0; ig<NG; ig++ ) {
         CHECK_CLOSE(out_scat_ref[ig], scat_matrix.out(ig), 0.0000000000001 );
     }
 
