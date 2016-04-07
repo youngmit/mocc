@@ -165,6 +165,9 @@ namespace mocc {
 
         /**
          * Return the total out-scattering cross section for group ig
+         *
+         * This includes self-scatter, and is equivalent to a column sum of the
+         * full scattering matrix.
          */
         real_t out( unsigned int ig ) const {
             return out_[ig];
