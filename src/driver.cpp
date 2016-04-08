@@ -169,7 +169,7 @@ void print_banner() {
     std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
     std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
     std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
-    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
+    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/\\ " << std::endl;
     std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
     std::cout << space << std::endl;
     std::cout << space << "01101101011011110110001101100011 " << std::endl;
