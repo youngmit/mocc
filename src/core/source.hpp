@@ -101,7 +101,7 @@ namespace mocc {
         /**
          * \brief Return the number of regions for which the Source is defined.
          */
-        size_t n_reg() const {
+        int n_reg() const {
             return n_reg_;
         }
 
@@ -119,7 +119,7 @@ namespace mocc {
          */
         void scale( const VecF &v ) {
             assert( (int)v.size() == n_reg_ );
-            for( int i=0; i<(int)n_reg_; i++ ) {
+            for( int i=0; i<n_reg_; i++ ) {
                 source_1g_(i) *= v[i];
             }
         }
