@@ -25,13 +25,12 @@ namespace mocc {
     Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayB2& flux ):
         xs_mesh_( xs_mesh ),
         n_group_( xs_mesh->n_group() ),
+        n_reg_( flux.size()/n_group_ ),
         has_external_( false ),
-        scale_transport_( false ),
         source_1g_( nreg ),
-        flux_( flux ),
-        n_reg_( flux.size()/n_group_ )
+        flux_( flux )
     {
-        assert( nreg*n_group_ == flux_.size() );
+        assert( nreg*n_group_ == (int)flux_.size() );
         source_1g_.fill(0.0);
         state_.reset();
         return;
@@ -54,7 +53,7 @@ namespace mocc {
     // fission source into the current group. If an external source is defines,
     // start with that.
     void Source::fission( const ArrayB1& fs, int ig ) {
-        assert(fs.size() == n_reg_);
+        assert((int)fs.size() == n_reg_);
         assert(!state_.has_fission);
         assert(!state_.is_scaled);
 

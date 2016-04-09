@@ -68,8 +68,6 @@ namespace mocc {
         // Apply an external source if its specified
         source->add_external( input );
 
-
-
         return source;
     }
 } // namespace mocc

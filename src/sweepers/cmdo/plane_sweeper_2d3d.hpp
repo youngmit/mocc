@@ -89,10 +89,18 @@ namespace mocc { namespace cmdo {
          * \brief \copybrief TransportSweeper::create_source()
          *
          * Create a Source_2D3D object instead of the standard Source class.
+         *
+         * \todo This doesnt play nice with the existing source factory. This is
+         * mostly because the source factory does a little too much setup
+         * based on the input to the \<source /\> tag, which is better done by
+         * the Source constructor. Clean this up
          */
         UP_Source_t create_source( const pugi::xml_node &input ) const {
             std::cout << "creating 2d3d source" << std::endl;
-            return UP_Source_t( new Source_2D3D( moc_sweeper_, *sn_sweeper_ ) );
+            
+            auto source = UP_Source_t( new Source_2D3D( moc_sweeper_,
+                        *sn_sweeper_ ) );
+            return source;
         }
 
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
@@ -188,5 +196,7 @@ namespace mocc { namespace cmdo {
         // Number of outer iterations to skip MoC. Super experimental
         int n_inactive_moc_;
         int moc_modulo_;
+        // Relaxation factor for the flux updates
+        real_t relax_;
     };
 } } // Namespace mocc::cmdo

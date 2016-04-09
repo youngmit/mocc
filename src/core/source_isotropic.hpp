@@ -28,13 +28,13 @@ namespace mocc {
         SourceIsotropic( int nreg, const XSMesh* xs_mesh, const ArrayB2& flux ):
             Source( nreg, xs_mesh, flux),
             q_( nreg )
-
         {
             q_.fill(0.0);
             return;
         }
 
-        virtual void self_scatter( size_t ig );
+        virtual void self_scatter( size_t ig,
+                const ArrayB1 &xstr = ArrayB1(0) );
 
         const VectorX& get_transport( int iang ) const {
             return q_;
