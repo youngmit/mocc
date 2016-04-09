@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <omp.h>
 
 #include "pugixml.hpp"
@@ -81,6 +80,16 @@ namespace mocc { namespace moc {
             return xsm;
         }
 
+        /**
+         * \brief Apply a transverse leakage source
+         *
+         * This will apply the passed-in transverse leakage source to the
+         * sweeper's source. If enabled and necessary, source splitting will be
+         * used to enforce non-negativity on the external (non-self scatter)
+         * source.
+         */
+        void apply_transverse_leakage( const ArrayB1 &tl );
+
         void check_balance( int group ) const;
 
     protected:
@@ -97,12 +106,17 @@ namespace mocc { namespace moc {
         // One-group, outgoing boundary flux
         std::vector<BoundaryCondition> boundary_out_;
 
-        // Array of one group transport cross sections
+        // Array of one group transport cross sections, including transverse
+        // leakage splitting, if necessary
         ArrayB1 xstr_;
 
         // Reference to a one-group slice of flux_. This should be
         // default-constructed, so that it only references data in flux_
         ArrayB1 flux_1g_;
+
+        // The source splitting variable. This stores the degree by which to
+        // alter the transport cross section for the current group
+        ArrayB1 split_;
 
         // Number of inner iterations per group sweep
         unsigned int n_inner_;
@@ -115,6 +129,19 @@ namespace mocc { namespace moc {
 
         bool dump_rays_;
         bool gauss_seidel_boundary_;
+        bool allow_splitting_;
+
+
+        // Methods
+        /**
+         * \brief Expand the transport cross sections from the XS mesh to the
+         * FSR basis.
+         *
+         * This provides more efficient access to the transport cross sections
+         * throughout the sweep, without having to store an enormous nreg-by-ng
+         * array of transport cross sections.
+         */
+        virtual void expand_xstr( int group );
 
         /**
          * \brief Perform an MoC sweep
@@ -181,8 +208,10 @@ namespace mocc { namespace moc {
 
                         int bc1 = ray.bc(0);
                         int bc2 = ray.bc(1);
-                        assert(bc1 < boundary_in.get_boundary( group, iang1 ).first);
-                        assert(bc2 < boundary_in.get_boundary( group, iang1 ).first);
+                        assert(bc1 < boundary_in.get_boundary( group,
+                                    iang1 ).first);
+                        assert(bc2 < boundary_in.get_boundary( group,
+                                    iang1 ).first);
 
                         // Compute exponentials
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
