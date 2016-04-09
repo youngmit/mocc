@@ -191,13 +191,15 @@ namespace mocc { namespace cmdo {
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 tl_fsr( ir+ireg_pin ) = tl_g(ipin);
             }
+            
             ipin++;
             ireg_pin += pin->n_reg();
         }
 
-        // Can add the TL as an auxiliary source directly to the Source_2D3D,
-        // since it extends the MoC source in the first place
-        source_->auxiliary( tl_fsr );
+
+        // Hand the transverse leakage to the MoC sweeper.
+        moc_sweeper_.apply_transverse_leakage(tl_fsr);
+
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -270,6 +272,7 @@ namespace mocc { namespace cmdo {
         do_tl_ = true;
         n_inactive_moc_ = 0;
         moc_modulo_ = 1;
+        relax_ = 1.0;
 
         // Override with entries in the input node
         if( !input.attribute("expose_sn").empty() ) {
@@ -292,6 +295,9 @@ namespace mocc { namespace cmdo {
         }
         if( !input.attribute("preserve_sn_quadrature").empty() ) {
             keep_sn_quad_ = input.attribute("preserve_sn_quadrature").as_bool();
+        }
+        if( !input.attribute("relax").empty() ) {
+            relax_ = input.attribute("relax").as_bool();
         }
 
         LogFile << "2D3D Sweeper options:" << std::endl;

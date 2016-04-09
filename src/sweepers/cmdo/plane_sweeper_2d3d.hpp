@@ -98,7 +98,8 @@ namespace mocc { namespace cmdo {
         UP_Source_t create_source( const pugi::xml_node &input ) const {
             std::cout << "creating 2d3d source" << std::endl;
             
-            auto source = UP_Source_t( new Source_2D3D( moc_sweeper_, *sn_sweeper_ ) );
+            auto source = UP_Source_t( new Source_2D3D( moc_sweeper_,
+                        *sn_sweeper_ ) );
             return source;
         }
 
@@ -195,5 +196,7 @@ namespace mocc { namespace cmdo {
         // Number of outer iterations to skip MoC. Super experimental
         int n_inactive_moc_;
         int moc_modulo_;
+        // Relaxation factor for the flux updates
+        real_t relax_;
     };
 } } // Namespace mocc::cmdo
