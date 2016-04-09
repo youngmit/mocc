@@ -34,13 +34,40 @@ namespace mocc { namespace cmdo {
             const CoreMesh &mesh ):
         MoCSweeper( input, mesh ),
         corrections_( nullptr ),
+        xstr_true_( n_reg_ ),
         sn_xs_mesh_( nullptr ),
         internal_coupling_( false ),
         correction_residuals_( n_group_ )
     {
         LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
+
         return;
     };
+
+    // It'd be nice to just call this method on the base type to handle the
+    // split xstr_, then do the xstr_true_ after, but if i need to do the loop
+    // anyways...
+    void MoCSweeper_2D3D::expand_xstr( int group ) {
+        if( allow_splitting_ ) {
+            for( auto &xsr: *xs_mesh_ ) {
+                real_t xstr = xsr.xsmactr(group);
+                for( auto &ireg: xsr.reg() ) {
+                    xstr_(ireg) = xstr + split_(ireg);
+                    xstr_true_(ireg) = xstr;
+                }
+            }
+        } else {
+            for( auto &xsr: *xs_mesh_ ) {
+                real_t xstr = xsr.xsmactr(group);
+                for( auto &ireg: xsr.reg() ) {
+                    xstr_(ireg) = xstr;
+                    xstr_true_(ireg) = xstr;
+                }
+            }
+        }
+
+        return;
+    }
 
     void MoCSweeper_2D3D::sweep( int group ) {
         timer_.tic();
@@ -62,11 +89,12 @@ namespace mocc { namespace cmdo {
                 xstr_(ireg) = xstr;
             }
         }
+        this->expand_xstr( group );
 
         // Instantiate the workers for current/no current
         CurrentCorrections ccw( coarse_data_, &mesh_, corrections_.get(),
-                source_->get_transport( 0 ), xstr_, ang_quad_, *sn_xs_mesh_,
-                rays_ );
+                source_->get_transport( 0 ), xstr_true_, ang_quad_,
+                *sn_xs_mesh_, rays_ );
         moc::NoCurrent ncw( coarse_data_, &mesh_ );
 
 
