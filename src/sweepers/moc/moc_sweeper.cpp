@@ -34,7 +34,7 @@ mocc::VecF temp;
 
 /**
  * \brief Return the appropriate sizing values for construcing a \ref
- * BoundaryCondition.
+ * mocc::BoundaryCondition.
  *
  * This exists so that it may be used to construct the boundary condition
  * members of the \ref MoCSweeper from the initializer list.
