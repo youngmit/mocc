@@ -159,6 +159,7 @@ namespace mocc {
 
                         switch( bc_[(int)surf] ) {
                         case Boundary::VACUUM:
+                        case Boundary::PRESCRIBED:
                             // Leave surface as all zeros
                             break;
                         case Boundary::PARALLEL:
@@ -304,6 +305,10 @@ namespace mocc {
                 case Boundary::REFLECT:
                     data_(blitz::Range(offset_in, offset_in+size-1)) =
                         out.data_(blitz::Range(offset_out, offset_out+size-1));
+                    break;
+
+                case Boundary::PRESCRIBED:
+                    data_(blitz::Range(offset_in, offset_in+size-1)) = 1.0;
                     break;
 
                 default:
