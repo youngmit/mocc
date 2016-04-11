@@ -273,8 +273,10 @@ namespace mocc { namespace moc {
         return std::sqrt(resid);
     } // set_pin_flux_1f( group, pin_flux )
 
-    void MoCSweeper::apply_transverse_leakage( const ArrayB1 &tl ) {
+    void MoCSweeper::apply_transverse_leakage( int group, const ArrayB1 &tl ) {
         assert((int)tl.size() == n_reg_);
+
+        flux_1g_.reference( flux_( blitz::Range::all(), group ) );
         
         /// \todo for now, this is using a pretty invasive direct access the the
         /// source. Might be good to do as a call to auxiliary() instead

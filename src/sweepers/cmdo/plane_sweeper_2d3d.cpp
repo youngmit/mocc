@@ -198,7 +198,7 @@ namespace mocc { namespace cmdo {
 
 
         // Hand the transverse leakage to the MoC sweeper.
-        moc_sweeper_.apply_transverse_leakage(tl_fsr);
+        moc_sweeper_.apply_transverse_leakage( group, tl_fsr );
 
     }
 
