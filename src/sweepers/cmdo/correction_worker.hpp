@@ -32,7 +32,6 @@
 namespace mocc {
     namespace cmdo {
         /**
-         *
          * See documentation for \ref moc::NoCurrent for canonical documentation
          * for each of the methods.
          */

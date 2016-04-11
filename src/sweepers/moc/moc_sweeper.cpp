@@ -37,7 +37,7 @@ mocc::VecF temp;
  * mocc::BoundaryCondition.
  *
  * This exists so that it may be used to construct the boundary condition
- * members of the \ref MoCSweeper from the initializer list.
+ * members of the \ref mocc::moc::MoCSweeper from the initializer list.
  */
 std::vector<mocc::BC_Size_t> bc_size_helper( const mocc::moc::RayData &rays )
 {

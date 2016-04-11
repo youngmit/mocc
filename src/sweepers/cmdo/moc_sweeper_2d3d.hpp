@@ -55,15 +55,15 @@ namespace mocc { namespace cmdo {
         }
 
         /**
-         * \brief \copybrief mocc::MoCSweeper::expand_xstr()
+         * \brief \copybrief moc::MoCSweeper::expand_xstr()
          *
-         * \copydetails mocc::MoCSweeper:expand_xstr()
+         * \copydetails moc::MoCSweeper::expand_xstr()
          *
          * In addition to what is performed by the \ref
-         * mocc::MoCSweeper::expand_xstr() method, this also expands the
+         * moc::MoCSweeper::expand_xstr() method, this also expands the
          * unaltered transport cross sections to a separate array for the \ref
-         * CorrectionWorker. We do not want to use altered cross section for the
-         * Sn sweeper, which treats the axial dimension explicitly.
+         * CurrentCorrections. We do not want to use altered cross section for
+         * the Sn sweeper, which treats the axial dimension explicitly.
          */
         void expand_xstr( int group );
 
