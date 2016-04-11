@@ -18,7 +18,6 @@
 
 #include <cassert>
 #include <map>
-#include <omp.h>
 
 #include "global_config.hpp"
 
@@ -84,13 +83,7 @@ namespace mocc {
          * \brief Return the time accumulated so far for the timer.
          *
          */
-        real_t time() const {
-            if( running_ ) {
-                return time_ + omp_get_wtime() - wtime_;
-            } else {
-                return time_;
-            }
-        }
+        real_t time() const;
 
         /**
          * \brief Return a reference the child Timer of the passed name

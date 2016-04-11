@@ -16,16 +16,13 @@
 
 #include "string_utils.hpp"
 
-#include <sstream>
 #include <ctype.h>
+#include <sstream>
 
 #include "core/global_config.hpp"
 #include "core/error.hpp"
 
 using mocc::Exception;
-
-using std::cout;
-using std::endl;
 
 std::string print_range( const std::vector<bool> &input ) {
     std::stringstream output;

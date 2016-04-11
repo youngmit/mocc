@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 
 #include "blitz_typedefs.hpp"
 #include "global_config.hpp"

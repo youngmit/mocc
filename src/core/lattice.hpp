@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include <iostream>
+#include <iosfwd>
 
 #include "pugixml.hpp"
 

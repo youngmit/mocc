@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 
 #include <blitz/array.h>
 
@@ -158,10 +158,7 @@ namespace mocc {
          */
         virtual const VectorX& get_transport( int iang ) const = 0;
 
-        friend std::ostream& operator<<(std::ostream &os, const Source &src) {
-            std::cout << src.source_1g_ << std::endl;
-            return os;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const Source &src);
 
     protected:
         /**

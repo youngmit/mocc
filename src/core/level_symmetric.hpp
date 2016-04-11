@@ -18,7 +18,6 @@
 
 #include <vector>
 #include <math.h>
-#include <iostream>
 
 #include "angle.hpp"
 #include "global_config.hpp"

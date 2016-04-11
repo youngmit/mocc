@@ -16,8 +16,6 @@
 
 #include "pin_mesh_base.hpp"
 
-#include <iostream>
-
 #include "error.hpp"
 
 namespace mocc {
@@ -38,6 +36,11 @@ namespace mocc {
         }
 
         return;
+    }
+
+    std::ostream& operator<<( std::ostream &os, const PinMesh& pm ) {
+        pm.print( os );
+        return os;
     }
 
     void PinMesh::print( std::ostream &os ) const {
