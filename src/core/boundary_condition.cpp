@@ -16,7 +16,159 @@
 
 #include "core/boundary_condition.hpp"
 
+#include "error.hpp"
+
 namespace mocc {
+
+    BoundaryCondition::BoundaryCondition( int n_group, 
+            const AngularQuadrature &angquad,
+            BC_Type_t bc, BC_Size_t n_bc ):
+        BoundaryCondition( n_group,
+                           angquad,
+                           bc,
+                           std::vector<BC_Size_t>(angquad.ndir(), n_bc)
+                         )
+    {
+        return;
+    }
+
+    BoundaryCondition::BoundaryCondition( int n_group, 
+            const AngularQuadrature &angquad, 
+            BC_Type_t bc, std::vector< BC_Size_t > n_bc ):
+        n_group_(n_group),
+        n_angle_(n_bc.size()),
+        bc_(bc),
+        size_(n_bc),
+        ang_quad_(angquad)
+    {
+        assert( (angquad.ndir()   == (int)n_bc.size()) || 
+                (angquad.ndir()/2 == (int)n_bc.size()) );
+
+        int n_angle = n_bc.size();
+
+        bc_per_group_ = 0;
+        for( auto n: n_bc ) {
+            bc_per_group_ += n[0] + n[1] + n[2];
+        }
+
+        size_t total_size = bc_per_group_*n_group;
+        data_.resize(total_size);
+        offset_.resize(n_angle, 3);
+        assert(offset_( 0, blitz::Range::all() ).isStorageContiguous());
+
+        int offset = 0;
+        int iang = 0;
+        for( auto n_ang: n_bc ) {
+            int iface = 0;
+            for( auto n: n_ang ) {
+                offset_(iang, iface) = offset;
+                offset += n;
+                iface++;
+            }
+            iang++;
+        }
+        return;
+    }
+
+    BoundaryCondition::BoundaryCondition( const BoundaryCondition &rhs ):
+        BoundaryCondition( rhs.n_group_,
+                           rhs.ang_quad_,
+                           rhs.bc_,
+                           rhs.size_ )
+    {
+        return;
+    }
+
+    void BoundaryCondition::initialize_scalar( real_t val ) {
+        // Start with all zeros
+        data_ = 0.0;
+        for( int group=0; group<n_group_; group++ ) {
+            for( int ang=0; ang<n_angle_; ang++ ) {
+                for( auto norm: AllNormals ) {
+                    const auto &angle = ang_quad_[ang];
+                    Surface surf = angle.upwind_surface(norm);
+                    int size = size_[ang][(int)norm];
+                    real_t *face =
+                        this->get_face( group, ang, norm ).second;
+
+                    switch( bc_[(int)surf] ) {
+                    case Boundary::VACUUM:
+                    case Boundary::PRESCRIBED:
+                        // Leave surface as all zeros
+                        break;
+                    case Boundary::PARALLEL:
+                    case Boundary::REFLECT:
+                    case Boundary::PERIODIC:
+                        // initialize with the prescribed scalar
+                        for( int i=0; i<size; i++ ) {
+                            face[i] = val;
+                        }   
+                        break;
+                    case Boundary::INVALID:
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void BoundaryCondition::initialize_spectrum( const ArrayB1 &spectrum ) {
+        assert( (int)spectrum.size() == n_group_ );
+        int it = 0;
+        for( int ig=0; ig<n_group_; ig++ ) {
+            real_t val = spectrum(ig);
+            data_( blitz::Range(it, it+bc_per_group_-1) ) = val;
+            it += bc_per_group_;
+        }
+        return;
+    }
+
+    void BoundaryCondition::update( int group, const BoundaryCondition &out ) {
+        assert( out.n_group_ == 1 );
+
+        for( int iang=0; iang<n_angle_; iang++ ) {
+            this->update( group, iang, out );
+        }
+        return;
+    }
+
+    void BoundaryCondition::update( int group, int angle, 
+            const BoundaryCondition &out ) {
+        int group_offset = bc_per_group_*group;
+
+        for( Normal n: AllNormals ) {
+            int size = size_[angle][(int)n];
+            int iang_in = ang_quad_.reflect(angle, n);
+            if( size == 0 ) {
+                break;
+            }
+            assert( size == out.size_[iang_in][(int)n]);
+            assert( iang_in < n_angle_ );
+            const auto &angle_in = ang_quad_[iang_in];
+            int offset_in = group_offset + offset_(iang_in, (int)n);
+            int offset_out = out.offset_(angle, (int)n);;
+
+            switch( bc_[(int)(angle_in.upwind_surface(n))] ) {
+            case Boundary::VACUUM:
+                data_(blitz::Range(offset_in, offset_in+size-1)) = 0.0;
+                break;
+
+            case Boundary::REFLECT:
+                data_(blitz::Range(offset_in, offset_in+size-1)) =
+                    out.data_(blitz::Range(offset_out, offset_out+size-1));
+                break;
+
+            case Boundary::PRESCRIBED:
+                data_(blitz::Range(offset_in, offset_in+size-1)) = 1.0;
+                break;
+
+            default:
+                throw EXCEPT("Unsupported boundary condition type");
+            }
+        }
+        return;
+    }
+
     std::ostream &operator<<(std::ostream &os, const BoundaryCondition &bc) {
         os << "Boundary Condition:" << std::endl;
         for(auto b: bc.bc_) {
