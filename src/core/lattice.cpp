@@ -54,7 +54,7 @@ namespace mocc {
         // We should be done parsing and checking things from the XML
         //
         // Arrange the pins in a 2-D array. This flips the y index from the
-        // order in the input file so that thie row 0, col 0 origin is in
+        // order in the input file so that the row 0, col 0 origin is in
         // the lower left.
         pins_.resize( ny_*nx_ );
         for ( unsigned int iy=0; iy<ny_; iy++ ) {
@@ -165,34 +165,34 @@ namespace mocc {
 
     bool Lattice::compatible( const Lattice &other ) const {
         if( hx_ != other.hx_ ) {
-cout << "hx " << hx_ << " " << other.hx_ << endl;
+            cout << "hx " << hx_ << " " << other.hx_ << endl;
             return false;
         }
         if( hy_ != other.hy_ ) {
-cout << "hy" << endl;
+            cout << "hy" << endl;
             return false;
         }
 
         if( nx_ != other.nx_ ) {
-cout << "nx" << endl;
+            cout << "nx" << endl;
             return false;
         }
         if( ny_ != other.ny_ ) {
-cout << "ny" << endl;
+            cout << "ny" << endl;
             return false;
         }
 
         if( !std::equal( hx_vec_.begin(), hx_vec_.end(),
                     other.hx_vec_.begin() ) )
         {
-cout << "hx_vec" << endl;
+            cout << "hx_vec" << endl;
             return false;
         }
 
         if( !std::equal( hy_vec_.begin(), hy_vec_.end(),
                     other.hy_vec_.begin() ) )
         {
-cout << "hy_vec" << endl;
+            cout << "hy_vec" << endl;
             return false;
         }
         return true;
