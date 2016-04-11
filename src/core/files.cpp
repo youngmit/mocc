@@ -23,7 +23,9 @@
 std::fstream LogFile;
 std::fstream OutFile;
 
-teestream LogScreen(std::cout, std::cout);
+onullstream NullStream;
+
+TeeStream LogScreen(std::cout, NullStream);
 
 // A utility function for stripping the extension from the end of the command
 // line argument and replacing with '.log'
@@ -34,7 +36,7 @@ void StartLogFile(std::string arg) {
     std::cout << "Logging output to: " << logname << std::endl << std::endl;
     LogFile.open(logname, std::fstream::out);
 
-    LogScreen = teestream(std::cout, LogFile);
+    LogScreen.reset(std::cout, LogFile);
 
     return;
 }
