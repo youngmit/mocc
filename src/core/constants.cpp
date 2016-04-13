@@ -128,6 +128,9 @@ namespace mocc {
             case Boundary::PERIODIC:
                 os << "PERIODIC";
                 break;
+            case Boundary::PRESCRIBED:
+                os << "PRESCRIBED";
+                break;
             default:
                 os << "Unknown: " << (int)b;
         }
