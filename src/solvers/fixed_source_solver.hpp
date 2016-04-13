@@ -29,7 +29,7 @@ namespace mocc{
     class FixedSourceSolver: public Solver {
     public:
         /**
-        * Initialize a FSS using an XML node and CoreMesh. The expects the
+        * Initialize a FSS using an XML node and CoreMesh. This expects the
         * passed XML node to be a valid \<solver\> tag containing a relevant
         * \<sweeper\> tag, which is needed by the \ref TransportSweeperFactory()
         * to generate a \ref TransportSweeper.

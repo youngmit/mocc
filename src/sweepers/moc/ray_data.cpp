@@ -294,7 +294,7 @@ namespace mocc { namespace moc {
             } // Angle loop
             // Move the angular ray set to the vector of planar ray sets.
             rays_.push_back(std::move(angle_rays));
-        }
+        } // Plane loop
 
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.

@@ -72,7 +72,7 @@ namespace mocc {
             hy_ += core_.at(0, iy).hy();
         }
 
-        // Determine the set of geometricaly-unique axial planes
+        // Determine the set of geometrically-unique axial planes
         std::vector< VecI > unique;
         VecI plane_pins;
         n_fuel_2d_ = 0;

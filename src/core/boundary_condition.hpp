@@ -202,7 +202,7 @@ namespace mocc {
 
         std::vector<BC_Size_t> size_;
 
-        // Angular quadratrue used to do angle index reflections
+        // Angular quadrature used to do angle index reflections
         const AngularQuadrature &ang_quad_;
         
         // Number of BCs per energy groups. Essentially the sum of the BCs on
