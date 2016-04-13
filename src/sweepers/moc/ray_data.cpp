@@ -421,8 +421,10 @@ namespace mocc { namespace moc {
                 os << ",    # " << r.bc(0) << " " << r.bc(1)  << endl;
             }
             // store the location before the comma
+            auto end_pos = os.tellp();
             os.seekp(ray_pos);
             os << " ]";
+            os.seekp(end_pos);
             angle_pos = os.tellp();
             os << "," << endl;
         }
