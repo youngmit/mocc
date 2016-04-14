@@ -324,12 +324,14 @@ namespace mocc {
 
                 d_tilde(is) = 2.0*diffusivity_1*diffusivity_2 /
                     (diffusivity_1 + diffusivity_2);
+                s_tilde(is) = diffusivity_1/(diffusivity_1 + diffusivity_2);
 
-                bool have_data = norm == Normal::Z_NORM ?
+                bool have_data = (norm == Normal::Z_NORM) ?
                     coarse_data_.has_axial_data() :
                     coarse_data_.has_radial_data();
                 if( have_data ) {
                     real_t j = coarse_data_.current( is, group );
+                    real_t sfc_flux = coarse_data_.current( is, group );
                     real_t flux_l = cells.first >= 0 ?
                         coarse_data_.flux(cells.first, group) :
                         0.0;
@@ -338,10 +340,12 @@ namespace mocc {
                         0.0;
                     d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
+                    s_hat(is) = ( sfc_flux - s_tilde(is)*flux_r -
+                            (1.0-s_tilde(is))*flux_l ) / (flux_l + flux_r);
                 } else {
                     d_hat(is) = 0.0;
+                    s_hat(is) = 0.0;
                 }
-
             }
 
             // put values into the matrix. Optimal access patterns in sparse
@@ -404,18 +408,35 @@ namespace mocc {
         int n_group = xsmesh_->n_group();
         int n_surf = mesh_->n_surf();
         for( int ig=0; ig<n_group; ig++ ) {
+            auto current_1g = coarse_data_.current(blitz::Range::all(), ig);
+            auto surface_flux_1g =
+                coarse_data_.current(blitz::Range::all(), ig);
+            auto partial_current_1g = 
+                coarse_data_.partial_current(blitz::Range::all(), ig);
+
             for( int is=0; is<n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
                 real_t flux_r = cells.second >= 0 ?
                     coarse_data_.flux(cells.second, ig) : 0.0;
                 real_t flux_l = cells.first >= 0 ?
                     coarse_data_.flux(cells.first, ig) : 0.0;
-                real_t d_hat = d_hat_(is, ig);
-                real_t d_tilde = d_tilde_(is, ig);
 
+                real_t d_hat   = d_hat_(is, ig);
+                real_t d_tilde = d_tilde_(is, ig);
                 real_t current = -d_tilde*(flux_r - flux_l) +
-                                   d_hat*(flux_r + flux_l);
-                coarse_data_.current(is, ig) = current;
+                                  d_hat*(flux_r + flux_l);
+                current_1g(is) = current;
+
+                real_t s_hat   = s_hat_(is, ig);
+                real_t s_tilde = s_tilde_(is, ig);
+                real_t surface_flux = s_tilde*flux_r + (1.0-s_tilde)*flux_l +
+                    s_hat*(flux_l + flux_r);
+                surface_flux_1g(is) = surface_flux;
+
+                partial_current_1g(is) = {
+                    0.25*surface_flux + 0.5*current,
+                    0.25*surface_flux - 0.5*current
+                };
             }
         }
         return;
