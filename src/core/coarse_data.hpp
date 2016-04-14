@@ -30,6 +30,9 @@ namespace mocc {
     /**
      * CoarseData stores the data needed to do CMFD. Coarse surface currents,
      * fluxes, etc.
+     *
+     * \todo the storage order is reversed from what it should be. When things
+     * settle down some, do some profiling and swap
      */
     struct CoarseData {
     public:

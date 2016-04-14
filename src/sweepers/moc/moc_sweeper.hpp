@@ -61,6 +61,7 @@ namespace mocc { namespace moc {
             TransportSweeper::set_coarse_data( cd );
 
             partial_current_.resize( mesh_.n_surf(), n_group_ );
+            return;
         }
 
         void homogenize( CoarseData &data ) const {

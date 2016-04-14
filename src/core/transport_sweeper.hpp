@@ -202,6 +202,7 @@ namespace mocc{
          * store currents and such.
          */
         virtual void set_coarse_data( CoarseData *cd ) {
+            assert( cd );
             coarse_data_ = cd;
         }
 

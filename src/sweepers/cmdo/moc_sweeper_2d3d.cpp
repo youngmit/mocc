@@ -96,9 +96,9 @@ namespace mocc { namespace cmdo {
                 *sn_xs_mesh_, rays_ );
         moc::NoCurrent ncw( coarse_data_, &mesh_ );
 
+        auto all = blitz::Range::all();
 
-        flux_1g_.reference( flux_( blitz::Range::all(), group ) );
-
+        flux_1g_.reference( flux_( all, group ) );
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
@@ -114,6 +114,10 @@ namespace mocc { namespace cmdo {
                 this->sweep1g( group, ccw );
                 coarse_data_->set_has_radial_data(true);
                 correction_residuals_[group].push_back(ccw.residual());
+
+                // Stash the "old" partial currents
+                partial_current_( all, group ) =
+                    coarse_data_->partial_current( all, group );
             } else {
                 this->sweep1g( group, ncw );
             }
