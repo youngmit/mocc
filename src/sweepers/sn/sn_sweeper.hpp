@@ -45,6 +45,19 @@ namespace mocc { namespace sn {
             return;
         }
 
+        /**
+         * \brief \copybrief TransportSweeper::set_coarse_data()
+         *
+         * This extends the \ref TransportSweeper method to also allocate space
+         * for partial currents.
+         */
+        void set_coarse_data( CoarseData *cd ) {
+            TransportSweeper::set_coarse_data( cd );
+            partial_current_.resize( mesh_.n_surf(), n_group_ );
+
+            return;
+        }
+
         void update_incoming_flux();
 
         ArrayB3 pin_powers() const;
@@ -106,6 +119,9 @@ namespace mocc { namespace sn {
 
         // Gauss-Seidel BC update?
         bool gs_boundary_;
+
+        // Storage for "old" partial currents
+        blitz::Array<std::array<real_t, 2>, 2> partial_current_;
 
         // Protected methods
         /**

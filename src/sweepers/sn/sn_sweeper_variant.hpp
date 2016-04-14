@@ -88,6 +88,11 @@ namespace mocc { namespace sn {
                     }
                     coarse_data_->set_has_axial_data(true);
                     coarse_data_->set_has_radial_data(true);
+
+                    // Stash the partial currents locally to the sweeper
+                    auto all = blitz::Range::all();
+                    partial_current_( all, group ) =
+                        coarse_data_->partial_current( all, group );
                 } else {
                     if( core_mesh_->is_2d() ) {
                         this->sweep_1g_2d<sn::NoCurrent>( group );
@@ -137,7 +142,7 @@ namespace mocc { namespace sn {
             for( int iang=0; iang<ang_quad_.ndir(); iang++ ) {
                 Angle ang = ang_quad_[iang];
                 // Configure the current worker for this angle
-                cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+                cw.set_octant( ang );
 
                 // Get the source for this angle
                 auto& q = source_->get_transport( iang );
@@ -278,7 +283,7 @@ namespace mocc { namespace sn {
             for( int iang=0; iang<ang_quad_.ndir()/2; iang++ ) {
                 Angle ang = ang_quad_[iang];
                 // Configure the current worker for this angle
-                cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+                cw.set_octant( ang );
 
                 // Get the source for this angle
                 auto& q = source_->get_transport( iang );
