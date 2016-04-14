@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <array>
 #include <omp.h>
 
 #include "moc/ray_data.hpp"
@@ -50,9 +51,23 @@ namespace mocc { namespace moc {
 
         void output( H5Node &node ) const;
 
+        /**
+         * \brief \copybrief TransportSweeper::set_coarse_data()
+         *
+         * This extends the base \ref TransportSweeper method to also allocate
+         * appropriate space to store partial currents.
+         */
+        virtual void set_coarse_data( CoarseData *cd ) {
+            TransportSweeper::set_coarse_data( cd );
+
+            partial_current_.resize( mesh_.n_surf(), n_group_ );
+        }
+
         void homogenize( CoarseData &data ) const {
             throw EXCEPT("Not Implemented");
         }
+
+        void update_incoming_flux();
 
         /**
          * \copybrief TransportSweeper::create_source()
@@ -112,6 +127,11 @@ namespace mocc { namespace moc {
         // Reference to a one-group slice of flux_. This should be
         // default-constructed, so that it only references data in flux_
         ArrayB1 flux_1g_;
+
+        // Partial current used for a boundary flux update. This is used as the
+        // "old" partial current when computing the update ratio. This is
+        // allocated when the sweeper is associated with a coarse data object.
+        blitz::Array<std::array<real_t, 2>, 2> partial_current_;
 
         // The source splitting variable. This stores the degree by which to
         // alter the transport cross section for the current group

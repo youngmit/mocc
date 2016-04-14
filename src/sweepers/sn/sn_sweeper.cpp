@@ -13,7 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
 #include "sn_sweeper.hpp"
 
 #include <algorithm>
@@ -35,9 +34,7 @@ namespace {
     }
 }
 
-
-namespace mocc {
-namespace sn {
+namespace mocc { namespace sn {
     SnSweeper::SnSweeper( const pugi::xml_node &input, const CoreMesh& mesh ):
             TransportSweeper( input ),
             timer_( RootTimer.new_timer("Sn Sweeper", true) ),
@@ -125,6 +122,10 @@ namespace sn {
         timer_init_.toc();
 
         return;
+    } // SnSweeper::SnSweeper( input, mesh )
+
+    void SnSweeper::update_incoming_flux() {
+        throw EXCEPT("Not done yet");
     }
 
     /**

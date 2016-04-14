@@ -57,6 +57,14 @@ namespace mocc{
         virtual void initialize() = 0;
 
         /**
+         * \brief Update the incoming boundary flux values.
+         *
+         * This alters the incoming angular flux values to reflect the state of
+         * the associated \ref CoarseData.
+         */
+        virtual void update_incoming_flux( ) = 0;
+
+        /**
          * \brief Return a vector containing the pin-homogenizes multi-group
          * scalar flux. The values in the vector are ordered group-major.
          */

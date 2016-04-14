@@ -186,6 +186,13 @@ namespace mocc { namespace moc {
         return;
     } // sweep( group )
 
+    /**
+     * For now, this doesn't do anything remotely intelligent about the initial
+     * guess for the scalar and angular flux values and just sets them to unity
+     * and 1/4PI, respectively. At some point it might be useful to solve an IHM
+     * problem and use at least the spectrum. In reality, it'd only cut down on
+     * the initial CMFD iterations.
+     */
     void MoCSweeper::initialize() {
         real_t val = 1.0;
 
@@ -204,6 +211,12 @@ namespace mocc { namespace moc {
 
         return;
     } // initialize()
+
+    void MoCSweeper::update_incoming_flux() {
+        assert(coarse_data_);
+
+        return;
+    }
 
     void MoCSweeper::expand_xstr( int group ) {
         if( allow_splitting_ ) {

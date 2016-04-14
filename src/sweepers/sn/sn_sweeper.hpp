@@ -13,7 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
 #pragma once
 
 #include "core/angular_quadrature.hpp"
@@ -45,6 +44,8 @@ namespace mocc { namespace sn {
 
             return;
         }
+
+        void update_incoming_flux();
 
         ArrayB3 pin_powers() const;
 
