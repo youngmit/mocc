@@ -68,6 +68,9 @@ namespace mocc { namespace moc {
             throw EXCEPT("Not Implemented");
         }
 
+        /**
+         * \brief \copybrief TransportSweeper::update_incoming_flux()
+         */
         void update_incoming_flux();
 
         /**
@@ -317,6 +320,43 @@ namespace mocc { namespace moc {
             cw.post_sweep();
 
             } // OMP Parallel
+
+            return;
+        } // sweep1g
+
+        template< class Function >
+        void update_incoming_generic( Function f ) {
+            // There are probably more efficient ways to do this, but for now, just
+            // loop over all of the rays, look up the appropriate surface from the
+            // Mesh, and adjust the BC accordingly
+            for( auto g: groups_ ) {
+                int iplane = 0;
+                for( auto plane_geom_id: mesh_.unique_planes() ) {
+                    auto &bc = boundary_[iplane];
+                    const auto &rays = rays_[plane_geom_id];
+                    int iang = 0;
+                    for( const auto &ang_rays: rays ) {
+                        int iang1 = iang;
+                        int iang2 = ang_quad_.reverse(iang);
+
+                        real_t* bc_fw = bc.get_boundary(g, iang1).second;
+                        real_t* bc_bw = bc.get_boundary(g, iang2).second;
+
+                        for( const auto &ray: ang_rays ) {
+                            int is1 = ray.cm_cell_fw();
+                            int is2 = ray.cm_cell_bw();
+                            int bc1 = ray.bc(0);
+                            int bc2 = ray.bc(1);
+
+                            bc_fw[bc1] = f(bc_fw[bc1], is1, g);
+                            bc_bw[bc2] = f(bc_bw[bc2], is2, g);
+                        } // rays
+
+                        iang++;
+                    } // angles
+                    iplane++;
+                } // planes
+            } // groups
 
             return;
         }

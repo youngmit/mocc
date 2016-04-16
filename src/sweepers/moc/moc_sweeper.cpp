@@ -180,6 +180,7 @@ namespace mocc { namespace moc {
                 auto all = blitz::Range::all();
                 partial_current_( all, group ) =
                     coarse_data_->partial_current( all, group );
+
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
@@ -219,6 +220,39 @@ namespace mocc { namespace moc {
 
     void MoCSweeper::update_incoming_flux() {
         assert(coarse_data_);
+
+        // Short circuit if explicitly disabled
+        if( !do_incoming_update_ ) {
+            return;
+        }
+
+        if( coarse_data_->has_old_partial() ) {
+            auto update = [&](real_t in, int is, int ig) {
+                real_t part =
+                        2.0 * ( coarse_data_->partial_current(is, ig)[0] +
+                                coarse_data_->partial_current(is, ig)[1]);
+                    real_t part_old =
+                        2.0 * ( coarse_data_->partial_current_old(is, ig)[0] +
+                                coarse_data_->partial_current_old(is, ig)[1]);
+
+                    if( part_old > 0.0 ) {
+                        real_t r = part/part_old;
+                        return in * r;
+                    } else {
+                        return in;
+                    }
+                };
+            update_incoming_generic<decltype(update)>( update );
+        } else {
+            auto update =
+                [&]( real_t in, int is, int ig ) {
+                    real_t out = (2.0*RFPI *
+                            (coarse_data_->partial_current(is, ig)[0] +
+                             coarse_data_->partial_current(is, ig)[1] ));
+                    return out;
+                };
+            update_incoming_generic<decltype(update)>( update );
+        }
 
         return;
     }
