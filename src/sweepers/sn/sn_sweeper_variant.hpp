@@ -233,7 +233,7 @@ namespace mocc { namespace sn {
                 if( gs_boundary_ ) {
                     bc_in_.update( group, iang, bc_out_ );
                 }
-            }
+            } // Angles
             // Update the boundary condition
 #pragma omp single
             if( !gs_boundary_ ) {

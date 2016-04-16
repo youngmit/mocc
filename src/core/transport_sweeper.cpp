@@ -68,7 +68,9 @@ namespace mocc {
         ang_quad_( find_angquad(input) ),
         coarse_data_(nullptr),
         n_sweep_(0),
-        n_sweep_inner_(0)
+        n_sweep_inner_(0),
+        do_incoming_update_(
+                input.attribute("update_incoming").as_bool(true))
     {
         return;
     }
@@ -78,7 +80,9 @@ namespace mocc {
         ang_quad_( find_angquad(input) ),
         coarse_data_(nullptr),
         n_sweep_(0),
-        n_sweep_inner_(0)
+        n_sweep_inner_(0),
+        do_incoming_update_(
+                input.attribute("update_incoming").as_bool(true))
     {
         return;
     }
