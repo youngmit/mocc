@@ -55,6 +55,7 @@ namespace mocc {
         d_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
+        n_solve_(0),
         k_tol_( 1.0e-8 ),
         psi_tol_( 1.0e-8 ),
         max_iter_( 100 ),
@@ -203,10 +204,12 @@ namespace mocc {
         // Calculate the resultant currents and store back onto the coarse data
         this->store_currents();
 
+        n_solve_++;
+
         timer_solve_.toc();
         timer_.toc();
         return;
-    }
+    } // solve()
 
     void CMFD::solve_1g( int group ) {
         ArrayB1 flux_1g = coarse_data_.flux( blitz::Range::all(), group );
@@ -324,7 +327,7 @@ namespace mocc {
 
                 d_tilde(is) = 2.0*diffusivity_1*diffusivity_2 /
                     (diffusivity_1 + diffusivity_2);
-                s_tilde(is) = diffusivity_1/(diffusivity_1 + diffusivity_2);
+                s_tilde(is) = diffusivity_2/(diffusivity_1 + diffusivity_2);
 
                 bool have_data = (norm == Normal::Z_NORM) ?
                     coarse_data_.has_axial_data() :
@@ -408,11 +411,14 @@ namespace mocc {
         int n_group = xsmesh_->n_group();
         int n_surf = mesh_->n_surf();
         for( int ig=0; ig<n_group; ig++ ) {
-            auto current_1g = coarse_data_.current(blitz::Range::all(), ig);
+            auto all = blitz::Range::all();
+            auto current_1g = coarse_data_.current(all, ig);
             auto surface_flux_1g =
-                coarse_data_.current(blitz::Range::all(), ig);
-            auto partial_current_1g = 
-                coarse_data_.partial_current(blitz::Range::all(), ig);
+                coarse_data_.current(all, ig);
+            auto partial_1g =
+                coarse_data_.partial_current(all, ig);
+            auto partial_old_1g =
+                coarse_data_.partial_current_old(all, ig);
 
             for( int is=0; is<n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
@@ -433,7 +439,10 @@ namespace mocc {
                     s_hat*(flux_l + flux_r);
                 surface_flux_1g(is) = surface_flux;
 
-                partial_current_1g(is) = {
+                partial_old_1g = partial_1g;
+                coarse_data_.set_has_old_partial( n_solve_ > 0 );
+
+                partial_1g(is) = {
                     0.25*surface_flux + 0.5*current,
                     0.25*surface_flux - 0.5*current
                 };

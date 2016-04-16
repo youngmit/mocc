@@ -156,6 +156,9 @@ namespace mocc {
         ArrayB2 s_hat_;
         ArrayB2 s_tilde_;
 
+        // Number of times solve() has been called
+        int n_solve_;
+
         // Convergence options
         real_t k_tol_;
         real_t psi_tol_;
