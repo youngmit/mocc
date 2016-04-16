@@ -46,7 +46,7 @@ namespace mocc { namespace cmdo {
         void initialize();
 
         /**
-         * \brief \copygrief TranportSweeper::update_incoming_flux()
+         * \brief \copybrief mocc::TransportSweeper::update_incoming_flux()
          *
          * This delegates to both contained sweepers.
          */

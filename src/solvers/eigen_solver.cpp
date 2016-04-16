@@ -230,6 +230,7 @@ namespace mocc{
         }
         cmfd_->solve( keff_, fss_.sweeper()->flux() );
         fss_.sweeper()->set_pin_flux( cmfd_->flux() );
+        fss_.sweeper()->update_incoming_flux();
         return;
     }
 
