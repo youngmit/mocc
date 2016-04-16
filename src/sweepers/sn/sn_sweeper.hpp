@@ -14,8 +14,6 @@
    limitations under the License.
 */
 #pragma once
-#include <functional>
-#include <iostream>
 
 #include "core/angular_quadrature.hpp"
 #include "core/boundary_condition.hpp"

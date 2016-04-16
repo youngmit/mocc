@@ -24,8 +24,6 @@
 #include "files.hpp"
 #include "string_utils.hpp"
 
-using std::cout;
-using std::cin;
 
 namespace {
     using namespace mocc;
