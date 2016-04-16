@@ -16,6 +16,7 @@
 #include "sn_sweeper.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "pugixml.hpp"
@@ -23,6 +24,8 @@
 #include "files.hpp"
 #include "string_utils.hpp"
 
+using std::cout;
+using std::cin;
 
 namespace {
     using namespace mocc;
@@ -71,6 +74,7 @@ namespace mocc { namespace sn {
         flux_.resize( n_reg_, n_group_ );
         flux_old_.resize( n_reg_, n_group_ );
         vol_.resize( n_reg_ );
+        groups_ = Range(n_group_);
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
@@ -124,8 +128,56 @@ namespace mocc { namespace sn {
         return;
     } // SnSweeper::SnSweeper( input, mesh )
 
+    /**
+     * This just decides what method should be used to update the incoming flux
+     * and instantiates an appropriate lambda function to carry out the update
+     * for a single face. The lambda is then used to specialize the \ref
+     * update_incoming_generic funcion template, which does most of the real
+     * work.
+     */
     void SnSweeper::update_incoming_flux() {
-        throw EXCEPT("Not done yet");
+        // This should only be called in situations where coarse data should be
+        // available
+        assert(coarse_data_);
+
+        // Short circuit if incoming flux update is desabled explicitly
+        if( !do_incoming_update_ ) {
+            return;
+        }
+
+        if( coarse_data_->has_old_partial() ) {
+            // There are old partial currents on the coarse data object, update
+            // incomming flux based on the ratio of new to old
+            auto update =
+                [&]( real_t in, int is, int g) {
+                    real_t part =
+                        2.0 * ( coarse_data_->partial_current(is, g)[0] + 
+                                coarse_data_->partial_current(is, g)[1]);
+                    real_t part_old =
+                        2.0 * ( coarse_data_->partial_current_old(is, g)[0] + 
+                                coarse_data_->partial_current_old(is, g)[1]);
+
+                    if( part_old > 0.0 ) {
+                        real_t r = part/part_old;
+                        return in * r;
+                    } else {
+                        return in;
+                    }
+                };
+            update_incoming_generic<decltype(update)>( update );
+        } else {
+            // We dont have old partial currents to work with (probably because
+            // this is the first iteration). Set the incomming flux to reflect
+            // the partial current directly
+            auto update =
+                [&]( real_t in, int is, int g ) {
+                    return (2.0*RFPI * 
+                            (coarse_data_->partial_current(is, g)[0] + 
+                             coarse_data_->partial_current(is, g)[1] ));
+                };
+
+            update_incoming_generic<decltype(update)>( update );
+        }
     }
 
     /**
