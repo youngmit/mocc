@@ -415,13 +415,17 @@ namespace mocc { namespace moc {
             for( auto &r: ang_rays ) {
                 os << r;
                 ray_pos = os.tellp();
-                os << "," << endl;
+                os << ",    # " << r.bc(0) << " " << r.bc(1)  << endl;
             }
+            // store the location before the comma
+            auto end_pos = os.tellp();
             os.seekp(ray_pos);
             os << " ]";
+            os.seekp(end_pos);
             angle_pos = os.tellp();
             os << "," << endl;
         }
+        // go back to before the last comma and overwrite with close ]
         os.seekp(angle_pos);
         os << " ]" << endl;
 

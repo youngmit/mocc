@@ -17,7 +17,7 @@
 #pragma once
 
 #include <cassert>
-#include <iostream>
+#include <iosfwd>
 #include <vector>
 
 #include "pugixml.hpp"

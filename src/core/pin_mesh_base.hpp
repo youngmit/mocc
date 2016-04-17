@@ -16,13 +16,13 @@
 
 #pragma once
 
-#include <iostream>
 #include <string>
 
 #include "pugixml.hpp"
 
 #include "global_config.hpp"
 #include "geom.hpp"
+#include "position.hpp"
 
 namespace mocc {
     /**
@@ -127,10 +127,7 @@ namespace mocc {
          * Calls the \ref PinMesh::print() routine, which is virtual, allowing
          * for polymorphism.
          */
-        friend std::ostream& operator<<( std::ostream &os, const PinMesh& pm ) {
-            pm.print( os );
-            return os;
-        }
+        friend std::ostream& operator<<( std::ostream &os, const PinMesh& pm );
 
     protected:
         int id_;

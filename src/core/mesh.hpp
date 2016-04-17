@@ -18,13 +18,13 @@
 
 #include <array>
 #include <algorithm>
-#include <iostream>
 #include <memory>
 
 #include "constants.hpp"
 #include "error.hpp"
 #include "geom.hpp"
 #include "global_config.hpp"
+#include "position.hpp"
 
 namespace mocc {
     /**

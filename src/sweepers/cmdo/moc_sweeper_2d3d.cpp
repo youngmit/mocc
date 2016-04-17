@@ -34,12 +34,17 @@ namespace mocc { namespace cmdo {
             const CoreMesh &mesh ):
         MoCSweeper( input, mesh ),
         corrections_( nullptr ),
-        xstr_true_( n_reg_ ),
+        xstr_true_( ),
         sn_xs_mesh_( nullptr ),
         internal_coupling_( false ),
         correction_residuals_( n_group_ )
     {
         LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
+        if( allow_splitting_ ) {
+            xstr_true_.reference(xstr_);
+        } else {
+            xstr_true_.resize( n_reg_ );
+        }
 
         return;
     };
@@ -60,8 +65,9 @@ namespace mocc { namespace cmdo {
             for( auto &xsr: *xs_mesh_ ) {
                 real_t xstr = xsr.xsmactr(group);
                 for( auto &ireg: xsr.reg() ) {
+                    // only set xstr_. xstr_true_ should be referencing xstr_
+                    // anyways.
                     xstr_(ireg) = xstr;
-                    xstr_true_(ireg) = xstr;
                 }
             }
         }
@@ -82,18 +88,11 @@ namespace mocc { namespace cmdo {
 
         n_sweep_++;
 
-        // set up the xstr_ array
-        for( auto &xsr: *xs_mesh_ ) {
-            real_t xstr = xsr.xsmactr()[group];
-            for( auto &ireg: xsr.reg() ) {
-                xstr_(ireg) = xstr;
-            }
-        }
         this->expand_xstr( group );
 
         // Instantiate the workers for current/no current
         CurrentCorrections ccw( coarse_data_, &mesh_, corrections_.get(),
-                source_->get_transport( 0 ), xstr_true_, ang_quad_,
+                source_->get_transport( 0 ), xstr_, ang_quad_,
                 *sn_xs_mesh_, rays_ );
         moc::NoCurrent ncw( coarse_data_, &mesh_ );
 

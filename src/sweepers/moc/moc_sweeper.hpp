@@ -88,7 +88,7 @@ namespace mocc { namespace moc {
          * used to enforce non-negativity on the external (non-self scatter)
          * source.
          */
-        void apply_transverse_leakage( const ArrayB1 &tl );
+        void apply_transverse_leakage( int group, const ArrayB1 &tl );
 
         void check_balance( int group ) const;
 

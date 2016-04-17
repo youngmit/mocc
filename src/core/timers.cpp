@@ -16,6 +16,9 @@
 
 #include "timers.hpp"
 
+#include <iostream>
+#include <omp.h>
+
 namespace mocc {
     Timer RootTimer("MOCC");
 
@@ -49,6 +52,14 @@ namespace mocc {
 
         time_ += omp_get_wtime() - wtime_;
         return time_;
+    }
+
+    real_t Timer::time() const {
+        if( running_ ) {
+            return time_ + omp_get_wtime() - wtime_;
+        } else {
+            return time_;
+        }
     }
 
     void Timer::print( std::ostream &os, int level ) const {

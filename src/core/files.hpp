@@ -25,7 +25,7 @@ extern std::fstream LogFile;
 extern std::fstream OutFile;
 
 // Print to both the log file and standard output
-extern teestream LogScreen;
+extern TeeStream LogScreen;
 
 void StartLogFile(std::string arg);
 

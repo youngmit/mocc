@@ -7,6 +7,7 @@ add_subdirectory(core)
 add_subdirectory(sweepers)
 add_subdirectory(solvers)
 add_subdirectory(auxiliary)
+add_subdirectory(util)
 #add_subdirectory(tests)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/git_SHA1.cpp.in"

@@ -16,10 +16,6 @@
 
 #include "mesh.hpp"
 
-using std::cout;
-using std::endl;
-using std::cin;
-
 namespace mocc {
     Mesh::Mesh( size_t n_reg, size_t n_xsreg,
             VecF &hx, VecF &hy, VecF &hz, std::array<Boundary, 6> bc ):

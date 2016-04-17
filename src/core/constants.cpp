@@ -16,6 +16,8 @@
 
 #include "constants.hpp"
 
+#include <iostream>
+
 #include <error.hpp>
 
 namespace mocc {
@@ -126,6 +128,9 @@ namespace mocc {
             case Boundary::PERIODIC:
                 os << "PERIODIC";
                 break;
+            case Boundary::PRESCRIBED:
+                os << "PRESCRIBED";
+                break;
             default:
                 os << "Unknown: " << (int)b;
         }
@@ -149,7 +154,6 @@ namespace mocc {
             case Surface::TOP:
                 return Normal::Z_NORM;
             default:
-                std::cout << (int)s << std::endl;
                 throw EXCEPT("Unsupported surface.");
         }
     }

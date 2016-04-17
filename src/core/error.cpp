@@ -15,6 +15,7 @@
 */
 
 #include <cstdlib>
+#include <iostream>
 #include <sstream>
 
 #include "error.hpp"

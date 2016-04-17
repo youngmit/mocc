@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <vector>
 
 #include "xs_mesh_region.hpp"

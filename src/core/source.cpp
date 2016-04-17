@@ -17,6 +17,7 @@
 #include "source.hpp"
 
 #include <algorithm>
+#include <iostream>
 
 #include "core/error.hpp"
 #include "core/constants.hpp"
@@ -47,6 +48,11 @@ namespace mocc {
 
         state_.reset();
         return;
+    }
+
+    std::ostream& operator<<(std::ostream &os, const Source &src) {
+        std::cout << src.source_1g_ << std::endl;
+        return os;
     }
 
     // Multiply the group-independent fission source by \c chi[ig] to get the

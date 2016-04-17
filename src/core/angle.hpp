@@ -17,7 +17,7 @@
 #pragma once
 
 #include <cmath>
-#include <iostream>
+#include <iosfwd>
 
 #include "core/constants.hpp"
 #include "core/fp_utils.hpp"

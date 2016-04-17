@@ -14,32 +14,18 @@
    limitations under the License.
 */
 
-#pragma once
+#include "geom.hpp"
 
-#include <cstddef>
-#include <vector>
-#include <valarray>
-#include <iosfwd>
+#include <iostream>
 
 namespace mocc {
+    std::ostream& operator<<( std::ostream &os, const Point2 &p ) {
+        os << "[ " << p.x << ", " << p.y << " ]";
+        return os;
+    }
 
-#ifdef FORCE_SINGLE
-    typedef float real_t;
-#define FLOAT_EPS 1e-5
-#else
-    typedef double real_t;
-#define FLOAT_EPS 1e-12
-#endif
-
-    // General purpose vector of floats, ints, etc
-    typedef std::vector<real_t> VecF;
-    typedef std::vector<int> VecI;
-    typedef std::vector<int> VecSI;
-    
-    // valarray of floats
-    typedef std::valarray<real_t> ArrayF;
-    typedef std::slice_array<real_t> SliceF;
+    std::ostream& operator<<( std::ostream &os, Line &l ) {
+       os << "[" << l.p1 << ", " << l.p2 << "]";
+       return os;
+   }
 }
-
-#define PROG_NAME "MOCC"
-

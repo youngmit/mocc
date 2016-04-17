@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 
 #define PI 3.1415926535897932
 #define TWOPI (2.0*PI)

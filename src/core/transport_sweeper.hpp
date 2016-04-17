@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include <memory>
 #include <vector>
 

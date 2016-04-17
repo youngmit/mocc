@@ -19,7 +19,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <iostream>
+#include <iosfwd>
 
 #include "angle.hpp"
 #include "fp_utils.hpp"
@@ -56,10 +56,8 @@ namespace mocc {
         }
 
         // Provide stream insertion support
-        friend std::ostream& operator<<(std::ostream& os, const Point2 &p) {
-            os << "[ " << p.x << ", " << p.y << " ]";
-            return os;
-        }
+        friend std::ostream& operator<<(std::ostream& os, const Point2 &p);
+
         /**
          * A point is considered "less than" another point if it has a smaller
          * y-coordinate.
@@ -182,10 +180,7 @@ namespace mocc {
         Point2 p2;
         Line(Point2 p1, Point2 p2): p1(p1), p2(p2) { }
 
-        friend std::ostream& operator<<( std::ostream &os, Line &l ) {
-            os << "[" << l.p1 << ", " << l.p2 << "]";
-            return os;
-        }
+        friend std::ostream& operator<<( std::ostream &os, Line &l );
     };
 
     inline Point2 Midpoint( const Point2 p1, const Point2 p2 ) {
