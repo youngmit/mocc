@@ -260,6 +260,8 @@ namespace mocc {
     void CMFD::setup_solve() {
         timer_setup_.tic();
 
+cout << "setup_solve()" << endl;
+
         const Mesh::BCArray_t bc = mesh_->boundary_array();
         // Construct the system matrix
         size_t n_surf = mesh_->n_surf();
@@ -281,55 +283,66 @@ namespace mocc {
             ArrayB1 d_hat = d_hat_( blitz::Range::all(), group );
             ArrayB1 s_tilde = s_tilde_( blitz::Range::all(), group );
             ArrayB1 s_hat = s_hat_( blitz::Range::all(), group );
+
+            // Loop over the surfaces in the mesh, and calculate the inter-cell
+            // coupling coefficients
             for( int is=0; is<(int)n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
                 Normal norm = mesh_->surface_normal(is);
 
-                real_t diffusivity_1;
-                if( cells.first > -1 ) {
-                    // Real neighbor
-                    diffusivity_1 = d_coeff[cells.first] /
+                // If cells on both sides of the surface are defined, we have a
+                // regular, internal surface. Calculate coefficient normally
+                if( (cells.first > -1) && (cells.second > -1) ) {
+                    real_t diffusivity_1 = d_coeff[cells.first] /
                         mesh_->cell_thickness(cells.first, norm);
-                } else {
-                    // Boundary surface
-                    switch( bc[(int)norm][0] ) {
-                        case Boundary::REFLECT:
-                            diffusivity_1 = 0.0;
-                            break;
-                        case Boundary::VACUUM:
-                            diffusivity_1 = 0.5;
-                            break;
-                        default:
-                            cout << "Boundary: " << bc[(int)norm][0] << endl;
-                            throw EXCEPT("Unsupported boundary type.");
-                    }
-                }
 
-                real_t diffusivity_2;
-                if( cells.second > -1 ) {
-                    // Real neighbor
-                    diffusivity_2 = d_coeff[cells.second] /
+                    real_t diffusivity_2 = d_coeff[cells.second] /
                         mesh_->cell_thickness(cells.second, norm);
+
+                    d_tilde(is) = 2.0*diffusivity_1*diffusivity_2 /
+                        (diffusivity_1 + diffusivity_2);
+                    s_tilde(is) = diffusivity_2/(diffusivity_1 + diffusivity_2);
                 } else {
-                    // Boundary surface
-                    switch( bc[(int)norm][1] ) {
-                        case Boundary::REFLECT:
-                            diffusivity_2 = 0.0;
-                            break;
-                        case Boundary::VACUUM:
-                            diffusivity_2 = 0.5;
-                            break;
-                        default:
-                            cout << "Boundary: " << bc[(int)norm][1] << endl;
-                            throw EXCEPT("Unsupported boundary type.");
+                    // One of the cells is not defined, so use the boundary
+                    // condition to determine coefficient
+                    real_t diffusivity;
+                    if( cells.second < 0 ) {
+                        // The "right" cell is outside the mesh. Look up the
+                        // forward-direction boundary condition
+                        switch( bc[int(norm)][0] ) {
+                            case Boundary::REFLECT:
+                                d_tilde(is) = 0.0;
+                                break;
+                            case Boundary::VACUUM:
+                                diffusivity = d_coeff[cells.first] /
+                                    mesh_->cell_thickness(cells.first, norm);
+                                d_tilde(is) = 2*diffusivity;
+                                break;
+                            default:
+                                throw EXCEPT("Unsupported boundary type");
+                        }
+                    } else {
+                        // The "left" cell is outside the mesh. Look up the
+                        // negative-direction boundary condition
+                        switch( bc[int(norm)][1] ) {
+                            case Boundary::REFLECT:
+                                d_tilde(is) = 0.0;
+                                break;
+                            case Boundary::VACUUM:
+                                diffusivity = d_coeff[cells.second] /
+                                    mesh_->cell_thickness(cells.second, norm);
+                                d_tilde(is) = 2*diffusivity;
+                                break;
+                            default:
+                                throw EXCEPT("Unsupported boundary type");
+                        }
                     }
                 }
 
-                d_tilde(is) = 2.0*diffusivity_1*diffusivity_2 /
-                    (diffusivity_1 + diffusivity_2);
-                s_tilde(is) = diffusivity_2/(diffusivity_1 + diffusivity_2);
 
-                bool have_data = (norm == Normal::Z_NORM) ?
+                // If we have currents defined from a transport sweeper of the
+                // like, calculate D-hat coefficients
+                bool have_data = norm == Normal::Z_NORM ?
                     coarse_data_.has_axial_data() :
                     coarse_data_.has_radial_data();
                 if( have_data ) {
