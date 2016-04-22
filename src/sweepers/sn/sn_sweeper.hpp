@@ -161,6 +161,7 @@ namespace mocc { namespace sn {
                         int ixx = (ang.ox > 0.0) ? 0 : mesh_.nx()-1;
                         Surface upwind = (ang.ox > 0.0) ? Surface::WEST :
                                                           Surface::EAST;
+                        int sense = (upwind == Surface::WEST) ? 1 : 0;
                         int i = 0;
                         for( unsigned iz=0; iz<mesh_.nz(); iz++ ) {
                             for( unsigned iy=0; iy<mesh_.ny(); iy++) {
@@ -168,7 +169,7 @@ namespace mocc { namespace sn {
                                         Position( ixx, iy, iz) );
                                 int is = mesh_.coarse_surf( icell, upwind );
 
-                                face[i] = f( face[i], is, g );
+                                face[i] = f( face[i], is, g, sense );
 
                                 i++;
                             }
@@ -181,6 +182,7 @@ namespace mocc { namespace sn {
                         int iyy = (ang.oy > 0.0) ? 0 : mesh_.ny()-1;
                         Surface upwind = (ang.oy > 0.0) ? Surface::SOUTH :
                                                           Surface::NORTH;
+                        int sense = (upwind == Surface::SOUTH) ? 1 : 0;
                         int i = 0;
                         for( unsigned iz=0; iz<mesh_.nz(); iz++ ) {
                             for( unsigned ix=0; ix<mesh_.nx(); ix++) {
@@ -188,7 +190,7 @@ namespace mocc { namespace sn {
                                         Position( ix, iyy, iz) );
                                 int is = mesh_.coarse_surf( icell, upwind );
 
-                                face[i] = f( face[i], is, g );
+                                face[i] = f( face[i], is, g, sense );
 
                                 i++;
                             }
@@ -201,6 +203,7 @@ namespace mocc { namespace sn {
                         int izz = (ang.oz > 0.0) ? 0 : mesh_.nz()-1;
                         Surface upwind = (ang.oz > 0.0) ? Surface::BOTTOM :
                                                           Surface::TOP;
+                        int sense = (upwind == Surface::BOTTOM) ? 1 : 0;
                         int i = 0;
                         for( unsigned iy=0; iy<mesh_.ny(); iy++ ) {
                             for( unsigned ix=0; ix<mesh_.nx(); ix++) {
@@ -208,7 +211,7 @@ namespace mocc { namespace sn {
                                         Position( ix, iy, izz) );
                                 int is = mesh_.coarse_surf( icell, upwind );
 
-                                face[i] = f( face[i], is, g );
+                                face[i] = f( face[i], is, g, sense );
 
                                 i++;
                             }

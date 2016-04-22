@@ -147,7 +147,7 @@ namespace mocc { namespace sn {
             // There are old partial currents on the coarse data object, update
             // incomming flux based on the ratio of new to old
             auto update =
-                [&]( real_t in, int is, int g) {
+                [&]( real_t in, int is, int g, int i ) {
                     real_t part =
                         2.0 * ( coarse_data_->partial_current(is, g)[0] + 
                                 coarse_data_->partial_current(is, g)[1]);
@@ -168,10 +168,10 @@ namespace mocc { namespace sn {
             // this is the first iteration). Set the incomming flux to reflect
             // the partial current directly
             auto update =
-                [&]( real_t in, int is, int g ) {
+                [&]( real_t in, int is, int g, int i ) {
                     return (2.0*RFPI * 
-                            (coarse_data_->partial_current(is, g)[0] + 
-                             coarse_data_->partial_current(is, g)[1] ));
+                            (coarse_data_->partial_current(is, g)[i] + 
+                             coarse_data_->partial_current(is, g)[i] ));
                 };
 
             update_incoming_generic<decltype(update)>( update );
