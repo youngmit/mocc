@@ -351,6 +351,7 @@ namespace mocc {
                     real_t flux_r = cells.second >= 0 ?
                         coarse_data_.flux(cells.second, group) :
                         0.0;
+cout << "j: " << j << endl;
                     d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
                     s_hat(is) = (cells.first >= 0) ? 
@@ -424,9 +425,9 @@ namespace mocc {
         int n_surf = mesh_->n_surf();
         for( int ig=0; ig<n_group; ig++ ) {
             auto all = blitz::Range::all();
-            auto current_1g = coarse_data_.current(all, ig);
+            auto current_1g = coarse_data_.current(blitz::Range::all(), ig);
             auto surface_flux_1g =
-                coarse_data_.current(all, ig);
+                coarse_data_.surface_flux(all, ig);
             auto partial_1g =
                 coarse_data_.partial_current(all, ig);
             auto partial_old_1g =
@@ -446,6 +447,7 @@ namespace mocc {
                 real_t d_tilde = d_tilde_(is, ig);
                 real_t current = -d_tilde*(flux_r - flux_l) +
                                   d_hat*(flux_r + flux_l);
+
                 current_1g(is) = current;
 
                 real_t s_hat   = s_hat_(is, ig);
