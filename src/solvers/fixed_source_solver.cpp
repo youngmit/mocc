@@ -82,6 +82,7 @@ namespace mocc {
 
     // Perform source iteration
     void FixedSourceSolver::solve() {
+        this->initialize();
         for( size_t iouter=0; iouter<max_iter_; iouter++ ) {
             this->step();
 
