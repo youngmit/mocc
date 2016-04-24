@@ -132,8 +132,8 @@ namespace mocc {
         }
 
         /**
-         * \brief Return a pointer to the beginning of the boundary values for
-         * the given group and angle
+         * \brief Return a const pointer to the beginning of the boundary values
+         * for the given group and angle. Includes all faces
          */
         BVal_const_t get_boundary( int group, int angle ) const {
             assert(angle < n_angle_);
@@ -198,7 +198,8 @@ namespace mocc {
 
         // Boundary conditions
         std::array<Boundary, 6> bc_;
-
+        
+        // BC_Size_t for each angle, size_ is the same for all energy groups
         std::vector<BC_Size_t> size_;
 
         // Angular quadrature used to do angle index reflections
