@@ -204,7 +204,10 @@ namespace mocc{
         int n_reg() const {
             return n_reg_;
         }
-        
+
+        /**
+         * \brief Return the number of energy groups
+         */
         int n_group() const {
             return n_group_;
         }
@@ -239,13 +242,6 @@ namespace mocc{
             assert( ireg < (int)n_reg_ );
 
             return flux_( ireg, ig );
-        }
-
-        /**
-         * \brief Return the number of energy groups
-         */
-        unsigned int n_group() const {
-            return n_group_;
         }
 
         /**
