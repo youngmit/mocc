@@ -204,6 +204,10 @@ namespace mocc{
         int n_reg() const {
             return n_reg_;
         }
+        
+        int n_group() const {
+            return n_group_;
+        }
 
         /**
          * \brief Return a reference to the sweeper's XSMesh
