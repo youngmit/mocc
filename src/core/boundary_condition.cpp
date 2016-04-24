@@ -159,7 +159,7 @@ namespace mocc {
                 break;
 
             case Boundary::PRESCRIBED:
-                data_(blitz::Range(offset_in, offset_in+size-1)) = 1.0;
+                data_(blitz::Range(offset_in, offset_in+size-1)) = 2.0/FPI;
                 break;
 
             default:
