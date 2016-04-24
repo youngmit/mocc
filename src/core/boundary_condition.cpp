@@ -93,8 +93,16 @@ namespace mocc {
 
                     switch( bc_[(int)surf] ) {
                     case Boundary::VACUUM:
-                    case Boundary::PRESCRIBED:
                         // Leave surface as all zeros
+                        break;
+                    case Boundary::PRESCRIBED:
+                        // Initialized to "1.0" for now, but will change it to
+                        // be initialized in the Constructor via .h5 file. Then
+                        // we will have to make sure this routine does not
+                        // overwrite data_ to ZERO. It might make sense to have
+                        // a separate initialization routine that does the
+                        // initialization based on bc_. 
+                        data_ = 2.0/FPI;
                         break;
                     case Boundary::PARALLEL:
                     case Boundary::REFLECT:
@@ -159,7 +167,6 @@ namespace mocc {
                 break;
 
             case Boundary::PRESCRIBED:
-                data_(blitz::Range(offset_in, offset_in+size-1)) = 2.0/FPI;
                 break;
 
             default:
