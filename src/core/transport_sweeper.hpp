@@ -185,7 +185,7 @@ namespace mocc{
          */
         virtual SP_XSMeshHomogenized_t get_homogenized_xsmesh() = 0;
 
-        int n_reg() const {
+        virtual int n_reg() const {
             return n_reg_;
         }
 
