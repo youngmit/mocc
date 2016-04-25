@@ -100,6 +100,7 @@ namespace mocc { namespace sn {
         Timer &timer_;
         Timer &timer_init_;
         Timer &timer_sweep_;
+        Timer &timer_xsupdate_;
         const CoreMesh &mesh_;
 
         unsigned int n_inner_;

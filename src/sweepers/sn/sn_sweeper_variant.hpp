@@ -60,7 +60,13 @@ namespace mocc { namespace sn {
         void sweep( int group ) {
             assert(source_);
             timer_.tic();
+
+            timer_xsupdate_.tic();
+            xs_mesh_->update();
+            timer_xsupdate_.toc();
+
             timer_sweep_.tic();
+
             /// \todo add an is_ready() method to the worker, and make sure that
             /// it's ready before continuing.
 
