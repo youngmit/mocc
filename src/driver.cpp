@@ -120,19 +120,20 @@ int run( std::string file ) {
         }
         LogScreen << std::endl << std::endl;
 
-#pragma omp parallel
-        {
-#pragma omp master
-            {
-                LogFile << "Running with " << omp_get_num_threads() << " treads"
-                    << std::endl;
-            }
-        }
 
         // Actually process the XML input. We waited until now to do this,
         // because we want to be able to log the progress to a file, but needed
         // a case_name from the input file to be processed.
         input_proc->process();
+
+#pragma omp parallel
+        {
+#pragma omp master
+            {
+                LogScreen << "Running with " << omp_get_num_threads() << " treads"
+                    << std::endl;
+            }
+        }
 
 
         // Get an SP to the core mesh
