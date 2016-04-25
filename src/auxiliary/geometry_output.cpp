@@ -35,10 +35,12 @@ namespace mocc { namespace aux {
             throw EXCEPT("No input for geometry output.");
         }
 
+        string file;
         if( input.attribute("file").empty() ) {
-            throw EXCEPT("No \"file\" attribute specified.");
+            file = "geom.py";
+        } else {
+            file = input.attribute("file").value();
         }
-        string file = input.attribute("file").value();
 
         int plane = input.attribute("plane").as_int(0);
         if( (plane < 0) || (plane >= (int)mesh.nz() ) ) {
