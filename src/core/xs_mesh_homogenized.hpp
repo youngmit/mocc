@@ -53,7 +53,10 @@ namespace mocc {
         XSMeshHomogenized( const CoreMesh& mesh, const pugi::xml_node &input );
 
         /**
-         * Update homogenized cross sections using the passed flux array
+         * \brief \copybrief XSMesh::update()
+         *
+         * Update homogenized cross sections using the internally-stored
+         * reference to the scalar flux.
          */
         void update();
 

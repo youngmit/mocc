@@ -62,6 +62,22 @@ namespace mocc {
             return eubounds_;
         }
 
+        /**
+         * \brief Update macroscopic cross sections if needed
+         *
+         * Since the stock XSMesh only deals in un-homogenized, macroscopic
+         * cross sections, this does nothing. When support for microscopic cross
+         * sections is added, this will need to start doing some work.
+         *
+         * For right now, this is overridden in the \ref XSMeshHomogenized class
+         * to calculate new homoginzed cross sections given a new state of the
+         * FM scalar flux.
+         */
+        virtual void update() {
+            // Do nothing for the regular XS Mesh... for now
+            return;
+        }
+
         virtual void output( H5Node &file ) const {
             // Not really implementing for the general XS Mesh type.
             assert(false);
