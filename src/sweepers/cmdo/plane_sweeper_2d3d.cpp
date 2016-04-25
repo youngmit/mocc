@@ -87,7 +87,6 @@ namespace mocc { namespace cmdo {
             i_outer_++;
         }
 
-
         // Calculate transverse leakage source
         if( do_tl_ ) {
             this->add_tl( group );
@@ -122,12 +121,6 @@ namespace mocc { namespace cmdo {
         }
 
         // Sn sweeper
-        // For now, we are assuming that the Sn cross sections are being updated
-        // in the last inner iteration of the MoC. We should come up with
-        // something better, since that actually ignores the change to the fine
-        // mesh flux in the last MoC inner. For low numbers of MoC inners, this
-        // essentially constitutes an outer-iteration lag of the updated cross
-        // sections :-/
         sn_sweeper_->sweep( group );
 
         if( do_snproject_ ) {
@@ -298,6 +291,18 @@ namespace mocc { namespace cmdo {
         }
         if( !input.attribute("relax").empty() ) {
             relax_ = input.attribute("relax").as_bool();
+        }
+
+        // Make sure that if we are doing expose_sn, we arent also trying to do
+        // MoC. Doesnt work right now.
+        if( expose_sn_ ) {
+            // Cheat and peek into the MoC tag
+            int n_inner = input.child("moc_sweeper").attribute("n_inner").
+                as_int(0);
+            if( n_inner > 0 ) {
+                throw EXCEPT("Probably shouldn't expose the Sn sweeper while "
+                        "doing MoC sweeps");
+            }
         }
 
         LogFile << "2D3D Sweeper options:" << std::endl;

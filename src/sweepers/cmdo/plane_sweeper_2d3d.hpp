@@ -119,6 +119,14 @@ namespace mocc { namespace cmdo {
             return sn_sweeper_->get_homogenized_xsmesh();
         }
 
+        int n_reg() const {
+            if( expose_sn_ ) {
+                return sn_sweeper_->n_reg();
+            } else {
+                return moc_sweeper_.n_reg();
+            }
+        }
+
         /**
          * \brief \copybrief TransportSweeper::calc_fission_source()
          *
@@ -126,7 +134,11 @@ namespace mocc { namespace cmdo {
          * method on one of the sub-sweepers.
          */
         void calc_fission_source( real_t k, ArrayB1 &fission_source ) const {
-            moc_sweeper_.calc_fission_source( k, fission_source );
+            if( expose_sn_ ) {
+                sn_sweeper_->calc_fission_source( k, fission_source );
+            } else {
+                moc_sweeper_.calc_fission_source( k, fission_source );
+            }
             return;
         }
 
@@ -138,7 +150,11 @@ namespace mocc { namespace cmdo {
          * implementation, since it's the finer mesh, generally speaking
          */
         real_t total_fission( bool old ) const {
-            return moc_sweeper_.total_fission( old );
+            if( expose_sn_ ) {
+                return sn_sweeper_->total_fission( old );
+            } else {
+                return moc_sweeper_.total_fission( old );
+            }
         }
 
         /**

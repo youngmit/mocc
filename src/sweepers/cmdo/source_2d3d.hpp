@@ -78,9 +78,10 @@ namespace mocc { namespace cmdo {
             assert( ((int)fs.size() == n_reg_) ||
                     ((int)fs.size() == sn_source_.n_reg()) );
 
-            Source::fission( fs, ig );
 
-            if( (int)fs.size() == n_reg_ ) {
+            if( (int)fs.size() == n_reg_ && n_reg_ != sn_source_.n_reg() ) {
+                // Set the MoC source if the mesh is contiguous.
+                Source::fission( fs, ig );
                 // We need to homogenize the fission source to the Sn mesh
                 ArrayB1 sn_fs(sn_source_.n_reg());
                 sn_fs = 0.0;
