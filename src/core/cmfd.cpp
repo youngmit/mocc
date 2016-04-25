@@ -305,7 +305,7 @@ namespace mocc {
                             throw EXCEPT("Unsupported boundary type");
                     }
                 }
-                
+
                 if( cells.second > -1 ) {
                     diffusivity_2 = d_coeff[cells.second] /
                         mesh_->cell_thickness(cells.second, norm);
@@ -332,7 +332,7 @@ namespace mocc {
                 // the "left" of the surface. When such a cell is not present
                 // (domain boundary), the cell is to the "right"
                 real_t stil = (diffusivity_1 > 0.0 ) ?
-                    diffusivity_1/(diffusivity_1 + diffusivity_2) : 
+                    diffusivity_1/(diffusivity_1 + diffusivity_2) :
                     diffusivity_2/(diffusivity_1 + diffusivity_2);
 
                 s_tilde(is) = stil;
@@ -351,10 +351,9 @@ namespace mocc {
                     real_t flux_r = cells.second >= 0 ?
                         coarse_data_.flux(cells.second, group) :
                         0.0;
-cout << "j: " << j << endl;
                     d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
-                    s_hat(is) = (cells.first >= 0) ? 
+                    s_hat(is) = (cells.first >= 0) ?
                         ( sfc_flux - s_tilde(is)*flux_l -
                           (1.0-s_tilde(is))*flux_r ) / (flux_l + flux_r) :
                         ( sfc_flux - s_tilde(is)*flux_r ) / (flux_r);
@@ -432,7 +431,7 @@ cout << "j: " << j << endl;
                 coarse_data_.partial_current(all, ig);
             auto partial_old_1g =
                 coarse_data_.partial_current_old(all, ig);
-            
+
             partial_old_1g = partial_1g;
             coarse_data_.set_has_old_partial( n_solve_ > 0 );
 
