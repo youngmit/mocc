@@ -46,7 +46,7 @@ namespace mocc {
             auto snts = SnSweeperFactory( input.child("sweeper"), mesh );
             sweeper = std::move(snts);
         } else if ( type == "2d3d" ) {
-            LogScreen << "Using a 2D3D wweeper" << std::endl;
+            LogScreen << "Using a 2D3D sweeper" << std::endl;
             UP_Sweeper_t ts( new cmdo::PlaneSweeper_2D3D( input.child("sweeper"),
                         mesh) );
             sweeper = std::move( ts );

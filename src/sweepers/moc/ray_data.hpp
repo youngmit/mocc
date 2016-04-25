@@ -156,7 +156,7 @@ namespace mocc { namespace moc {
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
 
-        // Vector of ray sets. The outer-most vector indexes the
+        // Vector of PlaneRays. The outer-most vector indexes the
         // geometrically-unique planes, the second index addresses the
         // individual angles, which span octants 1 and 2, and the last index
         // treats all of the rays for the given plane and angle.

@@ -206,6 +206,13 @@ namespace mocc{
         }
 
         /**
+         * \brief Return the number of energy groups
+         */
+        int n_group() const {
+            return n_group_;
+        }
+
+        /**
          * \brief Return a reference to the sweeper's XSMesh
          */
         const XSMesh& xs_mesh() const {
@@ -235,13 +242,6 @@ namespace mocc{
             assert( ireg < (int)n_reg_ );
 
             return flux_( ireg, ig );
-        }
-
-        /**
-         * \brief Return the number of energy groups
-         */
-        unsigned int n_group() const {
-            return n_group_;
         }
 
         /**

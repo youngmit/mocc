@@ -82,6 +82,7 @@ namespace mocc {
 
     // Perform source iteration
     void FixedSourceSolver::solve() {
+        this->initialize();
         for( size_t iouter=0; iouter<max_iter_; iouter++ ) {
             this->step();
 
@@ -89,9 +90,19 @@ namespace mocc {
             cout << iouter << " " << resid << endl;
 
             if( resid < flux_tol_ ) {
+                LogFile << "Logging multi-group  scalar flux grouped by energy" 
+                   " group index from Group 1 to group G." << std::endl;
+                for( int ig=0; ig<sweeper_->n_group(); ig++ ) {
+                    LogFile << "Scalar flux for energy group " << ig+1 << " :"
+                        << std::endl;
+                    LogFile << (sweeper_->flux())(blitz::Range::all(), ig);
+                    LogFile << std::endl;
+                }
+                /// return flux_( ireg, ig );
                 break;
             }
         }
+    
     }
 
     // Perform a single group sweep
