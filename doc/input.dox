@@ -140,6 +140,12 @@ Examples:
 \endcode
 
 \subsection moc_sweeper MoC Sweeper
+MoC sweepers may optionally specify a <tt>dump_rays</tt> attribute. If
+true, this will result in a file called "rays.py," which contains a python list
+of points for each ray for all angles. This file can be used in conjunction with
+the output from the <tt>geometry_output</tt> tag to plot rays on top of the
+problem geometry.
+
 Example:
 \code{xml}
 <sweeper type="moc" n_inner="5">
