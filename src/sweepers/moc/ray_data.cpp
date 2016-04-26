@@ -76,6 +76,25 @@ namespace mocc { namespace moc {
             throw EXCEPT("Failed to read valid ray spacing.");
         }
 
+        // Get the volume correction option
+        correction_type_ = VolumeCorrection::FLAT;
+        if( !input.attribute("volume_correction").empty() ) {
+            std::string type = input.attribute("volume_correction").value();
+            sanitize(type);
+            if( type == "flat" ) {
+                correction_type_ = VolumeCorrection::FLAT;
+            } else if( type == "angle" ) {
+                correction_type_ = VolumeCorrection::ANGLE;
+            } else if( type == "none" ) {
+                correction_type_ = VolumeCorrection::NONE;
+            } else {
+                throw EXCEPT("Unrecognized volume correction option in <rays>");
+            }
+        }
+
+        LogScreen << "Using " << correction_type_ << " volume correction for "
+            "rays" << std::endl;
+
         // Get the modularity setting
         bool core_modular = true;
         if( !input.attribute("modularity").empty() ) {
@@ -134,7 +153,6 @@ namespace mocc { namespace moc {
                 Ny *= mesh.ny();
             }
 
-
             LogFile << "Total number of rays (Nx/Ny): "
                 << Nx << " " << Ny << std::endl;
 
@@ -188,7 +206,6 @@ namespace mocc { namespace moc {
 
                 LogFile << "Spacing: " << ang->alpha << " " << space << " " <<
                     space_x << " " << space_y << std::endl;
-
 
                 std::vector<Ray> rays;
                 // Handle rays entering on the x-normal faces ( along the
@@ -295,17 +312,17 @@ namespace mocc { namespace moc {
 
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
-        this->correct_volume( mesh, FLAT );
+        this->correct_volume( mesh );
 
         LogScreen << "Done ray tracing" << std::endl;
-    }
+    } // RayData::RayData()
 
-    void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )
+    void RayData::correct_volume( const CoreMesh& mesh )
     {
-        switch(type) {
+        switch(correction_type_) {
             // Correct each angle independently, preserving volume integral of
             // region for each angle
-            case FLAT:
+            case VolumeCorrection::FLAT:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
@@ -339,7 +356,7 @@ namespace mocc { namespace moc {
                 break;
             // Correct all angles at the same time, preserving the angular
             // integral of the region volumes for all angles
-            case ANGLE:
+            case VolumeCorrection::ANGLE:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
@@ -383,6 +400,8 @@ namespace mocc { namespace moc {
                         ++iang;
                     }
                 } // Volume correction
+                break;
+            case VolumeCorrection::NONE:
                 break;
         }
     } // correct_volume
@@ -429,6 +448,24 @@ namespace mocc { namespace moc {
         os.seekp(angle_pos);
         os << " ]" << endl;
 
+        return os;
+    }
+
+    std::ostream &operator<<( std::ostream &os, VolumeCorrection vc ) {
+        switch( vc ) {
+            case VolumeCorrection::FLAT:
+                os << "FLAT";
+                break;
+            case VolumeCorrection::ANGLE:
+                os << "ANGLE";
+                break;
+            case VolumeCorrection::NONE:
+                os << "NONE";
+                break;
+            default:
+                os << "UNKNOWN";
+                break;
+        }
         return os;
     }
 } }

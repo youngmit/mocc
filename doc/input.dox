@@ -111,6 +111,34 @@ for an angular quadrature tag, the parser will first look at the child tags of
 the corresponding transport sweeper tag. If none is found it will look in
 successively higher levels in the XML tree until if finds one.
 
+\subsection rays \<rays\>
+Some sweepers require a <tt>\<rays\></tt> tag to specify ray data to use. The
+only required attribute for the rays is the nominal <tt>ray_spacing</tt>, which
+specifies the upper bound of the spacing between rays for each angle. In
+practice, due to modularization, the actual spacing for each angle will be less
+than the spacing specified. Other options include the <tt>modularity</tt> of the
+rays (pin-modular or core-modular), and the nature of the
+<tt>volume_correction</tt> to be used for each flat source region.
+
+The following volume corrections are supported:
+ - <tt>flat</tt>: For each individual angle and flat-source region, the ray
+   segment lengths are adjusted uniformly to preserve the volume of the
+   flat-source region.
+ - <tt>angle</tt>: Ray segments in a given flat-source region are adjusted
+   uniformly over <b>all</b> angles to preserve the angular integral of the
+   flat-source region volume.
+ - <tt>none</tt>: No volume correction is performed. Only do this if you know
+   what you are doing, as it does not preserve the total amount of material.
+
+By default, <tt>core</tt> modularity and <tt>flat</tt> volume corrections are
+used.
+
+Examples:
+\code{xml}
+<rays spacing="0.01" />
+<rays spacing="0.01" modularity="core" volume_correction="angle" />
+\endcode
+
 \subsection moc_sweeper MoC Sweeper
 Example:
 \code{xml}
