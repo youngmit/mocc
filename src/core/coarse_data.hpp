@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include <blitz/array.h>
 
@@ -36,6 +36,7 @@ namespace mocc {
         CoarseData( const Mesh &mesh, size_t ngroup ):
             current( (int)mesh.n_surf(), ngroup ),
             surface_flux( (int)mesh.n_surf(), ngroup ),
+            partial_current( (int)mesh.n_surf(), ngroup ),
             flux( (int)mesh.n_pin(), ngroup ),
             old_flux( (int)mesh.n_pin(), ngroup ),
             n_group_( ngroup ),
@@ -47,6 +48,13 @@ namespace mocc {
             surface_flux = 0.0;
             flux = 0.0;
             old_flux = 0.0;
+
+            //assert( current(blitz::Range::all(), 0).isStorageContiguous() );
+            //assert( surface_flux(blitz::Range::all(), 0).
+            //        isStorageContiguous() );
+            //assert( partial_current(blitz::Range::all(), 0).
+            //        isStorageContiguous() );
+
             return;
         }
 
@@ -81,9 +89,12 @@ namespace mocc {
          */
         void zero_data( int group ) {
             assert(group < n_group_ );
+            // need this to disambiguate the operator= for partial currents.
+            const std::array<real_t, 2> zero = {0.0, 0.0};
 
             current( blitz::Range::all(), group ) = 0.0;
             surface_flux( blitz::Range::all(), group ) = 0.0;
+            partial_current( blitz::Range::all(), group ) = zero;
         }
 
         /**
@@ -96,8 +107,12 @@ namespace mocc {
         void zero_data_radial( int group ) {
             assert(group < n_group_ );
 
-            ArrayB1 current_g = current(blitz::Range::all(), group);
-            ArrayB1 surface_flux_g = surface_flux(blitz::Range::all(), group);
+            // need this to disambiguate the operator= for partial currents.
+            const std::array<real_t, 2> zero = {0.0, 0.0};
+
+            auto current_g = current(blitz::Range::all(), group);
+            auto surface_flux_g = surface_flux(blitz::Range::all(), group);
+            auto partial_g = partial_current(blitz::Range::all(), group);
             for( size_t plane=0; plane<mesh_.nz(); plane++ ) {
                 for( auto surf=mesh_.plane_surf_xy_begin(plane);
                         surf!=mesh_.plane_surf_end(plane);
@@ -105,6 +120,7 @@ namespace mocc {
                 {
                     current_g(surf) = 0.0;
                     surface_flux_g(surf) = 0.0;
+                    partial_g(surf) = zero;
                 }
             }
             return;
@@ -112,6 +128,7 @@ namespace mocc {
 
         ArrayB2 current;
         ArrayB2 surface_flux;
+        blitz::Array<std::array<real_t, 2>, 2> partial_current;
         ArrayB2 flux;
         ArrayB2 old_flux;
     private:

@@ -66,7 +66,9 @@ implemented
 
 
 \section sweeper \<sweeper\> Tag
-This tag is used to specify a sweeper to be used for a \ref mocc::Solver.
+This tag is used to specify a sweeper to be used for a \ref mocc::Solver. A
+<tt>\<sweeper\></tt> tag should be a child of the <tt>\<solver\></tt> tag in
+which it is to be used.
 Currently supported sweeper types are:
  - <tt>moc</tt>: Method of Characteristics (2-D)
  - <tt>sn</tt>: Sn (2-D or 3-D)
@@ -81,20 +83,9 @@ quadrature to be used. The types of quadrature currently supported are:
  (evenly-spaced) quadrature for the azimuthal angles, and the Gauss-Legendre
  quadrature for the polar angles
  - <tt>cy|chebychev-yamamoto</tt>: A product quadrature, using Chebychev for the
- azimuthal angles and the Yamamoto quadrature for the polar angles
+ azimuthal angles and the Yamamoto quadrature for the polar angles.
+
 Examples of each are given below:
-
-
-The angular quadrature tag is nominally specified as a
-child of the \c \<sweeper\> tag, however it may be specified in any of the
-parents of the \c \<sweeper\> tag. This allows a single \c \<ang_quad\>
-definition for the 2-D/3-D sweeper, which has two sweeper child tags, both of
-which need to be using the same angular quadrature.  See \ref cmdo_sweeper for
-an example where the angular quadrature is specified above the internal Sn and
-MoC sweepers, such that the same input is supplied to both. When looking for an
-angular quadrature tag, the parser will first look at the child tags of the
-corresponding transport sweeper tag. If none is found it will look in
-successively higher levels in the XML tree until if finds one.
 
 \code{xml}
 <!-- Level-symmetric quadrature of order 8 (10 angles per octant) -->
@@ -109,7 +100,52 @@ per octant -->
 <ang_quad type="cy" n_azimuthal="12" n_polar="3" />
 \endcode
 
+\note The angular quadrature tag is nominally specified as a
+child of a \c \<sweeper\> tag, however it may also be specified in any parent of
+that \c \<sweeper\> tag. This allows a single \c \<ang_quad\> definition for
+compound sweeper types, such as the 2-D/3-D sweeper, which would otherwise need
+multiple definitions of the same angular quadrature.  See \ref cmdo_sweeper for
+an example of an angular quadrature being specified above the internal Sn and
+MoC sweepers, resulting in both sweepers using the same quadrature. When looking
+for an angular quadrature tag, the parser will first look at the child tags of
+the corresponding transport sweeper tag. If none is found it will look in
+successively higher levels in the XML tree until if finds one.
+
+\subsection rays \<rays\>
+Some sweepers require a <tt>\<rays\></tt> tag to specify ray data to use. The
+only required attribute for the rays is the nominal <tt>ray_spacing</tt>, which
+specifies the upper bound of the spacing between rays for each angle. In
+practice, due to modularization, the actual spacing for each angle will be less
+than the spacing specified. Other options include the <tt>modularity</tt> of the
+rays (pin-modular or core-modular), and the nature of the
+<tt>volume_correction</tt> to be used for each flat source region.
+
+The following volume corrections are supported:
+ - <tt>flat</tt>: For each individual angle and flat-source region, the ray
+   segment lengths are adjusted uniformly to preserve the volume of the
+   flat-source region.
+ - <tt>angle</tt>: Ray segments in a given flat-source region are adjusted
+   uniformly over <b>all</b> angles to preserve the angular integral of the
+   flat-source region volume.
+ - <tt>none</tt>: No volume correction is performed. Only do this if you know
+   what you are doing, as it does not preserve the total amount of material.
+
+By default, <tt>core</tt> modularity and <tt>flat</tt> volume corrections are
+used.
+
+Examples:
+\code{xml}
+<rays spacing="0.01" />
+<rays spacing="0.01" modularity="core" volume_correction="angle" />
+\endcode
+
 \subsection moc_sweeper MoC Sweeper
+MoC sweepers may optionally specify a <tt>dump_rays</tt> attribute. If
+true, this will result in a file called "rays.py," which contains a python list
+of points for each ray for all angles. This file can be used in conjunction with
+the output from the <tt>geometry_output</tt> tag to plot rays on top of the
+problem geometry.
+
 Example:
 \code{xml}
 <sweeper type="moc" n_inner="5">
@@ -138,5 +174,48 @@ Example:
 </sweeper>
 \endcode
 
+\section miscellaneous_tags Miscellaneous Tags
+There are several tags that are not directly related to the problem
+specification, but are useful for controlling the execution of the program.
+Typically these are specified at the root of the XML document.
+
+\subsection case_name \<case_name\>
+The <tt>\<case_name\></tt> tag may be used to provide an informative name of the
+case being run. By default, MOCC will use the filename of the XML document
+(without the ".xml" extension) as the case name, but any value wrapped by the
+<tt>\<case_name\></tt> tag will override this value.
+
+Example:
+\code{xml}
+<case_name>My_Fancypants_Reactor</case_name>
+\endcode
+
+\subsection parallel \<parallel\>
+The <tt>\<parallel\></tt> tag can be used to specify how the problem should be
+decomposed to run in parallel. For now, since OpenMP threading is the only
+supported parallelism method, this is a pretty simple tag. The
+<tt>num_threads</tt> attribute can be used to specify the number of threads to
+use. By default, MOCC will use the number speicified by the
+<tt>OMP_NUM_THREADS</tt> environment variable, however any value specified here
+will be used instead.
+
+Example:
+\code{xml}
+<parallel num_threads="4" />
+\endcode
+
+\subsection geom_output \<geometry_output\>
+This tag may be used to tell MOCC to generate extra output for visualizing the
+problem geometry. If included, several python scripts will be emitted, which
+when executed will produce a PDF file depicting the mesh for the geometry
+plane indicated by the <tt>plane</tt> attribute. The <tt>file</tt> attribute may
+be used to specify the name of the file to generate (defaults to "geom.py").
+Plotting of the individual rays may be controlled by modifying the produced
+python script, indicating which angle for which to plot rays.
+
+Example:
+\code{xml}
+<geometry_output plane="0" file="plane_0_geom.py" />
+\endcode
 
 */

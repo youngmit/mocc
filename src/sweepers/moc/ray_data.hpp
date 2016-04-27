@@ -16,8 +16,9 @@
 
 #pragma once
 
-#include <vector>
+#include <iosfwd>
 #include <memory>
+#include <vector>
 
 #include "pugixml.hpp"
 
@@ -29,10 +30,12 @@
 #include "ray.hpp"
 
 namespace mocc { namespace moc {
-    enum VolumeCorrection {
+    enum class VolumeCorrection {
         FLAT,
-        ANGLE
+        ANGLE,
+        NONE
     };
+    std::ostream &operator<<( std::ostream &os, VolumeCorrection vc );
 
     /**
     * The \ref RayData class is a collection of \ref Ray objects, organized by
@@ -178,6 +181,9 @@ namespace mocc { namespace moc {
         // n_unique_planes() on the CoreMesh used to initialize the ray data.
         size_t n_planes_;
 
+        // The type of volume correction to use
+        VolumeCorrection correction_type_;
+
         // Maximum number of ray segments in a single ray
         int max_seg_;
 
@@ -189,7 +195,7 @@ namespace mocc { namespace moc {
          * is technically more correct, however the latter is useful for
          * debugging purposes sometimes.
          */
-        void correct_volume( const CoreMesh& mesh, VolumeCorrection type );
+        void correct_volume( const CoreMesh& mesh );
     };
 
     typedef std::shared_ptr<RayData> SP_RayData_t;

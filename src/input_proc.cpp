@@ -16,9 +16,10 @@
 
 #include "input_proc.hpp"
 
-#include <memory>
-#include <string>
 #include <iostream>
+#include <memory>
+#include <omp.h>
+#include <string>
 
 #include "pugixml.hpp"
 
@@ -85,6 +86,28 @@ namespace mocc{
         timer_.tic();
         Timer &mesh_timer = timer_.new_timer("Core Mesh");
         mesh_timer.tic();
+
+        // Read the <parallel /> tag, if present. This isnt the best place for
+        // this in the long term, but since we only do OpenMP right now we can
+        // live with it. If MPI becomes a thing, it would be better to have a
+        // standalone parallel environment class to take care of all of this.
+        if( !doc_.child("parallel").empty() ) {
+            int n_thread = doc_.child("parallel").attribute("num_threads").
+                as_int(0);
+
+            if( n_thread < 1 ) {
+                throw EXCEPT("Less than one thread specified in <parallel> "
+                        "tag");
+            }
+
+            if( n_thread > omp_get_num_procs() ) {
+                LogScreen << "WARNING: More threads specified than physical "
+                    "threads on this machine in <parallel> tag" << std::endl;
+            }
+
+            // Okay. Looking good. Tell OpenMP whats up
+            omp_set_num_threads(n_thread);
+        }
 
         // Generate the core mesh
         core_mesh_ = std::make_shared<CoreMesh>( doc_ );
