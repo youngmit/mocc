@@ -139,7 +139,7 @@ namespace mocc { namespace cmdo {
 
         cout << "MoC/Sn residual: " << residual;
         if( sn_resid_[group].size() > 0 ) {
-             cout << "   \t" << residual-sn_resid_[group].back();
+             cout << "   \t" << residual/sn_resid_[group].back();
         }
         cout << endl;
         sn_resid_[group].push_back(residual);
