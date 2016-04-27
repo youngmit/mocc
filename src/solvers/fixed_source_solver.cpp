@@ -16,6 +16,8 @@
 
 #include "fixed_source_solver.hpp"
 
+#include <iostream>
+
 #include "transport_sweeper_factory.hpp"
 
 #include "core/error.hpp"
@@ -87,16 +89,16 @@ namespace mocc {
             this->step();
 
             real_t resid = sweeper_->flux_residual();
-            cout << iouter << " " << resid << endl;
+            LogScreen << iouter << " " << std::setprecision(15) << resid << endl;
 
             if( resid < flux_tol_ ) {
                 LogFile << "Logging multi-group  scalar flux grouped by energy" 
-                   " group index from Group 1 to group G." << std::endl;
+                   " group index from Group 1 to group G." << endl;
                 for( int ig=0; ig<sweeper_->n_group(); ig++ ) {
                     LogFile << "Scalar flux for energy group " << ig+1 << " :"
-                        << std::endl;
+                        << endl;
                     LogFile << (sweeper_->flux())(blitz::Range::all(), ig);
-                    LogFile << std::endl;
+                    LogFile << endl;
                 }
                 /// return flux_( ireg, ig );
                 break;
