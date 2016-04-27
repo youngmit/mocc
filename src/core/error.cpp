@@ -16,9 +16,11 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <list>
 #include <sstream>
 
 #include "error.hpp"
+#include "files.hpp"
 
 #include "util/stacktrace.hpp"
 
@@ -27,14 +29,17 @@ using std::endl;
 using std::string;
 
 namespace mocc {
+
+    std::list<std::string> Warnings;
+
     void Error(const char* msg) {
         cout << "ERROR: " << msg << endl;
         exit(EXIT_FAILURE);
     }
 
-
     void Warn(const char* msg) {
-        cout << "WARNING: " << msg << endl;
+        Warnings.push_back(msg);
+        LogScreen << "WARNING: " << msg << endl;
     }
 
     void Fail( Exception e ) {

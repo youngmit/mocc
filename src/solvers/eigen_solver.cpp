@@ -151,7 +151,7 @@ namespace mocc{
 
             if( (error_k_ < tolerance_k_) && (error_psi_ < tolerance_psi_ ) &&
                 (n_iterations >= min_iterations_) ) {
-                std::cout << "Convergence criteria met!" << std::endl;
+                LogScreen << "Convergence criteria satisfied!" << std::endl;
                 break;
             }
         }

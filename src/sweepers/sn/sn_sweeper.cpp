@@ -117,8 +117,8 @@ namespace sn {
         LogScreen << omp_get_max_threads() << " " << gs_boundary_ << std::endl;
         if( (omp_get_max_threads() > 1) && gs_boundary_ ) {
             gs_boundary_ = false;
-            LogScreen << "WARNING: Disabling Gauss-Seidel boundary update "
-                "in parallel Sn" << std::endl;
+            Warn( "Disabling Gauss-Seidel boundary update "
+                "in parallel Sn" );
         }
 
         timer_.toc();

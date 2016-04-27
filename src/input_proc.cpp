@@ -101,8 +101,8 @@ namespace mocc{
             }
 
             if( n_thread > omp_get_num_procs() ) {
-                LogScreen << "WARNING: More threads specified than physical "
-                    "threads on this machine in <parallel> tag" << std::endl;
+                Warn( "More threads specified than physical "
+                    "threads on this machine in <parallel> tag" );
             }
 
             // Okay. Looking good. Tell OpenMP whats up

@@ -16,14 +16,22 @@
 
 #pragma once
 #include <exception>
+#include <list>
 #include <string>
 
 namespace mocc {
-    extern void Error(const char* msg);
+    /**
+     * \brief Global list of warnings that have been emitted.
+     *
+     * This can be revisited at the end of execution, to make clear that there
+     * were Warnings, which would otherwise be buried in the depths of the log
+     * file.
+     */
+    extern std::list<std::string> Warnings;
 
-    extern void Warn(const char* msg);
+    void Error(const char* msg);
 
-
+    void Warn(const char* msg);
 
     class Exception: public std::exception {
     public:
