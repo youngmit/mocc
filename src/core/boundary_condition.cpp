@@ -83,13 +83,16 @@ namespace mocc {
         // Start with all zeros
         data_ = 0.0;
         for( int group=0; group<n_group_; group++ ) {
+            // This is not a range-based loop, because n_angle_ is different
+            // depending on the type of sweeper that made this
+            // BoundaryCondition.
             for( int ang=0; ang<n_angle_; ang++ ) {
+                const auto &angle = ang_quad_[ang];
                 for( auto norm: AllNormals ) {
-                    const auto &angle = ang_quad_[ang];
                     Surface surf = angle.upwind_surface(norm);
-                    int size = size_[ang][(int)norm];
-                    real_t *face =
-                        this->get_face( group, ang, norm ).second;
+                    auto face_pair =
+                        this->get_face( group, ang, norm );
+                    real_t *face = face_pair.second;
 
                     switch( bc_[(int)surf] ) {
                     case Boundary::VACUUM:
@@ -102,13 +105,16 @@ namespace mocc {
                         // overwrite data_ to ZERO. It might make sense to have
                         // a separate initialization routine that does the
                         // initialization based on bc_. 
-                        data_ = 2.0/FPI;
+                        for( int i=0; i<face_pair.first; i++ ) {
+                            face[i] = 2.0/FPI;
+                        }
                         break;
                     case Boundary::PARALLEL:
                     case Boundary::REFLECT:
+                        break;
                     case Boundary::PERIODIC:
                         // initialize with the prescribed scalar
-                        for( int i=0; i<size; i++ ) {
+                        for( int i=0; i<face_pair.first; i++ ) {
                             face[i] = val;
                         }   
                         break;

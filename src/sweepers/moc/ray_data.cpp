@@ -301,7 +301,7 @@ namespace mocc { namespace moc {
                 // Sort the rays by length. This might improve threading
                 // performance
                 std::sort(rays.begin(), rays.end());
-
+                //std::reverse(rays.begin(), rays.end());
                 // Move the stack of rays into the vector of angular ray sets.
                 angle_rays.push_back(std::move(rays));
                 ++iang;
@@ -315,6 +315,7 @@ namespace mocc { namespace moc {
         this->correct_volume( mesh );
 
         LogScreen << "Done ray tracing" << std::endl;
+
     } // RayData::RayData()
 
     void RayData::correct_volume( const CoreMesh& mesh )
@@ -324,12 +325,20 @@ namespace mocc { namespace moc {
             // region for each angle
             case VolumeCorrection::FLAT:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
+                    // flat_cf_max to log the maximum correction factor for
+                    // ecah angle
+                    // flat_cf_rms to log the rms of correction factor for
+                    // each angle
+                    VecF flat_cf_max(ang_quad_.ndir()/4, 0.0);
+                    VecF flat_cf_rms(ang_quad_.ndir()/4, 0.0);
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
+                    
                     for ( auto ang = ang_quad_.octant(1);
                             ang!=ang_quad_.octant(3); ++ang )
                     {
                         VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
+                        VecF flat_cf(mesh.plane(iplane).n_reg(), 0.0);
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         real_t space = spacing_[iang];
                         for( auto &ray: rays ) {
@@ -340,17 +349,42 @@ namespace mocc { namespace moc {
                             }
                         }
 
+                        for( size_t ireg=0; ireg<mesh.plane(iplane).n_reg(); ireg++ ) {
+                            flat_cf[ireg]=true_vol[ireg]/fsr_vol[ireg];
+                            if( flat_cf_max[iang] < flat_cf[ireg] ) {
+                                flat_cf_max[iang] = flat_cf[ireg];
+                            }
+                            flat_cf_rms[iang] += flat_cf[ireg]*flat_cf[ireg];
+                        }
+                        flat_cf_rms[iang] = sqrt(flat_cf_rms[iang]
+                                /mesh.plane(iplane).n_reg());
+
                         // Correct
                         for( auto &ray: rays ) {
                             for( int iseg=0; iseg<ray.nseg(); iseg++ )
                             {
                                 int ireg = ray.seg_index(iseg);
                                 ray.seg_len(iseg) = ray.seg_len(iseg) *
-                                    true_vol[ireg]/fsr_vol[ireg];
+                                    flat_cf[ireg];
                             }
                         }
                         iang++;
                     }
+                    LogFile << std::endl << std::endl;
+                    LogFile << "For plane " << iplane << ", the maximum "
+                        "correction factor for each angle in Octant 1 and 2 is"
+                        ": " << std::endl;
+                    for( auto &cf_max : flat_cf_max ) {
+                        LogFile << cf_max << " ";
+                    }
+                    LogFile << std::endl;
+
+                    LogFile << "The RMS of the correction factor for each angle"
+                        " is: " << std::endl;
+                    for( auto &cf_rms : flat_cf_rms ) {
+                        LogFile << cf_rms << " ";
+                    }
+                    LogFile << std::endl;
                 }
 
                 break;
@@ -358,6 +392,10 @@ namespace mocc { namespace moc {
             // integral of the region volumes for all angles
             case VolumeCorrection::ANGLE:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
+                    // angle_cf_max to log the maximum correction factor
+                    // angle_cf_rms to log the rms of correction factor
+                    real_t angle_cf_max=0.0;
+                    real_t angle_cf_rms=0.0;
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                     int iang=0;
@@ -382,7 +420,14 @@ namespace mocc { namespace moc {
                             ireg++ )
                     {
                         fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
+                        if( angle_cf_max < fsr_vol[ireg] ) {
+                            angle_cf_max = fsr_vol[ireg];
+                        }
+                        angle_cf_rms += fsr_vol[ireg]*fsr_vol[ireg];
                     }
+
+                    angle_cf_rms=sqrt(angle_cf_rms/(int)mesh.plane(iplane).n_reg());
+
                     // Correct ray lengths to enforce proper FSR volumes
                     iang = 0;
                     for( auto ang = ang_quad_.octant(1);
@@ -399,6 +444,15 @@ namespace mocc { namespace moc {
                         }
                         ++iang;
                     }
+
+                    LogFile << std::endl << std::endl;
+                    LogFile << "For plane " << iplane << ", the maximum "
+                        "correction factor is: " << std::endl 
+                        << angle_cf_max << std::endl;
+
+                    LogFile << "The RMS of the correction factor is: " 
+                        << std::endl << angle_cf_rms << std::endl;
+
                 } // Volume correction
                 break;
             case VolumeCorrection::NONE:
