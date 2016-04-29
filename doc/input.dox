@@ -84,7 +84,7 @@ quadrature to be used. The types of quadrature currently supported are:
  quadrature for the polar angles
  - <tt>cy|chebychev-yamamoto</tt>: A product quadrature, using Chebychev for the
  azimuthal angles and the Yamamoto quadrature for the polar angles.
- - <tt>user</tt>: User-specified angles. A number of <tt><angle /></tt> tags may
+ - <tt>user</tt>: User-specified angles. A number of <tt>\<angle /\></tt> tags may
    be specified by hand, each specifying a direction in the first octant and
    corresponding weight. Direction may be specified be either the direction
    cosines or by polar and azimuthal angles, but not both. Angles may not lie
