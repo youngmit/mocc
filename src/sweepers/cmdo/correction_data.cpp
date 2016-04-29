@@ -103,7 +103,7 @@ namespace mocc {
                             "_" << setfill('0') << setw(3) << iang;
 
                         h5f.read_1d( path.str(), slice );
-                        assert( (int)slice.size() == mesh_->n_cell_plane() );
+                        assert( slice.size() == mesh_->n_cell_plane() );
                         for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                             int stt = mesh_->plane_cell_begin(ip);
                             int stp = mesh_->plane_cell_end(ip)-1;
