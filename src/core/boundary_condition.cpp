@@ -111,7 +111,6 @@ namespace mocc {
                         break;
                     case Boundary::PARALLEL:
                     case Boundary::REFLECT:
-                        break;
                     case Boundary::PERIODIC:
                         // initialize with the prescribed scalar
                         for( int i=0; i<face_pair.first; i++ ) {

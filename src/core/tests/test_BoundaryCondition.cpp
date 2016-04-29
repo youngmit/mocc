@@ -95,7 +95,7 @@ TEST_FIXTURE( BCIrregularFixture, test_bc )
         for( int ia=0; ia<nang; ia++ ) {
             auto face = in.get_face( ig, ia, Normal::X_NORM );
             CHECK_EQUAL(nbc[ia][(int)Normal::X_NORM], face.first);
-            for( int ibc=0; ibc<8; ibc++ ) {
+            for( int ibc=0; ibc<face.first; ibc++ ) {
                 CHECK_EQUAL( 7.345, face.second[ibc] );
             }
         }
