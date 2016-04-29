@@ -3,6 +3,8 @@ if(${BUILD_TESTS})
 
     add_unit_test(test_AngularQuadrature ${HDF5_LIBRARIES} core)
     
+    add_unit_test(test_Angle ${HDF5_LIBRARIES} core)
+    
     add_unit_test(test_ScatteringMatrix ${HDF5_LIBRARIES} core)
     
     add_unit_test(test_Material core pugixml)
