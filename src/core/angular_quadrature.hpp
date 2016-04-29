@@ -32,7 +32,8 @@ namespace mocc {
         LS, // Level-symmetric
         CHEB_GAUSS, // Chebyshev for azimuthal and Gaussian for polar
         CHEB_YAMAMOTO, // Chebyshev for azimuthal and Yamamoto for polar
-        MANUAL // User-defined
+        IMPORT, // Imported from a file
+        USER // User-defined
     };
 
     /**

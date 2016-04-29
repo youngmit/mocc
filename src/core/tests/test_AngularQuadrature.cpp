@@ -135,6 +135,28 @@ public:
     }
 };
 
+class UserQuad : public AngQuadFixture {
+public:
+    UserQuad() {
+        std::string input = 
+            "<ang_quad type=\"user\"> \
+                <angle weight=\"0.7\" alpha=\"0.5236\" theta=\"1.5707963\" />\
+                <angle weight=\"0.3\" alpha=\"1.0472\" theta=\"1.5707963\" />\
+            </ang_quad>";
+            
+        this->make_angquad( input );
+    }
+};
+
+TEST_FIXTURE( UserQuad, user ) {
+
+    CHECK_EQUAL( 0.7, ang_quad[0].weight );
+    CHECK_EQUAL( 0.3, ang_quad[1].weight );
+
+    CHECK_EQUAL( 0.7, ang_quad[2].weight );
+    CHECK_EQUAL( 0.3, ang_quad[3].weight );
+
+}
    
 TEST_FIXTURE( LevelSymmetric_4, general )
 {

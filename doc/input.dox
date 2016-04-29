@@ -84,6 +84,12 @@ quadrature to be used. The types of quadrature currently supported are:
  quadrature for the polar angles
  - <tt>cy|chebychev-yamamoto</tt>: A product quadrature, using Chebychev for the
  azimuthal angles and the Yamamoto quadrature for the polar angles.
+ - <tt>user</tt>: User-specified angles. A number of <tt><angle /></tt> tags may
+   be specified by hand, each specifying a direction in the first octant and
+   corresponding weight. Direction may be specified be either the direction
+   cosines or by polar and azimuthal angles, but not both. Angles may not lie
+   directly on any of the axes, but may be arbitrarily close (in case you are
+   trying to model a beam or something).
 
 Examples of each are given below:
 
@@ -98,6 +104,13 @@ octant -->
 <!-- Chebychev-Yamamoto quadrature with 12 azimuthal angles and 3 polar angles
 per octant -->
 <ang_quad type="cy" n_azimuthal="12" n_polar="3" />
+
+<!-- User-defined quadrature -->
+<ang_quad type="user">
+    <angle ox="0.800808" oy="0.159291" oz="0.57735" weight="0.3125" />
+    <angle alpha="0.78539816" theta="0.95531644"  weight="0.375" />
+    <angle ox="0.159291" oy="0.800808" oz="0.57735" weight="0.3125" />
+</ang_quad>
 \endcode
 
 \note The angular quadrature tag is nominally specified as a
