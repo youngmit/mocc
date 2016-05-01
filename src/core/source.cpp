@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <iostream>
 
+#include "pugixml.hpp"
+
 #include "core/error.hpp"
 #include "core/constants.hpp"
 

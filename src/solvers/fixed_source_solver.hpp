@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include "pugixml.hpp"
 
 #include "core/core_mesh.hpp"
 #include "core/h5file.hpp"
+#include "core/pugifwd.hpp"
 #include "core/source.hpp"
 #include "core/transport_sweeper.hpp"
 

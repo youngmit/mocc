@@ -16,6 +16,8 @@
 
 #include "pin_mesh_base.hpp"
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 
 namespace mocc {

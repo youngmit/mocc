@@ -16,12 +16,12 @@
 
 #pragma once
 
-#include "pugixml.hpp"
 #include <blitz/array.h>
 
 #include "core/angular_quadrature.hpp"
 #include "core/global_config.hpp"
 #include "core/output_interface.hpp"
+#include "core/pugifwd.hpp"
 
 #include "sn/sn_sweeper_variant.hpp"
 

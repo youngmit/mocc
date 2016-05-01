@@ -18,6 +18,8 @@
 
 #include <iomanip>
 
+#include "pugixml.hpp"
+
 #include "core/files.hpp"
 #include "core/string_utils.hpp"
 

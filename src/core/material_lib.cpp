@@ -22,6 +22,8 @@
 #include <sstream>
 #include <vector>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 #include "files.hpp"
 #include "material.hpp"

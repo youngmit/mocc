@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "pugixml.hpp"
-
+#include "pugifwd.hpp"
 #include "solver.hpp"
 
 namespace mocc {

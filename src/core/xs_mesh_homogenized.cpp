@@ -20,6 +20,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "pugixml.hpp"
+
 #include "files.hpp"
 #include "h5file.hpp"
 #include "string_utils.hpp"

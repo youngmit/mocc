@@ -18,11 +18,10 @@
 
 #include <string>
 
-#include "pugixml.hpp"
-
 #include "global_config.hpp"
 #include "geom.hpp"
 #include "position.hpp"
+#include "pugifwd.hpp"
 
 namespace mocc {
     /**

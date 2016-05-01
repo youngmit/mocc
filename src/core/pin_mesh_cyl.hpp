@@ -19,10 +19,9 @@
 #include <string>
 #include <vector>
 
-#include "pugixml.hpp"
-
-#include "global_config.hpp"
-#include "pin_mesh_base.hpp"
+#include "core/global_config.hpp"
+#include "core/pin_mesh_base.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     class PinMesh_Cyl : public PinMesh {

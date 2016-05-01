@@ -23,6 +23,8 @@
 #include <sstream>
 #include <string>
 
+#include "pugixml.hpp"
+
 #include "core/constants.hpp"
 #include "core/error.hpp"
 #include "core/files.hpp"

@@ -18,12 +18,11 @@
 
 #include <iosfwd>
 
-#include "pugixml.hpp"
-
 #include "core/eigen_interface.hpp"
+#include "core/cmfd.hpp"
 #include "core/core_mesh.hpp"
 #include "core/h5file.hpp"
-#include "core/cmfd.hpp"
+#include "core/pugifwd.hpp"
 #include "core/transport_sweeper.hpp"
 
 #include "fixed_source_solver.hpp"

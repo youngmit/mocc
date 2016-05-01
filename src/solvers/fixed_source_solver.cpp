@@ -18,6 +18,8 @@
 
 #include <iostream>
 
+#include "pugixml.hpp"
+
 #include "transport_sweeper_factory.hpp"
 
 #include "core/error.hpp"

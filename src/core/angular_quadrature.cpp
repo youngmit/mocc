@@ -21,6 +21,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include "pugixml.hpp"
+
 #include "core/angular_quadrature_user.hpp"
 #include "core/constants.hpp"
 #include "core/error.hpp"

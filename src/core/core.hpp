@@ -21,11 +21,10 @@
 #include <map>
 #include <vector>
 
-#include "pugixml.hpp"
-
 #include "assembly.hpp"
-#include "geom.hpp"
 #include "constants.hpp"
+#include "geom.hpp"
+#include "pugifwd.hpp"
 
 namespace mocc {
     class Core {

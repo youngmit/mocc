@@ -18,15 +18,15 @@
 #include <string>
 #include <vector>
 
-#include "pugixml.hpp"
-
-#include "geom.hpp"
-#include "pin_mesh_base.hpp"
+#include "core/geom.hpp"
+#include "core/pin_mesh_base.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     class PinMesh_Rect: public PinMesh{
     public:
         PinMesh_Rect(const pugi::xml_node &input);
+
         int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
                 VecI &reg ) const;
 

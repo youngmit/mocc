@@ -20,6 +20,8 @@
 #include <fstream>
 #include <iomanip>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 #include "files.hpp"
 #include "moc_current_worker.hpp"

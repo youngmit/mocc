@@ -21,6 +21,8 @@
 #include <sstream>
 #include <string>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 
 namespace mocc {

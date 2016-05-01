@@ -20,12 +20,11 @@
 #include <memory>
 #include <vector>
 
-#include "pugixml.hpp"
-
 #include "core/angle.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/core_mesh.hpp"
 #include "core/geom.hpp"
+#include "core/pugifwd.hpp"
 
 #include "ray.hpp"
 

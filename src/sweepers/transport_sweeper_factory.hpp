@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "pugixml.hpp"
-
+#include "pugifwd.hpp"
 #include "transport_sweeper.hpp"
 
 namespace mocc {

@@ -16,17 +16,17 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <map>
 #include <iosfwd>
+#include <memory>
+#include <map>
+#include <vector>
 
-#include "pugixml.hpp"
 
-#include "pin.hpp"
-#include "geom.hpp"
-#include "pin_mesh_base.hpp"
-#include "global_config.hpp"
+#include "core/geom.hpp"
+#include "core/global_config.hpp"
+#include "core/pin.hpp"
+#include "core/pin_mesh_base.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     class Lattice {

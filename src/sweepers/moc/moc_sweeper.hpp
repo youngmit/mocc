@@ -18,8 +18,6 @@
 
 #include <omp.h>
 
-#include "pugixml.hpp"
-
 #include "moc/ray_data.hpp"
 
 #include "core/angular_quadrature.hpp"
@@ -28,6 +26,7 @@
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
 #include "core/exponential.hpp"
+#include "core/pugifwd.hpp"
 #include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/xs_mesh.hpp"

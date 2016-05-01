@@ -20,6 +20,8 @@
 #include <memory>
 #include <string>
 
+#include "pugixml.hpp"
+
 #include "core/core_mesh.hpp"
 #include "core/timers.hpp"
 

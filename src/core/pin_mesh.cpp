@@ -19,8 +19,10 @@
 
 #include "pin_mesh.hpp"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
+
+#include "pugixml.hpp"
 
 #include "error.hpp"
 #include "files.hpp"

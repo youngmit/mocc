@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include "pugixml.hpp"
+
 #include "source_isotropic.hpp"
 #include "string_utils.hpp"
 
@@ -28,8 +30,8 @@ enum  class ScatteringTreatment {
 };
 
 namespace mocc {
-    UP_Source_t SourceFactory( const pugi::xml_node &input, 
-        int n_reg, const XSMesh *xs_mesh, const ArrayB2 &flux )
+    UP_Source_t SourceFactory( const pugi::xml_node &input, int n_reg,
+            const XSMesh *xs_mesh, const ArrayB2 &flux )
     {
         if( input.empty() ) {
             throw EXCEPT("No input specified for <source>.");

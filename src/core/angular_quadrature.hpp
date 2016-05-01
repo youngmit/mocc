@@ -20,11 +20,10 @@
 #include <iosfwd>
 #include <vector>
 
-#include "pugixml.hpp"
-
 #include "angle.hpp"
 #include "global_config.hpp"
 #include "output_interface.hpp"
+#include "pugifwd.hpp"
 
 namespace mocc {
 

@@ -19,16 +19,14 @@
 #include <cassert>
 #include <memory>
 
-#include "pugixml.hpp"
-
-#include "blitz_typedefs.hpp"
-#include "constants.hpp"
-#include "global_config.hpp"
-#include "mesh.hpp"
-#include "output_interface.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
+#include "core/output_interface.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
-
     /**
      * This class provides a storage scheme for the correction factors needed to
      * perform corrected diamond difference. The CDD Sn and MoC sweepers must be

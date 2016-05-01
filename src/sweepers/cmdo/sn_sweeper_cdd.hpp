@@ -18,11 +18,11 @@
 
 #include <memory>
 
-#include "pugixml.hpp"
 
 #include "core/core_mesh.hpp"
 #include "core/exponential.hpp"
 #include "core/files.hpp"
+#include "core/pugifwd.hpp"
 
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"

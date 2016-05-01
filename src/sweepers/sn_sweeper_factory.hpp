@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "pugixml.hpp"
+#include "core/core_mesh.hpp"
+#include "core/pugifwd.hpp"
 
-#include "core_mesh.hpp"
 #include "sn/sn_sweeper.hpp"
 
 namespace mocc {

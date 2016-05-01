@@ -16,10 +16,9 @@
 
 #pragma once
 
-#include "pugixml.hpp"
-
 #include "core/angular_quadrature.hpp"
 #include "core/boundary_condition.hpp"
+#include "core/pugifwd.hpp"
 #include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"

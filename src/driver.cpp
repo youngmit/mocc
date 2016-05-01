@@ -25,6 +25,8 @@
 #include <omp.h>
 #include <sstream>
 
+#include "pugixml.hpp"
+
 #include "core/core_mesh.hpp"
 #include "core/error.hpp"
 #include "core/files.hpp"

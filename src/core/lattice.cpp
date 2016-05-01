@@ -21,6 +21,8 @@
 #include <map>
 #include <string>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 #include "pin.hpp"
 #include "string_utils.hpp"

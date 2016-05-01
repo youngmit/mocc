@@ -18,12 +18,10 @@
 
 #include <iomanip>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 #include "files.hpp"
-
-using std::endl;
-using std::cout;
-using std::cin;
 
 const static int out_w = 14;
 
@@ -103,7 +101,6 @@ namespace mocc{
         // initialize the fixed source solver and calculation the initial
         // fission source
         fss_.initialize();
-        
 
         // Hand a reference to the fission source to the fixed source solver
         fss_.set_fission_source(&fission_source_);
@@ -113,11 +110,11 @@ namespace mocc{
 
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
 
-        cout << std::setw(out_w) << "Time"
-             << std::setw(out_w) << "Iter."
-             << std::setw(out_w) << "k"
-             << std::setw(out_w) << "k error"
-             << std::setw(out_w) << "psi error" << endl;
+        LogScreen << std::setw(out_w) << "Time"
+                  << std::setw(out_w) << "Iter."
+                  << std::setw(out_w) << "k"
+                  << std::setw(out_w) << "k error"
+                  << std::setw(out_w) << "psi error" << std::endl;
 
         for( size_t n_iterations=0; n_iterations < max_iterations_;
                 n_iterations++ )
@@ -144,7 +141,7 @@ namespace mocc{
             this->print( n_iterations+1, convergence_.back() );
 
             if( n_iterations >= max_iterations_ ) {
-                std::cout << "Maximum number of iterations reached!"
+                LogScreen << "Maximum number of iterations reached!"
                           << std::endl;
                 break;
             }
@@ -177,12 +174,14 @@ namespace mocc{
         // update estimate for k
         keff_prev_ = keff_;
         keff_ = keff_ * tfis1/tfis2;
+
+        return;
     }
 
     void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
         LogScreen << std::setw(out_w) << std::fixed << std::setprecision(5)
              << RootTimer.time() << std::setw(out_w)
-             << iter << conv << endl;
+             << iter << conv << std::endl;
         return;
     }
 

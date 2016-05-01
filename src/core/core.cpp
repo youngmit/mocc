@@ -19,6 +19,8 @@
 #include <iostream>
 #include <string>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 #include "string_utils.hpp"
 

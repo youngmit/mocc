@@ -18,12 +18,11 @@
 
 #include <memory>
 
-#include "pugixml.hpp"
-
-#include "blitz_typedefs.hpp"
-#include "eigen_interface.hpp"
-#include "h5file.hpp"
-#include "xs_mesh.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/eigen_interface.hpp"
+#include "core/h5file.hpp"
+#include "core/pugifwd.hpp"
+#include "core/xs_mesh.hpp"
 
 namespace mocc {
     /**

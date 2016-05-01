@@ -16,15 +16,14 @@
 
 #pragma once
 
-#include <map>
-#include <vector>
-#include <memory>
 #include <cassert>
+#include <map>
+#include <memory>
+#include <vector>
 
-#include "pugixml.hpp"
-
-#include "lattice.hpp"
 #include "global_config.hpp"
+#include "lattice.hpp"
+#include "pugifwd.hpp"
 
 namespace mocc {
     class Assembly {
