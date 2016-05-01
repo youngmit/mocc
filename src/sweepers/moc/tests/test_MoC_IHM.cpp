@@ -41,7 +41,7 @@ using moc::MoCSweeper;
 // "right" answer to compare against.
 //
 
-std::string ihm_xml = 
+std::string ihm_xml =
 "<mesh id=\"1\" type=\"rect\" pitch=\"1.26\">"
 "<sub_x>3</sub_x>"
 "<sub_y>3</sub_y>"
@@ -84,7 +84,7 @@ pugi::xml_document xml_doc;
 class TestMoCSweeper : public MoCSweeper {
 public:
     TestMoCSweeper( const pugi::xml_node &input, const CoreMesh &mesh ):
-        MoCSweeper( input, mesh ) 
+        MoCSweeper( input, mesh )
     {
         return;
     }

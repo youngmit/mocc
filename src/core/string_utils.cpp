@@ -65,7 +65,7 @@ std::vector<T> explode_string(std::string data) {
     };
 
     // first, make sure there are no non-[numerals|whitespace]
-    bool good = std::find_if(data.begin(), data.end(), is_invalid_char) 
+    bool good = std::find_if(data.begin(), data.end(), is_invalid_char)
         == data.end();
     if(!good) {
         throw EXCEPT("Malformed data");
@@ -73,7 +73,7 @@ std::vector<T> explode_string(std::string data) {
 
 
     std::vector<T> out;
-    
+
     // Store the string as a stream and try to read all entries
     std::stringstream inBuf(data);
     T i;

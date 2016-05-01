@@ -50,7 +50,7 @@ TEST( xsmeshhom ) {
         H5Node h5f( "xsmesh_2.h5", H5Access::WRITE );
         xs_mesh.output(h5f);
     }
-    
+
 }
 
 // Tests some of the error checking involved in constructing an XSMeshHom from
@@ -69,7 +69,7 @@ TEST( fromdata_fail ) {
     {
         cout << "invalid" << endl;
         pugi::xml_document xsmesh_xml;
-        std::string xml = 
+        std::string xml =
             "<data file=\"xsmesh_1.h5\" top_plane=\"-1\"/>";
         xsmesh_xml.load_string( xml.c_str() );
 
@@ -78,7 +78,7 @@ TEST( fromdata_fail ) {
     {
         cout << "out of order" << endl;
         pugi::xml_document xsmesh_xml;
-        std::string xml = 
+        std::string xml =
             "<data file=\"xsmesh_1.h5\" top_plane=\"5\"/>"
             "<data file=\"xsmesh_2.h5\" top_plane=\"1\"/>";
         xsmesh_xml.load_string( xml.c_str() );
@@ -101,7 +101,7 @@ TEST( fromdata )
     CoreMesh mesh( geom_xml );
 
     pugi::xml_document xsmesh_xml;
-    std::string xml = 
+    std::string xml =
         "<data file=\"xsmesh_2.h5\" bottom_plane=\"0\" top_plane=\"7\"/>"
         "<data file=\"xsmesh_1.h5\" bottom_plane=\"8\" top_plane=\"11\"/>"
         "";

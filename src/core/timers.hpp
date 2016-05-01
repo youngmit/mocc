@@ -112,7 +112,7 @@ namespace mocc {
             children_.emplace( name, Timer(name) );
             return children_.at(name);
         }
-        
+
         /**
          * \brief Create and return a new child \ref Timer, possibly starting it
          * automatically

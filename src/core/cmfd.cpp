@@ -153,12 +153,12 @@ namespace mocc {
         real_t tfis = this->total_fission();
 
         auto flags = LogScreen.flags();
-        LogScreen << "CMFD Converging to " 
-                  << std::scientific << k_tol_ << " " 
+        LogScreen << "CMFD Converging to "
+                  << std::scientific << k_tol_ << " "
                   << std::scientific << psi_tol_ << std::endl;
         LogScreen.flags(flags);
 
-        int iter = 0; 
+        int iter = 0;
         real_t psi_err = 1.0;
         while( true ) {
             iter++;
@@ -423,7 +423,7 @@ namespace mocc {
 
     void CMFD::print( int iter, real_t k, real_t k_err, real_t psi_err ) {
         auto flags = LogScreen.flags();
-        LogScreen << "       " 
+        LogScreen << "       "
             << std::setprecision(5) << std::setw(6) << std::fixed
                     << RootTimer.time() << " "
             << iter << " "

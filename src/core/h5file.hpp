@@ -82,7 +82,7 @@ namespace mocc {
          * \brief Return an \ref H5Node pointing to the path specified.
          */
         H5Node operator[]( std::string path ) {
-            std::shared_ptr<H5::CommonFG> 
+            std::shared_ptr<H5::CommonFG>
                 g(new H5::Group(node_->openGroup(path)));
             return H5Node( g, access_ );
         }
@@ -185,7 +185,7 @@ namespace mocc {
 
         /**
          * \brief Read data from an \ref H5Node into a 1-D Blitz array
-         * 
+         *
          * Dimensionality of the data in the HDF5 file is allowed to be more
          * than 1-D, in which case the data is copied linearly into the 1-D
          * Blitz array. This is not an overload of the regular \c read() method
@@ -229,7 +229,7 @@ namespace mocc {
                 msg << "Failed to access dataset: " << path;
                 throw EXCEPT(msg.str().c_str());
             }
-                
+
             if( (int)ndim != data.dimensions() ) {
             }
 
@@ -250,7 +250,7 @@ namespace mocc {
                     }
                     data.resize(shape);
                 }
-                
+
             } else {
                 if( data.dimensions() == 1 ) {
                     if( (int)data.size() != h5size ) {

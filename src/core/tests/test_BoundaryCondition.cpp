@@ -89,7 +89,7 @@ class BCIrregularFixture {
 TEST_FIXTURE( BCIrregularFixture, test_bc )
 {
     CHECK_EQUAL( 192, in.size() );
-    
+
     in.initialize_scalar( 7.345 );
     for( int ig=0; ig<ngroup; ig++ ) {
         for( int ia=0; ia<nang; ia++ ) {

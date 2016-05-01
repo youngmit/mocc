@@ -82,5 +82,5 @@ namespace mocc {
         return os;
     }
 
-    
+
 }

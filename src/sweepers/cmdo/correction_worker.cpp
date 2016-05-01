@@ -142,7 +142,7 @@ namespace mocc {
                     real_t ay = vol_sum_(ic*2+1)/(psi_yl + psi_yr);
 
                     real_t b = sigt_sum_(ic*2+1)/xstr;
-                    
+
                     real_t e = ax - corrections_->alpha( icc, iang2, group,
                             Normal::X_NORM );
                     residual_[0] += e*e;

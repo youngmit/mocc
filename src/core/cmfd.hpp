@@ -37,7 +37,7 @@ namespace mocc {
         void solve( real_t &k, const ArrayB2 &flux );
 
         /**
-         * \brief Return a pointer to the coarse data. 
+         * \brief Return a pointer to the coarse data.
          *
          * This is used to couple sweepers and other objects that need access to
          * the coarse data to the CMFD solver.

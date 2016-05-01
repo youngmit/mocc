@@ -279,7 +279,7 @@ namespace mocc { namespace moc {
         assert((int)tl.size() == n_reg_);
 
         flux_1g_.reference( flux_( blitz::Range::all(), group ) );
-        
+
         /// \todo for now, this is using a pretty invasive direct access the the
         /// source. Might be good to do as a call to auxiliary() instead
         if( allow_splitting_ ) {
@@ -290,7 +290,7 @@ namespace mocc { namespace moc {
                 /// \todo once we get this working, clean this branch up
                 if( s < 0.0 ) {
                     n_split++;
-                    split_(ireg) = -s/flux_1g_(ireg); 
+                    split_(ireg) = -s/flux_1g_(ireg);
                     (*source_)[ireg] = 0.0;
                 } else {
                     (*source_)[ireg] = s;

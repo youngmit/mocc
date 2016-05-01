@@ -15,7 +15,7 @@
 */
 
 /**
- * \file 
+ * \file
  * This file contains forward declarations for the classes that we use from the
  * pugixml library. This has the potential to speed up compilation times for
  * some files

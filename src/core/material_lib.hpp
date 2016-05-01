@@ -63,7 +63,7 @@ namespace mocc {
         const MaterialVec& materials() const {
             return lib_materials_;
         }
-        
+
         /**
          * Return the index of the material given a material ID
          */

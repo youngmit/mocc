@@ -105,9 +105,9 @@ namespace mocc { namespace sn {
 
         // Gauss-Seidel BC update?
         bool gs_boundary_;
-        
+
         // Protected methods
-        /** 
+        /**
          * \brief Grab data (XS, etc.) from one or more external files
          */
         void add_data( const pugi::xml_node &input );

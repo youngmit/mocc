@@ -73,7 +73,7 @@ void generate_output() {
     outfile.write("git_sha1", std::string(g_GIT_SHA1));
 
     if( Warnings.size() > 0 ) {
-        std::cout << "There were " << Warnings.size() << " warnings:" 
+        std::cout << "There were " << Warnings.size() << " warnings:"
                   << std::endl;
         for( const auto &warning: Warnings ) {
             std::cout << "\t" << warning << std::endl;
@@ -97,7 +97,7 @@ void int_handler(int p) {
 
 /**
  * This does the whole shebang: open and parse the input file pointed to by \p
- * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref 
+ * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref
  * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
  *
  * To give some rhyme to the reason for why this isn't just \c main(): This is
@@ -112,7 +112,7 @@ int run( std::string file ) {
 
     try {
         RootTimer.tic();
-        
+
         // Set up an input processor
         input_proc.reset( new InputProc(file) );
 

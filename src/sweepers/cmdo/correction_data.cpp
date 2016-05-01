@@ -65,7 +65,7 @@ namespace mocc {
                 if(data.attribute("file").empty()) {
                     throw EXCEPT("No file specified.");
                 }
-                
+
                 for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                     if( plane_data[ip] ) {
                         std::stringstream msg;
@@ -109,11 +109,11 @@ namespace mocc {
                         for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                             int stt = mesh_->plane_cell_begin(ip);
                             int stp = mesh_->plane_cell_end(ip)-1;
-                            alpha_(ig, iang, blitz::Range(stt, stp), 
+                            alpha_(ig, iang, blitz::Range(stt, stp),
                                     (int)Normal::X_NORM) = slice;
                         }
                     }
-                    
+
                     {
                         std::stringstream path;
                         path << "/alpha_y/" << setfill('0') << setw(3) << ig <<
@@ -122,7 +122,7 @@ namespace mocc {
                         for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                             int stt = mesh_->plane_cell_begin(ip);
                             int stp = mesh_->plane_cell_end(ip)-1;
-                            alpha_(ig, iang, blitz::Range(stt, stp), 
+                            alpha_(ig, iang, blitz::Range(stt, stp),
                                     (int)Normal::Y_NORM) = slice;
                         }
                     }
@@ -163,7 +163,7 @@ namespace mocc {
                 {
                     slice = beta_(g, a, blitz::Range::all());
                     std::stringstream setname;
-                    setname << "/beta/" << setfill('0') << setw(3) << g 
+                    setname << "/beta/" << setfill('0') << setw(3) << g
                             << "_"      << setfill('0') << setw(3) << a;
                     file.write( setname.str(), slice, dims );
                 }

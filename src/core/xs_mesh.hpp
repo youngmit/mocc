@@ -98,7 +98,7 @@ namespace mocc {
             auto test_slice(xstr_(0, blitz::Range::all()));
             assert(test_slice.isStorageContiguous());
         }
-        
+
         size_t ng_;
 
         // Vector of xs mesh regions

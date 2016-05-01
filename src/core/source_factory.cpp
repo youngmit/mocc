@@ -38,7 +38,7 @@ namespace mocc {
         }
 
         UP_Source_t source;
-    
+
         // Check scattering treatment
         ScatteringTreatment scat = ScatteringTreatment::INVALID;
         {
@@ -47,7 +47,7 @@ namespace mocc {
                 throw EXCEPT("No scattering treatment specified in <source />");
             }
             sanitize(in_str);
-            
+
             if( in_str == "p0" ) {
                 scat = ScatteringTreatment::P0;
             } else if ( in_str == "pn" ) {

@@ -95,7 +95,7 @@ namespace mocc {
             if( theta <= -HPI || theta >= HPI ) {
                 throw EXCEPT("Invalid polar angle.");
             }
-            if( (alpha < 0.0) || (alpha >= TWOPI) || (alpha == 0.0) || 
+            if( (alpha < 0.0) || (alpha >= TWOPI) || (alpha == 0.0) ||
                     (alpha == HPI) || (alpha == PI) || (alpha == 3.0*HPI) ) {
                 throw EXCEPT("Invalid azimuthal angle.");
             }

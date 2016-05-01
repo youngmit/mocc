@@ -94,7 +94,7 @@ namespace mocc {
             LogScreen << iouter << " " << std::setprecision(15) << resid << endl;
 
             if( resid < flux_tol_ ) {
-                LogFile << "Logging multi-group  scalar flux grouped by energy" 
+                LogFile << "Logging multi-group  scalar flux grouped by energy"
                    " group index from Group 1 to group G." << endl;
                 for( int ig=0; ig<sweeper_->n_group(); ig++ ) {
                     LogFile << "Scalar flux for energy group " << ig+1 << " :"
@@ -106,7 +106,7 @@ namespace mocc {
                 break;
             }
         }
-    
+
     }
 
     // Perform a single group sweep

@@ -186,7 +186,7 @@ namespace mocc { namespace sn {
                 x_flux = xf.second;
                 auto yf = bc_out_.get_face( 0, iang, Normal::Y_NORM );
                 y_flux = yf.second;
-                auto zf = bc_out_.get_face( 0, iang, Normal::Z_NORM ); 
+                auto zf = bc_out_.get_face( 0, iang, Normal::Z_NORM );
                 z_flux = zf.second;
                 bc_in_.copy_face( group, iang, Normal::X_NORM, x_flux );
                 bc_in_.copy_face( group, iang, Normal::Y_NORM, y_flux );
@@ -245,7 +245,7 @@ namespace mocc { namespace sn {
 
             return;
         }
-        
+
         /**
          * \brief Generic Sn sweep procedure for 2-D orthogonal mesh.
          *

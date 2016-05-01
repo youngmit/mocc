@@ -30,7 +30,7 @@ using std::endl;
 namespace mocc {
     XSMesh::XSMesh( const CoreMesh& mesh ) {
 
-        LogFile << "Initializing XS Mesh... "; 
+        LogFile << "Initializing XS Mesh... ";
 
         const MaterialLib& mat_lib = mesh.mat_lib();
 
@@ -59,7 +59,7 @@ namespace mocc {
 
         int n_xsreg = fsrs.size();
 
-        
+
         this->allocate_xs(n_xsreg, ng_);
 
         VecI mat_ids(n_xsreg);
@@ -73,10 +73,10 @@ namespace mocc {
             xskf_(imat, blitz::Range::all()) = mat.xskf();
             // Don't calculate removal XS here. Let the XSMeshRegion do that in
             // its constructor
-            
+
             imat++;
         }
-        
+
         // Preallocate space for the regions. Saves on lots of copies for large
         // xsmeshes.
         regions_.reserve(fsrs.size());

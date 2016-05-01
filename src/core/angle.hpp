@@ -120,7 +120,7 @@ namespace mocc {
 
         /**
          * \brief Return an Angle, which is the reflection of the current angle
-         * into the desired octant. 
+         * into the desired octant.
          *
          * \param octant an integer in [1,8], specifying the desired octant.
          */

@@ -35,7 +35,7 @@ namespace mocc { namespace cmdo {
     using namespace sn;
     typedef std::pair<std::unique_ptr<SnSweeper>,
             std::shared_ptr<CorrectionData>> CDDPair_t;
-    
+
     /**
      * An extension of \ref sn::CellWorker to propagate flux through an
      * orthogonal mesh region with the corrected diamond difference (CDD)
@@ -142,7 +142,7 @@ namespace mocc { namespace cmdo {
             real_t ay = corrections_->alpha( i, iang_alpha_, group_,
                     Normal::Y_NORM);
             real_t b = corrections_->beta( i, iang_alpha_, group_ );
-            
+
             real_t gx = ax*b;
             real_t gy = ay*b;
 

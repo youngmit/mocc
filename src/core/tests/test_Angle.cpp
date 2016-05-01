@@ -157,7 +157,7 @@ TEST(testXMLAngle) {
         CHECK_CLOSE(0.707106781186548, a.oz, 0.00000000001);
         CHECK_EQUAL(0.1, a.weight);
     }
-    
+
 }
 
 int main() {

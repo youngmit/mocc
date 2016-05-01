@@ -107,7 +107,7 @@ namespace mocc {
 
         // Read in the radial subdivisions
         {
-            sub_rad_ = explode_string<int>( 
+            sub_rad_ = explode_string<int>(
                     input.child("sub_radii").child_value());
 
             // Make sure we have the same number of radial subdivs as rings

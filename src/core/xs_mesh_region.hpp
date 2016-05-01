@@ -25,7 +25,7 @@ namespace mocc {
     friend class XSMesh;
     public:
         XSMeshRegion(){ }
-        XSMeshRegion( const VecI &fsrs, real_t *xstr, 
+        XSMeshRegion( const VecI &fsrs, real_t *xstr,
                                         real_t *xsnf,
                                         real_t *xsch,
                                         real_t *xsf,
@@ -99,7 +99,7 @@ namespace mocc {
         /**
          * \brief Update the cross sections referenced by the \ref XSMeshRegion
          */
-        void update( const VecF &xstr, const VecF &xsnf, const VecF &xsch, 
+        void update( const VecF &xstr, const VecF &xsnf, const VecF &xsch,
                 const VecF &xskf, const ScatteringMatrix &xssc )
         {
             for( int ig=0; ig<(int)xssc.n_group(); ig++ ) {
@@ -125,22 +125,22 @@ namespace mocc {
                 return false;
             }
             for( int ig=0; ig<this->n_group(); ig++ ) {
-                if( !fp_equiv_ulp(this->xsmactr(ig), 
+                if( !fp_equiv_ulp(this->xsmactr(ig),
                                   other.xsmactr(ig)) )
                 {
                     return false;
                 }
-                if( !fp_equiv_ulp(this->xsmacnf(ig), 
+                if( !fp_equiv_ulp(this->xsmacnf(ig),
                                   other.xsmacnf(ig)) )
                 {
                     return false;
                 }
-                if( !fp_equiv_ulp(this->xsmackf(ig), 
+                if( !fp_equiv_ulp(this->xsmackf(ig),
                                   other.xsmackf(ig)) )
                 {
                     return false;
                 }
-                if( !fp_equiv_ulp(this->xsmacrm(ig), 
+                if( !fp_equiv_ulp(this->xsmacrm(ig),
                                   other.xsmacrm(ig)) )
                 {
                     return false;

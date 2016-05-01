@@ -212,7 +212,7 @@ namespace mocc {
          */
         real_t cell_thickness( size_t cell, Normal norm ) const {
             assert( cell < this->n_pin() );
-            assert( (norm == Normal::X_NORM) || (norm == Normal::Y_NORM) || 
+            assert( (norm == Normal::X_NORM) || (norm == Normal::Y_NORM) ||
                     (norm == Normal::Z_NORM) );
             auto pos = this->coarse_position( cell );
             real_t h = 0;

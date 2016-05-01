@@ -86,7 +86,7 @@ namespace mocc { namespace cmdo {
             cmdo::SnSweeper_CDD<CellWorker_CDD_FW> *swp =
                 new cmdo::SnSweeper_CDD<cmdo::CellWorker_CDD_FW>( input,
                                                                   mesh );
-            
+
             corrections = std::make_shared<CorrectionData>(
                 mesh, swp->ang_quad().ndir()/2,
                 swp->n_group());

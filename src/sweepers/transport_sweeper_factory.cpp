@@ -30,7 +30,7 @@ namespace mocc {
     UP_Sweeper_t TransportSweeperFactory( const pugi::xml_node &input,
             const CoreMesh& mesh ) {
 
-        LogFile << "Generating transport sweeper..." << std::endl; 
+        LogFile << "Generating transport sweeper..." << std::endl;
 
         UP_Sweeper_t sweeper;
 

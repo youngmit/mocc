@@ -92,7 +92,7 @@ namespace mocc {
          * Indexing should be [to group][from group]
          */
         ScatteringMatrix( const std::vector<VecF> &scat);
-        
+
         /**
          * Construct a scattering matrix using a 2-dimensional Blitz++ array.
          * This full, dense representation of the scattering matrix will be

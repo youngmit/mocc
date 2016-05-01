@@ -136,7 +136,7 @@ namespace mocc { namespace cmdo {
             sn_xs_mesh_->update();
             sn_xs_mesh_->output( node );
         }
-        
+
         auto residual_group = node.create_group("correction_residual");
 
         for( int ig=0; ig<n_group_; ig++ ) {

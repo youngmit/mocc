@@ -46,19 +46,19 @@ public:
         sb2_ = sb2;
         return;
     }
-    
-private:    
+
+private:
     virtual int sync()
     {
         int const r1 = sb1_->pubsync();
         int const r2 = sb2_->pubsync();
         return r1 == 0 && r2 == 0 ? 0 : -1;
     }
-    
+
     virtual int_type overflow(int_type c)
     {
         int_type const eof = traits::eof();
-        
+
         if (traits::eq_int_type(c, eof))
         {
             return traits::not_eof(c);
@@ -68,14 +68,14 @@ private:
             char_type const ch = traits::to_char_type(c);
             int_type const r1 = sb1_->sputc(ch);
             int_type const r2 = sb2_->sputc(ch);
-            
+
             return
                 traits::eq_int_type(r1, eof) ||
                 traits::eq_int_type(r2, eof) ? eof : c;
         }
     }
 
-    
+
 private:
     std::basic_streambuf<char_type, traits> * sb1_;
     std::basic_streambuf<char_type, traits> * sb2_;

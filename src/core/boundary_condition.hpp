@@ -24,7 +24,7 @@
 #include "global_config.hpp"
 
 namespace mocc {
-    
+
     typedef std::array<int, 3> BC_Size_t;
     typedef std::array<Boundary, 6> BC_Type_t;
 
@@ -75,7 +75,7 @@ namespace mocc {
          * \param n_bc a vector containing the number of BCs needed for each
          * angle.
          */
-        BoundaryCondition( int n_group, const AngularQuadrature &angquad, 
+        BoundaryCondition( int n_group, const AngularQuadrature &angquad,
                 BC_Type_t bc, std::vector< BC_Size_t > n_bc );
 
         /**
@@ -99,7 +99,7 @@ namespace mocc {
         /**
          * \brief Initialize the boundary conditions with an energy spectrum.
          */
-        void initialize_spectrum( const ArrayB1 &spectrum ); 
+        void initialize_spectrum( const ArrayB1 &spectrum );
 
         /**
          * \brief Return a const pointer to the beginning of a boundary
@@ -142,7 +142,7 @@ namespace mocc {
             int off = bc_per_group_*group + offset_(angle, 0);
             return BVal_const_t( size, &data_(off) );
         }
-        
+
         /**
          * \brief Return a pointer to the beginning of the boundary values for
          * the given group and angle. Includes all faces
@@ -184,7 +184,7 @@ namespace mocc {
          * on the various domain boundary conditions, corresponding boundary
          * values may be updated on \c this
          */
-        void update( int group, int angle, const BoundaryCondition &out ); 
+        void update( int group, int angle, const BoundaryCondition &out );
 
         friend std::ostream& operator<<(std::ostream &os,
                 const BoundaryCondition &bc );
@@ -198,13 +198,13 @@ namespace mocc {
 
         // Boundary conditions
         std::array<Boundary, 6> bc_;
-        
+
         // BC_Size_t for each angle, size_ is the same for all energy groups
         std::vector<BC_Size_t> size_;
 
         // Angular quadrature used to do angle index reflections
         const AngularQuadrature &ang_quad_;
-        
+
         // Number of BCs per energy groups. Essentially the sum of the BCs on
         // all faces for all angles
         int bc_per_group_;

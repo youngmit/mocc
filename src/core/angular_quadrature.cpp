@@ -46,7 +46,7 @@ namespace mocc {
             std::cerr << input.name() << std::endl;
             throw EXCEPT("Input is not an <ang_quad/> tag");
         }
-        
+
         //extract the quadrature order, if present
         n_azimuthal_ = input.attribute("n_azimuthal").as_int(-1);
         n_polar_     = input.attribute("n_polar").as_int(-1);
@@ -118,7 +118,7 @@ namespace mocc {
         input.read("ang_quad/alpha", alpha);
         input.read("ang_quad/theta", theta);
 
-        if( (ox.size() != oy.size()) || (ox.size() != oz.size()) || 
+        if( (ox.size() != oy.size()) || (ox.size() != oz.size()) ||
                 (ox.size() != weights.size()) ) {
             throw EXCEPT("Incompatible data sizes");
         }
@@ -142,7 +142,7 @@ namespace mocc {
         }
 
         type_ = QuadratureType::IMPORT;
-        
+
         return;
     }
 
@@ -177,7 +177,7 @@ namespace mocc {
         VecF oy;    oy.reserve(this->ndir());
         VecF oz;    oz.reserve(this->ndir());
         VecF w;     w.reserve(this->ndir());
-        
+
         for( auto a: angles_ ) {
             alpha.push_back(a.alpha);
             theta.push_back(a.theta);

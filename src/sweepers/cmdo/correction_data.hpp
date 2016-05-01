@@ -82,7 +82,7 @@ namespace mocc {
             return alpha_( group, ang, reg, (int)norm );
         }
 
-        inline const real_t alpha( int reg, int ang, int group, 
+        inline const real_t alpha( int reg, int ang, int group,
                 Normal norm ) const
         {
             return alpha_( group, ang, reg, (int)norm );

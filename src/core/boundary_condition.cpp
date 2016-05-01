@@ -20,7 +20,7 @@
 
 namespace mocc {
 
-    BoundaryCondition::BoundaryCondition( int n_group, 
+    BoundaryCondition::BoundaryCondition( int n_group,
             const AngularQuadrature &angquad,
             BC_Type_t bc, BC_Size_t n_bc ):
         BoundaryCondition( n_group,
@@ -32,8 +32,8 @@ namespace mocc {
         return;
     }
 
-    BoundaryCondition::BoundaryCondition( int n_group, 
-            const AngularQuadrature &angquad, 
+    BoundaryCondition::BoundaryCondition( int n_group,
+            const AngularQuadrature &angquad,
             BC_Type_t bc, std::vector< BC_Size_t > n_bc ):
         n_group_(n_group),
         n_angle_(n_bc.size()),
@@ -41,7 +41,7 @@ namespace mocc {
         size_(n_bc),
         ang_quad_(angquad)
     {
-        assert( (angquad.ndir()   == (int)n_bc.size()) || 
+        assert( (angquad.ndir()   == (int)n_bc.size()) ||
                 (angquad.ndir()/2 == (int)n_bc.size()) );
 
         int n_angle = n_bc.size();
@@ -104,7 +104,7 @@ namespace mocc {
                         // we will have to make sure this routine does not
                         // overwrite data_ to ZERO. It might make sense to have
                         // a separate initialization routine that does the
-                        // initialization based on bc_. 
+                        // initialization based on bc_.
                         for( int i=0; i<face_pair.first; i++ ) {
                             face[i] = 2.0/FPI;
                         }
@@ -115,7 +115,7 @@ namespace mocc {
                         // initialize with the prescribed scalar
                         for( int i=0; i<face_pair.first; i++ ) {
                             face[i] = val;
-                        }   
+                        }
                         break;
                     case Boundary::INVALID:
                         break;
@@ -145,7 +145,7 @@ namespace mocc {
         return;
     }
 
-    void BoundaryCondition::update( int group, int angle, 
+    void BoundaryCondition::update( int group, int angle,
             const BoundaryCondition &out ) {
         int group_offset = bc_per_group_*group;
 

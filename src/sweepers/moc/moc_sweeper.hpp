@@ -184,13 +184,13 @@ namespace mocc { namespace moc {
                     Angle ang = ang_quad_[iang];
 
                     // Get the boundary condition storage
-                    const real_t *bc_in_1 = 
+                    const real_t *bc_in_1 =
                         boundary_in.get_boundary( group, iang1 ).second;
-                    real_t *bc_out_1 = 
+                    real_t *bc_out_1 =
                         boundary_out.get_boundary( 0, iang1 ).second;
-                    const real_t *bc_in_2 = 
+                    const real_t *bc_in_2 =
                         boundary_in.get_boundary( group, iang2 ).second;
-                    real_t *bc_out_2 = 
+                    real_t *bc_out_2 =
                         boundary_out.get_boundary( 0, iang2 ).second;
 
                     // Set up the current worker for sweeping this angle

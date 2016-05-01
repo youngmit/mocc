@@ -97,7 +97,7 @@ namespace mocc { namespace cmdo {
          */
         UP_Source_t create_source( const pugi::xml_node &input ) const {
             std::cout << "creating 2d3d source" << std::endl;
-            
+
             auto source = UP_Source_t( new Source_2D3D( moc_sweeper_,
                         *sn_sweeper_ ) );
             return source;
@@ -183,7 +183,7 @@ namespace mocc { namespace cmdo {
         bool expose_sn_;
         // Project Sn flux to fine mesh after Sn sweeps? This is important when
         // no CMFD acceleration is used.
-        bool do_snproject_; 
+        bool do_snproject_;
         // Project MoC flux to Sn after MoC inners?
         bool do_mocproject_;
         // Whether we should replace the sn angular quadrature with the

@@ -28,7 +28,7 @@ using std::endl;
 
 using namespace mocc;
 
-const std::vector<VecF> sc  
+const std::vector<VecF> sc
     {
         {0.3,0.0,0.0,0.0,0.0,0.0,0.0},
         {0.0,0.0,0.0,0.0,0.0,0.0,0.0},
@@ -39,7 +39,7 @@ const std::vector<VecF> sc
         {0.0,0.0,0.0,0.0,0.0,0.0,0.3}
     };
 
-const std::vector<real_t> sc_dense 
+const std::vector<real_t> sc_dense
     {
         0.3,0.0,0.0,0.0,0.0,0.0,0.0,
         0.0,0.0,0.0,0.0,0.0,0.0,0.0,
@@ -84,7 +84,7 @@ TEST( scat_matrix_vecorVecF ) {
     ScatteringMatrix scat_matrix_assigned;
     scat_matrix_assigned = scat_matrix;
     CHECK( scat_matrix_assigned == scat_matrix );
-    
+
     // test real_t self_scat (int group) const
     real_t self_scat_ref[NG];
     int ig = 0;
@@ -92,7 +92,7 @@ TEST( scat_matrix_vecorVecF ) {
         self_scat_ref[ig] = row[ig];
         ig++;
     }
-    
+
     real_t self_scat[NG];
     for( ig=0; ig<NG; ig++ ) {
         self_scat[ig] = scat_matrix.self_scat(ig);
@@ -102,13 +102,13 @@ TEST( scat_matrix_vecorVecF ) {
     for( ig=0; ig<NG; ig++ ) {
         CHECK_CLOSE(self_scat_ref[ig], self_scat[ig], 0.0000000000001 );
     }
-    
-    // test n_group() function 
+
+    // test n_group() function
     CHECK_EQUAL( NG, scat_matrix.n_group() );
-    
+
     // test out(unsigned int ig) const function
     real_t out_scat_ref[NG]={};
-    
+
     for( auto &i : sc) {
         ig = 0;
         for( auto &j : i ) {
@@ -131,13 +131,13 @@ TEST( scat_matrix_vecorVecF ) {
     // followup test of begin() and end() methods of ScatteringRow
     CHECK_CLOSE( 0.3, *(scat_row_3.begin()), 0.0000000000001 );
     CHECK_CLOSE( 0.3, *(scat_row_3.end()-1), 0.0000000000001 );
-    
+
     //test VecF as_vector() member function
-    CHECK( sc_dense == scat_matrix.as_vector() ); 
-    
-    // test operator== 
+    CHECK( sc_dense == scat_matrix.as_vector() );
+
+    // test operator==
     CHECK( scat_matrix_ref == scat_matrix );
-    
+
     // test operator!=
     std::vector<VecF> sc2(sc);
     sc2[1][1]=0.3;
@@ -153,14 +153,14 @@ TEST( scat_matrix_vecorVecF ) {
 TEST( scat_matrix_ArrayB2 ) {
     ScatteringMatrix scat_matrix(vec_to_array(sc));
     // As long as TEST scat_matrix_vectorVecF passed, showing scat_matrix in
-    // both tests are equal to scat_matrix_ref will surfice. 
+    // both tests are equal to scat_matrix_ref will surfice.
     CHECK(scat_matrix_ref==scat_matrix);
 
 }
 
 TEST( vecF_purely_absorbing ) {
     ScatteringMatrix scat_matrix(sc3);
-    
+
     CHECK_CLOSE( 0.0, scat_matrix.to(0)[0], 0.0000000000001 );
 }
 

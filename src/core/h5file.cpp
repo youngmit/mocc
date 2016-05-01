@@ -79,7 +79,7 @@ namespace mocc {
             throw EXCEPT(msg.str());
         }
     }
-    
+
     void H5Node::write( std::string path, const VecF &data ) {
         hsize_t *dims_a = new hsize_t;
         *dims_a = data.size();
@@ -179,7 +179,7 @@ namespace mocc {
             throw EXCEPT(msg.str());
         }
 
-        
+
         return;
     }
 

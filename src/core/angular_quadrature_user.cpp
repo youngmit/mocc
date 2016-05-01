@@ -26,7 +26,7 @@ namespace mocc {
 
         // Count the number of specified angles
         int n = 0;
-        for( auto node = input.child("angle"); node; 
+        for( auto node = input.child("angle"); node;
                 node = node.next_sibling("angle") ) {
             n++;
         }
@@ -35,7 +35,7 @@ namespace mocc {
 
         // Loop back through the angles and read them in. For the most part, we
         // will just rely on the Angle constructor that uses XML input. Slick!
-        for( auto node = input.child("angle"); node; 
+        for( auto node = input.child("angle"); node;
                 node = node.next_sibling("angle") ) {
             angles.push_back( Angle(node) );
         }

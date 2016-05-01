@@ -148,11 +148,11 @@ namespace sn {
                 tot_pow += p;
             }
         }
-        
+
         tot_pow = powers.size()/tot_pow;
 
         powers *= tot_pow;
-        
+
         return powers;
     }
 

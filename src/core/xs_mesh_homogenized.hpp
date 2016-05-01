@@ -34,7 +34,7 @@ namespace mocc {
      */
     class XSMeshHomogenized: public XSMesh {
     public:
-        /** 
+        /**
          * Construct a homogenized \ref XSMesh from only a \ref CoreMesh object.
          * Following construction, the cross sections in the mesh will be
          * volume-weighted.
@@ -45,7 +45,7 @@ namespace mocc {
          * Construct a homogenized \ref XSMesh from a \ref CoreMesh and external
          * data. Following construction, the cross sections will be those
          * specified by the auxiliary data files specified by the \p input XML.
-         * 
+         *
          * \param mesh a \ref CoreMesh with which the \ref XSMeshHomogenized
          * should conform.
          * \param input an XML node containing at least one \<data\> child
@@ -87,7 +87,7 @@ namespace mocc {
         * from a pin cell. No flux wieghting is performed, only volume
         * weighting.
         */
-        void homogenize_region( int i, const Pin& pin, 
+        void homogenize_region( int i, const Pin& pin,
                 XSMeshRegion &xsr ) const;
 
         /**
@@ -110,7 +110,7 @@ namespace mocc {
         * sections in the passed \ref Pin object and returns an \ref
         * XSMeshRegion object containing the homogenized cross sections.
         */
-        void homogenize_region_flux( int i, int first_reg, const Pin& pin, 
+        void homogenize_region_flux( int i, int first_reg, const Pin& pin,
                 XSMeshRegion &xsr ) const;
     };
 

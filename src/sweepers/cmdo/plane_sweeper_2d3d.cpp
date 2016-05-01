@@ -81,7 +81,7 @@ namespace mocc { namespace cmdo {
         if( !coarse_data_ ) {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
-        
+
         /// \todo do something less brittle
         if( group == 0 ) {
             i_outer_++;
@@ -92,7 +92,7 @@ namespace mocc { namespace cmdo {
         if( do_tl_ ) {
             this->add_tl( group );
         }
-        
+
         // MoC Sweeper
         bool do_moc = ((i_outer_+1) > n_inactive_moc_) &&
             ((i_outer_ % moc_modulo_) == 0);
@@ -191,7 +191,7 @@ namespace mocc { namespace cmdo {
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 tl_fsr( ir+ireg_pin ) = tl_g(ipin);
             }
-            
+
             ipin++;
             ireg_pin += pin->n_reg();
         }

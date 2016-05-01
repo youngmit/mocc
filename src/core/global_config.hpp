@@ -35,7 +35,7 @@ namespace mocc {
     typedef std::vector<real_t> VecF;
     typedef std::vector<int> VecI;
     typedef std::vector<int> VecSI;
-    
+
     // valarray of floats
     typedef std::valarray<real_t> ArrayF;
     typedef std::slice_array<real_t> SliceF;

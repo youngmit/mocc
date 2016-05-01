@@ -31,9 +31,9 @@ using std::endl;
 using namespace mocc;
 
 class AngQuadFixture {
-public: 
+public:
     AngularQuadrature ang_quad;
-    
+
     void make_angquad( const std::string &inp_quad ) {
         pugi::xml_document doc;
         pugi::xml_parse_result result =  doc.load_string( inp_quad.c_str() );
@@ -138,12 +138,12 @@ public:
 class UserQuad : public AngQuadFixture {
 public:
     UserQuad() {
-        std::string input = 
+        std::string input =
             "<ang_quad type=\"user\"> \
                 <angle weight=\"0.7\" alpha=\"0.5236\" theta=\"1.5707963\" />\
                 <angle weight=\"0.3\" alpha=\"1.0472\" theta=\"1.5707963\" />\
             </ang_quad>";
-            
+
         this->make_angquad( input );
     }
 };
@@ -157,7 +157,7 @@ TEST_FIXTURE( UserQuad, user ) {
     CHECK_EQUAL( 0.3, ang_quad[3].weight );
 
 }
-   
+
 TEST_FIXTURE( LevelSymmetric_4, general )
 {
     // Test the angle reflection capabilities

@@ -335,7 +335,7 @@ namespace mocc { namespace moc {
                     VecF flat_cf_rms(ang_quad_.ndir()/4, 0.0);
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
-                    
+
                     for ( auto ang = ang_quad_.octant(1);
                             ang!=ang_quad_.octant(3); ++ang )
                     {
@@ -449,10 +449,10 @@ namespace mocc { namespace moc {
 
                     LogFile << std::endl << std::endl;
                     LogFile << "For plane " << iplane << ", the maximum "
-                        "correction factor is: " << std::endl 
+                        "correction factor is: " << std::endl
                         << angle_cf_max << std::endl;
 
-                    LogFile << "The RMS of the correction factor is: " 
+                    LogFile << "The RMS of the correction factor is: "
                         << std::endl << angle_cf_rms << std::endl;
 
                 } // Volume correction

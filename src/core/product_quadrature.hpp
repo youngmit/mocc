@@ -27,23 +27,23 @@
 using namespace mocc;
 
 // Produce a vector of <theta,weight> pairs of size n_polar with Yamamoto
-// quadrature within (0, PI/2). All weights sum to 1. Currently, only npol=3 
-// is supported. 
+// quadrature within (0, PI/2). All weights sum to 1. Currently, only npol=3
+// is supported.
 std::vector<std::pair<real_t,real_t>> GenYamamoto( int n_polar ){
 
     std::vector<std::pair<real_t,real_t>> thetaWeightPairVec;
-    
+
     if ( n_polar != 3 ) {
         throw EXCEPT("Only support Yamamoto quadrature when npol=3");
     }
     thetaWeightPairVec.emplace_back(0.167429147795000,4.623300000000000E-002);
     thetaWeightPairVec.emplace_back(0.567715121084000,0.283619000000000);
     thetaWeightPairVec.emplace_back(1.20253314678900,0.670148000000000);
-    
+
     return thetaWeightPairVec;
 }
 
-// Produce a vector of <alpha,weight> pairs of size n_azimuthal with Chebyshev 
+// Produce a vector of <alpha,weight> pairs of size n_azimuthal with Chebyshev
 // quadrature within (0, PI/2). All weights sum to 1.
 std::vector<std::pair<real_t,real_t>> GenChebyshev( int n_azimuthal ) {
 
@@ -56,21 +56,21 @@ std::vector<std::pair<real_t,real_t>> GenChebyshev( int n_azimuthal ) {
         alpha = delAlpha*(2*i+1);
         alphaWeightPairVec.emplace_back(alpha,weight);
     }
-  
+
     return alphaWeightPairVec;
 }
 
-// Produce a vector of <theta,weight> pairs of size n_polar with Gaussian 
+// Produce a vector of <theta,weight> pairs of size n_polar with Gaussian
 // quadrature within (0, PI/2). All weights sum to 1.
 std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
     std::vector<std::pair<real_t,real_t>> thetaWeightPairVec;
     int N = n_polar*2 - 1;
     int N1 = n_polar*2;
     int N2 = n_polar*2 + 1;
-    
+
     ArrayB1 xu(N1),y(N1),w(N1);
     real_t delxu=2.0/N;
-    
+
     // Initial guess for y
     for( int i=0; i<N1; i++ ) {
         xu(i)=-1.0+i*delxu;
@@ -96,18 +96,18 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
                 L(m,k+1) = ( (2*k+1)*y(m)*L(m,k)-k*L(m,k-1) )/(k+1);
             }
         }
-        
-        for( int i=0; i<N1; i++ ) { 
+
+        for( int i=0; i<N1; i++ ) {
             Lp(i) = N2*(L(i,N1-1)-y(i)*L(i,N2-1))/(1-y(i)*y(i));
         }
-        
+
         y0=y;
-        
+
         for( int i=0; i<N1; i++ ) {
             y(i) = y0(i)-L(i,N2-1)/Lp(i);
         }
     }
-    
+
     //weight sum is 1.0;
     for( int i=0; i<N1; i++ ) {
         w(i)=1.0/((1-y(i)*y(i))*Lp(i)*Lp(i))*N2*N2/(N1*N1);
@@ -124,8 +124,8 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
         y(i)=y(N1-1-i);
         y(N1-1-i)=t;
     }
-    
-    for( int i=n_polar; i<N1; i++ ) { 
+
+    for( int i=n_polar; i<N1; i++ ) {
         thetaWeightPairVec.emplace_back(y(i),w(i));
     }
 
@@ -135,7 +135,7 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
 
 // Produce a vector of angles with azi and pol pair vectors to represent a
 // product quadrature set.
-std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>> 
+std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>>
            &azi, const std::vector<std::pair<real_t,real_t>> &pol){
        std::vector<Angle> angles;
        int n_azimuthal=azi.size();
@@ -143,14 +143,14 @@ std::vector<Angle> GenProduct(const std::vector<std::pair<real_t,real_t>>
        real_t wsum=0.0;
        for( int i=0; i<n_azimuthal; i++ ) {
            for( int j=0; j<n_polar; j++ ) {
-               Angle angle( azi[i].first, 
+               Angle angle( azi[i].first,
                             pol[j].first,
                             azi[i].second*pol[j].second );
                angles.push_back(angle);
                wsum += azi[i].second*pol[j].second;
            }
        }
-       
+
        // Product quadrature ensures this in nature, so this may be unnecessary.
        for( auto &a: angles ) {
            a.weight /= wsum;

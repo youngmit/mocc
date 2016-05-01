@@ -44,7 +44,7 @@ namespace mocc {
 
         // Allocate space to store the cross sections
         this->allocate_xs(n_xsreg, ng_);
-        
+
         // Set up the regions
         regions_.reserve(n_xsreg);
         VecI fsrs(1);
@@ -87,14 +87,14 @@ namespace mocc {
      * which the cross sections are to be applied. The data itself is assumed to
      * be coming from a call to \ref XSMesh::output().
      */
-    XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh, 
+    XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh,
             const pugi::xml_node &input ):
         XSMeshHomogenized( mesh )
     {
         if( input.child("data").empty() ) {
             throw EXCEPT("No data found in input tag.");
         }
-        
+
         int nreg_plane = mesh.nx()*mesh.ny();
 
         // First, validate the data tags. Make sure that they are the right
@@ -241,7 +241,7 @@ namespace mocc {
 
         } // <data> tag loop
 
-        
+
 
         return;
     } // HDF5 constructor
@@ -270,7 +270,7 @@ namespace mocc {
         return;
     }
 
-    void XSMeshHomogenized::homogenize_region( int i, const Pin& pin, 
+    void XSMeshHomogenized::homogenize_region( int i, const Pin& pin,
             XSMeshRegion &xsr ) const {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
@@ -332,7 +332,7 @@ namespace mocc {
         return;
     }
 
-    void XSMeshHomogenized::homogenize_region_flux( int i, int first_reg, 
+    void XSMeshHomogenized::homogenize_region_flux( int i, int first_reg,
             const Pin& pin, XSMeshRegion &xsr ) const
     {
         assert(flux_);

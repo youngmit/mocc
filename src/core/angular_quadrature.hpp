@@ -207,7 +207,7 @@ namespace mocc {
          * azimuthal angles. The weight update simply chops the unit circle into
          * differently-sized wedges based on the spacing of the modularized
          * angles and assigns angle weights based on the size of the wedges.
-         * 
+         *
          * Imagine a unit circle, upon which are drawn all of the azimuthal
          * angles in the quadrature as solid lines. Now, draw dotted lines
          * between each of the solid lines, equidistant from the solid lines on

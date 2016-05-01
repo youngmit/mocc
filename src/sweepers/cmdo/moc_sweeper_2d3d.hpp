@@ -47,7 +47,7 @@ namespace mocc { namespace cmdo {
          */
         void set_self_coupling() {
             internal_coupling_ = true;
-            corrections_ = std::shared_ptr<CorrectionData>( 
+            corrections_ = std::shared_ptr<CorrectionData>(
                     new CorrectionData( mesh_,
                     ang_quad_.ndir()/2, xs_mesh_->n_group() ) );
             sn_xs_mesh_ = this->get_homogenized_xsmesh();

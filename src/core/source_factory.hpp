@@ -33,6 +33,6 @@ namespace mocc {
 	somewhat lessening the value of a factory. But we will figure that out when
 	we get there.
 	*/
-    UP_Source_t SourceFactory( const pugi::xml_node &input, 
+    UP_Source_t SourceFactory( const pugi::xml_node &input,
         int n_reg, const XSMesh *xs_mesh, const ArrayB2 &flux );
 }
