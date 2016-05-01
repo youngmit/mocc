@@ -18,11 +18,12 @@
 
 #include <memory>
 
-
 #include "core/core_mesh.hpp"
 #include "core/exponential.hpp"
 #include "core/files.hpp"
 #include "core/pugifwd.hpp"
+
+#include "util/force_inline.hpp"
 
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
@@ -57,7 +58,7 @@ namespace mocc { namespace cmdo {
             group_ = group;
         }
 
-        inline void set_angle( size_t iang, Angle angle ) {
+        MOCC_FORCE_INLINE void set_angle( size_t iang, Angle angle ) {
             sn::CellWorker::set_angle( iang, angle );
             iang_alpha_ = iang % (ang_quad_.ndir() / 2);
         }
@@ -81,8 +82,8 @@ namespace mocc { namespace cmdo {
          * treatments, the 2-D version of \ref sn::CellWorker::evaluate() can
          * live here.
          */
-        inline real_t evaluate_2d( real_t &flux_x, real_t &flux_y, real_t q,
-                real_t xstr, size_t i )
+        MOCC_FORCE_INLINE real_t evaluate_2d( real_t &flux_x, real_t &flux_y,
+                real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
             real_t tx = ox_/mesh_.dx(ix);
@@ -130,7 +131,7 @@ namespace mocc { namespace cmdo {
             return;
         }
 
-        inline real_t evaluate( real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate( real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
@@ -172,7 +173,7 @@ namespace mocc { namespace cmdo {
             return;
         }
 
-        inline real_t evaluate( real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate( real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
@@ -216,7 +217,7 @@ namespace mocc { namespace cmdo {
             return;
         }
 
-        inline real_t evaluate( real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate( real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();

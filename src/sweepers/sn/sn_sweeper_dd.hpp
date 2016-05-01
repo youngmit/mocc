@@ -18,6 +18,8 @@
 
 #include "core/mesh.hpp"
 
+#include "util/force_inline.hpp"
+
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
 
@@ -36,7 +38,7 @@ namespace mocc { namespace sn {
         }
 
 
-        inline real_t evaluate(real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
@@ -53,8 +55,8 @@ namespace mocc { namespace sn {
             return psi;
         }
 
-        inline real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
-                real_t xstr, size_t i )
+        MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
+                real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
             real_t tx = ox_/mesh_.dx(ix);
@@ -78,7 +80,7 @@ namespace mocc { namespace sn {
         }
 
 
-        inline real_t evaluate(real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
@@ -99,9 +101,5 @@ namespace mocc { namespace sn {
 
             return psi;
         }
-
     };
-
-
-
 } }

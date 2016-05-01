@@ -16,10 +16,12 @@
 
 #pragma once
 
-#include "coarse_data.hpp"
-#include "constants.hpp"
-#include "global_config.hpp"
-#include "mesh.hpp"
+#include "core/coarse_data.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
+
+#include "util/force_inline.hpp"
 
 namespace mocc {
     namespace sn {
@@ -47,7 +49,7 @@ namespace mocc {
              * Store the upwind boundary condition as a contribution to the
              * coarse mesh current.
              */
-            inline void upwind_work( const real_t *x, const real_t *y,
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x, const real_t *y,
                     const real_t *z, const Angle &ang, int group ) {
 
                 size_t nx = mesh_->nx();
@@ -125,8 +127,8 @@ namespace mocc {
              * Store the upwind boundary condition as a contribution to the
              * coarse mesh current (2-D version).
              */
-            inline void upwind_work( const real_t *x, const real_t *y,
-                    const Angle &ang, int group ) {
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x,
+                    const real_t *y, const Angle &ang, int group ) {
 
                 size_t nx = mesh_->nx();
                 size_t ny = mesh_->ny();
@@ -178,8 +180,8 @@ namespace mocc {
              * Store the downwind surface flux of a single cell as a
              * contribution to the coarse mesh current.
              */
-            inline void current_work( real_t psi_x, real_t psi_y, real_t psi_z,
-                    size_t i, Angle &ang, int group )
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
+                    real_t psi_z, size_t i, Angle &ang, int group )
             {
                 real_t w = ang.weight * HPI;
 
@@ -224,7 +226,7 @@ namespace mocc {
              * Store the downwind surface flux of a single cell as a
              * contribution to the coarse mesh current. 2-D version.
              */
-            inline void current_work( real_t psi_x, real_t psi_y,
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
                     size_t i, Angle &ang, int group )
             {
                 real_t w = ang.weight * PI;
@@ -260,7 +262,7 @@ namespace mocc {
              * Configure the Current object to use the proper octant for looking
              * up surfaces.
              */
-            inline void set_octant( int oct ){
+            MOCC_FORCE_INLINE void set_octant( int oct ){
                 assert( (oct > 0) && (oct <=8) );
 
                 // Configure the upwind directions based on the angle
@@ -315,31 +317,32 @@ namespace mocc {
                 return;
             }
 
-            inline void upwind_work( const real_t *x, const real_t *y,
-                    const real_t *z, const Angle &ang, int group )
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x,
+                    const real_t *y, const real_t *z, const Angle &ang,
+                    int group )
             {
                 return;
             }
 
-            inline void upwind_work( const real_t *x, const real_t *y,
-                    const Angle &ang, int group )
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x,
+                    const real_t *y, const Angle &ang, int group )
             {
                 return;
             }
 
-            inline void current_work( real_t psi_x, real_t psi_y, real_t psi_z,
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
+                    real_t psi_z, size_t i, const Angle &ang, int group )
+            {
+                return;
+            }
+
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
                     size_t i, const Angle &ang, int group )
             {
                 return;
             }
 
-            inline void current_work( real_t psi_x, real_t psi_y,
-                    size_t i, const Angle &ang, int group )
-            {
-                return;
-            }
-
-            inline void set_octant( int oct ) {
+            MOCC_FORCE_INLINE void set_octant( int oct ) {
                 return;
             }
         };

@@ -18,9 +18,12 @@
 
 #include <cmath>
 
-#include "angle.hpp"
-#include "constants.hpp"
-#include "global_config.hpp"
+#include "core/angle.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
+
+#include "util/force_inline.hpp"
+
 #include "ray.hpp"
 
 namespace mocc {
@@ -73,8 +76,9 @@ namespace mocc {
              * is useful for when you need to do something with the angular
              * flux.
              */
-            inline void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
-                    const ArrayB1 &e_tau, const Ray &ray, int first_reg )
+            MOCC_FORCE_INLINE void post_ray( const ArrayB1 &psi1,
+                    const ArrayB1 &psi2, const ArrayB1 &e_tau, const Ray &ray,
+                    int first_reg )
             {
                 return;
             }
@@ -82,30 +86,30 @@ namespace mocc {
             /**
              * Defines work to be done before sweeping rays in a given angle.
              */
-            inline void set_angle( Angle ang, real_t spacing ) {
+            MOCC_FORCE_INLINE void set_angle( Angle ang, real_t spacing ) {
                 return;
             }
 
             /**
              * Defines work to be done after sweeping all rays in a given angle.
              */
-            inline void post_angle( int iang ) {
+            MOCC_FORCE_INLINE void post_angle( int iang ) {
                 return;
             }
 
-            inline void set_plane( int iplane ) {
+            MOCC_FORCE_INLINE void set_plane( int iplane ) {
                 return;
             }
 
-            inline void post_sweep() {
+            MOCC_FORCE_INLINE void post_sweep() {
                 return;
             }
 
-            inline void post_plane() {
+            MOCC_FORCE_INLINE void post_plane() {
                 return;
             }
 
-            inline void set_group( int group ) {
+            MOCC_FORCE_INLINE void set_group( int group ) {
                 return;
             }
         };
@@ -132,25 +136,25 @@ namespace mocc {
                 return;
             }
 
-            inline void post_angle( int iang ) {
+            MOCC_FORCE_INLINE void post_angle( int iang ) {
                 return;
             };
 
-            inline void post_plane() {
+            MOCC_FORCE_INLINE void post_plane() {
                 return;
             }
 
-            inline void set_group( int group ) {
+            MOCC_FORCE_INLINE void set_group( int group ) {
                 group_ = group;
             }
 
-            inline void set_plane( int plane ) {
+            MOCC_FORCE_INLINE void set_plane( int plane ) {
                 plane_ = plane;
                 cell_offset_ = mesh_->coarse_cell_offset( plane );
                 surf_offset_ = mesh_->coarse_surf_offset( plane );
             }
 
-            inline void set_angle( Angle ang, real_t spacing ) {
+            MOCC_FORCE_INLINE void set_angle( Angle ang, real_t spacing ) {
 #pragma omp single
                 {
                     // Scale the angle weight to sum to 4*PI
@@ -171,8 +175,9 @@ namespace mocc {
 #pragma omp barrier
             }
 
-            inline void post_ray( const ArrayB1 &psi1, const ArrayB1 &psi2,
-                    const ArrayB1 &e_tau, const Ray &ray, int first_reg ) {
+            MOCC_FORCE_INLINE void post_ray( const ArrayB1 &psi1,
+                    const ArrayB1 &psi2, const ArrayB1 &e_tau, const Ray &ray,
+                    int first_reg ) {
 #pragma omp critical
                 {
                     ArrayB1 current =
@@ -229,7 +234,7 @@ namespace mocc {
             }
 
 
-            inline void post_sweep() {
+            MOCC_FORCE_INLINE void post_sweep() {
 #pragma omp single
             {
                 ArrayB1 current =
