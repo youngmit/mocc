@@ -152,7 +152,7 @@ namespace mocc {
         }
 
         // Normalize!
-        tot_pow = powers.size()*core_mesh_->n_fuel_2d()/tot_pow;
+        tot_pow = core_mesh_->n_fuel_2d()/tot_pow;
         for( auto &v: powers ) {
             v *= tot_pow;
         }
