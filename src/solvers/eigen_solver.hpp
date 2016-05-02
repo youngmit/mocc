@@ -90,6 +90,10 @@ namespace mocc{
         unsigned int max_iterations_;
         unsigned int min_iterations_;
 
+        // Number of fissile regions in the problem. We will use this to scale
+        // the volumetric convergence criteria
+        int n_fissile_regions_;
+
         // Vector of the convergence criteria. We will export these to the HDF5
         // file at the end of the run for posterity
         std::vector<ConvergenceCriteria> convergence_;

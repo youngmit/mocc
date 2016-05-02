@@ -187,17 +187,19 @@ namespace mocc { namespace moc {
     } // sweep( group )
 
     void MoCSweeper::initialize() {
+        real_t val = 1.0;
+
         // Set the flux on the coarse mesh
         if( coarse_data_ ) {
-            coarse_data_->flux = 1.0;
+            coarse_data_->flux = val;
         }
         // There are better ways to do this, but for now, just start with 1.0
-        flux_ = 1.0;
+        flux_ = val;
 
         // Walk through the boundary conditions and initialize them the 1/4pi
-        real_t val = 1.0/FPI;
+        real_t bound_val = val/FPI;
         for( auto &boundary: boundary_ ) {
-            boundary.initialize_scalar(val);
+            boundary.initialize_scalar(bound_val);
         }
 
         return;

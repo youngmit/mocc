@@ -74,6 +74,21 @@ namespace mocc{
             min_iterations_ = in_int;
         }
 
+        // Count the number of fissile mesh regions
+        n_fissile_regions_ = 0;
+        for( const auto &xsr: fss_.sweeper()->xs_mesh() ) {
+            bool has_fission = false;
+            for( int ig=0; ig<xsr.n_group(); ig++ ) {
+                if( xsr.xsmacnf(ig) > 0.0 ) {
+                    has_fission = true;
+                    break;
+                }
+            }
+            if( has_fission ) {
+                n_fissile_regions_ += xsr.reg().size();
+            }
+        }
+
         // CMFD acceleration
         bool do_cmfd = input.attribute("cmfd").as_bool(false);
         if( do_cmfd ) {
@@ -127,11 +142,13 @@ namespace mocc{
             // use the old fission source to store the difference between new
             // and old, since we will be filling it with new in the next
             // iteration anyways.
-            real_t e = 0.0;
+            const auto & vol = fss_.sweeper()->volumes();
+            real_t efis = 0.0;
             for( int i=0; i<(int)fission_source_.size(); i++ ) {
-                e += std::pow((fission_source_(i)-fission_source_prev_(i)), 2);
+                real_t e = (fission_source_(i)-fission_source_prev_(i))*vol[i];
+                efis += e*e;
             }
-            error_psi_ = std::sqrt( e );
+            error_psi_ = std::sqrt( efis/n_fissile_regions_ );
 
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k_, error_psi_) );
@@ -152,19 +169,18 @@ namespace mocc{
                 break;
             }
         }
-    }
+    } // solve()
 
     void EigenSolver::step() {
-        // Store the old fission source
-        fission_source_prev_ = fission_source_;
 
         if( cmfd_ && cmfd_->is_enabled() ) {
             this->do_cmfd();
         }
 
-
         // Perform a group sweep with the FSS
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
+        // Store the old fission source
+        fission_source_prev_ = fission_source_;
         fss_.step();
 
         // Get the total fission sources
@@ -174,6 +190,9 @@ namespace mocc{
         // update estimate for k
         keff_prev_ = keff_;
         keff_ = keff_ * tfis1/tfis2;
+
+        // update the fission source
+        fss_.sweeper()->calc_fission_source(keff_, fission_source_);
 
         return;
     }
@@ -209,7 +228,7 @@ namespace mocc{
             cmfd_->set_psi_tolerance( psi_tol );
             break;
         }
-        cmfd_->solve(keff_, fss_.sweeper()->flux());
+        cmfd_->solve( keff_, fss_.sweeper()->flux() );
         fss_.sweeper()->set_pin_flux( cmfd_->flux() );
         return;
     }
