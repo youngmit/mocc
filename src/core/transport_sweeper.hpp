@@ -46,33 +46,6 @@ namespace mocc{
         TransportSweeper( const pugi::xml_node& input, const CoreMesh& mesh );
 
         TransportSweeper( const pugi::xml_node &input );
-        TransportSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
-            core_mesh_( &mesh ),
-            xs_mesh_( new XSMesh(mesh) ),
-            n_reg_( mesh.n_reg() ),
-            n_group_( xs_mesh_->n_group() ),
-            groups_(Range(0, n_group_)),
-            source_(nullptr),
-            flux_( n_reg_, n_group_ ),
-            flux_old_( n_reg_, n_group_ ),
-            vol_( n_reg_ ),
-            ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr),
-            n_sweep_(0),
-            n_sweep_inner_(0),
-        {
-            return;
-        }
-
-        TransportSweeper( const pugi::xml_node &input ):
-            source_(nullptr),
-            ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr),
-            n_sweep_(0),
-            n_sweep_inner_(0),
-        {
-            return;
-        }
 
         virtual ~TransportSweeper(){ }
 
