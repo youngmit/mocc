@@ -292,7 +292,7 @@ namespace mocc {
              * Configure the Current object to use the proper octant for looking
              * up surfaces.
              */
-            MOCC_FORCE_INLINE void set_octant( int oct ){
+            MOCC_FORCE_INLINE void set_octant( Angle ang ){
                 assert( (oct > 0) && (oct <=8) );
                 // Configure the upwind/downwind directions based on the angle
                 downwind_x_ = (ang.ox > 0.0) ? Surface::EAST : Surface::WEST;
@@ -366,7 +366,7 @@ namespace mocc {
                 return;
             }
 
-            MOCC_FORCE_INLINE void set_octant( int oct ) {
+            MOCC_FORCE_INLINE void set_octant( Angle ang ) {
                 return;
             }
         };
