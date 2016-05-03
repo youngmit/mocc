@@ -228,7 +228,7 @@ namespace mocc{
             cmfd_->set_psi_tolerance( psi_tol );
             break;
         }
-        cmfd_->solve( keff_, fss_.sweeper()->flux() );
+        cmfd_->solve( keff_ );
         fss_.sweeper()->set_pin_flux( cmfd_->flux() );
         fss_.sweeper()->update_incoming_flux();
         return;
