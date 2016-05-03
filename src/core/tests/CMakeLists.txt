@@ -16,6 +16,10 @@ if(${BUILD_TESTS})
     add_unit_test(test_Exponential core pugixml)
 
     add_unit_test(test_BoundaryCondition core pugixml ${HDF5_LIBRARIES})
+
+    add_unit_test(test_CMFD core pugixml)
+    copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/3x5.xml 
+        ${CMAKE_CURRENT_BINARY_DIR}/3x5.xml test_CMFD)
     
     add_unit_test(test_XSMeshHomogenized core pugixml ${HDF5_LIBRARIES})
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/c5g7.xsl 

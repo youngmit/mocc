@@ -1,0 +1,39 @@
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-7.0" />
+    <material id="3" name="Moderator" />
+</material_lib>
+
+<mesh id="1" type="cyl" pitch="1.26">
+    <radii>0.54 0.62</radii>
+    <sub_radii>5 2</sub_radii>
+    <sub_azi>8</sub_azi>
+</mesh>
+
+<pin id="1" mesh="1">
+    1 3 3
+</pin>
+<pin id="2" mesh="1">
+    2 3 3
+</pin>
+<lattice id="1" nx="3" ny="5">
+    1 1 2
+    1 1 1
+    1 1 1
+    1 2 2
+    1 2 2
+</lattice>
+<assembly id="1" np="3" hz="0.5">
+    <lattices>
+        1 1 1
+    </lattices>
+</assembly>
+<core nx="1" ny="1" 
+    north  = "reflect" 
+    south  = "vacuum" 
+    east   = "vacuum"
+    west   = "reflect"
+    top    = "vacuum"
+    bottom = "reflect" >
+    1 
+</core>
