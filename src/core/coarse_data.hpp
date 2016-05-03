@@ -51,8 +51,8 @@ namespace mocc {
         {
             current = 0.0;
             surface_flux = 0.0;
-            flux = 0.0;
-            old_flux = 0.0;
+            flux = 1.0;
+            old_flux = 1.0;
 
             //assert( current(blitz::Range::all(), 0).isStorageContiguous() );
             //assert( surface_flux(blitz::Range::all(), 0).
