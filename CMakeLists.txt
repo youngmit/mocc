@@ -37,7 +37,6 @@ CONFIGURE_FILE("${CMAKE_MODULE_PATH}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTe
 include(CTest)
 
 MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
-    message("Copying file: ${in_file} to: ${out_file}")
     IF(${in_file} IS_NEWER_THAN ${out_file})    
         ADD_CUSTOM_COMMAND (
             TARGET     ${target}
