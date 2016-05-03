@@ -277,7 +277,8 @@ namespace mocc { namespace moc {
 
     void MoCSweeper::get_pin_flux_1g( int group, ArrayB1 &flux ) const {
         assert(flux.size() == mesh_.n_pin() );
-        assert(flux.isStorageContiguous());
+        /// \todo Put this back in when we address index ordering
+        //assert(flux.isStorageContiguous());
         flux = 0.0;
 
         int ireg = 0;
