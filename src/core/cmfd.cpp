@@ -29,10 +29,6 @@
 typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;
 
-using std::cout;
-using std::endl;
-using std::cin;
-
 namespace mocc {
     CMFD::CMFD( const pugi::xml_node &input, const Mesh *mesh,
             SP_XSMeshHomogenized_t xsmesh):
@@ -106,8 +102,8 @@ namespace mocc {
                 }
             }
 
-            if( !input.attribute("zero_fixup").empty() ) {
-                zero_fixup_ = input.attribute("zero_fixup").as_bool(false);
+            if( !input.attribute("negative_fixup").empty() ) {
+                zero_fixup_ = input.attribute("negative_fixup").as_bool(false);
             }
 
             // Enabled
@@ -122,7 +118,7 @@ namespace mocc {
     }
 
 
-    void CMFD::solve( real_t &k, const ArrayB2 &flux ) {
+    void CMFD::solve( real_t &k ) {
         // Make sure we have the requisite data
         if( !xsmesh_ ) {
             throw EXCEPT("No XS Mesh data! Need!");
@@ -456,6 +452,9 @@ namespace mocc {
                     s_hat*(flux_l + flux_r) :
                     s_tilde*flux_r + s_hat*(flux_l + flux_r);
 
+std::cout << surface_flux << " " << surface_flux_1g(is) << " "
+          << surface_flux - surface_flux_1g(is)
+    << std::endl;
                 surface_flux_1g(is) = surface_flux;
 
                 partial_1g(is) = {

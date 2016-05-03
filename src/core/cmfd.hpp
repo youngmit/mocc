@@ -34,7 +34,7 @@ namespace mocc {
         CMFD( const pugi::xml_node &input, const Mesh *mesh,
                 SP_XSMeshHomogenized_t xsmesh );
 
-        void solve( real_t &k, const ArrayB2 &flux );
+        void solve( real_t &k );
 
         /**
          * \brief Return a pointer to the coarse data.
