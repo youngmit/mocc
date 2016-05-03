@@ -293,7 +293,6 @@ namespace mocc {
              * up surfaces.
              */
             MOCC_FORCE_INLINE void set_octant( Angle ang ){
-                assert( (oct > 0) && (oct <=8) );
                 // Configure the upwind/downwind directions based on the angle
                 downwind_x_ = (ang.ox > 0.0) ? Surface::EAST : Surface::WEST;
                 upwind_x_   = (ang.ox > 0.0) ? Surface::WEST : Surface::EAST;
