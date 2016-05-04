@@ -96,14 +96,9 @@ void int_handler(int p) {
 
 
 /**
- * This does the whole shebang: open and parse the input file pointed to by \p
+ * This does the whole shebang: parse command line, open and parse the input
  * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref
  * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
- *
- * To give some rhyme to the reason for why this isn't just \c main(): This is
- * so that integration tests can link against the driver, and call \c run(),
- * then interpret the results after, without collisions of \c main(). For the
- * actual MOCC entry point, look in \c mocc.cpp, which just calls this function.
  */
 int run( int argc, char* argv[] ) {
     std::signal( SIGINT, int_handler );

@@ -21,6 +21,9 @@
 /**
  * This is the main entry point for the stock MOCC driver.
  *
- * \param file the path to the input file
+ * \param argc the number of command line arguments. Probably just forwarded
+ * from \c main()
+ * \param argv the command line arguments. Probably just forwarded from \c
+ * main()
  */
 int run(int argc, char* argv[]);

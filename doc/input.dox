@@ -64,7 +64,7 @@ Currently, this uses a pretty naive power iteration approach, with optional CMFD
 acceleration, though more advanced solvers could be implemented in the furure.
 The following attributes are supported:
  - <tt>k_tol</tt>: The convergence tolerance for the system eigenvalue,
-   \$k_{\text{eff}\$ residual between iterations. Required.
+   \f$k_{\mathrm{eff}}\f$ residual between iterations. Required.
  - <tt>psi_tol</tt>: The convergence tolerance for the L-2 norm of the fission
    source residual between iterations. Required.
  - <tt>max_iter</tt>: Maximum number of "outer" iterations allowed. Required.
