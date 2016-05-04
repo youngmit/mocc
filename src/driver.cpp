@@ -53,7 +53,7 @@ SP_Solver_t solver;
 SP_CoreMesh_t mesh;
 
 // Input processor
-std::unique_ptr<InputProc> input_proc;
+std::unique_ptr<InputProcessor> input_proc;
 
 // Generate output from the solver
 void generate_output() {
@@ -105,7 +105,7 @@ void int_handler(int p) {
  * then interpret the results after, without collisions of \c main(). For the
  * actual MOCC entry point, look in \c mocc.cpp, which just calls this function.
  */
-int run( std::string file ) {
+int run( int argc, char* argv[] ) {
     std::signal( SIGINT, int_handler );
 
     print_banner();
@@ -114,7 +114,7 @@ int run( std::string file ) {
         RootTimer.tic();
 
         // Set up an input processor
-        input_proc.reset( new InputProc(file) );
+        input_proc.reset( new InputProcessor(argc, argv) );
 
         // Spin up the log file. We do this after we peek at the input
         // processor for a case_name tag

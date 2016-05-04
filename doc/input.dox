@@ -8,6 +8,26 @@ to the hierarchical nature of MOCC, each of these tags will tend to require
 child tags in order to be well defined. Each tag and its various possible
 attributes and children are described on this page.
 
+\section amendment Amending the XML tree
+It is possible to alter the XML tree from the command line when executing MOCC.
+This can be very useful when running multiple slight permutations to the same
+input file, without having to actually alter the file for each run.
+
+Presently, it is only possible to modify existing attributes of existing tags.
+This is done by issuing any number of <tt>-a</tt> flags, each followed by a
+<tt>/</tt>-delimited path to the desired attribute from the root of the tree, an
+equal sign (<tt>=</tt>), and the desired new value.
+
+For example, to disable CMFD for a given run, MOCC can be executed like this:
+\verbatim
+mocc -a solver/cmfd/enabled=f input.xml
+\endverbatim
+
+\note No leading or trailing <tt>/</tt> are needed or supported in the path, and
+don't get too creative with whitespace (read: no whitespace). Why? Because
+ - I have better things to do than write command line parsers, and
+ - shut up.
+
 \section geom Problem Geometry
 See \subpage geom_input for detail about how the geometry is specified.
 

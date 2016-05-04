@@ -33,13 +33,13 @@ namespace mocc{
     * top-level Solver. Following construction, the "driver" can extract the
     * top-level Solver and call its Solver::solve() method.
     */
-    class InputProc {
+    class InputProcessor {
     public:
         /**
         * Given the filename of an XML document, parses the document into a tree
         * structure, then uses it to generate a CoreMesh and top-level Solver.
         */
-        InputProc(std::string filename);
+        InputProcessor(int argc, char* argv[]);
 
         /**
          * \brief Actually process the contents of the file and construct
@@ -88,6 +88,9 @@ namespace mocc{
 
         // XML document
         pugi::xml_document doc_;
+
+        int argc_;
+        char **argv_;
 
         std::string case_name_;
 

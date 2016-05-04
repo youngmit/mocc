@@ -16,6 +16,7 @@
 
 #include "input_proc.hpp"
 
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <omp.h>
@@ -38,31 +39,89 @@ using std::cout;
 using std::endl;
 using std::shared_ptr;
 
-std::string strip_extension( std::string input ) {
-    std::string ret = input;
-    size_t pos = ret.rfind(".");
-    return ret.substr(0, pos);
+namespace {
+    std::string strip_extension( std::string input ) {
+        std::string ret = input;
+        size_t pos = ret.rfind(".");
+        return ret.substr(0, pos);
+    }
+
+    void apply_amendment( pugi::xml_node &node, std::string path,
+            const std::string &value );
 }
 
 namespace mocc{
-    InputProc::InputProc(std::string filename):
+    InputProcessor::InputProcessor(int argc, char* argv[]):
         timer_(RootTimer.new_timer("Input Processor", true)),
         core_mesh_(nullptr),
         solver_(nullptr),
-        case_name_(strip_extension(filename))
+        argc_(argc),
+        argv_(argv)
     {
+
+        std::vector<std::string> replacements;
+        std::string filename = "";
+        bool good_cmd = true;
+        std::string command_error = "";
+        for( int iarg=1; iarg<argc; iarg++ ) {
+            std::string arg = argv[iarg];
+            if( arg == "-a" ) {
+                // Make sure that there is a next argument
+                if( iarg == argc-1 ) {
+                    good_cmd = false;
+                } else {
+                    // Make sure that the next argument isnt another flag
+                    if( argv[iarg+1][0] == '-' ) {
+                        good_cmd = false;
+                    }
+                }
+
+                if( !good_cmd ) {
+                    command_error = "-a option specified without argument";
+                    break;
+                }
+
+                // Read the replacement string. Pre-increment is intended
+                replacements.push_back(argv[++iarg]);
+            } else {
+                // This should be the filename
+                if( filename == "" ) {
+                    filename = argv[iarg];
+                } else {
+                    // Filename already defined
+                    good_cmd = false;
+                    command_error = "Filename appears to be multiply-defined.";
+                }
+            }
+        }
+
+        // Make sure we got a filename
+        if( good_cmd && filename == "" ) {
+            good_cmd = false;
+            command_error = "No filename";
+        }
+
+        if( !good_cmd ) {
+            std::cerr << command_error << std::endl;
+
+            std::cout << "Usage: mocc [-a substitution/path/attribute=value] "
+                "infile" << std::endl;
+
+            exit(EXIT_FAILURE);
+        }
+
+        case_name_ = strip_extension(filename);
 
         Timer &xml_timer = timer_.new_timer("XML parsing");
         xml_timer.tic();
 
-        LogFile << "Processing input" << endl;
-        LogFile << "Parsing: " << filename << endl;
+        LogScreen << "Parsing: " << filename << endl;
 
         pugi::xml_parse_result result = doc_.load_file( filename.c_str() );
 
         // Make sure this worked
         if( result.status != pugi::status_ok ) {
-            std::cout << "XML parse error: " << result.description()
+            std::cerr << "XML parse error: " << result.description()
                 << std::endl;
             throw EXCEPT("Error encountered in parsing XML file.");
         }
@@ -77,12 +136,33 @@ namespace mocc{
         }
 
         xml_timer.toc();
+
+        // Handle the replacements specified on the command line if any
+        for(const auto &replacement: replacements) {
+            size_t loc = replacement.find("=");
+            if( loc == std::string::npos ) {
+                std::stringstream msg;
+                msg << "Malformed replacement in command line. Proper syntax:"
+                    << std::endl;
+                msg << "-a path/to/attribute:new_value" << std::endl;
+                throw EXCEPT(msg.str());
+            }
+            size_t rloc = replacement.rfind("=");
+            if( rloc != loc ) {
+                throw EXCEPT("Malformed replacement in command line");
+            }
+
+            std::string path( replacement, 0, loc);
+            std::string value( replacement, loc+1);
+            apply_amendment( doc_, path, value );
+        }
+
         timer_.toc();
 
         return;
     }
 
-    void InputProc::process() {
+    void InputProcessor::process() {
         timer_.tic();
         Timer &mesh_timer = timer_.new_timer("Core Mesh");
         mesh_timer.tic();
@@ -134,3 +214,35 @@ namespace mocc{
         return;
     }
 };
+
+namespace {
+    using namespace mocc;
+    void apply_amendment( pugi::xml_node &node, std::string path,
+            const std::string &value )
+    {
+        size_t pos = path.find("/");
+        if( pos == std::string::npos ) {
+            // No slashes. This should be the name of the attribute in the
+            // current node to alter
+            if( node.attribute(path.c_str()).empty() ) {
+                throw EXCEPT("The requested attribute to modify doesn't exist");
+            }
+            if( !node.attribute(path.c_str()).set_value(value.c_str()) ) {
+                throw EXCEPT("Failed to modify the requested attribute");
+            }
+        } else {
+            // There is a slash in there. Dig deeper
+            std::string new_node_name( path, 0, pos );
+            if( node.child(new_node_name.c_str()).empty() ) {
+                throw EXCEPT("Could not find node in command-line replacement");
+            }
+
+            std::string new_path( path, pos+1 );
+
+            pugi::xml_node new_node = node.child(new_node_name.c_str());
+            apply_amendment( new_node, new_path, value );
+        }
+
+        return;
+    }
+}

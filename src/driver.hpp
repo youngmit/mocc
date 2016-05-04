@@ -23,4 +23,4 @@
  *
  * \param file the path to the input file
  */
-int run(std::string file);
+int run(int argc, char* argv[]);
