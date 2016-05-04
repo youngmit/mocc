@@ -59,11 +59,26 @@ fully specify the solver. Currently supported solver types are:
 
 
 \subsection eigen_solver Eigenvalue Solver
-\todo More detail
+The eigenvalue solver solves the k-eigenvalue form of the transport equation.
+Currently, this uses a pretty naive power iteration approach, with optional CMFD
+acceleration, though more advanced solvers could be implemented in the furure.
+The following attributes are supported:
+ - <tt>k_tol</tt>: The convergence tolerance for the system eigenvalue,
+   \$k_{\text{eff}\$ residual between iterations. Required.
+ - <tt>psi_tol</tt>: The convergence tolerance for the L-2 norm of the fission
+   source residual between iterations. Required.
+ - <tt>max_iter</tt>: Maximum number of "outer" iterations allowed. Required.
+ - <tt>min_iter</tt>: Minimum number of "outer" iterations allowed. Required.
+ - <tt>cmfd</tt>: Whether or not to enable CMFD acceleration. Optional (default:
+   true)
+
+Optionally, a <tt>\<cmfd\></tt> tag may be specified within an eigenvalue
+<tt>\<solver\></tt> tag, allowing various options to be set for the CMFD solver.
 
 Example:
 \code{xml}
 <solver type="eigenvalue" k_tol="1.0e-8" psi_tol="1.0e-6" max_iter="20" cmfd="t">
+    <cmfd enabled="t" />
     <source scattering="P0"/>
     <sweeper type="moc" n_inner="5">
         <rays spacing="0.01" modularity="core" />
