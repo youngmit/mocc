@@ -452,9 +452,6 @@ namespace mocc {
                     s_hat*(flux_l + flux_r) :
                     s_tilde*flux_r + s_hat*(flux_l + flux_r);
 
-std::cout << surface_flux << " " << surface_flux_1g(is) << " "
-          << surface_flux - surface_flux_1g(is)
-    << std::endl;
                 surface_flux_1g(is) = surface_flux;
 
                 partial_1g(is) = {
