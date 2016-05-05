@@ -36,32 +36,7 @@ namespace mocc {
      */
     struct CoarseData {
     public:
-        CoarseData( const Mesh &mesh, size_t ngroup ):
-            current( (int)mesh.n_surf(), ngroup ),
-            surface_flux( (int)mesh.n_surf(), ngroup ),
-            partial_current( (int)mesh.n_surf(), ngroup ),
-            partial_current_old( (int)mesh.n_surf(), ngroup ),
-            flux( (int)mesh.n_pin(), ngroup ),
-            old_flux( (int)mesh.n_pin(), ngroup ),
-            n_group_( ngroup ),
-            mesh_(mesh),
-            has_data_radial_( false ),
-            has_data_axial_( false ),
-            has_old_partial_( false )
-        {
-            current = 0.0;
-            surface_flux = 0.0;
-            flux = 1.0;
-            old_flux = 1.0;
-
-            //assert( current(blitz::Range::all(), 0).isStorageContiguous() );
-            //assert( surface_flux(blitz::Range::all(), 0).
-            //        isStorageContiguous() );
-            //assert( partial_current(blitz::Range::all(), 0).
-            //        isStorageContiguous() );
-
-            return;
-        }
+        CoarseData( const Mesh &mesh, size_t ngroup );
 
         /**
          * \brief Signal to other clients of the \ref CoarseData that data have
@@ -148,15 +123,7 @@ namespace mocc {
          * 2-D sweepers will want to use the 2-D version, \ref
          * zero_data_radial().
          */
-        void zero_data( int group ) {
-            assert(group < n_group_ );
-            // need this to disambiguate the operator= for partial currents.
-            const std::array<real_t, 2> zero = {0.0, 0.0};
-
-            current( blitz::Range::all(), group ) = 0.0;
-            surface_flux( blitz::Range::all(), group ) = 0.0;
-            partial_current( blitz::Range::all(), group ) = zero;
-        }
+        void zero_data( int group, bool zero_partial = false );
 
         /**
          * \brief Zero out the data on the radial-normal surfaces for a given
@@ -165,27 +132,7 @@ namespace mocc {
          * This is the 2-D version of \ref zero_data(). It zeros out the X- and
          * Y-normal surfaces, but leaves data for the other surfaces untouched.
          */
-        void zero_data_radial( int group ) {
-            assert(group < n_group_ );
-
-            // need this to disambiguate the operator= for partial currents.
-            const std::array<real_t, 2> zero = {0.0, 0.0};
-
-            auto current_g = current(blitz::Range::all(), group);
-            auto surface_flux_g = surface_flux(blitz::Range::all(), group);
-            auto partial_g = partial_current(blitz::Range::all(), group);
-            for( size_t plane=0; plane<mesh_.nz(); plane++ ) {
-                for( auto surf=mesh_.plane_surf_xy_begin(plane);
-                        surf!=mesh_.plane_surf_end(plane);
-                        ++surf )
-                {
-                    current_g(surf) = 0.0;
-                    surface_flux_g(surf) = 0.0;
-                    partial_g(surf) = zero;
-                }
-            }
-            return;
-        }
+        void zero_data_radial( int group, bool zero_partial = false );
 
         ArrayB2 current;
         ArrayB2 surface_flux;
