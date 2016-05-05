@@ -94,11 +94,6 @@ namespace mocc { namespace sn {
                     }
                     coarse_data_->set_has_axial_data(true);
                     coarse_data_->set_has_radial_data(true);
-
-                    // Stash the partial currents locally to the sweeper
-                    auto all = blitz::Range::all();
-                    partial_current_( all, group ) =
-                        coarse_data_->partial_current( all, group );
                 } else {
                     if( core_mesh_->is_2d() ) {
                         this->sweep_1g_2d<sn::NoCurrent>( group );

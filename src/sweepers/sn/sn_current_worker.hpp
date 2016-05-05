@@ -91,9 +91,6 @@ namespace mocc {
                         data_->current(surf, group) += ox*x[ny*iz + iy];
 #pragma omp atomic update
                         data_->surface_flux(surf, group) += x[ny*iz + iy];
-#pragma omp atomic update
-                        data_->partial_current(surf, group)[part_x_] +=
-                            std::abs(ox)*x[ny*iz + iy];
                     }
                 }
 
@@ -107,9 +104,6 @@ namespace mocc {
                         data_->current(surf, group) += oy*y[nx*iz + ix];
 #pragma omp atomic update
                         data_->surface_flux(surf, group) += y[nx*iz + ix];
-#pragma omp atomic update
-                        data_->partial_current(surf, group)[part_y_] +=
-                            std::abs(oy)*y[nx*iz + ix];
                     }
                 }
 
@@ -123,9 +117,6 @@ namespace mocc {
                         data_->current(surf, group) += oz*z[ny*iy + ix];
 #pragma omp atomic update
                         data_->surface_flux(surf, group) += z[ny*iy + ix];
-#pragma omp atomic update
-                        data_->partial_current(surf, group)[part_z_] +=
-                            std::abs(oz)*z[ny*iy + ix];
                     }
                 }
 
@@ -169,9 +160,6 @@ namespace mocc {
                     data_->current(surf, group) += ox*x[iy];
 #pragma omp atomic update
                     data_->surface_flux(surf, group) += x[iy];
-#pragma omp atomic update
-                    data_->partial_current(surf, group)[part_x_] +=
-                        std::abs(ox)*x[iy];
                 }
 
                 // Y-normal
@@ -183,9 +171,6 @@ namespace mocc {
                     data_->current(surf, group) += oy*y[ix];
 #pragma omp atomic update
                     data_->surface_flux(surf, group) += y[ix];
-#pragma omp atomic update
-                    data_->partial_current(surf, group)[part_y_] +=
-                        std::abs(oy)*y[ix];
                 }
 
                 return;
@@ -214,9 +199,6 @@ namespace mocc {
                     data_->current( surf, group ) += psi_x*ox;
 #pragma omp atomic update
                     data_->surface_flux( surf, group ) += psi_x;
-#pragma omp atomic update
-                    data_->partial_current( surf, group )[part_x_] +=
-                        psi_x*std::abs(ox);
                 }
 
                 // Y-normal
@@ -226,9 +208,6 @@ namespace mocc {
                     data_->current( surf, group ) += psi_y*oy;
 #pragma omp atomic update
                     data_->surface_flux( surf, group ) += psi_y;
-#pragma omp atomic update
-                    data_->partial_current( surf, group )[part_y_] +=
-                        psi_y*std::abs(oy);
                 }
 
                 // Z-normal
@@ -238,9 +217,6 @@ namespace mocc {
                     data_->current( surf, group ) += psi_z*oz;
 #pragma omp atomic update
                     data_->surface_flux( surf, group ) += psi_z;
-#pragma omp atomic update
-                    data_->partial_current( surf, group )[part_z_] +=
-                        psi_z*std::abs(oz);
                 }
 
                 return;
@@ -268,9 +244,6 @@ namespace mocc {
                     data_->current( surf, group ) += psi_x*ox;
 #pragma omp atomic update
                     data_->surface_flux( surf, group ) += psi_x;
-#pragma omp atomic update
-                    data_->partial_current( surf, group )[part_x_] +=
-                        psi_x*std::abs(ox);
                 }
 
                 // Y-normal
@@ -280,9 +253,6 @@ namespace mocc {
                     data_->current( surf, group ) += psi_y*oy;
 #pragma omp atomic update
                     data_->surface_flux( surf, group ) += psi_y;
-#pragma omp atomic update
-                    data_->partial_current( surf, group )[part_y_] +=
-                        psi_y*std::abs(oy);
                 }
 
                 return;

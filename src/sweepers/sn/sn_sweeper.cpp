@@ -150,10 +150,10 @@ namespace mocc { namespace sn {
             auto update =
                 [&]( real_t in, int is, int g, int i ) {
                     real_t part =
-                        2.0 * ( coarse_data_->partial_current(is, g)[0] + 
+                        2.0 * ( coarse_data_->partial_current(is, g)[0] +
                                 coarse_data_->partial_current(is, g)[1]);
                     real_t part_old =
-                        2.0 * ( coarse_data_->partial_current_old(is, g)[0] + 
+                        2.0 * ( coarse_data_->partial_current_old(is, g)[0] +
                                 coarse_data_->partial_current_old(is, g)[1]);
 
                     if( part_old > 0.0 ) {
@@ -170,8 +170,8 @@ namespace mocc { namespace sn {
             // the partial current directly
             auto update =
                 [&]( real_t in, int is, int g, int i ) {
-                    return (2.0*RFPI * 
-                            (coarse_data_->partial_current(is, g)[i] + 
+                    return (2.0*RFPI *
+                            (coarse_data_->partial_current(is, g)[i] +
                              coarse_data_->partial_current(is, g)[i] ));
                 };
 

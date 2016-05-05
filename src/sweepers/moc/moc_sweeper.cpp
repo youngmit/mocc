@@ -175,12 +175,6 @@ namespace mocc { namespace moc {
                 moc::Current cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );
                 coarse_data_->set_has_radial_data(true);
-
-                // Stash the "old" partial currents
-                auto all = blitz::Range::all();
-                partial_current_( all, group ) =
-                    coarse_data_->partial_current( all, group );
-
             } else {
                 moc::NoCurrent cw( coarse_data_, &mesh_ );
                 this->sweep1g( group, cw );

@@ -114,10 +114,6 @@ namespace mocc { namespace cmdo {
                 this->sweep1g( group, ccw );
                 coarse_data_->set_has_radial_data(true);
                 correction_residuals_[group].push_back(ccw.residual());
-
-                // Stash the "old" partial currents
-                partial_current_( all, group ) =
-                    coarse_data_->partial_current( all, group );
             } else {
                 this->sweep1g( group, ncw );
             }
