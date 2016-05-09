@@ -29,6 +29,9 @@ auto inline_xml( const char* input ) {
         doc(std::make_unique<pugi::xml_document>());
     pugi::xml_parse_result result = doc->load_string( input );
 
+    if(!result) {
+        std::cout << result.description() << std::endl;
+    }
     assert( result );
 
     return doc;
