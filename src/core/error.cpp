@@ -16,8 +16,8 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <list>
 #include <sstream>
+#include <unordered_map>
 
 #include "error.hpp"
 #include "files.hpp"
@@ -30,16 +30,21 @@ using std::string;
 
 namespace mocc {
 
-    std::list<std::string> Warnings;
+    std::unordered_map<std::string, Warning> Warnings;
 
     void Error(const char* msg) {
         cout << "ERROR: " << msg << endl;
         exit(EXIT_FAILURE);
     }
 
-    void Warn(const char* msg) {
-        Warnings.push_back(msg);
-        LogScreen << "WARNING: " << msg << endl;
+    void Warn( const std::string &msg ) {
+        auto it = Warnings.find(msg);
+        if( it == Warnings.end() ) {
+            Warnings.emplace(msg, msg);
+            LogScreen << "WARNING: " << msg << endl;
+        } else {
+            it->second.count++;
+        }
     }
 
     void Fail( Exception e ) {
@@ -80,5 +85,10 @@ namespace mocc {
 
     const char* Exception::what() const noexcept {
         return print_message_.c_str();
+    }
+
+    std::ostream &operator<<( std::ostream &os, const Warning &warn ) {
+        os << warn.count << ": " << warn.description;
+        return os;
     }
 }

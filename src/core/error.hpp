@@ -16,10 +16,23 @@
 
 #pragma once
 #include <exception>
-#include <list>
+#include <iosfwd>
 #include <string>
+#include <unordered_map>
 
 namespace mocc {
+    struct Warning {
+        Warning( const std::string &msg ):
+            description(msg),
+            count(1)
+        {
+            return;
+        }
+
+        friend std::ostream &operator<<(std::ostream &os, const Warning &warn);
+        std::string description;
+        int count;
+    };
     /**
      * \brief Global list of warnings that have been emitted.
      *
@@ -27,11 +40,11 @@ namespace mocc {
      * were Warnings, which would otherwise be buried in the depths of the log
      * file.
      */
-    extern std::list<std::string> Warnings;
+    extern std::unordered_map<std::string, Warning> Warnings;
 
     void Error(const char* msg);
 
-    void Warn(const char* msg);
+    void Warn(const std::string &msg);
 
     class Exception: public std::exception {
     public:

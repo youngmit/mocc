@@ -85,7 +85,7 @@ void generate_output() {
             std::cout << " warnings:" << std::endl;
         }
         for( const auto &warning: Warnings ) {
-            std::cout << "\t" << warning << std::endl;
+            std::cout << "\t" << warning.second << std::endl;
         }
     }
 
