@@ -95,7 +95,12 @@ namespace mocc {
             // Construct the pin and add to the map
             UP_Pin_t pin_p( new Pin( pin, meshes, mat_lib ) );
             int id = pin_p->id();
-            pins.emplace( pin_p->id(), std::move(pin_p) );
+            if( pins.find(id) != pins.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate pin ID (" << id << ")";
+                throw EXCEPT(msg.str());
+            }
+            pins.emplace( id, std::move(pin_p) );
             LogFile << "Pin ID " << id << " done" << std::endl;
         }
         return pins;

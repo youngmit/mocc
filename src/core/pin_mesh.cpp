@@ -60,6 +60,11 @@ namespace mocc {
             << mesh.attribute( "id" ).value() << std::endl;
             UP_PinMesh_t pm( PinMeshFactory( mesh ) );
             int id = pm->id();
+            if( pin_meshes.find(id) != pin_meshes.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate pin mesh ID (" << id << ")";
+                throw EXCEPT(msg.str());
+            }
             pin_meshes.emplace(id, std::move( pm ) );
         }
 
