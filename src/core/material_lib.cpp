@@ -250,7 +250,8 @@ namespace mocc{
             try {
                 material_names_[materialName] = imat;
             } catch(...) {
-                throw EXCEPT("Failed to add material from library. Duplicate name?");
+                throw EXCEPT("Failed to add material from library. Duplicate "
+                        "name?");
             }
         }
     }
@@ -265,7 +266,8 @@ namespace mocc{
             material_ids_[id] = mat_index;
             n_material_++;
         } catch(std::out_of_range) {
-            throw EXCEPT("Failed to map material to ID. Are you sure you spelled it right?");
+            throw EXCEPT("Failed to map material to ID. Are you sure you "
+                    "spelled it right?");
         }
         return;
     }

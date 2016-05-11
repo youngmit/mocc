@@ -122,7 +122,7 @@ namespace mocc {
         // having to do all sorts of iterator jiggery later
         MaterialVec assigned_materials_;
 
-        // Map from a material name to its corresponding index in materials_
+        // Map from a material name to its corresponding index in lib_materials_
         std::map<std::string, int> material_names_;
 
         // Map from a material ID to the corresponding index in the vector of
