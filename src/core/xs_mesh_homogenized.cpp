@@ -436,13 +436,13 @@ namespace mocc {
 
 
     void XSMeshHomogenized::output( H5Node &file ) const {
-        file.create_group( "/xsmesh" );
-        file.create_group( "/xsmesh/xstr" );
-        file.create_group( "/xsmesh/xsnf" );
-        file.create_group( "/xsmesh/xskf" );
-        file.create_group( "/xsmesh/xsch" );
+        auto xsm_g = file.create_group( "xsmesh" );
+        xsm_g.create_group( "xstr" );
+        xsm_g.create_group( "xsnf" );
+        xsm_g.create_group( "xskf" );
+        xsm_g.create_group( "xsch" );
 
-        file.write("/xsmesh/eubounds", eubounds_, VecI(1, ng_) );
+        xsm_g.write("eubounds", eubounds_, VecI(1, ng_) );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());
@@ -463,23 +463,23 @@ namespace mocc {
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xstr/" << ig;
-                file.write( setname.str(), xstr, d );
+                setname << "xstr/" << ig;
+                xsm_g.write( setname.str(), xstr, d );
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xsnf/" << ig;
-                file.write( setname.str(), xsnf, d );
+                setname << "xsnf/" << ig;
+                xsm_g.write( setname.str(), xsnf, d );
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xsch/" << ig;
-                file.write( setname.str(), xsch, d );
+                setname << "xsch/" << ig;
+                xsm_g.write( setname.str(), xsch, d );
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xskf/" << ig;
-                file.write( setname.str(), xskf, d );
+                setname << "xskf/" << ig;
+                xsm_g.write( setname.str(), xskf, d );
             }
 
         }
@@ -496,7 +496,7 @@ namespace mocc {
         dims[1] = ng_;
         dims[2] = ng_;
 
-        file.write( "/xsmesh/xssc", scat, dims );
+        xsm_g.write( "xssc", scat, dims );
 
 
         return;
