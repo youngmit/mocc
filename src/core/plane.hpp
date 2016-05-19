@@ -33,13 +33,14 @@ namespace mocc {
         }
 
         /**
-         * \brief Return a const pointer to the \ref PinMesh that occupies the
-         * passed \ref Point2.
          *
-         * \param[in] p The point at which to find a \ref PinMesh
-         * \param[inout] first_reg the first region index of the returned \ref
-         * Pin. The value passed in is incremented by the region offset within
-         * the Plane.
+         * \brief Given a \ref Point2 in core-local coordinates, return a const
+         * pointer to the corresponding \ref PinMesh.
+         *
+         * \param[in,out] p a Point2 in core-local coordinates. Will be modified
+         * (see below).
+         * \param[in,out] first_reg the first FSR index of the Plane. Will be
+         * updated to the first region of the \ref Pin in which the pin resides.
          */
         const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;
 

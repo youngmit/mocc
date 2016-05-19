@@ -85,14 +85,6 @@ namespace mocc {
     }
 
     /**
-     * \brief Given a Point2 in core-local coordinates, return a const pointer
-     * to the corresponding PinMesh.
-     * \param[in,out] p a Point2 in core-local coordinates. Will be modified
-     * (see below).
-     * \param[in,out] first_reg the first FSR index of the Plane. Will be
-     * incremented to the first FSR index of the Lattice in which the PinMesh
-     * resides.
-     *
      * \note The passed Point2 \p p will be modified by the call to
      * Lattice::get_pinmesh(). See CoreMesh::get_pinmesh() for a detailed
      * description of why.
