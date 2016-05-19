@@ -24,29 +24,25 @@ namespace mocc {
     class XSMeshRegion {
     friend class XSMesh;
     public:
-        XSMeshRegion(){ }
+        XSMeshRegion():
+            is_fissile_(false)
+        {
+            return;
+        }
+
         XSMeshRegion( const VecI &fsrs, real_t *xstr,
                                         real_t *xsnf,
                                         real_t *xsch,
                                         real_t *xsf,
                                         real_t *xsrm,
-                                        const ScatteringMatrix& xssc ):
-            reg_(fsrs),
-            xsmactr_(xstr),
-            xsmacnf_(xsnf),
-            xsmackf_(xsf),
-            xsmacch_(xsch),
-            xsmacrm_(xsrm),
-            xsmacsc_(xssc)
-        {
-            for( int ig=0; ig<this->n_group(); ig++ ) {
-                xsmacrm_[ig] = xsmactr_[ig] - xsmacsc_.self_scat(ig);
-            }
-            return;
-        }
+                                        const ScatteringMatrix& xssc );
 
         int n_group() const {
             return xsmacsc_.n_group();
+        }
+
+        bool is_fissile() const {
+            return is_fissile_;
         }
 
         const real_t &xsmactr(int ig) const {
@@ -86,6 +82,35 @@ namespace mocc {
 
         const ScatteringMatrix& xsmacsc() const {
             return xsmacsc_;
+        }
+
+        /**
+         * \brief Return a vector containing the Chi distribution as a
+         * cumulative distribution function.
+         *
+         * For now we are calculating this on the fly, since that is easier,. In
+         * the future, to speed up the MC stuff, it might be nice to have this
+         * precomputed.
+         */
+        std::vector<real_t> chi_cdf() const {
+            std::vector<real_t> cdf;
+            cdf.reserve(this->n_group());
+            real_t sum = 0.0;
+            for( int ig=0; ig<this->n_group(); ig++ ) {
+                sum += xsmacchi_[ig];
+                cdf.push_back(sum);
+            }
+
+            // Calculate reciprocal to reduce strength of the operation from
+            // division to multiplication
+            sum = 1.0/sum;
+
+            // Scale the CDF to unity
+            for( auto &v: cdf ) {
+                v *= sum;
+            }
+
+            return cdf;
         }
 
         /**
@@ -163,6 +188,9 @@ namespace mocc {
     private:
         // List of FSR indices that use this XS mesh region
         VecI reg_;
+
+        // Whether or not the region is fissile
+        bool is_fissile_;
 
         // Actual group constants for this XS mesh region
         real_t *xsmactr_;
