@@ -16,12 +16,16 @@
 
 #pragma once
 
+#include <cassert>
+
 #include "global_config.hpp"
 #include "util/force_inline.hpp"
 
 namespace mocc {
     /**
      * \brief A linear congruential random number generator
+     * 
+     * Most of the parameters are from OpenMC. Thanks, dudes!
      */
     class RNG_LCG {
     public:
@@ -39,6 +43,40 @@ namespace mocc {
 
             return float_scale_ * current_seed_;
         }
+
+        /**
+         * \brief Generate a uniformly-distributed random number on 
+         * [0,\p ubound)
+         */
+        MOCC_FORCE_INLINE real_t random( real_t ubound ) {
+            assert( ubound > 0.0 );
+            current_seed_ = current_seed_*m_ + increment_;
+
+            real_t v = float_scale_ * current_seed_;
+            return v*ubound;
+        }
+
+        /**
+         * \brief Generate a uniformly-distributed random number on 
+         * [\p lbound, \p ubound)
+         */
+        MOCC_FORCE_INLINE real_t random( real_t lbound, real_t ubound ) {
+            assert( ubound > lbound );
+            current_seed_ = current_seed_*m_ + increment_;
+
+            real_t v = float_scale_ * current_seed_;
+            return lbound + (ubound-lbound)*v;
+        }
+
+        /**
+         * \brief Sample a uniformly-distributed integer on [0, ubound)
+         */
+        MOCC_FORCE_INLINE int random_int( int ubound ) {
+            current_seed_ = current_seed_*m_ + increment_;
+            int i = current_seed_ * ubound;
+
+            return i;
+        }
         
     private:
         const unsigned long seed_;
@@ -49,4 +87,7 @@ namespace mocc {
         const unsigned long increment_ = 1;
         const real_t float_scale_ = 1.0/(std::pow(2.0, bits_));
     };
+
+    extern RNG_LCG RNG;
+
 } // namespace mocc
