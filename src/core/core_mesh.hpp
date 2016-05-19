@@ -20,7 +20,6 @@
 #include <map>
 #include <memory>
 
-
 #include "core/assembly.hpp"
 #include "core/core.hpp"
 #include "core/lattice.hpp"
@@ -249,6 +248,33 @@ namespace mocc {
          */
         friend std::ostream& operator<<( std::ostream &os,
                 const CoreMesh &mesh);
+
+        /**
+         * \brief Return the region index at the point specified
+         *
+         * \param p a Point3 containing the coordinates to look up
+         *
+         * This method tracks down through the mesh hierarchy to find the region
+         * index for the specified point. It is not fast.
+         */
+        int region_at_point( Point3 p ) const {
+            int plane_index = std::distance(z_vec_.begin(),
+                    std::lower_bound(z_vec_.begin(), z_vec_.end(), p.z));
+            const auto &plane = planes_[plane_index];
+
+            // Start with the first region for the plane
+            int ireg = first_reg_plane_[plane_index];
+
+            // Get a pointer to the appropriate pin mesh, set ireg to the
+            // beginning of that instance of the mesh.
+            Point2 p2d = p.to_2d();
+            const auto pm = plane.get_pinmesh( p2d, ireg );
+
+            ireg += pm->find_reg(p2d);
+
+            return ireg;
+        }
+
 
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs

@@ -34,7 +34,7 @@ namespace {
 }
 
 namespace mocc {
-    class Point2 {
+    struct Point2 {
     public:
         real_t x;
         real_t y;
@@ -96,6 +96,40 @@ namespace mocc {
             }
         }
     private:
+    };
+
+    struct Point3 {
+    public:
+        real_t x;
+        real_t y;
+        real_t z;
+        bool ok;
+
+        Point3():
+            x(0.0),
+            y(0.0),
+            z(0.0),
+            ok(false)
+        {
+            return;
+        }
+
+        Point3( real_t x, real_t y, real_t z ):
+            x(x),
+            y(y),
+            z(z),
+            ok(true)
+        {
+            return;
+        }
+
+        /**
+         * \brief Return a \ref Point2 instance containing the 2-dimensional
+         * component of the \ref Point3
+         */
+        Point2 to_2d() const {
+            return Point2(x, y);
+        }
     };
 
     class Box {
