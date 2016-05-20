@@ -97,7 +97,7 @@ namespace mocc {
             cdf.reserve(this->n_group());
             real_t sum = 0.0;
             for( int ig=0; ig<this->n_group(); ig++ ) {
-                sum += xsmacchi_[ig];
+                sum += xsmacch_[ig];
                 cdf.push_back(sum);
             }
 

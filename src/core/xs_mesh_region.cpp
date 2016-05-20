@@ -37,7 +37,7 @@ namespace mocc {
         is_fissile_ = false;
         for( int ig=0; ig<this->n_group(); ig++ ) {
             xsmacrm_[ig] = xsmactr_[ig] - xsmacsc_.self_scat(ig);
-            if( xsmacnf[ig] > 0.0 ) {
+            if( xsmacnf_[ig] > 0.0 ) {
                 is_fissile_ = true;
             }
         }
