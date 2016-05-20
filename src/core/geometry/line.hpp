@@ -18,6 +18,7 @@
 
 #include "core/global_config.hpp"
 
+#include "direction.hpp"
 #include "points.hpp"
 
 namespace mocc {

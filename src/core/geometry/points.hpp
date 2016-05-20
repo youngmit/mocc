@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "core/constants.hpp"
 #include "core/global_config.hpp"
 #include "core/fp_utils.hpp"
 
