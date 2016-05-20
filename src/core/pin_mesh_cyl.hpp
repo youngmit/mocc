@@ -46,8 +46,8 @@ namespace mocc {
             return n;
         }
 
-        std::pair<real_t, int> distance_to_surface(Point3 p, Direction d,
-                int reg ) const;
+        std::pair<real_t, int> distance_to_surface(Point2 p,
+                Direction d ) const;
 
         void print( std::ostream &os ) const;
 

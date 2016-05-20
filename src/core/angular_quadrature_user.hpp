@@ -18,7 +18,7 @@
 
 #include <vector>
 
-#include "angle.hpp"
+#include "core/geometry/angle.hpp"
 #include "pugifwd.hpp"
 
 namespace mocc {

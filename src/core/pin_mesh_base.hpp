@@ -122,8 +122,18 @@ namespace mocc {
          * \param d a Direction containing the direction in which to measure
          * \param reg the region we think the point should belong to to start
          */
-        virtual std::pair<real_t, int> distance_to_surface(Point3 p,
-                Direction d, int reg ) const =0;
+        virtual std::pair<real_t, int> distance_to_surface(Point2 p,
+                Direction d ) const =0;
+
+        /**
+         * \brief \copybrief distance_to_surface(Point2, Direction, int)
+         *
+         * This essentially wraps the \ref Point2 version
+         */
+        std::pair<real_t, int> distance_to_surface(Point3 p, Direction d) const
+        {
+            return this->distance_to_surface(p.to_2d(), d);
+        }
 
         /**
          * \brief Return a string containing PyCairo commands to draw the \ref

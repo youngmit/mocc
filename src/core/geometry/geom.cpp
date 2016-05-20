@@ -30,20 +30,19 @@ std::ostream &operator<<(std::ostream &os, Line &l) {
     return os;
 }
 
-real_t Circle::distance_to_surface(Particle p) const {
-    real_t d;
+real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
     std::numeric_limits<real_t> lim;
 
-    real_t a = 1.0 - p.direction.oz * p.direction.oz;
+    real_t a = 1.0 - dir.oz * dir.oz;
 
     if (a == 0.0) {
         return lim.max();
     }
 
-    real_t x = p.location.x - c.x;
-    real_t y = p.location.y - c.y;
+    real_t x = p.x - c.x;
+    real_t y = p.y - c.y;
 
-    real_t k = x * p.direction.ox + y * p.direction.oy;
+    real_t k = x * dir.ox + y * dir.oy;
     real_t c = x * x + y * y - r * r;
     real_t det = k * k - a * c;
 
@@ -73,7 +72,7 @@ real_t Circle::distance_to_surface(Particle p) const {
     return lim.max();
 } // Circle::distance_to_surface()
 
-Line::distance_to_surface( Particle p ) const {
+real_t Line::distance_to_surface( Point2 p, Direction dir ) const {
     const std::numeric_limits<real_t> lim;
 
     // Cast the line into the general form. This might be worth doing ahead of
@@ -83,17 +82,17 @@ Line::distance_to_surface( Particle p ) const {
     real_t c = p1.x*p2.y - p2.x*p1.y;
 
     // Evaluate distance to surface
-    real_t f = a*p.location.x + b*p.location.y + c;
+    real_t f = a*p.x + b*p.y + c;
 
     // Project from location to line
-    real_t p = p.direction.ox*a + p.direction.oy*b;
+    real_t proj = dir.ox*a + dir.oy*b;
 
     // Check for point laying on line
-    if(std::abs(p) < 4.0*lim.epsilon()) {
+    if(std::abs(proj) < 4.0*lim.epsilon()) {
         return lim.max();
     }
 
-    real_t d = -f/p;
+    real_t d = -f/proj;
     if( d >= 0.0 ) {
         return d;
     }

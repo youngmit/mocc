@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "core/error.hpp"
 #include "core/geometry/geom.hpp"
 #include "core/pin_mesh_base.hpp"
 #include "core/pugifwd.hpp"
@@ -34,6 +35,13 @@ namespace mocc {
 
         size_t n_fsrs( unsigned int xsreg ) const {
             return 1;
+        }
+
+        virtual std::pair<real_t, int> distance_to_surface(Point2 p,
+                Direction d ) const {
+            throw EXCEPT("not implemented");
+            std::pair<real_t, int> whatever;
+            return whatever;
         }
 
         void print( std::ostream &os ) const;

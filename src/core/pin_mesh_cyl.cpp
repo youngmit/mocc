@@ -264,8 +264,8 @@ namespace mocc {
         return ireg;
     }
 
-    std::pair<real_t, int> PinMesh_Cyl::distance_to_surface( Point3 p,
-            Direction d, int reg ) const {
+    std::pair<real_t, int> PinMesh_Cyl::distance_to_surface( Point2 p,
+            Direction d ) const {
         std::pair<real_t, int> ret;
 
         // We are mostly operating in 2-D here, and don't take into account the
@@ -277,6 +277,7 @@ namespace mocc {
         // start with a resonable max distance
         real_t dist = pitch_x_+pitch_y_;
 
+        throw EXCEPT("not implemented");
 
 
         return ret;

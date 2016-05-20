@@ -24,7 +24,6 @@
 #include "angle.hpp"
 #include "fp_utils.hpp"
 #include "global_config.hpp"
-#include "particle.hpp"
 #include "points.hpp"
 
 #define GEOM_EPS 1e-13
@@ -116,7 +115,7 @@ struct Circle {
     real_t r;
 
     /// \todo document this
-    real_t distance_to_surface(Particle p) const;
+    real_t distance_to_surface(Point2 p, Direction dir) const;
 };
 
 struct Line {
@@ -126,7 +125,7 @@ struct Line {
     Point2 p2;
 
     /// \todo document this
-    real_t distance_to_surface(Particle p) const;
+    real_t distance_to_surface(Point2 p, Direction dir) const;
 
     friend std::ostream &operator<<(std::ostream &os, Line &l);
 };

@@ -18,6 +18,7 @@
 
 #include <cassert>
 
+#include "core/constants.hpp"
 #include "core/fp_utils.hpp"
 #include "core/global_config.hpp"
 

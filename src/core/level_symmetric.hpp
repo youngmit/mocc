@@ -19,9 +19,9 @@
 #include <vector>
 #include <math.h>
 
-#include "angle.hpp"
-#include "global_config.hpp"
-#include "error.hpp"
+#include "core/geometry/angle.hpp"
+#include "core/error.hpp"
+#include "core/global_config.hpp"
 
 using namespace mocc;
 

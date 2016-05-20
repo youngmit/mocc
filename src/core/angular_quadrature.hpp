@@ -20,7 +20,7 @@
 #include <iosfwd>
 #include <vector>
 
-#include "angle.hpp"
+#include "core/geometry/angle.hpp"
 #include "global_config.hpp"
 #include "output_interface.hpp"
 #include "pugifwd.hpp"

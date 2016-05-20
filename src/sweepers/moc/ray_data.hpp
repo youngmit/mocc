@@ -20,10 +20,10 @@
 #include <memory>
 #include <vector>
 
-#include "core/angle.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/core_mesh.hpp"
-#include "core/geom.hpp"
+#include "core/geometry/geom.hpp"
+#include "core/geometry/angle.hpp"
 #include "core/pugifwd.hpp"
 
 #include "ray.hpp"

@@ -21,8 +21,9 @@
 
 #include "pugifwd.hpp"
 
+#include "direction.hpp"
+
 #include "core/constants.hpp"
-#include "core/direction.hpp"
 #include "core/fp_utils.hpp"
 #include "core/global_config.hpp"
 

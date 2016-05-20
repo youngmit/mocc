@@ -18,8 +18,8 @@
 
 #include <cmath>
 
-#include "core/angle.hpp"
 #include "core/constants.hpp"
+#include "core/geometry/angle.hpp"
 #include "core/global_config.hpp"
 
 #include "util/force_inline.hpp"
