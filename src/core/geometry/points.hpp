@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include "core/global_config.hpp"
+#include "core/fp_utils.hpp"
+
 namespace mocc {
     struct Point2 {
     public:
@@ -119,5 +122,9 @@ namespace mocc {
             return Point2(x, y);
         }
     };
+
+    inline Point2 Midpoint(const Point2 p1, const Point2 p2) {
+        return Point2(0.5 * (p1.x + p2.x), 0.5 * (p1.y + p2.y));
+    }
 
 } // namespace mocc

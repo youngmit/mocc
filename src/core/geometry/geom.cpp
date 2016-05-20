@@ -30,48 +30,6 @@ std::ostream &operator<<(std::ostream &os, Line &l) {
     return os;
 }
 
-real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
-    std::numeric_limits<real_t> lim;
-
-    real_t a = 1.0 - dir.oz * dir.oz;
-
-    if (a == 0.0) {
-        return lim.max();
-    }
-
-    real_t x = p.x - c.x;
-    real_t y = p.y - c.y;
-
-    real_t k = x * dir.ox + y * dir.oy;
-    real_t c = x * x + y * y - r * r;
-    real_t det = k * k - a * c;
-
-    if (det < 0.0) {
-        return lim.max();
-    }
-
-    // if c ~= 0.0, we are on the surface of the circle. On surfaces, we
-    // determine sense w.r.t. direction of travel; the particle is assumed
-    // on the side in the direction of travel.
-    if (std::abs(c) < 4.0 * lim.epsilon()) {
-        if (k >= 0.0) {
-            return lim.max();
-        } else {
-            return (-k + std::sqrt(det)) / a;
-        }
-    }
-
-    if (c < 0.0) {
-        // inside the circle
-        return (-k + std::sqrt(det)) / a;
-    } else {
-        // outside the circle
-        real_t d = (-k - std::sqrt(det)) / a;
-        return d >= 0.0 ? d : lim.max();
-    }
-    return lim.max();
-} // Circle::distance_to_surface()
-
 real_t Line::distance_to_surface( Point2 p, Direction dir ) const {
     const std::numeric_limits<real_t> lim;
 

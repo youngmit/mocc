@@ -22,11 +22,14 @@
 #include <iosfwd>
 
 #include "angle.hpp"
-#include "fp_utils.hpp"
-#include "global_config.hpp"
+#include "box.hpp"
+#include "circle.hpp"
+#include "line.hpp"
 #include "points.hpp"
 
-#define GEOM_EPS 1e-13
+#include "core/fp_utils.hpp"
+#include "core/global_config.hpp"
+
 
 namespace {
 template <typename T>
@@ -36,103 +39,6 @@ int sgn(T val) {
 }
 
 namespace mocc {
-
-class Box {
-   public:
-    Box(Point2 p1, Point2 p2) {
-        p1_ = Point2(std::min(p1.x, p2.x), std::min(p1.y, p2.y));
-        p2_ = Point2(std::max(p1.x, p2.x), std::max(p1.y, p2.y));
-
-        return;
-    }
-
-    Point2 intersect(Point2 p, Angle ang) {
-        // Project ox/oy to 2D plane
-        real_t ox = cos(ang.alpha);
-        real_t oy = sin(ang.alpha);
-
-        // Dont use this code for astronomy stuff
-        real_t d_min = 1.0e12;
-        real_t d;
-        real_t x, y;
-
-        Point2 p_out;
-
-        // Check distance to x-normal planes
-        x = p1_.x;
-        d = (p1_.x - p.x) / ox;
-        y = p.y + oy * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        x = p2_.x;
-        d = (p2_.x - p.x) / ox;
-        y = p.y + oy * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        // Check distance to y-normal planes
-        y = p1_.y;
-        d = (p1_.y - p.y) / oy;
-        x = p.x + ox * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        y = p2_.y;
-        d = (p2_.y - p.y) / oy;
-        x = p.x + ox * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        return p_out;
-    }
-
-   private:
-    // corners of the box
-    Point2 p1_, p2_;
-};
-
-struct Circle {
-    Circle(Point2 c, real_t r) : c(c), r(r) {}
-
-    Point2 c;
-    real_t r;
-
-    /// \todo document this
-    real_t distance_to_surface(Point2 p, Direction dir) const;
-};
-
-struct Line {
-    Line(Point2 p1, Point2 p2) : p1(p1), p2(p2) {}
-
-    Point2 p1;
-    Point2 p2;
-
-    /// \todo document this
-    real_t distance_to_surface(Point2 p, Direction dir) const;
-
-    friend std::ostream &operator<<(std::ostream &os, Line &l);
-};
-
-inline Point2 Midpoint(const Point2 p1, const Point2 p2) {
-    return Point2(0.5 * (p1.x + p2.x), 0.5 * (p1.y + p2.y));
-}
 
 // Intersection between a circle and a line segment. Return value carries
 // the number of valid intersections that were found
