@@ -22,7 +22,7 @@
 
 #include "constants.hpp"
 #include "error.hpp"
-#include "geom.hpp"
+#include "geometry/geom.hpp"
 #include "global_config.hpp"
 #include "position.hpp"
 
@@ -674,6 +674,17 @@ namespace mocc {
                 default:
                     return -5;
             }
+        }
+
+        /**
+         * \brief Return the plane index for the given axial position
+         *
+         * \param z the axial location
+         *
+         */
+        int plane_index( real_t z ) const {
+            return std::distance(z_vec_.begin(),
+                    std::lower_bound(z_vec_.begin(), z_vec_.end(), z)) - 1;
         }
 
         /**

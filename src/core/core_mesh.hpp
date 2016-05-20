@@ -78,10 +78,14 @@ namespace mocc {
         * PinMesh origin. See the note below.
         * \param[in] iz the index of the \ref Plane in which to search for the
         * \ref PinMesh.
-        * \param[inout] first_reg still need to accurately define
-        * this param
-        *
-        * \todo document thie first_reg parameter. important!
+        * \param[inout] first_reg the index offset to start with. This will be
+        * incremented by thie index of the first mesh region in the resultant
+        * \ref PinMesh. This parameter will typically be passed in as zero, or
+        * as the index of the first region of the <tt>iz</tt>th plane. The
+        * former would be useful for ray tracing purposes, where each
+        * geometrically-unique plane is traced independently, and the FSR
+        * indices are incremented at sweep time to the approbriate concrete
+        * plane. The latter is useful when the actual index is desired.
         *
         * This routine provides a means by which to locate the \ref PinMesh
         * object that fills the space in which the passed Point resides. This is
@@ -258,9 +262,8 @@ namespace mocc {
          * index for the specified point. It is not fast.
          */
         int region_at_point( Point3 p ) const {
-            int plane_index = std::distance(z_vec_.begin(),
-                    std::lower_bound(z_vec_.begin(), z_vec_.end(), p.z));
-            const auto &plane = planes_[plane_index];
+            int plane_index = this->plane_index(p.z);
+            const auto &plane = planes_[unique_plane_[plane_index]];
 
             // Start with the first region for the plane
             int ireg = first_reg_plane_[plane_index];

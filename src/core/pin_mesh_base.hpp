@@ -19,7 +19,7 @@
 #include <string>
 
 #include "global_config.hpp"
-#include "geom.hpp"
+#include "geometry/geom.hpp"
 #include "position.hpp"
 #include "pugifwd.hpp"
 
@@ -113,6 +113,17 @@ namespace mocc {
          * PinMesh and have it work as expected.
          */
         virtual void print( std::ostream &os ) const;
+
+        /**
+         * \brief Return the distance to the nearest internal pin mesh surface
+         * and the corresponding region.
+         *
+         * \param p a Point3 containing the location from which to measure
+         * \param d a Direction containing the direction in which to measure
+         * \param reg the region we think the point should belong to to start
+         */
+        virtual std::pair<real_t, int> distance_to_surface(Point3 p,
+                Direction d, int reg ) const =0;
 
         /**
          * \brief Return a string containing PyCairo commands to draw the \ref

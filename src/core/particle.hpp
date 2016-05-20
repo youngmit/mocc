@@ -15,33 +15,35 @@
 */
 
 #pragma once
-#include <string>
-#include <vector>
 
-#include "core/geometry/geom.hpp"
-#include "core/pin_mesh_base.hpp"
-#include "core/pugifwd.hpp"
+#include <array>
+
+#include "points.hpp"
+#include "global_config.hpp"
 
 namespace mocc {
-    class PinMesh_Rect: public PinMesh{
+    struct Particle {
     public:
-        PinMesh_Rect(const pugi::xml_node &input);
+        Particle() { }
 
-        int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
-                VecI &reg ) const;
-
-        int find_reg( Point2 p ) const;
-
-        size_t n_fsrs( unsigned int xsreg ) const {
-            return 1;
+        Particle(Point3 loc, Direction dir, int ig):
+            location(loc),
+            direction(dir),
+            group(ig),
+            weight(1.0)
+        {
+            return;
         }
 
-        void print( std::ostream &os ) const;
+        // Particle's location in the global domain
+        Point3 location;
+        Direction direction;
 
-        std::string draw() const;
-    private:
-        VecF hx_;
-        VecF hy_;
-        std::vector<Line> lines_;
+        // Particle's energy group
+        int group;
+
+        // Particle weight (for variance reduction and the like)
+        real_t weight;
     };
-}
+
+} // namespace mocc

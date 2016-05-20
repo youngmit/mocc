@@ -14,18 +14,10 @@
    limitations under the License.
 */
 
-#include "geom.hpp"
+#include "UnitTest++/UnitTest++.h"
 
-#include <iostream>
+#include "core/geometry/line.hpp"
 
-namespace mocc {
-    std::ostream& operator<<( std::ostream &os, const Point2 &p ) {
-        os << "[ " << p.x << ", " << p.y << " ]";
-        return os;
-    }
-
-    std::ostream& operator<<( std::ostream &os, Line &l ) {
-       os << "[" << l.p1 << ", " << l.p2 << "]";
-       return os;
-   }
+int main() {
+    return UnitTest::RunAllTests();
 }

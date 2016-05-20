@@ -23,7 +23,7 @@
 
 #include "assembly.hpp"
 #include "constants.hpp"
-#include "geom.hpp"
+#include "geometry/geom.hpp"
 #include "pugifwd.hpp"
 
 namespace mocc {

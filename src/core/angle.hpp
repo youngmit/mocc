@@ -22,6 +22,7 @@
 #include "pugifwd.hpp"
 
 #include "core/constants.hpp"
+#include "core/direction.hpp"
 #include "core/fp_utils.hpp"
 #include "core/global_config.hpp"
 
@@ -58,22 +59,9 @@ namespace mocc {
      * such situations are rare, and may still be modelled by an angle which
      * lies very close to, but not directly on the axis.
      */
-    struct Angle {
-        /// x-component of the angle
-        real_t ox;
-        /// y-component of the angle
-        real_t oy;
-        /// z-component of the angle
-        real_t oz;
-        /// azimuthal angle
-        real_t alpha;
-        /// polar cosine
-        real_t theta;
+    struct Angle : public Direction {
         /// quadrature weight
         real_t weight;
-        /// Reciprocal of the sine of the polar angle. This is useful for
-        /// computing true ray segment length from 2D projected length.
-        real_t rsintheta;
 
         /**
          * Default constructor makes a nonsense angle. Watch out.
@@ -84,34 +72,31 @@ namespace mocc {
          * Construct using alpha/theta
          */
         Angle( real_t alpha, real_t theta, real_t weight ):
-            alpha(alpha),
-            theta(theta),
+            Direction(alpha, theta),
             weight(weight)
         {
-            ox = std::sin((long double)theta)*std::cos((long double)alpha);
-            oy = std::sin((long double)theta)*std::sin((long double)alpha);
-            oz = std::cos((long double)theta);
-            rsintheta = 1.0/std::sin((long double)theta);
+            return;
         }
 
         /**
          * Construct using direction cosines
          */
         Angle( real_t ox, real_t oy, real_t oz, real_t weight):
-            ox(ox), oy(oy), oz(oz), weight(weight)
+            Direction( ox, oy, oz ),
+            weight(weight)
         {
-            long double ox_big = ox;
-            long double oz_big = oz;
-            long double theta_big = std::acos(oz_big);
-            theta = theta_big;
-            alpha = std::acos(ox_big/std::sin(theta_big));
-            if( oy < 0.0 ) {
-                alpha = TWOPI - alpha;
-            }
-            rsintheta = 1.0l/std::sin(theta_big);
             return;
         }
 
+        /**
+         * Construct using explicit \ref Direction
+         */
+        Angle( Direction d, real_t weight ):
+            Direction(d),
+            weight(weight)
+        {
+            return;
+        }
 
         /**
          * Construct using input from an XML node
@@ -128,33 +113,6 @@ namespace mocc {
 
         // Provide stream insertion support
         friend std::ostream& operator<<(std::ostream& os, const Angle &ang );
-
-        /**
-         * \brief Return the upwind surface of the angle, given a \ref Normal
-         * direction.
-         */
-        Surface upwind_surface( Normal norm ) const {
-            switch( norm ) {
-                case Normal::X_NORM:
-                    return (ox > 0.0) ? Surface::WEST : Surface::EAST;
-                case Normal::Y_NORM:
-                    return (oy > 0.0) ? Surface::SOUTH : Surface::NORTH;
-                case Normal::Z_NORM:
-                    return (oz > 0.0) ? Surface::BOTTOM : Surface::TOP;
-                default:
-                    return Surface::INVALID;
-            }
-            return Surface::INVALID;
-        }
-
-        /**
-         * \brief Change the azimuthal angle of this Angle, and update all other
-         * values accordingly.
-         */
-        void modify_alpha( real_t new_alpha ) {
-            *this = Angle(new_alpha, theta, weight);
-            return;
-        }
 
         /**
          * \brief Provide operator==
@@ -178,18 +136,13 @@ namespace mocc {
         bool operator!=( const Angle &other ) const {
             bool not_equal =
             (
-                !fp_equiv_ulp( ox, other.ox ) ||
-                !fp_equiv_ulp( oy, other.oy ) ||
-                !fp_equiv_ulp( oz, other.oz ) ||
-                !fp_equiv_ulp( alpha, other.alpha ) ||
-                !fp_equiv_ulp( theta, other.theta ) ||
                 !fp_equiv_ulp( weight, other.weight ) ||
-                !fp_equiv_ulp( rsintheta, other.rsintheta )
+                ( (Direction)(*this) != (Direction)other )
             );
             return not_equal;
         }
 
     };
 
-    Angle ModifyAlpha ( Angle in, real_t new_alpha );
+    //Angle ModifyAlpha ( Angle in, real_t new_alpha );
 }

@@ -18,7 +18,7 @@
 
 #include <vector>
 
-#include "geom.hpp"
+#include "geometry/geom.hpp"
 #include "global_config.hpp"
 #include "lattice.hpp"
 

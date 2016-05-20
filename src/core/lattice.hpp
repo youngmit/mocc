@@ -22,7 +22,7 @@
 #include <vector>
 
 
-#include "core/geom.hpp"
+#include "core/geometry/geom.hpp"
 #include "core/global_config.hpp"
 #include "core/pin.hpp"
 #include "core/pin_mesh_base.hpp"

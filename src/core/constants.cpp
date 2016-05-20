@@ -60,39 +60,39 @@ namespace mocc {
     }
 
 
-    std::ostream& operator<<(std::ostream& os, const Direction d ) {
+    std::ostream& operator<<(std::ostream& os, const Cardinal d ) {
         switch( d ) {
-            case Direction::EAST:
+            case Cardinal::EAST:
                 os << "east";
                 break;
-            case Direction::WEST:
+            case Cardinal::WEST:
                 os << "west";
                 break;
-            case Direction::NORTH:
+            case Cardinal::NORTH:
                 os << "north";
                 break;
-            case Direction::SOUTH:
+            case Cardinal::SOUTH:
                 os << "south";
                 break;
-            case Direction::TOP:
+            case Cardinal::TOP:
                 os << "top";
                 break;
-            case Direction::BOTTOM:
+            case Cardinal::BOTTOM:
                 os << "bottom";
                 break;
-            case Direction::NE:
+            case Cardinal::NE:
                 os << "ne";
                 break;
-            case Direction::NW:
+            case Cardinal::NW:
                 os << "nw";
                 break;
-            case Direction::SW:
+            case Cardinal::SW:
                 os << "sw";
                 break;
-            case Direction::SE:
+            case Cardinal::SE:
                 os << "se";
                 break;
-            case Direction::INVALID:
+            case Cardinal::INVALID:
                 os << "inv";
                 break;
         }

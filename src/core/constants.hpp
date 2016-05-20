@@ -40,7 +40,7 @@ namespace mocc {
 
 
 
-    enum class Direction : unsigned char {
+    enum class Cardinal : unsigned char {
         EAST  = 0,
         NORTH = 1,
         WEST  = 2,

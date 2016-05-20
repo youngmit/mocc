@@ -195,10 +195,10 @@ namespace mocc {
         ps.push_back(p2);
 
         // Find intersections with the rings
-        for( auto ci=circles_.begin(); ci!=circles_.end(); ci++ ) {
+        for( const auto &ci: circles_ ) {
             Point2 p1;
             Point2 p2;
-            int ret = Intersect( l, *ci, p1, p2 );
+            int ret = Intersect( l, ci, p1, p2 );
             if( ret == 2 ) {
                 ps.push_back(p1);
                 ps.push_back(p2);
@@ -206,7 +206,7 @@ namespace mocc {
         }
 
         // Find intersections with the azimuthal subdivisions
-        for( auto &li: lines_ ) {
+        for( const auto &li: lines_ ) {
             Point2 p;
             int ret = Intersect( li, l, p );
             if( ret == 1 ) {
@@ -262,6 +262,24 @@ namespace mocc {
         assert( (0 <= ireg) & (ireg < n_reg_ ) );
 
         return ireg;
+    }
+
+    std::pair<real_t, int> PinMesh_Cyl::distance_to_surface( Point3 p,
+            Direction d, int reg ) const {
+        std::pair<real_t, int> ret;
+
+        // We are mostly operating in 2-D here, and don't take into account the
+        // fact that there may be axial extents up and down. We just report the
+        // distance to the 2D surfaces (still considering the direction of the
+        // particle in the vertical direction) and the new region index assuming
+        // that the particle could make it that far.
+
+        // start with a resonable max distance
+        real_t dist = pitch_x_+pitch_y_;
+
+
+
+        return ret;
     }
 
     void PinMesh_Cyl::print( std::ostream &os ) const {

@@ -111,51 +111,7 @@ namespace mocc {
 
     // Return a new Angle, reflected into the requested octant
     Angle Angle::to_octant( int octant ) const {
-        assert( (0 < octant) & (octant < 9) );
-
-        switch( octant ) {
-            case 1:
-                return Angle(  fabs(ox),
-                               fabs(oy),
-                               fabs(oz),
-                               weight );
-            case 2:
-                return Angle( -fabs(ox),
-                               fabs(oy),
-                               fabs(oz),
-                               weight );
-            case 3:
-                return Angle( -fabs(ox),
-                              -fabs(oy),
-                               fabs(oz),
-                               weight );
-            case 4:
-                return Angle(  fabs(ox),
-                              -fabs(oy),
-                               fabs(oz),
-                               weight );
-            case 5:
-                return Angle(  fabs(ox),
-                               fabs(oy),
-                              -fabs(oz),
-                               weight );
-            case 6:
-                return Angle( -fabs(ox),
-                               fabs(oy),
-                              -fabs(oz),
-                               weight );
-            case 7:
-                return Angle( -fabs(ox),
-                              -fabs(oy),
-                              -fabs(oz),
-                               weight );
-            case 8:
-                return Angle(  fabs(ox),
-                              -fabs(oy),
-                              -fabs(oz),
-                               weight );
-        }
-        return Angle(0.0, 0.0, 0.0);
+        return Angle(Direction::to_octant(octant), weight);
     }
 
     std::ostream& operator<<(std::ostream& os, const Angle &ang ) {

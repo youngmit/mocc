@@ -211,18 +211,18 @@ namespace mocc {
             assert(corner_x != Surface::INVALID);
             assert(corner_y != Surface::INVALID);
 
-            Direction corner = Direction::INVALID;
+            Cardinal corner = Cardinal::INVALID;
             if( corner_x == Surface::WEST ) {
                 if( corner_y == Surface::NORTH ) {
-                    corner = Direction::NW;
+                    corner = Cardinal::NW;
                 } else {
-                    corner = Direction::SW;
+                    corner = Cardinal::SW;
                 }
             } else {
                 if( corner_y == Surface::NORTH ) {
-                    corner = Direction::NE;
+                    corner = Cardinal::NE;
                 } else {
-                    corner = Direction::SE;
+                    corner = Cardinal::SE;
                 }
             }
 
@@ -239,11 +239,11 @@ namespace mocc {
             if( ix == 0 ) {
                 int neighbor = this->coarse_neighbor( cell, corner_y );
                 switch( corner ) {
-                    case Direction::SW:
+                    case Cardinal::SW:
                         s[0] = this->coarse_surf( neighbor, corner_x );
                         s[1] = this->coarse_surf( cell, corner_y );
                         return 2;
-                    case Direction::NW:
+                    case Cardinal::NW:
                         s[0] = this->coarse_surf( cell, corner_x );
                         return 1;
                     default:
@@ -253,11 +253,11 @@ namespace mocc {
             if( ix == nx_ ) {
                 int neighbor = this->coarse_neighbor( cell, corner_y );
                 switch( corner ) {
-                    case Direction::SE:
+                    case Cardinal::SE:
                         s[0] = this->coarse_surf( neighbor, corner_x );
                         s[1] = this->coarse_surf( cell, corner_y );
                         return 2;
-                    case Direction::NE:
+                    case Cardinal::NE:
                         s[0] = this->coarse_surf( cell, corner_x );
                         return 1;
                     default:
@@ -267,11 +267,11 @@ namespace mocc {
             if( iy == 0 ) {
                 int neighbor = this->coarse_neighbor( cell, corner_x );
                 switch( corner ) {
-                    case Direction::SW:
+                    case Cardinal::SW:
                         s[0] = this->coarse_surf( neighbor, corner_y );
                         s[1] = this->coarse_surf( cell, corner_x );
                         return 2;
-                    case Direction::SE:
+                    case Cardinal::SE:
                         s[0] = this->coarse_surf( cell, corner_y );
                         return 1;
                     default:
@@ -281,11 +281,11 @@ namespace mocc {
             if( iy == ny_ ) {
                 int neighbor = this->coarse_neighbor( cell, Surface::EAST );
                 switch( corner ) {
-                    case Direction::NE:
+                    case Cardinal::NE:
                         s[0] = this->coarse_surf( neighbor, Surface::NORTH );
                         s[1] = this->coarse_surf( cell, Surface::EAST );
                         return 2;
-                    case Direction::NW:
+                    case Cardinal::NW:
                         s[0] = this->coarse_surf( cell, Surface::NORTH );
                         return 1;
                     default:
