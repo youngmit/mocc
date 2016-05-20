@@ -16,8 +16,54 @@
 
 #include "UnitTest++/UnitTest++.h"
 
+#include <limits>
+
 #include "core/geometry/line.hpp"
 
-int main() {
-    return UnitTest::RunAllTests();
+using namespace mocc;
+
+TEST(test_line) {
+    std::numeric_limits<real_t> lim;
+    {
+        Line l(Point2(0.0, -10.0), Point2(0.0, 10.0));
+
+        // Simplest case. Hit head on from unit distance
+        CHECK_CLOSE(1.0, l.distance_to_surface(Point2(-1.0, 0.0),
+                                               Direction(1.0, 0.0, 0.0)),
+                    GEOM_EPS);
+
+        // Reverse direction, should return max float value
+        CHECK_EQUAL(lim.max(),
+                    l.distance_to_surface(Point2(-1.0, 0.0),
+                                          Direction(-1.0, 0.0, 0.0)));
+
+        // A little more complex, hit at 45 degrees, should be root 2
+        CHECK_CLOSE(1.4142135623730950488016887242097,
+                    l.distance_to_surface(
+                        Point2(-1.0, 0.0),
+                        Direction(0.70710678118654752440084436210485,
+                                  0.70710678118654752440084436210485, 0.0)),
+                    GEOM_EPS);
+
+        // Pretty much the same, Direction defined diferently
+        CHECK_CLOSE(1.4142135623730950488016887242097,
+                    l.distance_to_surface(
+                        Point2(-1.0, 0.0),
+                        Direction(0.78539816339744830961566084581988, HPI)),
+                    GEOM_EPS);
+
+        // Add some vertical component
+        CHECK_CLOSE(2.0, l.distance_to_surface(
+                             Point2(-1.0, 0.0),
+                             Direction(0.78539816339744830961566084581988,
+                                       0.78539816339744830961566084581988)),
+                    GEOM_EPS);
+
+        // Conincidence
+        CHECK_EQUAL(
+            lim.max(),
+            l.distance_to_surface(Point2(1.0, 5.0), Direction(HPI, 0.5 * HPI)));
+    }
 }
+
+int main() { return UnitTest::RunAllTests(); }
