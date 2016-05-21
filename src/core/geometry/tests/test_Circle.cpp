@@ -57,10 +57,15 @@ TEST(testCircle) {
 
     // Exterior good
     CHECK_CLOSE(0.15138781886599732327980531686762,
-                c.distance_to_surface(
-                    Point2(-0.25, 0.0),
-                    Direction(0.5880026035475675, HPI)),
+                c.distance_to_surface(Point2(-0.25, 0.0),
+                                      Direction(0.5880026035475675, HPI)),
                 GEOM_EPS);
+
+    // Interior, out of the plane. Should be the radius/sin(theta)
+    CHECK_CLOSE(
+        1.0606601717798212866012665431573,
+        c.distance_to_surface(Point2(0.5, 0.5), Direction(0.5, 0.5 * HPI)),
+        GEOM_EPS);
 }
 
 int main() { return UnitTest::RunAllTests(); }
