@@ -24,7 +24,7 @@
 namespace mocc {
     /**
      * \brief A linear congruential random number generator
-     * 
+     *
      * Most of the parameters are from OpenMC. Thanks, dudes!
      */
     class RNG_LCG {
@@ -45,7 +45,7 @@ namespace mocc {
         }
 
         /**
-         * \brief Generate a uniformly-distributed random number on 
+         * \brief Generate a uniformly-distributed random number on
          * [0,\p ubound)
          */
         MOCC_FORCE_INLINE real_t random( real_t ubound ) {
@@ -57,7 +57,7 @@ namespace mocc {
         }
 
         /**
-         * \brief Generate a uniformly-distributed random number on 
+         * \brief Generate a uniformly-distributed random number on
          * [\p lbound, \p ubound)
          */
         MOCC_FORCE_INLINE real_t random( real_t lbound, real_t ubound ) {
@@ -77,12 +77,30 @@ namespace mocc {
 
             return i;
         }
-        
+
+        /**
+         * \brief Sample and index from a cumulative distribution function
+         *
+         * \param cdf a vector of \ref real_t containing the CDF. This is
+         * assumed to increase monotonically to a final value of unity.
+         *
+         * This will sample an index randomly from a CDF, which should contain
+         * the cumulative probability of the index lying below each entry. To be
+         * well-formed, the entries in the CDF should increase monotonically,
+         * with the last entry being unity. There is no check made internally,
+         * and it is assuming that the caller is providing a valid CDF.
+         */
+        MOCC_FORCE_INLINE int sample_cdf( const std::vector<real_t> &cdf ) {
+            real_t v = this->random();
+            return std::distance(cdf.begin(),
+                    std::lower_bound(cdf.begin(), cdf.end(), v) );
+        }
+
     private:
         const unsigned long seed_;
         unsigned long current_seed_;
         const int bits_ = 64;
-        const unsigned long m_ = 2806196910506780709ul; 
+        const unsigned long m_ = 2806196910506780709ul;
         const unsigned long mod_ = -1;
         const unsigned long increment_ = 1;
         const real_t float_scale_ = 1.0/(std::pow(2.0, bits_));
