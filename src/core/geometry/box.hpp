@@ -16,79 +16,39 @@
 
 #pragma once
 
+#include <array>
+
 #include "core/global_config.hpp"
 
+#include "angle.hpp"
+#include "line.hpp"
 #include "points.hpp"
 
 namespace mocc {
 class Box {
    public:
-    Box(Point2 p1, Point2 p2) {
-        p1_ = Point2(std::min(p1.x, p2.x), std::min(p1.y, p2.y));
-        p2_ = Point2(std::max(p1.x, p2.x), std::max(p1.y, p2.y));
-
+    /**
+     * \note The Lines should be ordered in the same way as the \ref Surface
+     * enumeration in \ref constants.hpp
+     */
+    Box(Point2 p1, Point2 p2)
+        : p1_(std::min(p1.x, p2.x), std::min(p1.y, p2.y)),
+          p2_(std::max(p1.x, p2.x), std::max(p1.y, p2.y)),
+          lines_({Line(Point2(p2_.x, p1_.y), p2_),
+                  Line(Point2(p1_.x, p2_.y), p2_),
+                  Line(p1_, Point2(p1_.x, p2_.y)),
+                  Line(p1_, Point2(p2_.x, p1_.y))}) {
         return;
     }
 
-    Point2 intersect(Point2 p, Angle ang) {
-        // Project ox/oy to 2D plane
-        real_t ox = cos(ang.alpha);
-        real_t oy = sin(ang.alpha);
+    Point2 intersect(Point2 p, Angle ang) const;
 
-        // Dont use this code for astronomy stuff
-        real_t d_min = 1.0e12;
-        real_t d;
-        real_t x, y;
-
-        Point2 p_out;
-
-        // Check distance to x-normal planes
-        x = p1_.x;
-        d = (p1_.x - p.x) / ox;
-        y = p.y + oy * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        x = p2_.x;
-        d = (p2_.x - p.x) / ox;
-        y = p.y + oy * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        // Check distance to y-normal planes
-        y = p1_.y;
-        d = (p1_.y - p.y) / oy;
-        x = p.x + ox * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        y = p2_.y;
-        d = (p2_.y - p.y) / oy;
-        x = p.x + ox * d;
-        if ((fabs(d) > GEOM_EPS) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
-            d_min = fabs(d);
-            p_out.x = x;
-            p_out.y = y;
-            p_out.ok = true;
-        }
-
-        return p_out;
-    }
+    std::pair<real_t, Surface> distance_to_surface(Point2 p,
+                                                   Direction dir) const;
 
    private:
     // corners of the box
     Point2 p1_, p2_;
+    std::array<Line, 4> lines_;
 };
-} // namespace mocc
+}  // namespace mocc
