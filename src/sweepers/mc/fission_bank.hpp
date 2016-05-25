@@ -25,6 +25,7 @@
 #include "core/core_mesh.hpp"
 #include "core/geometry/geom.hpp"
 
+#include "particle.hpp"
 #include "rng.hpp"
 
 namespace mocc {
@@ -54,8 +55,20 @@ namespace mocc {
             return sites_.cend();
         }
 
-        void push_back( Point3 p ) {
+        /**
+         * \brief Add a new fission site to the \ref FissionBank
+         *
+         * \param p a \ref Point3 for the location of the fission site
+         * \param fission the total number of fission neutrons generated at the
+         * site.
+         *
+         * This method adds a new fission site to the fission bank, and makes a
+         * contribution to the total number of neutrons that were generated into
+         * the bank.
+         */
+        void push_back( Particle &p ) {
             sites_.push_back(p);
+            total_fission_ += p.weight;
             return;
         }
 
@@ -82,10 +95,18 @@ namespace mocc {
          */
         void clear() {
             sites_.clear();
+            total_fission_ = 0.0;
+        }
+
+        void resize( unsigned int n );
+
+        real_t total_fission() const {
+            return total_fission_;
         }
 
     private:
         const CoreMesh *mesh_;
-        std::vector<Point3> sites_;
+        std::vector<Particle> sites_;
+        real_t total_fission_;
     };
 } // namespace mocc

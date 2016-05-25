@@ -39,7 +39,8 @@ namespace mocc {
      */
     FissionBank::FissionBank( const pugi::xml_node &input, int n,
             const CoreMesh &mesh ):
-        mesh_(&mesh)
+        mesh_(&mesh),
+        total_fission_(0.0)
     {
         if( input.empty() ) {
             throw EXCEPT("Empty input provided to FissionBank");
@@ -76,16 +77,23 @@ namespace mocc {
         sites_.reserve( n );
         if( !fissile_rejection ) {
             for( int i=0; i<n; i++ ) {
-                sites_.push_back({ RNG_MC.random(x_min, x_max),
-                                   RNG_MC.random(y_min, y_max),
-                                   RNG_MC.random(z_min, z_max) });
+                Point3 p(RNG_MC.random(x_min, x_max),
+                         RNG_MC.random(y_min, y_max),
+                         RNG_MC.random(z_min, z_max) );
+                Direction dir(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
+                int ig = RNG_MC.random_int(ig);
+                sites_.emplace_back(p, dir, ig);
             }
         } else {
             Warn("Fissile region rejection is not supported yet.");
             for( int i=0; i<n; i++ ) {
-                sites_.push_back({ RNG_MC.random(x_min, x_max),
-                                   RNG_MC.random(y_min, y_max),
-                                   RNG_MC.random(z_min, z_max) });
+                Point3 p(RNG_MC.random(x_min, x_max),
+                         RNG_MC.random(y_min, y_max),
+                         RNG_MC.random(z_min, z_max) );
+                Direction dir(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
+std::cout << p.x << " " << p.y << " " <<p.z << " " << std::endl;
+                int ig = RNG_MC.random_int(ig);
+                sites_.emplace_back(p, dir, ig);
             }
         }
 
@@ -100,7 +108,41 @@ namespace mocc {
         return h;
     }
 
+    void FissionBank::resize( unsigned int n ) {
+        if(n > sites_.size()) {
+            // Fission bank is too small. Randomly sample fission sites to
+            // expand.
+            // Make sure to only sample for the original sites. Probably not
+            // absolutely necessary, but keeps the original sites equally
+            // probable for the whole process.
+            int n_orig = sites_.size();
+            while(sites_.size() < n) {
+                int i_rand = RNG_MC.random_int(n_orig);
+                sites_.push_back(sites_[i_rand]);
+            }
+        }
+
+        if( n < sites_.size()) {
+            // Fission bank is too big. Randomly sample fission sites to remove.
+            // We do a swap, then pop_back because A) the order doesnt matter,
+            // and B) it avoids having to shuffle elements past the removed
+            // element. I could probaly just truncate the vector, but for some
+            // reason this feels more right
+            int n_remove = sites_.size() - n;
+            for( int i=0; i<n_remove; i++ ) {
+                int i_rand = RNG_MC.random_int(sites_.size());
+                sites_[i_rand] = sites_.back();
+                sites_.pop_back();
+            }
+
+        }
+        return;
+    }
+
     void FissionBank::swap( FissionBank &other ) {
         sites_.swap( other.sites_ );
+        real_t tfis = total_fission_;
+        total_fission_ = other.total_fission_;
+        other.total_fission_ = tfis;
     }
 } // namespace mocc
