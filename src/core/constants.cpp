@@ -52,8 +52,8 @@ namespace mocc {
             case Surface::BOTTOM:
                 os << "bottom";
                 break;
-            case Surface::INTERIOR:
-                os << "interior";
+            case Surface::INTERNAL:
+                os << "internal";
                 break;
             case Surface::INVALID:
                 os << "inv";
