@@ -30,9 +30,10 @@ namespace mocc {
         ~PinMesh_Cyl();
 
         int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
-                VecI &reg ) const;
+                VecI &reg ) const final override;
 
-        int find_reg( Point2 p ) const;
+        int find_reg( Point2 p ) const final override;
+        int find_reg( Point2 p, Direction dir ) const final override;
 
         // If i ever get more general with the azimuthal subdivision, i will
         // have to generalize this as well. make sure not to forget.
@@ -46,8 +47,8 @@ namespace mocc {
             return n;
         }
 
-        std::pair<real_t, int> distance_to_surface(Point2 p,
-                Direction d ) const;
+        std::pair<real_t, Surface> distance_to_surface(Point2 p,
+                Direction dir ) const;
 
         void print( std::ostream &os ) const;
 

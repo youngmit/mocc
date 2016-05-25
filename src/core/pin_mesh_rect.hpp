@@ -29,26 +29,26 @@ namespace mocc {
         PinMesh_Rect(const pugi::xml_node &input);
 
         int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
-                VecI &reg ) const;
+                VecI &reg ) const override final;
 
-        int find_reg( Point2 p ) const;
+        int find_reg( Point2 p ) const override final;
+        int find_reg( Point2 p, Direction dir ) const override final;
 
         size_t n_fsrs( unsigned int xsreg ) const {
             return 1;
         }
 
-        virtual std::pair<real_t, int> distance_to_surface(Point2 p,
-                Direction d ) const {
-            throw EXCEPT("not implemented");
-            std::pair<real_t, int> whatever;
-            return whatever;
-        }
+        virtual std::pair<real_t, Surface> distance_to_surface(Point2 p,
+                Direction dir ) const;
 
         void print( std::ostream &os ) const;
 
         std::string draw() const;
     private:
+        // Vector containing the x divisions, starting at the first internal
+        // division, ending at the half-pitch
         VecF hx_;
+        // Vector containing the y divisions, defined similarly to the above.
         VecF hy_;
         std::vector<Line> lines_;
     };

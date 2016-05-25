@@ -28,7 +28,15 @@ struct Line {
     Point2 p1;
     Point2 p2;
 
-    /// \todo document this
+    /**
+     * \brief Return the distance to intersection from a point, travelling in a
+     * particular direction with the Line
+     *
+     * \param p a Point2 from which to measure distance.
+     * \param dir a Direction along which to measure distance
+     *
+     * \todo once things stabilize, document all of the eccentricities
+     */
     real_t distance_to_surface(Point2 p, Direction dir) const;
 
     friend std::ostream &operator<<(std::ostream &os, Line &l);
