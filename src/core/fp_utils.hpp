@@ -20,7 +20,6 @@
 #include "global_config.hpp"
 
 namespace mocc {
-
     namespace fp_utils {
         union float_int {
             float f;
@@ -33,6 +32,10 @@ namespace mocc {
         };
     }
 
+    /// \todo this kind of thing is multiply-defined throughout the code. Try
+    /// and settle on one value
+    constexpr real_t REAL_FUZZ = 5.0*std::numeric_limits<real_t>::epsilon();
+
     /**
      * \brief Compare two floats using ULP.
      *
@@ -41,6 +44,9 @@ namespace mocc {
      * this page</a> and <a
      * href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">
      * this page</a> for more info about testing floating point equivalence.
+     *
+     * \note This routine is safe for comparing values that are not terribly
+     * close to zero. For comparing near zero, use \ref fp_equiv_abs().
      */
     inline bool fp_equiv_ulp(real_t v1, real_t v2) {
         fp_utils::double_int i1;
@@ -64,4 +70,16 @@ namespace mocc {
     inline bool fp_equiv_abs(real_t v1, real_t v2) {
         return fabs(v1-v2) < FLOAT_EPS;
     }
+
+    /**
+     * \brief A lambda function for doing a fuzzy floating-point less-than (\<)
+     * comparison.
+     * 
+     * This function returns true when \p l is sufficiently less than \p r. The
+     * primary utility of such a function is for use with the \c
+     * std::lower_bound() and \c std::upper_bound() algorithms.
+     */
+    auto fuzzy_lt = [](real_t l, real_t r) {
+        return (l-r) < 0.0;
+    };
 }
