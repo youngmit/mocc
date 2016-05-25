@@ -106,6 +106,4 @@ namespace mocc {
         const real_t float_scale_ = 1.0/(std::pow(2.0, bits_));
     };
 
-    extern RNG_LCG RNG;
-
 } // namespace mocc
