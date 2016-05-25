@@ -84,6 +84,10 @@ namespace mocc {
             return xsmacsc_;
         }
 
+        const ScatteringRow& xsmacsc(int ig) const {
+            return xsmacsc_.to(ig);
+        }
+
         /**
          * \brief Return a vector containing the Chi distribution as a
          * cumulative distribution function.
