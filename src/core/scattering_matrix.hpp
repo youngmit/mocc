@@ -104,10 +104,6 @@ namespace mocc {
         ScatteringMatrix( const ArrayB2 &scat);
 
 
-        const ScatteringRow& to( int ig ) const {
-            return rows_[ig];
-        }
-
         /**
          * Copy constructor. Need this in order to produce valid raw pointers to
          * the scattering rows.
@@ -145,6 +141,10 @@ namespace mocc {
                 }
             }
             return *this;
+        }
+
+        const ScatteringRow& to( int ig ) const {
+            return rows_[ig];
         }
 
         /**
