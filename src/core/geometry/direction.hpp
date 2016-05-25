@@ -110,12 +110,27 @@ namespace mocc {
             }
             return Surface::INVALID;
         }
+
+        /**
+         * \brief Reflect the \ref Direction across the passed Surface
+         */
+        void reflect( Surface surf ) {
+            if( (surf == Surface::EAST) || (surf == Surface::WEST) ) {
+                *this = Direction(-ox, oy, oz);
+            }
+            if( (surf == Surface::NORTH) || (surf == Surface::SOUTH) ) {
+                *this = Direction(ox, -oy, oz);
+            }
+            if( (surf == Surface::TOP) || (surf == Surface::BOTTOM) ) {
+                *this = Direction(ox, oy, -oz);
+            }
+        }
         
         /**
          * \brief Provide operator==
          *
-         * Equivalence between two \ref Angle objects means that all angle
-         * components and weight are very close, within FP tolerance
+         * Equivalence between two \ref Direction objects means that all angle
+         * components are within FP tolerance
          */
         bool operator==( const Direction &other ) const {
             return !(*this != other);
