@@ -195,7 +195,7 @@ namespace mocc { namespace sn {
             assert(xsr.reg().size() == 1);
             assert(xsr.reg()[0] == ireg);
             for( int ig=0; ig<n_group_; ig++ ) {
-                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmackf(ig);
+                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
                 powers(pos.z, pos.y, pos.x) += p;
                 tot_pow += p;
             }

@@ -132,7 +132,7 @@ namespace mocc {
         for( const auto &xsr: *xs_mesh_ ) {
             for( int ig=0; ig<n_group_; ig++ ) {
                 for( auto ireg: xsr.reg() ) {
-                    fsr_pow(ireg) += flux_(ireg, ig) * xsr.xsmackf(ig) *
+                    fsr_pow(ireg) += flux_(ireg, ig) * xsr.xsmacf(ig) *
                         vol_[ireg];
                 }
             }

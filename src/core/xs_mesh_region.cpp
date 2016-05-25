@@ -29,7 +29,7 @@ namespace mocc {
         reg_(fsrs),
         xsmactr_(xstr),
         xsmacnf_(xsnf),
-        xsmackf_(xsf),
+        xsmacf_(xsf),
         xsmacch_(xsch),
         xsmacrm_(xsrm),
         xsmacsc_(xssc)

@@ -59,11 +59,11 @@ namespace mocc {
             return xsmacnf_;
         }
 
-        const real_t &xsmackf(int ig) const {
-            return xsmackf_[ig];
+        const real_t &xsmacf(int ig) const {
+            return xsmacf_[ig];
         }
-        const real_t* xsmackf() const {
-            return xsmackf_;
+        const real_t* xsmacf() const {
+            return xsmacf_;
         }
 
         const real_t &xsmacch(int ig) const {
@@ -125,13 +125,13 @@ namespace mocc {
          * \brief Update the cross sections referenced by the \ref XSMeshRegion
          */
         void update( const VecF &xstr, const VecF &xsnf, const VecF &xsch,
-                const VecF &xskf, const ScatteringMatrix &xssc )
+                const VecF &xsf, const ScatteringMatrix &xssc )
         {
             for( int ig=0; ig<(int)xssc.n_group(); ig++ ) {
                 xsmactr_[ig] = xstr[ig];
                 xsmacnf_[ig] = xsnf[ig];
                 xsmacch_[ig] = xsch[ig];
-                xsmackf_[ig] = xskf[ig];
+                xsmacf_[ig] = xsf[ig];
                 xsmacrm_[ig] = xstr[ig] - xssc.self_scat(ig);
             }
             xsmacsc_ = xssc;
@@ -160,8 +160,8 @@ namespace mocc {
                 {
                     return false;
                 }
-                if( !fp_equiv_ulp(this->xsmackf(ig),
-                                  other.xsmackf(ig)) )
+                if( !fp_equiv_ulp(this->xsmacf(ig),
+                                  other.xsmacf(ig)) )
                 {
                     return false;
                 }
@@ -195,7 +195,7 @@ namespace mocc {
         // Actual group constants for this XS mesh region
         real_t *xsmactr_;
         real_t *xsmacnf_;
-        real_t *xsmackf_;
+        real_t *xsmacf_;
         real_t *xsmacch_;
         real_t *xsmacrm_;
 

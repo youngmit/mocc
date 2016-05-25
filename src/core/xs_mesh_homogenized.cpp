@@ -457,7 +457,7 @@ namespace mocc {
             for( auto xsr: regions_ ) {
                 xstr[i] = xsr.xsmactr(ig);
                 xsnf[i] = xsr.xsmacnf(ig);
-                xsf[i] = xsr.xsmackf(ig);
+                xsf[i] = xsr.xsmacf(ig);
                 xsch[i] = xsr.xsmacch(ig);
                 i++;
             }
