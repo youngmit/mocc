@@ -25,6 +25,7 @@
 
 #include "eigen_solver.hpp"
 #include "fixed_source_solver.hpp"
+#include "monte_carlo_eigenvalue_solver.hpp"
 
 namespace mocc {
     SP_Solver_t SolverFactory( const pugi::xml_node &input,
@@ -42,6 +43,8 @@ namespace mocc {
             solver = std::make_shared<EigenSolver>( input, mesh );
         } else if( type == "fixed_source" ) {
             solver = std::make_shared<FixedSourceSolver>( input, mesh );
+        } else if( type == "eigenvalue_mc") {
+            solver = std::make_shared<MonteCarloEigenvalueSolver>( input, mesh);
         } else {
             throw EXCEPT("Unrecognized solver type.");
         }
