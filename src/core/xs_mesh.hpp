@@ -109,7 +109,7 @@ namespace mocc {
             xstr_.resize(shape);
             xsnf_.resize(shape);
             xsch_.resize(shape);
-            xskf_.resize(shape);
+            xsf_.resize(shape);
             xsrm_.resize(shape);
             auto test_slice(xstr_(0, blitz::Range::all()));
             assert(test_slice.isStorageContiguous());
@@ -124,7 +124,7 @@ namespace mocc {
         ArrayB2 xstr_;
         ArrayB2 xsnf_;
         ArrayB2 xsch_;
-        ArrayB2 xskf_;
+        ArrayB2 xsf_;
         ArrayB2 xsrm_;
 
         // Energy group upper bounds

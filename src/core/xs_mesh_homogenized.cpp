@@ -54,7 +54,7 @@ namespace mocc {
                     &xstr_(i, 0),
                     &xsnf_(i, 0),
                     &xsch_(i, 0),
-                    &xskf_(i, 0),
+                    &xsf_(i, 0),
                     &xsrm_(i, 0),
                     ScatteringMatrix() );
         }
@@ -202,7 +202,7 @@ namespace mocc {
                 }
                 {
                     std::stringstream path;
-                    path << "/xsmesh/xskf/" << ig;
+                    path << "/xsmesh/xsf/" << ig;
                     h5d.read(path.str(), kf_buf);
                 }
 
@@ -214,7 +214,7 @@ namespace mocc {
                     xstr_(blitz::Range(stt, stp), ig) = tr_buf;
                     xsnf_(blitz::Range(stt, stp), ig) = nf_buf;
                     xsch_(blitz::Range(stt, stp), ig) = ch_buf;
-                    xskf_(blitz::Range(stt, stp), ig) = kf_buf;
+                    xsf_(blitz::Range(stt, stp), ig) = kf_buf;
                 }
             }
 
@@ -234,7 +234,7 @@ namespace mocc {
                                 &xstr_(i, 0),
                                 &xsnf_(i, 0),
                                 &xsch_(i, 0),
-                                &xskf_(i, 0),
+                                &xsf_(i, 0),
                                 &xsrm_(i, 0),
                                 ScatteringMatrix(scat_reg) );
             }
@@ -275,7 +275,7 @@ namespace mocc {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
         VecF xsnf( ng_, 0.0 );
-        VecF xskf( ng_, 0.0 );
+        VecF xsf( ng_, 0.0 );
         VecF xsch( ng_, 0.0 );
 
         std::vector<VecF> scat( ng_, VecF(ng_, 0.0) );
@@ -301,7 +301,7 @@ namespace mocc {
                     fvol += vols[ireg] * fsrc;
                     xstr[ig] += vols[ireg] * mat.xstr(ig);
                     xsnf[ig] += vols[ireg] * mat.xsnf(ig);
-                    xskf[ig] += vols[ireg] * mat.xskf(ig);
+                    xsf[ig] += vols[ireg] * mat.xsf(ig);
                     xsch[ig] += vols[ireg] * fsrc * mat.xsch(ig);
 
                     for( int igg=gmin; igg<=gmax; igg++ ) {
@@ -314,7 +314,7 @@ namespace mocc {
 
             xstr[ig] /= pin.vol();
             xsnf[ig] /= pin.vol();
-            xskf[ig] /= pin.vol();
+            xsf[ig] /= pin.vol();
             if( fvol > 0.0 ) {
                 xsch[ig] /= fvol;
             }
@@ -327,7 +327,7 @@ namespace mocc {
 
         ScatteringMatrix scat_mat(scat);
 
-        xsr.update(xstr, xsnf, xsch, xskf, scat_mat);
+        xsr.update(xstr, xsnf, xsch, xsf, scat_mat);
 
         return;
     }
@@ -344,7 +344,7 @@ namespace mocc {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
         VecF xsnf( ng_, 0.0 );
-        VecF xskf( ng_, 0.0 );
+        VecF xsf( ng_, 0.0 );
         VecF xsch( ng_, 0.0 );
 
         std::vector<VecF> scat( ng_, VecF(ng_, 0.0) );
@@ -396,7 +396,7 @@ namespace mocc {
                     fluxvolsum += v * flux_i;
                     xstr[ig] += v * flux_i * mat.xstr(ig);
                     xsnf[ig] += v * flux_i * mat.xsnf(ig);
-                    xskf[ig] += v * flux_i * mat.xskf(ig);
+                    xsf[ig] += v * flux_i * mat.xsf(ig);
                     xsch[ig] += fs[ireg_local] * mat.xsch(ig);
 
                     for( size_t igg=0; igg<ng_; igg++ ){
@@ -421,7 +421,7 @@ namespace mocc {
 
             xstr[ig] /= fluxvolsum;
             xsnf[ig] /= fluxvolsum;
-            xskf[ig] /= fluxvolsum;
+            xsf[ig] /= fluxvolsum;
             if(fs_sum > 0.0) {
                 xsch[ig] /= fs_sum;
             }
@@ -429,7 +429,7 @@ namespace mocc {
 
         ScatteringMatrix scat_mat(scat);
 
-        xsr.update(xstr, xsnf, xsch, xskf, scat_mat);
+        xsr.update(xstr, xsnf, xsch, xsf, scat_mat);
 
         return;
     }
@@ -439,7 +439,7 @@ namespace mocc {
         auto xsm_g = file.create_group( "xsmesh" );
         xsm_g.create_group( "xstr" );
         xsm_g.create_group( "xsnf" );
-        xsm_g.create_group( "xskf" );
+        xsm_g.create_group( "xsf" );
         xsm_g.create_group( "xsch" );
 
         xsm_g.write("eubounds", eubounds_, VecI(1, ng_) );
@@ -451,13 +451,13 @@ namespace mocc {
             // Transport cross section
             VecF xstr( this->size(), 0.0 );
             VecF xsnf( this->size(), 0.0 );
-            VecF xskf( this->size(), 0.0 );
+            VecF xsf( this->size(), 0.0 );
             VecF xsch( this->size(), 0.0 );
             int i = 0;
             for( auto xsr: regions_ ) {
                 xstr[i] = xsr.xsmactr(ig);
                 xsnf[i] = xsr.xsmacnf(ig);
-                xskf[i] = xsr.xsmackf(ig);
+                xsf[i] = xsr.xsmackf(ig);
                 xsch[i] = xsr.xsmacch(ig);
                 i++;
             }
@@ -478,8 +478,8 @@ namespace mocc {
             }
             {
                 std::stringstream setname;
-                setname << "xskf/" << ig;
-                xsm_g.write( setname.str(), xskf, d );
+                setname << "xsf/" << ig;
+                xsm_g.write( setname.str(), xsf, d );
             }
 
         }

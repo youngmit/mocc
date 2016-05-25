@@ -70,7 +70,7 @@ namespace mocc {
             xstr_(imat, blitz::Range::all()) = mat.xstr();
             xsnf_(imat, blitz::Range::all()) = mat.xsnf();
             xsch_(imat, blitz::Range::all()) = mat.xsch();
-            xskf_(imat, blitz::Range::all()) = mat.xskf();
+            xsf_(imat, blitz::Range::all()) = mat.xsf();
             // Don't calculate removal XS here. Let the XSMeshRegion do that in
             // its constructor
 
@@ -87,7 +87,7 @@ namespace mocc {
                     &xstr_(imat, 0),
                     &xsnf_(imat, 0),
                     &xsch_(imat, 0),
-                    &xskf_(imat, 0),
+                    &xsf_(imat, 0),
                     &xsrm_(imat, 0),
                     mat.xssc() );
             imat++;

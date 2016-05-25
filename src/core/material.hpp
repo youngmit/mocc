@@ -25,7 +25,7 @@
 namespace mocc{
     class Material{
     public:
-        Material(VecF xsab, VecF xsnf, VecF xskf, VecF xsch,
+        Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
                 std::vector<VecF> scat);
         // Accessors for absorption
         const auto xsab() const {
@@ -51,12 +51,12 @@ namespace mocc{
             return xsnf_(i);
         }
 
-        // Accessors for kappa-fission
-        const auto xskf() const {
-            return xskf_;
+        // Accessors for fission
+        const auto xsf() const {
+            return xsf_;
         }
-        const auto& xskf( int i ) const {
-            return xskf_(i);
+        const auto& xsf( int i ) const {
+            return xsf_(i);
         }
 
         // Accessors for chi
@@ -83,7 +83,7 @@ namespace mocc{
         ArrayB1 xsab_;
         ArrayB1 xstr_;
         ArrayB1 xsnf_;
-        ArrayB1 xskf_;
+        ArrayB1 xsf_;
         ArrayB1 xsch_;
         ScatteringMatrix xssc_;
         bool is_fissile_;
