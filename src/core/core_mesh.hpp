@@ -108,6 +108,17 @@ namespace mocc {
         const PinMeshTuple get_pinmesh( Point2 &p, size_t iz,
                 int &first_reg) const;
 
+        struct LocationInfo {
+        public:
+            const PinMesh* pm;
+            Point2 local_point;
+            int ireg;
+            Position pos;
+            Surface surface;
+        };
+
+        LocationInfo get_location_info( Point3 p, Direction dir ) const;
+
         /**
         * \brief Return a const reference to the indexed plane.
         *
@@ -243,8 +254,8 @@ namespace mocc {
          * that both axial boundary conditions are reflective.
          */
         bool is_2d() const {
-            return (nz_ == 1) && (bc_[Surface::TOP] == Boundary::REFLECT) &&
-                (bc_[Surface::BOTTOM] == Boundary::REFLECT);
+            return (nz_ == 1) && (bc_[(int)Surface::TOP] == Boundary::REFLECT)
+                && (bc_[(int)Surface::BOTTOM] == Boundary::REFLECT);
         }
 
         /**
@@ -277,7 +288,6 @@ namespace mocc {
 
             return ireg;
         }
-
 
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs

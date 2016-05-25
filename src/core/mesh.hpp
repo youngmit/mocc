@@ -115,6 +115,17 @@ namespace mocc {
         }
 
         /**
+         * \brief Return the boundary condition associated with the given \ref
+         * Surface of the mesh
+         */
+        Boundary boundary_condition( Surface surf ) const {
+            assert((int)surf >= (int)Surface::EAST);
+            assert((int)surf <= (int)Surface::BOTTOM);
+
+            return bc_[(int)surf];
+        }
+
+        /**
          * \brief Return a nifty array of the boundary conditions, organized by
          * normal direction and sense.
          *
@@ -174,6 +185,16 @@ namespace mocc {
          */
         inline real_t dz( size_t iz ) const {
             return dz_vec_[iz];
+        }
+
+        /**
+         * \brief Return the indexed plane boundary.
+         *
+         * The 0-th value should be 0.0, and the last value should be to total
+         * height of the domain.
+         */
+        inline real_t z( int iz ) const {
+            return z_vec_[iz];
         }
 
         /**
@@ -680,11 +701,30 @@ namespace mocc {
          * \brief Return the plane index for the given axial position
          *
          * \param z the axial location
-         *
+         * \param oz a direction in the z direction to be used to disabmiguate
+         * between planes, if the value \p z lies directly on a plane interface.
+         * Defaults to zero, and gives the following behavior:
+         *  - If zero: Throw an exception if \p z lies on a plane interface.
+         *  - If negative: Return the lower plane index if \p z lies on a plane
+         *  interface.
+         *  - If positive: Return the higher plane index if \p z lies on a plane
+         *  interface.
          */
-        int plane_index( real_t z ) const {
-            return std::distance(z_vec_.begin(),
-                    std::lower_bound(z_vec_.begin(), z_vec_.end(), z)) - 1;
+        int plane_index( real_t z, real_t oz=0.0 ) const {
+            int iz = std::distance(z_vec_.begin(),
+                    std::lower_bound(z_vec_.begin(), z_vec_.end(), z,
+                                     fuzzy_lt));
+
+            if( fp_equiv_abs(z, z_vec_[iz])) {
+                if( oz == 0.0 ) {
+                    throw EXCEPT("Ambiguous plane index, without valid "
+                            "z-direction.");
+                } else {
+                    iz = (oz > 0.0) ? iz+1 : iz;
+                }
+            }
+
+            return iz-1;
         }
 
         /**
