@@ -24,73 +24,77 @@
 #include "mc/fission_bank.hpp"
 
 namespace mocc {
-    MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
-            const pugi::xml_node &input, const CoreMesh &mesh ):
-        mesh_(mesh),
-        xs_mesh_(mesh),
-        pusher_(mesh_, xs_mesh_),
-        n_cycles_( input.attribute("cycles").as_int(-1) ),
-        n_inactive_cycles_( input.attribute("inactive_cycles").as_int(-1) ),
-        particles_per_cycle_( input.attribute("inactive_cycles").as_int(-1) ),
-        fission_bank_( input.child("fission_box"), particles_per_cycle_,
-                mesh )
-    {
-        // Check for valid input
-        if( input.empty() ) {
-            throw EXCEPT("Input for Monte Carlo eigenvalue solver appears to "
-                    "be empty.");
-        }
-        if( n_cycles_ < 0 ) {
-            throw EXCEPT("Invalid number of cycle specified");
-        }
-        if( n_cycles_ == 0 ) {
-            Warn("Zero cycles requested. You sure?");
-        }
-
-        if( n_inactive_cycles_ < 0 ) {
-            throw EXCEPT("Invalid number of inactive cycles specified");
-        }
-        if( n_inactive_cycles_ == 0 ) {
-            Warn("Zero inactive cycles requested. You sure?");
-        }
-
-        if( particles_per_cycle_ < 0 ) {
-            throw EXCEPT("Invalid number of particles per cycle specified");
-        }
-        if( particles_per_cycle_ == 0 ) {
-            Warn("Zero particles per cycle requested. You sure?");
-        }
-
-        return;
+MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
+    const pugi::xml_node &input, const CoreMesh &mesh)
+    : mesh_(mesh),
+      xs_mesh_(mesh),
+      pusher_(mesh_, xs_mesh_),
+      n_cycles_(input.attribute("cycles").as_int(-1)),
+      n_inactive_cycles_(input.attribute("inactive_cycles").as_int(-1)),
+      particles_per_cycle_(input.attribute("particles_per_cycle").as_int(-1)),
+      fission_bank_(input.child("fission_box"), particles_per_cycle_, mesh) {
+    // Check for valid input
+    if (input.empty()) {
+        throw EXCEPT(
+            "Input for Monte Carlo eigenvalue solver appears to "
+            "be empty.");
+    }
+    if (n_cycles_ < 0) {
+        throw EXCEPT("Invalid number of cycle specified");
+    }
+    if (n_cycles_ == 0) {
+        Warn("Zero cycles requested. You sure?");
     }
 
-    void MonteCarloEigenvalueSolver::solve() {
-        k_eff_ = 0.0;
-        k_variance_ = 0.0;
-
-        LogScreen << "Performing inactive cycles:" << std::endl;
-        active_cycle_ = false;
-        for( int i=0; i<n_inactive_cycles_; i++ ) {
-            this->step();
-        }
-
-        LogScreen << "Starting active cycles:" << std::endl;
-        active_cycle_ = true;
-        for( int i=n_inactive_cycles_; i<n_cycles_; i++ ) {
-            this->step();
-        }
-
-        return;
-    } // MonteCarloEigenvalueSolver::solve()
-
-    void MonteCarloEigenvalueSolver::step() {
-        fission_bank_.swap(pusher_.fission_bank());
-
-        return;
-    } // MonteCarloEigenvalueSolver::step()
-
-    void MonteCarloEigenvalueSolver::output(H5Node &node) const {
-        return;
+    if (n_inactive_cycles_ < 0) {
+        throw EXCEPT("Invalid number of inactive cycles specified");
+    }
+    if (n_inactive_cycles_ == 0) {
+        Warn("Zero inactive cycles requested. You sure?");
     }
 
-} // namespace mocc
+    if (particles_per_cycle_ < 0) {
+        throw EXCEPT("Invalid number of particles per cycle specified");
+    }
+    if (particles_per_cycle_ == 0) {
+        Warn("Zero particles per cycle requested. You sure?");
+    }
+
+    return;
+}
+
+void MonteCarloEigenvalueSolver::solve() {
+    k_eff_ = 0.0;
+    k_variance_ = 0.0;
+
+    LogScreen << "Performing inactive cycles:" << std::endl;
+    active_cycle_ = false;
+    for (int i = 0; i < n_inactive_cycles_; i++) {
+        this->step();
+    }
+
+    LogScreen << "Starting active cycles:" << std::endl;
+    active_cycle_ = true;
+    for (int i = n_inactive_cycles_; i < n_cycles_; i++) {
+        this->step();
+    }
+
+    return;
+}  // MonteCarloEigenvalueSolver::solve()
+
+void MonteCarloEigenvalueSolver::step() {
+    // Simulate all of the particles in the current fission bank
+    pusher_.simulate(fission_bank_);
+
+    real_t k_eff = pusher_.fission_bank().total_fission()/particles_per_cycle_;
+
+    // Grab the new fission sites from the pusher, and resize
+    fission_bank_.swap(pusher_.fission_bank());
+    fission_bank_.resize(particles_per_cycle_);
+
+    return;
+}  // MonteCarloEigenvalueSolver::step()
+
+void MonteCarloEigenvalueSolver::output(H5Node &node) const { return; }
+
+}  // namespace mocc
