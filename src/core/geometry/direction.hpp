@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cassert>
+#include <iosfwd>
 
 #include "core/constants.hpp"
 #include "core/fp_utils.hpp"
@@ -198,5 +199,8 @@ namespace mocc {
             }
             return Direction(0.0, 0.0, 0.0);
         }
+
+        friend std::ostream &operator<<( std::ostream &os,
+                const Direction &dir);
     };
 } // namespace mocc

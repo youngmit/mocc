@@ -17,9 +17,13 @@
 #pragma once
 
 #include <array>
+#include <iosfwd>
 
+#include "core/geometry/direction.hpp"
 #include "core/geometry/points.hpp"
 #include "core/global_config.hpp"
+
+#include "rng.hpp"
 
 namespace mocc {
     /**
@@ -90,6 +94,8 @@ namespace mocc {
             location_global.z += d*direction.oz;
             return;
         }
+
+        friend std::ostream &operator<<(std::ostream &os, const Particle &p);
     };
 
 } // namespace mocc
