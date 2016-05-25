@@ -28,7 +28,7 @@
 
 namespace mocc {
     // Surface and direction indexing
-    enum class Surface : unsigned char {
+    enum Surface {
         EAST  = 0,
         NORTH = 1,
         WEST  = 2,
