@@ -157,6 +157,13 @@ CoreMesh::CoreMesh(const pugi::xml_node& input) {
     }
 
     dz_vec_ = core_.dz();
+    z_vec_.reserve(dz_vec_.size()+1);
+    hz_ = 0.0;
+    z_vec_.push_back(hz_);
+    for(const auto &dz: dz_vec_) {
+        hz_ += dz;
+        z_vec_.push_back(hz_);
+    }
 
     // Coarse mesh volumes.
     /**
