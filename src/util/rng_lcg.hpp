@@ -72,8 +72,7 @@ namespace mocc {
          * \brief Sample a uniformly-distributed integer on [0, ubound)
          */
         MOCC_FORCE_INLINE int random_int( int ubound ) {
-            current_seed_ = current_seed_*m_ + increment_;
-            int i = current_seed_ * ubound;
+            int i = this->random() * ubound;
 
             return i;
         }
