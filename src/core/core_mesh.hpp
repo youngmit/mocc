@@ -112,9 +112,8 @@ namespace mocc {
         public:
             const PinMesh* pm;
             Point2 local_point;
-            int ireg;
+            int reg_offset;
             Position pos;
-            Surface surface;
         };
 
         LocationInfo get_location_info( Point3 p, Direction dir ) const;

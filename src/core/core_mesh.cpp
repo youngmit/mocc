@@ -230,12 +230,7 @@ Point2 CoreMesh::pin_origin(size_t ipin) const {
 
 CoreMesh::LocationInfo CoreMesh::get_location_info( Point3 p,
                                                     Direction dir) const {
-    assert( (p.x >= 0.0) && (p.x < hx_) );
-    assert( (p.y >= 0.0) && (p.y < hy_) );
-    assert( (p.z >= 0.0) && (p.z < hz_) );
-
     LocationInfo info;
-    info.surface = Surface::INTERNAL;
 
     // Locate the pin Position
     int ix = std::distance(x_vec_.begin(), std::lower_bound(x_vec_.begin(),
@@ -251,47 +246,20 @@ CoreMesh::LocationInfo CoreMesh::get_location_info( Point3 p,
         iy = (dir.oy > 0.0) ? iy+1 : iy;
     }
     info.pos.y = iy-1;
-    
-    info.pos.z = this->plane_index(p.z, dir.oz);
 
-    // Short-circuit if we are exiting the domain
-    if(info.pos.x < 0) {
-        info.surface = Surface::WEST;
-        return info;
-    }
-    if(info.pos.y < 0) {
-        info.surface = Surface::SOUTH;   
-        return info;
-    }
-    if(info.pos.z < 0) {
-        info.surface = Surface::BOTTOM;   
-        return info;
-    }
-    if(info.pos.x >= nx_) {
-        info.surface = Surface::EAST;   
-        return info;
-    }
-    if(info.pos.y > ny_) {
-        info.surface = Surface::NORTH;
-        return info;
-    }
-    if(info.pos.z > nz_) {
-        info.surface = Surface::TOP;
-        return info;
-    }
+    info.pos.z = this->plane_index(p.z, dir.oz);
 
     // Make a 2D copy of the 3D point to convert to pin-local
     info.local_point = p.to_2d();
 
-    info.ireg = first_reg_plane(info.pos.z);
+    info.reg_offset = first_reg_plane(info.pos.z);
 
     Point2 pin_origin = p.to_2d();
-    info.pm = planes_[info.pos.z].get_pinmesh(pin_origin, info.ireg);
+    info.pm = planes_[info.pos.z].get_pinmesh(pin_origin, info.reg_offset, dir);
     info.local_point -= pin_origin;
 
     return info;
 }
-
 
 std::ostream& operator<<(std::ostream& os, const CoreMesh& mesh) {
     os << "Boundary conditions: " << std::endl;
