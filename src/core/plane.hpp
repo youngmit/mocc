@@ -18,6 +18,7 @@
 
 #include <vector>
 
+#include "geometry/direction.hpp"
 #include "geometry/geom.hpp"
 #include "global_config.hpp"
 #include "lattice.hpp"
@@ -29,6 +30,10 @@ namespace mocc {
                 size_t ny);
 
         const Lattice& at(size_t ix, size_t iy) const {
+            assert(ix >= 0);
+            assert(iy >= 0);
+            assert(ix < nx_);
+            assert(iy < ny_);
             return *(lattices_[ix + nx_*iy]);
         }
 
@@ -41,8 +46,11 @@ namespace mocc {
          * (see below).
          * \param[in,out] first_reg the first FSR index of the Plane. Will be
          * updated to the first region of the \ref Pin in which the pin resides.
+         * \param[in] dir optional \ref Direction to use to disambiguate when
+         * the \p p lies directly on a border.
          */
-        const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;
+        const PinMesh* get_pinmesh( Point2 &p, int &first_reg,
+                Direction dir=Direction()) const;
 
         /**
          * \brief Return a const pointer to the \ref PinMesh that is at the
@@ -96,11 +104,11 @@ namespace mocc {
         /**
          * Number of lattices in the x direction
          */
-        size_t nx_;
+        unsigned nx_;
         /**
          * Number of lattices in the y direction
          */
-        size_t ny_;
+        unsigned ny_;
 
         size_t n_reg_;
         size_t n_xsreg_;

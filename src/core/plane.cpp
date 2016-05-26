@@ -89,24 +89,33 @@ namespace mocc {
      * Lattice::get_pinmesh(). See CoreMesh::get_pinmesh() for a detailed
      * description of why.
      */
-    const PinMesh* Plane::get_pinmesh( Point2 &p, int &first_reg ) const {
+    const PinMesh* Plane::get_pinmesh( Point2 &p, int &first_reg,
+            Direction dir) const {
+        assert(p.x > -REAL_FUZZ);
+        assert(p.y > -REAL_FUZZ);
+        assert(p.x < hx_.back()+REAL_FUZZ);
+        assert(p.y < hy_.back()+REAL_FUZZ);
         // Locate the lattice
-        size_t ix, iy;
-        for (ix=0; ix<nx_; ix++) {
-            if(p.x < hx_[ix+1]) {
-                break;
-            }
+        unsigned ix = std::distance(
+            hx_.begin(),
+            std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
+        if(fp_equiv_abs(p.x, hx_[ix])) {
+            ix = (dir.ox > 0.0) ? ix+1 : ix;
         }
-        for (iy=0; iy<ny_; iy++) {
-            if(p.y < hy_[iy+1]) {
-                break;
-            }
+        ix--;
+        unsigned iy = std::distance(
+            hy_.begin(),
+            std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
+        if(fp_equiv_abs(p.y, hy_[iy])) {
+            iy = (dir.oy > 0.0) ? iy+1 : iy;
         }
+        iy--;
+
+        // Force indices to be inside the plane
+        ix = std::min(nx_-1, std::max(0u, ix));
+        iy = std::min(ny_-1, std::max(0u, iy));
 
         size_t ilat = nx_*iy + ix;
-
-        assert( (0<= ix) && (ix<nx_) );
-        assert( (0<= iy) && (iy<ny_) );
 
         // Offset the point to lattice-local coordinates (distance from
         // lower-left corner of lattice)
@@ -117,7 +126,7 @@ namespace mocc {
         first_reg += first_reg_lattice_[ilat];
 
         // Ask lattice for reference to pin mesh, with modification of first_reg
-        const PinMesh *pm = this->at(ix, iy).get_pinmesh(p, first_reg);
+        const PinMesh *pm = this->at(ix, iy).get_pinmesh(p, first_reg, dir);
 
         // Restore the point coordinates to core-local
         p.x += hx_[ix];
