@@ -28,6 +28,10 @@
 
 namespace mocc {
     // Surface and direction indexing
+    // This is not an enum class, because it is used elsewhere in a bitfield (i
+    // know, i know), and compilers tend to complain when you try to guarantee
+    // to them in one place that they get 8 bits and another that they get 4 or
+    // whatever.
     enum Surface {
         EAST  = 0,
         NORTH = 1,
