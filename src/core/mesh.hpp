@@ -436,6 +436,32 @@ namespace mocc {
                 std::array<int, 2> &s ) const;
 
         /**
+         * \brief Return the \ref Surface that a point is on, if any.
+         */
+        Surface boundary_surface( Point3 p, Direction dir ) const {
+            Surface surf = Surface::INTERNAL;
+            if((p.x < REAL_FUZZ) && (dir.ox < 0.0)) {
+                surf = Surface::WEST;
+            }
+            if((p.y < REAL_FUZZ) && (dir.oy < 0.0)) {
+                surf = Surface::SOUTH;
+            }
+            if((p.z < REAL_FUZZ) && (dir.oz < 0.0)) {
+                surf = Surface::BOTTOM;
+            }
+            if((p.x > hx_-REAL_FUZZ) && (dir.ox > 0.0)) {
+                surf = Surface::EAST;
+            }
+            if((p.y > hy_-REAL_FUZZ) && (dir.oy > 0.0)) {
+                surf = Surface::NORTH;
+            }
+            if((p.z > hz_-REAL_FUZZ) && (dir.oz > 0.0)) {
+                surf = Surface::TOP;
+            }
+            return surf;
+        }
+
+        /**
          * \brief Return the coarse cell indices straddling the surface
          * indicated.
          *
@@ -711,6 +737,8 @@ namespace mocc {
          *  interface.
          */
         int plane_index( real_t z, real_t oz=0.0 ) const {
+            assert(z > -REAL_FUZZ);
+            assert(z < hz_+REAL_FUZZ);
             int iz = std::distance(z_vec_.begin(),
                     std::lower_bound(z_vec_.begin(), z_vec_.end(), z,
                                      fuzzy_lt));
@@ -724,7 +752,7 @@ namespace mocc {
                 }
             }
 
-            return iz-1;
+            return std::max(0, std::min(iz-1, nz_-1));
         }
 
         /**
