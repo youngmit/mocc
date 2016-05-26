@@ -41,15 +41,13 @@ namespace mocc {
         real_t rsintheta;
 
         /**
-         * Construct a default \ref Direction, pointing in the positive X
-         * direction.
+         * Construct a default \ref Direction, pointing somewhere in the
+         * positive x, y and z directions.
          */
         Direction():
-            ox(1.0),
-            oy(0.0),
-            oz(0.0),
-            alpha(0.0),
-            theta(HPI)
+            Direction( 0.57735026918962576450914878050196,
+                       0.57735026918962576450914878050196,
+                       0.57735026918962576450914878050196 )
         {
             return;
         }
