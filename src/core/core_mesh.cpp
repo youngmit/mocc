@@ -285,7 +285,9 @@ CoreMesh::LocationInfo CoreMesh::get_location_info( Point3 p,
 
     info.ireg = first_reg_plane(info.pos.z);
 
-    info.pm = planes_[info.pos.z].get_pinmesh(info.local_point, info.ireg);
+    Point2 pin_origin = p.to_2d();
+    info.pm = planes_[info.pos.z].get_pinmesh(pin_origin, info.ireg);
+    info.local_point -= pin_origin;
 
     return info;
 }
