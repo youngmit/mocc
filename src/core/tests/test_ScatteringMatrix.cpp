@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "scattering_matrix.hpp"
+#include "fp_utils.hpp"
 #include "global_config.hpp"
 #include "blitz_typedefs.hpp"
 
@@ -86,20 +87,14 @@ TEST( scat_matrix_vecorVecF ) {
     CHECK( scat_matrix_assigned == scat_matrix );
 
     // test real_t self_scat (int group) const
-    real_t self_scat_ref[NG];
-    int ig = 0;
-    for( auto &row : sc ) {
-        self_scat_ref[ig] = row[ig];
-        ig++;
-    }
+    real_t self_scat_ref[NG] = {0.3, 0.0, 0.0, 0.4, 0.4, 0.4, 0.3};
 
     real_t self_scat[NG];
-    for( ig=0; ig<NG; ig++ ) {
+    for( int ig=0; ig<NG; ig++ ) {
         self_scat[ig] = scat_matrix.self_scat(ig);
     }
 
-    // CHECK_ARRAY_CLOSE( self_scat_ref, self_scat, NG, 0.0000000000001 );
-    for( ig=0; ig<NG; ig++ ) {
+    for( int ig=0; ig<NG; ig++ ) {
         CHECK_CLOSE(self_scat_ref[ig], self_scat[ig], 0.0000000000001 );
     }
 
@@ -110,14 +105,14 @@ TEST( scat_matrix_vecorVecF ) {
     real_t out_scat_ref[NG]={};
 
     for( auto &i : sc) {
-        ig = 0;
+        int ig = 0;
         for( auto &j : i ) {
             out_scat_ref[ig] += j;
             ig++;
         }
     }
 
-    for( ig=0; ig<NG; ig++ ) {
+    for( int ig=0; ig<NG; ig++ ) {
         CHECK_CLOSE(out_scat_ref[ig], scat_matrix.out(ig), 0.0000000000001 );
     }
 
@@ -147,6 +142,16 @@ TEST( scat_matrix_vecorVecF ) {
     // test indexing into a specific element scat(to, from)
     CHECK_CLOSE( 0.0, scat_matrix.to(1)[1], 0.0000000000001 );
     CHECK_CLOSE( 0.4, scat_matrix.to(3)[3], 0.0000000000001 );
+
+    // Check the outscatter CDF
+    VecF out_cdf = scat_matrix.out_cdf(3);
+    cout << scat_matrix.out(3) << endl;;
+    CHECK_CLOSE( 1.0, out_cdf.back(), REAL_FUZZ );
+    CHECK_EQUAL( NG, out_cdf.size() );
+    CHECK_CLOSE( 1.0/1.2, out_cdf[4], REAL_FUZZ );
+    for(const auto c: out_cdf){
+        cout << c << endl;
+    }
 
 }
 

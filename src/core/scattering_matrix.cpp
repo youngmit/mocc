@@ -19,69 +19,39 @@
 #include <iomanip>
 #include <iostream>
 
+#include "error.hpp"
+
+namespace {
+    using namespace mocc;
+    ArrayB2 convert_vvec( const std::vector<VecF> &scat) {
+        // Convert the vector of vectors to and Array2, then call that version
+        // First make sure its sqare
+        for( const auto &row: scat ) {
+            if(row.size() != scat.size()) {
+                throw EXCEPT("Scattering matrix input is not square");
+            }
+        }
+
+        ArrayB2 array(scat.size(), scat.size(), 0.0);
+        int irow = 0;
+        for( const auto &row: scat ) {
+            int icol = 0;
+            for( const auto &v: row ) {
+                array(irow, icol) = v;
+                icol++;
+            }
+            irow++;
+        }
+
+        return array;
+    }
+}
+
 namespace mocc {
-    ScatteringMatrix::ScatteringMatrix( const std::vector<VecF> &scat){
-
-        // Imply ng_ from the size of the passed-in vectors
-        ng_ = scat.size();
-        out_ = VecF(ng_, 0.0);
-        rows_.reserve(ng_);
-
-        // Determine the size of scat_ and save the bounds for ScatteringRows
-        int size = 0;
-        std::vector<std::pair<int, int>> bounds;
-        bounds.reserve(ng_);
-
-        int to = 0;
-        for( const auto &scatRow: scat ) {
-            std::pair<int, int> these_bounds;
-            for( int from=0; from<ng_; from++ ) {
-                these_bounds.first = from;
-                if( scatRow[from] > 0.0 ) {
-                    break;
-                }
-            }
-            for( int from=ng_-1; from>=0; from-- ) {
-                these_bounds.second = from;
-                if( scatRow[from] > 0.0 ) {
-                    break;
-                }
-            }
-            // Handle empty scattering rows. If the min and max g end up on the
-            // other side of the group range, we didn't find any non-zero cross
-            // sections. Set min_g and max_g to the current group. When we pack
-            // the cross sections into their dense representations, we make sure
-            // to add a corresponding zero
-            if( these_bounds.first==ng_-1 && these_bounds.second==0 ) {
-                these_bounds.first = to;
-                these_bounds.second = to;
-            }
-            size += these_bounds.second-these_bounds.first+1;
-            bounds.push_back(these_bounds);
-
-            to++;
-        }
-
-        scat_.reserve(size);
-
-        auto *begin = scat_.data();
-
-        to=0;
-        int pos=0;
-        for( auto & these_bounds: bounds ) {
-            for ( int from=these_bounds.first;
-                    from<=these_bounds.second; from++ ) {
-                scat_.push_back(scat[to][from]);
-                out_[from] += scat[to][from];
-            }
-            rows_.push_back(ScatteringRow(these_bounds.first,
-                        these_bounds.second, &scat_[pos]));
-            to++;
-            pos += these_bounds.second-these_bounds.first+1;
-        }
-
-        // Check whether scat_ is reallocated
-        assert( begin == scat_.data() );
+    ScatteringMatrix::ScatteringMatrix( const std::vector<VecF> &scat):
+        ScatteringMatrix(convert_vvec(scat))
+    {
+        return;
     }
 
     ScatteringMatrix::ScatteringMatrix(const ArrayB2 &scat){
@@ -119,6 +89,15 @@ namespace mocc {
             // to add a corresponding zero
             if( these_bounds.first==ng_-1 && these_bounds.second==0 ) {
                 these_bounds.first = to;
+                these_bounds.second = to;
+            }
+
+            // Also make sure that the scattering rows include the self-scatter
+            // entry
+            if( these_bounds.first > to ) {
+                these_bounds.first = to;
+            }
+            if( these_bounds.second < to ) {
                 these_bounds.second = to;
             }
             size += these_bounds.second-these_bounds.first+1;
