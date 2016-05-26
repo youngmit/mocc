@@ -26,6 +26,7 @@ namespace mocc {
         os << "Pin-local position: " << p.location.x << " "
                                      << p.location.y << std::endl;
         os << "Direction: " << p.direction << std::endl;
+        os << "Group: " << p.group;
         return os;
     }
 }
