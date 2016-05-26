@@ -125,26 +125,37 @@ namespace mocc {
         return;
     }
 
-    const PinMesh* Lattice::get_pinmesh( Point2 &p, int &first_reg ) const {
+    const PinMesh* Lattice::get_pinmesh( Point2 &p, int &first_reg,
+            Direction dir ) const {
+        assert(p.x > -REAL_FUZZ);
+        assert(p.y > -REAL_FUZZ);
+        assert(p.x < hx_+REAL_FUZZ);
+        assert(p.y < hy_+REAL_FUZZ);
         // Locate the pin, and offset the point to pin-local coordinates.
         /// \todo This is potentially pretty brittle. Future PinMesh types might
         /// breake the assumption here that all PinMesh origins are smack-dab in
         /// middle of the mesh. Should provide some functionality on the PinMesh
         /// itself to provide its origin to clients.
-        unsigned int ix=0;
-        unsigned int iy=0;
-        for (ix=0; ix<nx_; ix++) {
-            if(p.x < x_vec_[ix+1]) {
-                p.x = 0.5*(x_vec_[ix+1] + x_vec_[ix]);
-                break;
-            }
+        unsigned ix = std::distance(
+            x_vec_.cbegin(),
+            std::lower_bound(x_vec_.cbegin(), x_vec_.cend(), p.x, fuzzy_lt));
+        if(fp_equiv_abs(p.x, x_vec_[ix])) {
+            ix = (dir.ox > 0.0) ? ix+1 : ix;
         }
-        for (iy=0; iy<ny_; iy++) {
-            if(p.y < y_vec_[iy+1]) {
-                p.y = 0.5*(y_vec_[iy+1] + y_vec_[iy]);
-                break;
-            }
+        ix--;
+        ix = std::min(nx_-1, std::max(0u, ix));
+        
+        p.x = 0.5*(x_vec_[ix+1] + x_vec_[ix]);
+
+        unsigned iy = std::distance(
+            y_vec_.cbegin(),
+            std::lower_bound(y_vec_.cbegin(), y_vec_.cend(), p.y, fuzzy_lt));
+        if(fp_equiv_abs(p.y, y_vec_[iy])) {
+            iy = (dir.oy > 0.0) ? iy+1 : iy;
         }
+        iy--;
+        iy = std::min(ny_-1, std::max(0u, iy));
+        p.y = 0.5*(y_vec_[iy+1] + y_vec_[iy]);
 
         unsigned int i = iy*nx_ + ix;
 
