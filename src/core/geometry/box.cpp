@@ -51,7 +51,7 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     x = p1_.x;
     d = (p1_.x - p.x) / ox;
     y = p.y + oy * d;
-    if ((fabs(d) > GEOM_EPS) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
+    if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
         d_min = fabs(d);
         p_out.x = x;
         p_out.y = y;
@@ -61,7 +61,7 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     x = p2_.x;
     d = (p2_.x - p.x) / ox;
     y = p.y + oy * d;
-    if ((fabs(d) > GEOM_EPS) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
+    if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
         d_min = fabs(d);
         p_out.x = x;
         p_out.y = y;
@@ -72,7 +72,7 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     y = p1_.y;
     d = (p1_.y - p.y) / oy;
     x = p.x + ox * d;
-    if ((fabs(d) > GEOM_EPS) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
+    if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
         d_min = fabs(d);
         p_out.x = x;
         p_out.y = y;
@@ -82,7 +82,7 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     y = p2_.y;
     d = (p2_.y - p.y) / oy;
     x = p.x + ox * d;
-    if ((fabs(d) > GEOM_EPS) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
+    if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
         d_min = fabs(d);
         p_out.x = x;
         p_out.y = y;

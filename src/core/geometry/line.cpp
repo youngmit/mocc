@@ -16,6 +16,8 @@
 
 #include "line.hpp"
 
+#include <iostream>
+
 namespace mocc {
 real_t Line::distance_to_surface(Point2 p, Direction dir) const {
     const std::numeric_limits<real_t> lim;
@@ -33,12 +35,12 @@ real_t Line::distance_to_surface(Point2 p, Direction dir) const {
     real_t proj = dir.ox * a + dir.oy * b;
 
     // Check for point laying on line
-    if (std::abs(proj) < 4.0 * lim.epsilon()) {
+    if (std::abs(proj) < REAL_FUZZ) {
         return lim.max();
     }
 
     real_t d = -f / proj;
-    if (d >= 0.0) {
+    if (d >= REAL_FUZZ) {
         return d;
     }
 

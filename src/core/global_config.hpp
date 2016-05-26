@@ -26,13 +26,9 @@ namespace mocc {
 
 #ifdef FORCE_SINGLE
     typedef float real_t;
-#define FLOAT_EPS 1e-5
 #else
     typedef double real_t;
-#define FLOAT_EPS 1e-12
 #endif
-
-static const real_t GEOM_EPS = 4.0*std::numeric_limits<real_t>::epsilon();
 
     // General purpose vector of floats, ints, etc
     typedef std::vector<real_t> VecF;

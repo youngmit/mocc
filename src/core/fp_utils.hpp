@@ -34,7 +34,7 @@ namespace mocc {
 
     /// \todo this kind of thing is multiply-defined throughout the code. Try
     /// and settle on one value
-    constexpr real_t REAL_FUZZ = 5.0*std::numeric_limits<real_t>::epsilon();
+    constexpr real_t REAL_FUZZ = 10.0*std::numeric_limits<real_t>::epsilon();
 
     /**
      * \brief Compare two floats using ULP.
@@ -65,10 +65,10 @@ namespace mocc {
     }
 
     inline bool fp_equiv_rel(real_t v1, real_t v2) {
-        return fabs(v1-v2)/fabs(v1) < FLOAT_EPS;
+        return fabs(v1-v2)/fabs(v1) < REAL_FUZZ;
     }
     inline bool fp_equiv_abs(real_t v1, real_t v2) {
-        return fabs(v1-v2) < FLOAT_EPS;
+        return fabs(v1-v2) < REAL_FUZZ;
     }
 
     /**
@@ -80,6 +80,6 @@ namespace mocc {
      * std::lower_bound() and \c std::upper_bound() algorithms.
      */
     auto fuzzy_lt = [](real_t l, real_t r) {
-        return (l-r) < 0.0;
+        return (l-r) < -REAL_FUZZ;
     };
 }

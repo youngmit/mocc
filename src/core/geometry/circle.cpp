@@ -44,7 +44,7 @@ real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
     // if c ~= 0.0, we are on the surface of the circle. On surfaces, we
     // determine sense w.r.t. direction of travel; the particle is assumed
     // on the side in the direction of travel.
-    if (std::abs(c) < 4.0 * lim.epsilon()) {
+    if (std::abs(c) < REAL_FUZZ) {
         if (k >= 0.0) {
             return lim.max();
         } else {

@@ -36,19 +36,19 @@ TEST(testCircle) {
     // diameter
     CHECK_CLOSE(1.5, c.distance_to_surface(Point2(-0.25, 0.5),
                                            Direction(1.0, 0.0, 0.0)),
-                GEOM_EPS);
+                REAL_FUZZ);
 
     // Interior point pointing anywhere in the plane
     CHECK_CLOSE(0.75,
                 c.distance_to_surface(Point2(0.5, 0.5), Direction(1.0, HPI)),
-                GEOM_EPS);
+                REAL_FUZZ);
 
     // Interior point pointing anywhere out of the plane. Should be the
     // radius/sin(theta)
     CHECK_CLOSE(
         0.75 / std::sin(0.5 * HPI),
         c.distance_to_surface(Point2(0.5, 0.5), Direction(1.0, 0.5 * HPI)),
-        GEOM_EPS);
+        REAL_FUZZ);
 
     // Exterior glancing, should be max()
     CHECK_EQUAL(lim.max(),
@@ -59,13 +59,13 @@ TEST(testCircle) {
     CHECK_CLOSE(0.15138781886599732327980531686762,
                 c.distance_to_surface(Point2(-0.25, 0.0),
                                       Direction(0.5880026035475675, HPI)),
-                GEOM_EPS);
+                REAL_FUZZ);
 
     // Interior, out of the plane. Should be the radius/sin(theta)
     CHECK_CLOSE(
         1.0606601717798212866012665431573,
         c.distance_to_surface(Point2(0.5, 0.5), Direction(0.5, 0.5 * HPI)),
-        GEOM_EPS);
+        REAL_FUZZ);
 }
 
 int main() { return UnitTest::RunAllTests(); }

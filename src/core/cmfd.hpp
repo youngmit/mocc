@@ -76,7 +76,7 @@ namespace mocc {
          * \brief Set the eigenvalue convergence tolerance
          */
         void set_k_tolerance( real_t tol ) {
-            assert( tol > FLOAT_EPS );
+            assert( tol > REAL_FUZZ );
 
             k_tol_ = tol;
             return;
@@ -86,7 +86,7 @@ namespace mocc {
          * \brief Set the fission source convergence tolerance
          */
         void set_psi_tolerance( real_t tol ) {
-            assert( tol > FLOAT_EPS );
+            assert( tol > REAL_FUZZ );
 
             psi_tol_ = tol;
             return;

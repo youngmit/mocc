@@ -87,7 +87,7 @@ std::vector<std::pair<real_t,real_t>> GenGauss( int n_polar ){
     y0=2;
 
     // Iterate until new pioints are uniformly within epsilon of old points
-    while( max(abs(y-y0))>FLOAT_EPS ) {
+    while( max(abs(y-y0))>REAL_FUZZ ) {
         L(blitz::Range::all(),0)=1;
         L(blitz::Range::all(),1)=y;
 
