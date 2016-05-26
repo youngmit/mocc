@@ -114,6 +114,36 @@ namespace mocc {
         real_t distance(Point3 p) {
             return sqrt((x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) + (z-p.z)*(z-p.z));
         }
+        
+        /**
+         * A \ref Point3 is considered "less than" another if it is closer to
+         * the origin.
+         */
+        bool operator<(const Point3 &other) const {
+            return (x*x + y*y + z*z) < (other.x*other.x + other.y*other.y +
+                other.z*other.z);
+        }
+
+        // Point equivalence is based upon approximate floating point
+        // arithmetic. Two points are equivalent if their coordinates are "close
+        // enough."
+        bool operator==(const Point3 &other) const {
+            return fp_equiv_abs(x, other.x) && fp_equiv_abs(y, other.y) &&
+                fp_equiv_abs(z, other.z);
+        }
+
+        // Vector-like subtraction of two points
+        Point3& operator-=(const Point3 &other) {
+            x -= other.x;
+            y -= other.y;
+            z -= other.z;
+            return *this;
+        }
+
+        // Vector-like subtraction two points
+        const Point3 operator-(const Point3 &other) {
+            return Point3(*this) -= other;
+        }
 
         /**
          * \brief Return a \ref Point2 instance containing the 2-dimensional
