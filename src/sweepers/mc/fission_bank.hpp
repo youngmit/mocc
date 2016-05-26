@@ -17,6 +17,7 @@
 #pragma once
 
 #include <array>
+#include <iosfwd>
 #include <vector>
 
 #include "global_config.hpp"
@@ -24,6 +25,7 @@
 
 #include "core/core_mesh.hpp"
 #include "core/geometry/geom.hpp"
+#include "core/xs_mesh.hpp"
 
 #include "particle.hpp"
 #include "rng.hpp"
@@ -36,8 +38,8 @@ namespace mocc {
     public:
         FissionBank();
 
-        FissionBank( const pugi::xml_node &input, int n, const CoreMesh &mesh );
-
+        FissionBank( const pugi::xml_node &input, int n, const CoreMesh &mesh,
+                const XSMesh &xs_mesh);
 
         auto begin() {
             return sites_.begin();
@@ -53,6 +55,10 @@ namespace mocc {
 
         const auto end() const {
             return sites_.cend();
+        }
+
+        int size() const {
+            return sites_.size();
         }
 
         /**
@@ -103,6 +109,9 @@ namespace mocc {
         real_t total_fission() const {
             return total_fission_;
         }
+
+        friend std::ostream &operator<<(std::ostream &os,
+                const FissionBank &bank);
 
     private:
         const CoreMesh *mesh_;

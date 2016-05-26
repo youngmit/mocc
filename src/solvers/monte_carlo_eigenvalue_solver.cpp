@@ -32,7 +32,8 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
       n_cycles_(input.attribute("cycles").as_int(-1)),
       n_inactive_cycles_(input.attribute("inactive_cycles").as_int(-1)),
       particles_per_cycle_(input.attribute("particles_per_cycle").as_int(-1)),
-      fission_bank_(input.child("fission_box"), particles_per_cycle_, mesh) {
+      fission_bank_(input.child("fission_box"), particles_per_cycle_, mesh,
+                    xs_mesh_) {
     // Check for valid input
     if (input.empty()) {
         throw EXCEPT(
@@ -84,12 +85,19 @@ void MonteCarloEigenvalueSolver::solve() {
 
 void MonteCarloEigenvalueSolver::step() {
     // Simulate all of the particles in the current fission bank
+//std::cout << fission_bank_;
+std::cout << fission_bank_.size() << std::endl;
     pusher_.simulate(fission_bank_);
 
-    real_t k_eff = pusher_.fission_bank().total_fission()/particles_per_cycle_;
+
+    real_t k_eff =
+        pusher_.fission_bank().total_fission() / particles_per_cycle_;
+
+    LogScreen << "K-effective: " << k_eff << std::endl;
 
     // Grab the new fission sites from the pusher, and resize
     fission_bank_.swap(pusher_.fission_bank());
+std::cout << fission_bank_.size() << std::endl;
     fission_bank_.resize(particles_per_cycle_);
 
     return;

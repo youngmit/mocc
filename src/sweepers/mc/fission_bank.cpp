@@ -16,6 +16,8 @@
 
 #include "fission_bank.hpp"
 
+#include <iostream>
+
 #include "pugixml.hpp"
 
 #include "error.hpp"
@@ -38,13 +40,15 @@ namespace mocc {
      * an XML node.
      */
     FissionBank::FissionBank( const pugi::xml_node &input, int n,
-            const CoreMesh &mesh ):
+            const CoreMesh &mesh, const XSMesh &xs_mesh ):
         mesh_(&mesh),
         total_fission_(0.0)
     {
         if( input.empty() ) {
             throw EXCEPT("Empty input provided to FissionBank");
         }
+
+        int ng = xs_mesh.n_group();
 
         // Make sure that all of the bounds are specified.
         if( input.attribute("x_min").empty() ||
@@ -91,8 +95,7 @@ namespace mocc {
                          RNG_MC.random(y_min, y_max),
                          RNG_MC.random(z_min, z_max) );
                 Direction dir(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
-std::cout << p.x << " " << p.y << " " <<p.z << " " << std::endl;
-                int ig = RNG_MC.random_int(ig);
+                int ig = RNG_MC.random_int(ng);
                 sites_.emplace_back(p, dir, ig);
             }
         }
@@ -109,6 +112,7 @@ std::cout << p.x << " " << p.y << " " <<p.z << " " << std::endl;
     }
 
     void FissionBank::resize( unsigned int n ) {
+        assert(sites_.size() > 0);
         if(n > sites_.size()) {
             // Fission bank is too small. Randomly sample fission sites to
             // expand.
@@ -144,5 +148,13 @@ std::cout << p.x << " " << p.y << " " <<p.z << " " << std::endl;
         real_t tfis = total_fission_;
         total_fission_ = other.total_fission_;
         other.total_fission_ = tfis;
+    }
+
+    std::ostream &operator<<(std::ostream &os, const FissionBank &bank) {
+        os << bank.sites_.size() << " fission sites:" << std::endl;
+        for( const auto &p: bank.sites_ ) {
+            os << p << std::endl;
+        }
+        return os;
     }
 } // namespace mocc

@@ -46,32 +46,30 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
 
 void ParticlePusher::collide(Particle &p, int ixsreg) {
     // Sample the type of interaction;
+//cout << "collision!" << endl;
     const auto &xsreg = xs_mesh_[ixsreg];
     real_t r = RNG_MC.random();
 
     real_t xs_scat_out = xsreg.xsmacsc().out(p.group);
     real_t xs_cum = xs_scat_out;
     if (r < xs_cum) {
+//cout << "scatter" << endl;
         // scatter. only isotropic for now
         // sample new energy
-        real_t cdf_scale = 1.0 / xs_scat_out;
-        VecF scat_cdf;
-        scat_cdf.reserve(n_group_);
-        for (int iig = 0; iig < n_group_; iig++) {
-            scat_cdf.push_back(xsreg.xsmacsc().to(iig)[p.group] * cdf_scale);
-        }
-        assert(fp_equiv_ulp(1.0, scat_cdf.back()));
-
-        p.group = RNG_MC.sample_cdf(scat_cdf);
+        VecF cdf = xsreg.xsmacsc().out_cdf(p.group);
+        p.group = RNG_MC.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
 
         // sample new angle
         p.direction = Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
+//cout << "new group | direction: " << p.group << " | " << p.direction << endl;
 
+//cin.ignore();
         return;
     }
 
     xs_cum += xsreg.xsmacf(p.group);
     if (r < xs_cum) {
+//cout << "fission" << endl;
         // fission
         // sample number of new particles to generate
         real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
@@ -86,13 +84,16 @@ void ParticlePusher::collide(Particle &p, int ixsreg) {
                 Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI)), ig);
             fission_bank_.push_back(new_p);
         }
+//cin.ignore();
         return;
     }
+//cout << "capture" << endl;
 
-    // collision
-    if (!do_implicit_capture_) {
+//cin.ignore();
+    // capture
+    //if (!do_implicit_capture_) {
         p.alive = false;
-    }
+    //}
 
     return;
 }
@@ -102,8 +103,10 @@ void ParticlePusher::simulate(Particle p) {
     auto location_info =
         mesh_.get_location_info(p.location_global, p.direction);
     p.location = location_info.local_point;
-cout << "starting new particle at:" << endl<< p << endl;
-    int ixsreg = xsmesh_regions_[location_info.ireg];
+    int ireg = location_info.reg_offset +
+        location_info.pm->find_reg(p.location);
+//cout << "starting new" << endl;
+    int ixsreg = xsmesh_regions_[ireg];
 
     real_t z_min = mesh_.z(location_info.pos.z);
     real_t z_max = mesh_.z(location_info.pos.z + 1);
@@ -111,31 +114,37 @@ cout << "starting new particle at:" << endl<< p << endl;
     p.alive = true;
 
     while (p.alive) {
+//cout << "particle at:" << endl<< p << endl;
+//cout << "in region: " << ireg << endl << endl;
+
         // Determine distance to nearest surface
         auto d_to_surf =
             location_info.pm->distance_to_surface(p.location, p.direction);
-cout << "distance to surface: " << d_to_surf.first << " " << d_to_surf.second << endl;
-
         // Determine distance to plane boundaries. If it is less than the
         // distance to surface, use it as the distance to surf and force a pin
         // intersection
         real_t d_to_plane =
             (p.direction.oz > 0.0)
                 ? (z_max - p.location_global.z) / p.direction.oz
-                : (p.location_global.z - z_min) / p.direction.oz;
+                : (z_min - p.location_global.z) / p.direction.oz;
         if (d_to_plane < d_to_surf.first) {
             d_to_surf.first = d_to_plane;
             d_to_surf.second =
                 (p.direction.oz > 0.0) ? Surface::TOP : Surface::BOTTOM;
         }
 
+//cout << "distance to surface: " << d_to_surf.first << " " << d_to_surf.second << endl;
+
         // Sample distance to collision
         real_t xstr = xs_mesh_[ixsreg].xsmactr(p.group);
-        real_t d_to_collision = -std::log(1.0 - RNG_MC.random() * xstr) / xstr;
+        real_t d_to_collision = -std::log(RNG_MC.random()) / xstr;
+
+//cout << "xst | distance to collision: "  << xstr << " " << d_to_collision << endl;
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
             // collision site and handle interaction.
+            p.move(d_to_collision);
             this->collide(p, ixsreg);
         } else {
             // Particle reached a surface before colliding. Move to the
@@ -144,49 +153,55 @@ cout << "distance to surface: " << d_to_surf.first << " " << d_to_surf.second <<
                 // Particle crossed an internal boundary in the pin.
                 // Update its location and region index
                 p.move(d_to_surf.first);
-                location_info.ireg =
-                    location_info.pm->find_reg(p.location, p.direction);
-                ixsreg = xsmesh_regions_[location_info.ireg];
+                ireg = location_info.pm->find_reg(p.location, p.direction) +
+                    location_info.reg_offset;
+                ixsreg = xsmesh_regions_[ireg];
+
             } else {
+//cout << "moving to new pin cell:" << endl;
                 // Particle crossed a pin boundary. Move to neighboring pin,
                 // handle boundary condition, etc.
                 // Regardless of what happens, move the particle
                 p.move(d_to_surf.first);
 
-                // Figure out where we are again
-                location_info =
-                    mesh_.get_location_info(p.location_global, p.direction);
-                z_min = mesh_.z(location_info.pos.z);
-                z_max = mesh_.z(location_info.pos.z) + 1;
-                p.location = location_info.local_point;
                 // Check for domain boundary crossing
-                if (location_info.surface == Surface::INTERNAL) {
-                    // We are still inside the domain.
-                    // The update that we did above should be good enough that
-                    // we don't need to do anything here
-                } else {
+                Surface bound_surf = mesh_.boundary_surface(p.location_global,
+                                                            p.direction);
+                if (bound_surf != Surface::INTERNAL) {
                     // We are exiting a domain boundary. Handle the boundary
                     // condition.
-                    auto bc = mesh_.boundary_condition(location_info.surface);
+//cout << "at domain boundary"  << " "  << bound_surf << endl;
+                    auto bc = mesh_.boundary_condition(bound_surf);
+//cout << "boundary condition: " << bc << endl;
                     switch (bc) {
                         case Boundary::REFLECT:
-                            p.direction.reflect(location_info.surface);
-                            location_info = mesh_.get_location_info(
-                                p.location_global, p.direction);
+                            p.direction.reflect(bound_surf);
+//cout << "new direction: " << p.direction << endl;
                             break;
                         case Boundary::VACUUM:
                             // Just kill the thing
+//cout << "particle leak" << endl;
+//cin.ignore();
                             p.alive = false;
                             break;
                         default:
                             throw EXCEPT("Unsupported boundary condition");
                     }
                 }
-
-                ixsreg = xsmesh_regions_[location_info.ireg];
+                // Figure out where we are again
+                location_info =
+                    mesh_.get_location_info(p.location_global, p.direction);
+                z_min = mesh_.z(location_info.pos.z);
+                z_max = mesh_.z(location_info.pos.z) + 1;
+                p.location = location_info.local_point;
+                ireg = location_info.reg_offset +
+                    location_info.pm->find_reg(p.location);
+                ixsreg = xsmesh_regions_[ireg];
+//cout  << "particle now at: " << endl << p << endl;
             }
-        }
-    }
+        } // collision or new region?
+    } // particle alive
+//cin.ignore();
     return;
 }
 
