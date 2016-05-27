@@ -43,7 +43,11 @@ namespace mocc {
         INVALID = 7
     };
 
-
+    enum class Reaction : unsigned char {
+        SCATTER = 0,
+        FISSION = 1,
+        CAPTURE = 2
+    };
 
     enum class Cardinal : unsigned char {
         EAST  = 0,
@@ -68,7 +72,6 @@ namespace mocc {
     };
 
     extern const Normal AllNormals[3];
-
 
     // Boundary condition enumeration
     enum class Boundary {
