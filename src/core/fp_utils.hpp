@@ -65,16 +65,16 @@ namespace mocc {
     }
 
     inline bool fp_equiv_rel(real_t v1, real_t v2) {
-        return fabs(v1-v2)/fabs(v1) < REAL_FUZZ;
+        return std::abs(v1-v2)/std::abs(v1) < REAL_FUZZ;
     }
     inline bool fp_equiv_abs(real_t v1, real_t v2) {
-        return fabs(v1-v2) < REAL_FUZZ;
+        return std::abs(v1-v2) < REAL_FUZZ;
     }
 
     /**
      * \brief A lambda function for doing a fuzzy floating-point less-than (\<)
      * comparison.
-     * 
+     *
      * This function returns true when \p l is sufficiently less than \p r. The
      * primary utility of such a function is for use with the \c
      * std::lower_bound() and \c std::upper_bound() algorithms.
