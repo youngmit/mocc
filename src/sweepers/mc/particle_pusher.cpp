@@ -46,14 +46,13 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
 
 void ParticlePusher::collide(Particle &p, int ixsreg) {
     // Sample the type of interaction;
-//cout << "collision!" << endl;
     const auto &xsreg = xs_mesh_[ixsreg];
-    real_t r = RNG_MC.random();
+    Reaction reaction =
+        (Reaction)RNG_MC.sample_cdf(xsreg.reaction_cdf(p.group));
 
-    real_t xs_scat_out = xsreg.xsmacsc().out(p.group);
-    real_t xs_cum = xs_scat_out;
-    if (r < xs_cum) {
-//cout << "scatter" << endl;
+    switch( reaction ) {
+    case Reaction::SCATTER:
+        {
         // scatter. only isotropic for now
         // sample new energy
         VecF cdf = xsreg.xsmacsc().out_cdf(p.group);
@@ -61,17 +60,13 @@ void ParticlePusher::collide(Particle &p, int ixsreg) {
 
         // sample new angle
         p.direction = Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
-//cout << "new group | direction: " << p.group << " | " << p.direction << endl;
+        }
+        break;
 
-//cin.ignore();
-        return;
-    }
-
-    xs_cum += xsreg.xsmacf(p.group);
-    if (r < xs_cum) {
-//cout << "fission" << endl;
+    case Reaction::FISSION:
         // fission
         // sample number of new particles to generate
+        {
         real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
         int n_fis =
             (RNG_MC.random() < (nu - (int)nu)) ? std::ceil(nu) : std::floor(nu);
@@ -84,16 +79,13 @@ void ParticlePusher::collide(Particle &p, int ixsreg) {
                 Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI)), ig);
             fission_bank_.push_back(new_p);
         }
-//cin.ignore();
-        return;
-    }
-//cout << "capture" << endl;
-
-//cin.ignore();
-    // capture
-    //if (!do_implicit_capture_) {
+        }
         p.alive = false;
-    //}
+        break;
+    default:
+        // capture
+        p.alive = false;
+    }
 
     return;
 }
@@ -105,7 +97,6 @@ void ParticlePusher::simulate(Particle p) {
     p.location = location_info.local_point;
     int ireg = location_info.reg_offset +
         location_info.pm->find_reg(p.location);
-//cout << "starting new" << endl;
     int ixsreg = xsmesh_regions_[ireg];
 
     real_t z_min = mesh_.z(location_info.pos.z);
@@ -114,9 +105,6 @@ void ParticlePusher::simulate(Particle p) {
     p.alive = true;
 
     while (p.alive) {
-//cout << "particle at:" << endl<< p << endl;
-//cout << "in region: " << ireg << endl << endl;
-
         // Determine distance to nearest surface
         auto d_to_surf =
             location_info.pm->distance_to_surface(p.location, p.direction);
@@ -133,13 +121,9 @@ void ParticlePusher::simulate(Particle p) {
                 (p.direction.oz > 0.0) ? Surface::TOP : Surface::BOTTOM;
         }
 
-//cout << "distance to surface: " << d_to_surf.first << " " << d_to_surf.second << endl;
-
         // Sample distance to collision
         real_t xstr = xs_mesh_[ixsreg].xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG_MC.random()) / xstr;
-
-//cout << "xst | distance to collision: "  << xstr << " " << d_to_collision << endl;
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
@@ -158,7 +142,6 @@ void ParticlePusher::simulate(Particle p) {
                 ixsreg = xsmesh_regions_[ireg];
 
             } else {
-//cout << "moving to new pin cell:" << endl;
                 // Particle crossed a pin boundary. Move to neighboring pin,
                 // handle boundary condition, etc.
                 // Regardless of what happens, move the particle
@@ -170,18 +153,13 @@ void ParticlePusher::simulate(Particle p) {
                 if (bound_surf != Surface::INTERNAL) {
                     // We are exiting a domain boundary. Handle the boundary
                     // condition.
-//cout << "at domain boundary"  << " "  << bound_surf << endl;
                     auto bc = mesh_.boundary_condition(bound_surf);
-//cout << "boundary condition: " << bc << endl;
                     switch (bc) {
                         case Boundary::REFLECT:
                             p.direction.reflect(bound_surf);
-//cout << "new direction: " << p.direction << endl;
                             break;
                         case Boundary::VACUUM:
                             // Just kill the thing
-//cout << "particle leak" << endl;
-//cin.ignore();
                             p.alive = false;
                             break;
                         default:
@@ -197,11 +175,9 @@ void ParticlePusher::simulate(Particle p) {
                 ireg = location_info.reg_offset +
                     location_info.pm->find_reg(p.location);
                 ixsreg = xsmesh_regions_[ireg];
-//cout  << "particle now at: " << endl << p << endl;
             }
         } // collision or new region?
     } // particle alive
-//cin.ignore();
     return;
 }
 
