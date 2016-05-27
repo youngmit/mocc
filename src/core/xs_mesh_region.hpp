@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "constants.hpp"
 #include "fp_utils.hpp"
 #include "global_config.hpp"
 #include "scattering_matrix.hpp"
@@ -86,6 +87,19 @@ namespace mocc {
 
         const ScatteringRow& xsmacsc(int ig) const {
             return xsmacsc_.to(ig);
+        }
+
+        VecF reaction_cdf( int ig ) const {
+            VecF cdf(3, 0.0);
+
+            real_t scale = 1.0/xsmactr_[ig];
+
+            cdf[(int)Reaction::SCATTER] = xsmacsc_.out(ig)*scale;
+            cdf[(int)Reaction::FISSION] = cdf[(int)Reaction::SCATTER] +
+                xsmacf_[ig] * scale;
+            cdf[(int)Reaction::CAPTURE] = 1.0;
+
+            return cdf;
         }
 
         /**
