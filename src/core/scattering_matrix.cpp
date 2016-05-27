@@ -106,8 +106,6 @@ namespace mocc {
 
         scat_.reserve(size);
 
-        auto *begin = scat_.data();
-
         int to = 0;
         int pos = 0;
         for( auto & these_bounds: bounds ) {
@@ -121,9 +119,6 @@ namespace mocc {
             to++;
             pos += these_bounds.second-these_bounds.first+1;
         }
-
-        // Check whether scat_ is reallocated
-        assert( begin == scat_.data() );
     }
 
     std::ostream& operator<<( std::ostream& os,

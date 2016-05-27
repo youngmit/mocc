@@ -20,7 +20,7 @@ namespace mocc {
 std::pair<real_t, Surface> Box::distance_to_surface(Point2 p,
                                                     Direction dir) const {
     real_t dist = std::numeric_limits<real_t>::max();
-    Surface surf;
+    Surface surf = Surface::INTERNAL;
 
     int il = 0;
     for (const auto &l : lines_) {
