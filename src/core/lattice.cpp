@@ -133,7 +133,7 @@ namespace mocc {
         assert(p.y < hy_+REAL_FUZZ);
         // Locate the pin, and offset the point to pin-local coordinates.
         /// \todo This is potentially pretty brittle. Future PinMesh types might
-        /// breake the assumption here that all PinMesh origins are smack-dab in
+        /// break the assumption here that all PinMesh origins are smack-dab in
         /// middle of the mesh. Should provide some functionality on the PinMesh
         /// itself to provide its origin to clients.
         unsigned ix = std::distance(
@@ -144,7 +144,7 @@ namespace mocc {
         }
         ix--;
         ix = std::min(nx_-1, std::max(0u, ix));
-        
+
         p.x = 0.5*(x_vec_[ix+1] + x_vec_[ix]);
 
         unsigned iy = std::distance(
