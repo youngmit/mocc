@@ -23,8 +23,10 @@
 
 #include "fission_bank.hpp"
 #include "particle.hpp"
+#include "tally_scalar.hpp"
 
 namespace mocc {
+namespace mc {
     /**
      * This class manages the simulation of particle histories. Each call to
      * \ref simulate() will track the entire history of a particle until its
@@ -46,8 +48,10 @@ namespace mocc {
          * \brief Simulate all particles in a \ref FissionBank
          *
          * \param bank the \ref FissionBank to generate/simulate particles from
+         * \param k_eff the guess to use for k-effective to scale neutron
+         * production in fission.
          */
-        void simulate( const FissionBank &bank );
+        void simulate( const FissionBank &bank, real_t k_eff );
 
         /**
          * \brief Perform an interaction of a particle with its underlying
@@ -60,6 +64,13 @@ namespace mocc {
          */
         FissionBank &fission_bank() {
             return fission_bank_;
+        }
+
+        /**
+         * \brief Return a reference to the internal eigenvalue tally
+         */
+        TallyScalar k_tally() {
+            return k_tally_;
         }
     private:
         const CoreMesh &mesh_;
@@ -77,7 +88,15 @@ namespace mocc {
         // region, somewhat at random.
         std::vector<int> xsmesh_regions_;
 
+        // Eigenvalue tally
+        TallyScalar k_tally_;
+        // Guess to use for scaling fission neutron production. Warning: Don't
+        // try to use this as the actual system eigenvalue, since it is not tied
+        // directly to a specific tally
+        real_t k_eff_;
+
         // Do implicit capture?
         bool do_implicit_capture_;
     };
+} // namespace mc
 } // namespace mocc

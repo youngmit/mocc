@@ -26,11 +26,14 @@ using std::endl;
 using std::cin;
 
 namespace mocc {
+namespace mc {
 ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
     : mesh_(mesh),
       xs_mesh_(xs_mesh),
       n_group_(xs_mesh.n_group()),
-      do_implicit_capture_(true) {
+      fission_bank_(mesh),
+      do_implicit_capture_(true)
+{
     // Build the map from mesh regions into the XS mesh
     xsmesh_regions_.reserve(mesh.n_reg());
 
@@ -44,41 +47,41 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
     return;
 }
 
-void ParticlePusher::collide(Particle &p, int ixsreg) {
+void ParticlePusher::collide(Particle &p, int ixsreg)
+{
     // Sample the type of interaction;
     const auto &xsreg = xs_mesh_[ixsreg];
     Reaction reaction =
         (Reaction)RNG_MC.sample_cdf(xsreg.reaction_cdf(p.group));
 
-    switch( reaction ) {
-    case Reaction::SCATTER:
-        {
+    switch (reaction) {
+    case Reaction::SCATTER: {
         // scatter. only isotropic for now
         // sample new energy
         VecF cdf = xsreg.xsmacsc().out_cdf(p.group);
-        p.group = RNG_MC.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
+        p.group  = RNG_MC.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
 
         // sample new angle
         p.direction = Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
-        }
-        break;
+    } break;
 
     case Reaction::FISSION:
         // fission
         // sample number of new particles to generate
         {
-        real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
-        int n_fis =
-            (RNG_MC.random() < (nu - (int)nu)) ? std::ceil(nu) : std::floor(nu);
+            real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
+            assert(k_eff_ > 0.0);
+            int n_fis = p.weight * nu / k_eff_ + RNG_MC.random();
 
-        // Make new particles and push them onto the fission bank
-        for (int i = 0; i < n_fis; i++) {
-            int ig = RNG_MC.sample_cdf(xsreg.chi_cdf());
-            Particle new_p(
-                p.location_global,
-                Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI)), ig);
-            fission_bank_.push_back(new_p);
-        }
+            // Make new particles and push them onto the fission bank
+            for (int i = 0; i < n_fis; i++) {
+                int ig = RNG_MC.sample_cdf(xsreg.chi_cdf());
+                Particle new_p(
+                    p.location_global,
+                    Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI)),
+                    ig);
+                fission_bank_.push_back(new_p);
+            }
         }
         p.alive = false;
         break;
@@ -90,13 +93,17 @@ void ParticlePusher::collide(Particle &p, int ixsreg) {
     return;
 }
 
-void ParticlePusher::simulate(Particle p) {
+void ParticlePusher::simulate(Particle p)
+{
+    // Register this particle with the tallies
+    k_tally_.add_weight(p.weight);
+
     // Figure out where the particle is
     auto location_info =
         mesh_.get_location_info(p.location_global, p.direction);
     p.location = location_info.local_point;
-    int ireg = location_info.reg_offset +
-        location_info.pm->find_reg(p.location);
+    int ireg =
+        location_info.reg_offset + location_info.pm->find_reg(p.location);
     int ixsreg = xsmesh_regions_[ireg];
 
     real_t z_min = mesh_.z(location_info.pos.z);
@@ -122,15 +129,21 @@ void ParticlePusher::simulate(Particle p) {
         }
 
         // Sample distance to collision
-        real_t xstr = xs_mesh_[ixsreg].xsmactr(p.group);
+        real_t xstr           = xs_mesh_[ixsreg].xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG_MC.random()) / xstr;
+
+        real_t tl = std::min(d_to_collision, d_to_surf.first);
+
+        // Contribute to track length-based tallies
+        k_tally_.score(tl*p.weight, xs_mesh_[ixsreg].xsmacnf(p.group));
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
             // collision site and handle interaction.
             p.move(d_to_collision);
             this->collide(p, ixsreg);
-        } else {
+        }
+        else {
             // Particle reached a surface before colliding. Move to the
             // surface and re-sample distance to collision.
             if (d_to_surf.second == Surface::INTERNAL) {
@@ -138,46 +151,46 @@ void ParticlePusher::simulate(Particle p) {
                 // Update its location and region index
                 p.move(d_to_surf.first);
                 ireg = location_info.pm->find_reg(p.location, p.direction) +
-                    location_info.reg_offset;
+                       location_info.reg_offset;
                 ixsreg = xsmesh_regions_[ireg];
-
-            } else {
+            }
+            else {
                 // Particle crossed a pin boundary. Move to neighboring pin,
                 // handle boundary condition, etc.
                 // Regardless of what happens, move the particle
                 p.move(d_to_surf.first);
 
                 // Check for domain boundary crossing
-                Surface bound_surf = mesh_.boundary_surface(p.location_global,
-                                                            p.direction);
+                Surface bound_surf =
+                    mesh_.boundary_surface(p.location_global, p.direction);
                 if (bound_surf != Surface::INTERNAL) {
                     // We are exiting a domain boundary. Handle the boundary
                     // condition.
                     auto bc = mesh_.boundary_condition(bound_surf);
                     switch (bc) {
-                        case Boundary::REFLECT:
-                            p.direction.reflect(bound_surf);
-                            break;
-                        case Boundary::VACUUM:
-                            // Just kill the thing
-                            p.alive = false;
-                            break;
-                        default:
-                            throw EXCEPT("Unsupported boundary condition");
+                    case Boundary::REFLECT:
+                        p.direction.reflect(bound_surf);
+                        break;
+                    case Boundary::VACUUM:
+                        // Just kill the thing
+                        p.alive = false;
+                        break;
+                    default:
+                        throw EXCEPT("Unsupported boundary condition");
                     }
                 }
                 // Figure out where we are again
                 location_info =
                     mesh_.get_location_info(p.location_global, p.direction);
-                z_min = mesh_.z(location_info.pos.z);
-                z_max = mesh_.z(location_info.pos.z) + 1;
+                z_min      = mesh_.z(location_info.pos.z);
+                z_max      = mesh_.z(location_info.pos.z) + 1;
                 p.location = location_info.local_point;
-                ireg = location_info.reg_offset +
-                    location_info.pm->find_reg(p.location);
+                ireg       = location_info.reg_offset +
+                       location_info.pm->find_reg(p.location);
                 ixsreg = xsmesh_regions_[ireg];
             }
         } // collision or new region?
-    } // particle alive
+    }     // particle alive
     return;
 }
 
@@ -186,15 +199,18 @@ void ParticlePusher::simulate(Particle p) {
  * site in the \ref FissionBank and calling \c this->simulate() for that
  * particle.
  */
-void ParticlePusher::simulate(const FissionBank &bank) {
+void ParticlePusher::simulate(const FissionBank &bank, real_t k)
+{
     // Clear the internal FissionBank to store new fission sites for this
     // cycle
     fission_bank_.clear();
+
+    k_eff_ = k;
 
     for (const auto &p : bank) {
         this->simulate(p);
     }
     return;
 }
-
-}  // namespace mocc
+} // namespace mc
+} // namespace mocc

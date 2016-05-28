@@ -28,29 +28,31 @@
 #include "monte_carlo_eigenvalue_solver.hpp"
 
 namespace mocc {
-    SP_Solver_t SolverFactory( const pugi::xml_node &input,
-        const CoreMesh &mesh ){
+SP_Solver_t SolverFactory(const pugi::xml_node &input, const CoreMesh &mesh)
+{
+    LogFile << "Initializing solver..." << std::endl;
 
-        LogFile << "Initializing solver..." << std::endl;
+    SP_Solver_t solver;
 
-        SP_Solver_t solver;
-
-        if( input.empty() ) {
-            throw EXCEPT("No input specified for the solver.");
-        }
-        std::string type = input.attribute("type").value();
-        if( type == "eigenvalue" ) {
-            solver = std::make_shared<EigenSolver>( input, mesh );
-        } else if( type == "fixed_source" ) {
-            solver = std::make_shared<FixedSourceSolver>( input, mesh );
-        } else if( type == "eigenvalue_mc") {
-            solver = std::make_shared<MonteCarloEigenvalueSolver>( input, mesh);
-        } else {
-            throw EXCEPT("Unrecognized solver type.");
-        }
-
-        LogFile << "Done initializing solver." << std::endl;
-
-        return solver;
+    if (input.empty()) {
+        throw EXCEPT("No input specified for the solver.");
     }
+    std::string type = input.attribute("type").value();
+    if (type == "eigenvalue") {
+        solver = std::make_shared<EigenSolver>(input, mesh);
+    }
+    else if (type == "fixed_source") {
+        solver = std::make_shared<FixedSourceSolver>(input, mesh);
+    }
+    else if (type == "eigenvalue_mc") {
+        solver = std::make_shared<mc::MonteCarloEigenvalueSolver>(input, mesh);
+    }
+    else {
+        throw EXCEPT("Unrecognized solver type.");
+    }
+
+    LogFile << "Done initializing solver." << std::endl;
+
+    return solver;
+}
 }

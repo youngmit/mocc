@@ -23,11 +23,11 @@
 #include "error.hpp"
 
 namespace mocc {
-    FissionBank::FissionBank():
-        mesh_(nullptr)
+    FissionBank::FissionBank( const CoreMesh &mesh ): mesh_(mesh)
     {
         return;
     }
+
 
     /**
      * \brief Construct a FissionBank by uniformly sampling fission sites.
@@ -41,7 +41,7 @@ namespace mocc {
      */
     FissionBank::FissionBank( const pugi::xml_node &input, int n,
             const CoreMesh &mesh, const XSMesh &xs_mesh ):
-        mesh_(&mesh),
+        mesh_(mesh),
         total_fission_(0.0)
     {
         if( input.empty() ) {
@@ -85,7 +85,7 @@ namespace mocc {
                          RNG_MC.random(y_min, y_max),
                          RNG_MC.random(z_min, z_max) );
                 Direction dir(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
-                int ig = RNG_MC.random_int(ig);
+                int ig = RNG_MC.random_int(ng);
                 sites_.emplace_back(p, dir, ig);
             }
         } else {
@@ -106,7 +106,17 @@ namespace mocc {
     real_t FissionBank::shannon_entropy() const {
         real_t h = 0.0;
 
-        throw EXCEPT("not implemented");
+        VecF populations(mesh_.n_pin(), 0.0);
+
+        for(const auto &p: sites_) {
+            int icell = mesh_.coarse_cell_point(p.location_global);
+            populations[icell] += p.weight;
+        }
+
+        for(const auto &p: populations) {
+            real_t pj = p/sites_.size();
+            h -= pj*std::log2(pj);
+        }
 
         return h;
     }

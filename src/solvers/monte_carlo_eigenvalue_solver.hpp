@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "core_mesh.hpp"
 #include "pugifwd.hpp"
 #include "solver.hpp"
@@ -24,29 +26,34 @@
 #include "mc/particle_pusher.hpp"
 
 namespace mocc {
-    class MonteCarloEigenvalueSolver: public Solver {
-    public:
-        MonteCarloEigenvalueSolver( const pugi::xml_node &input,
-                const CoreMesh &mesh );
+namespace mc {
+class MonteCarloEigenvalueSolver : public Solver {
+public:
+    MonteCarloEigenvalueSolver(const pugi::xml_node &input,
+                               const CoreMesh &mesh);
 
-        void solve();
-        void step();
+    void solve();
+    void step();
 
-        void output( H5Node &node ) const override;
+    void output(H5Node &node) const override;
 
-    private:
-        // Data
-        const CoreMesh &mesh_;
-        const XSMesh xs_mesh_;
-        ParticlePusher pusher_;
-        int n_cycles_;
-        int n_inactive_cycles_;
-        int particles_per_cycle_;
+private:
+    // Data
+    const CoreMesh &mesh_;
+    const XSMesh xs_mesh_;
+    ParticlePusher pusher_;
+    int n_cycles_;
+    int n_inactive_cycles_;
+    int particles_per_cycle_;
 
-        FissionBank fission_bank_;
+    FissionBank source_bank_;
 
-        real_t k_eff_;
-        real_t k_variance_;
-        bool active_cycle_;
-    };
+    VecF k_history_;
+    VecF h_history_;
+
+    bool active_cycle_;
+
+    std::pair<real_t, real_t> k_eff_;
+};
+} // namespace mc
 } // namespace mocc

@@ -36,7 +36,7 @@ namespace mocc {
      */
     class FissionBank {
     public:
-        FissionBank();
+        FissionBank( const CoreMesh &mesh);
 
         FissionBank( const pugi::xml_node &input, int n, const CoreMesh &mesh,
                 const XSMesh &xs_mesh);
@@ -114,7 +114,7 @@ namespace mocc {
                 const FissionBank &bank);
 
     private:
-        const CoreMesh *mesh_;
+        const CoreMesh &mesh_;
         std::vector<Particle> sites_;
         real_t total_fission_;
     };
