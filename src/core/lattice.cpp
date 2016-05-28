@@ -159,6 +159,12 @@ namespace mocc {
         for ( pugi::xml_node lat = input.child( "lattice" ); lat;
                 lat = lat.next_sibling( "lattice" )) {
             UP_Lattice_t lattice( new Lattice(lat, pins) );
+            if( lattices.find(lattice->id()) != lattices.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate lattice ID (" << lattice->id()
+                    << ") specified";
+                throw EXCEPT(msg.str());
+            }
             lattices[lattice->id()] = lattice;
         }
 

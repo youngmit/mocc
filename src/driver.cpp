@@ -73,10 +73,19 @@ void generate_output() {
     outfile.write("git_sha1", std::string(g_GIT_SHA1));
 
     if( Warnings.size() > 0 ) {
-        std::cout << "There were " << Warnings.size() << " warnings:"
-                  << std::endl;
+        if( Warnings.size() == 1 ) {
+            std::cout << "There was ";
+        } else {
+            std::cout << "There were ";
+        }
+        std::cout << Warnings.size();
+        if( Warnings.size() == 1 ) {
+            std::cout << " warning:" << std::endl;
+        } else {
+            std::cout << " warnings:" << std::endl;
+        }
         for( const auto &warning: Warnings ) {
-            std::cout << "\t" << warning << std::endl;
+            std::cout << "\t" << warning.second << std::endl;
         }
     }
 

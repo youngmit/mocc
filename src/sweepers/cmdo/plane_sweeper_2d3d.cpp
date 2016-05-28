@@ -293,6 +293,12 @@ namespace mocc { namespace cmdo {
             relax_ = input.attribute("relax").as_bool();
         }
 
+        // Throw a warning if TL is disabled
+        if( !do_tl_ ) {
+            Warn("Transverse leakage is disabled. Are you sure that's what you "
+                    "want?");
+        }
+
         // Make sure that if we are doing expose_sn, we arent also trying to do
         // MoC. Doesnt work right now.
         if( expose_sn_ ) {

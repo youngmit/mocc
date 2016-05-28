@@ -129,6 +129,12 @@ namespace mocc {
                 asy = asy.next_sibling("assembly") )
         {
             UP_Assembly_t asy_p( new Assembly( asy, lattices ) );
+            int id = asy_p->id();
+            if( assemblies.find(id) != assemblies.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate assembly ID (" << id << ")";
+                throw EXCEPT(msg.str());
+            }
             assemblies.emplace( asy_p->id(), std::move(asy_p) );
         }
 

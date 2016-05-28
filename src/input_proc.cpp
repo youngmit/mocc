@@ -166,6 +166,21 @@ namespace mocc{
         Timer &mesh_timer = timer_.new_timer("Core Mesh");
         mesh_timer.tic();
 
+        // Dump the text of the input file to the log file
+        std::stringstream xmlstream;
+        doc_.save(xmlstream);
+        LogFile << "XML input (including command-line amendments):"
+                << std::endl;
+        LogFile <<
+" ============================================================================="
+                << std::endl;
+        LogFile << xmlstream.str();
+        LogFile <<
+" ============================================================================="
+                << std::endl << std::endl;
+        
+
+
         // Read the <parallel /> tag, if present. This isnt the best place for
         // this in the long term, but since we only do OpenMP right now we can
         // live with it. If MPI becomes a thing, it would be better to have a
