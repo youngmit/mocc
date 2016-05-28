@@ -357,6 +357,12 @@ namespace mocc {
         int coarse_cell_point( Point2 p ) const;
 
         /**
+         * \brief Return the coarse cell index corresponding to the \ref Point3
+         * passed.
+         */
+        int coarse_cell_point( Point3 p ) const;
+
+        /**
          * \brief Return the \ref Position of a coarse mesh cell index.
         */
         Position coarse_position( size_t cell ) const {

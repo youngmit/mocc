@@ -344,6 +344,19 @@ namespace mocc {
         return this->coarse_cell( Position(ix, iy, 0) );
     }
 
+    int Mesh::coarse_cell_point( Point3 p ) const {
+        auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) -
+            x_vec_.begin() - 1;
+        auto iy = std::distance( y_vec_.begin(),
+                std::lower_bound( y_vec_.begin(), y_vec_.end(), p.y ) ) - 1;
+        auto iz = std::distance( z_vec_.begin(),
+                std::lower_bound( z_vec_.begin(), z_vec_.end(), p.z ) ) - 1;
+
+        /// \todo add z support
+        return this->coarse_cell( Position(ix, iy, iz) );
+    }
+
+
     size_t Mesh::coarse_norm_point( Point2 p, int octant, Surface (&s)[2] )
             const {
         assert( octant < 5 );
