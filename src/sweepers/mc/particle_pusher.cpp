@@ -32,7 +32,8 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
       xs_mesh_(xs_mesh),
       n_group_(xs_mesh.n_group()),
       fission_bank_(mesh),
-      do_implicit_capture_(true)
+      do_implicit_capture_(false),
+      scalar_flux_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes()))
 {
     // Build the map from mesh regions into the XS mesh
     xsmesh_regions_.reserve(mesh.n_reg());
@@ -97,21 +98,25 @@ void ParticlePusher::simulate(Particle p)
 {
     // Register this particle with the tallies
     k_tally_.add_weight(p.weight);
-
-    // Figure out where the particle is
-    auto location_info =
-        mesh_.get_location_info(p.location_global, p.direction);
-    p.location = location_info.local_point;
-    int ireg =
-        location_info.reg_offset + location_info.pm->find_reg(p.location);
-    int ixsreg = xsmesh_regions_[ireg];
-
-    real_t z_min = mesh_.z(location_info.pos.z);
-    real_t z_max = mesh_.z(location_info.pos.z + 1);
+    for (auto &tally : scalar_flux_tally_) {
+        tally.add_weight(p.weight);
+    }
 
     p.alive = true;
 
     while (p.alive) {
+        // Figure out where we are
+        auto location_info =
+            mesh_.get_location_info(p.location_global, p.direction);
+        real_t z_min = mesh_.z(location_info.pos.z);
+        real_t z_max = mesh_.z(location_info.pos.z) + 1;
+        p.location   = location_info.local_point;
+        int ireg     = location_info.reg_offset +
+                   location_info.pm->find_reg(p.location, p.direction);
+        assert(ireg >= 0);
+        assert(ireg < mesh_.n_reg());
+        int ixsreg = xsmesh_regions_[ireg];
+
         // Determine distance to nearest surface
         auto d_to_surf =
             location_info.pm->distance_to_surface(p.location, p.direction);
@@ -135,7 +140,9 @@ void ParticlePusher::simulate(Particle p)
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
         // Contribute to track length-based tallies
-        k_tally_.score(tl*p.weight, xs_mesh_[ixsreg].xsmacnf(p.group));
+        k_tally_.score(tl * p.weight * xs_mesh_[ixsreg].xsmacnf(p.group));
+
+        scalar_flux_tally_[p.group].score(ireg, tl);
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
@@ -179,15 +186,6 @@ void ParticlePusher::simulate(Particle p)
                         throw EXCEPT("Unsupported boundary condition");
                     }
                 }
-                // Figure out where we are again
-                location_info =
-                    mesh_.get_location_info(p.location_global, p.direction);
-                z_min      = mesh_.z(location_info.pos.z);
-                z_max      = mesh_.z(location_info.pos.z) + 1;
-                p.location = location_info.local_point;
-                ireg       = location_info.reg_offset +
-                       location_info.pm->find_reg(p.location);
-                ixsreg = xsmesh_regions_[ireg];
             }
         } // collision or new region?
     }     // particle alive
@@ -204,6 +202,7 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k)
     // Clear the internal FissionBank to store new fission sites for this
     // cycle
     fission_bank_.clear();
+    k_tally_.reset();
 
     k_eff_ = k;
 

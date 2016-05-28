@@ -24,79 +24,103 @@
 #include "fission_bank.hpp"
 #include "particle.hpp"
 #include "tally_scalar.hpp"
+#include "tally_spatial.hpp"
 
 namespace mocc {
 namespace mc {
+/**
+ * This class manages the simulation of particle histories. Each call to
+ * \ref simulate() will track the entire history of a particle until its
+ * death and the death of all of its progeny (which would arise from
+ * variance reduction techniques such as russian roulette/splitting).
+ */
+class ParticlePusher {
+public:
+    ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh);
+
     /**
-     * This class manages the simulation of particle histories. Each call to
-     * \ref simulate() will track the entire history of a particle until its
-     * death and the death of all of its progeny (which would arise from
-     * variance reduction techniques such as russian roulette/splitting).
+     * \brief Simulate a particle history
+     *
+     * \param particle the \ref Particle to simulate
      */
-    class ParticlePusher {
-    public:
-        ParticlePusher( const CoreMesh &mesh, const XSMesh &xs_mesh );
+    void simulate(Particle p);
 
-        /**
-         * \brief Simulate a particle history
-         *
-         * \param particle the \ref Particle to simulate
-         */
-        void simulate( Particle p );
+    /**
+     * \brief Simulate all particles in a \ref FissionBank
+     *
+     * \param bank the \ref FissionBank to generate/simulate particles from
+     * \param k_eff the guess to use for k-effective to scale neutron
+     * production in fission.
+     */
+    void simulate(const FissionBank &bank, real_t k_eff);
 
-        /**
-         * \brief Simulate all particles in a \ref FissionBank
-         *
-         * \param bank the \ref FissionBank to generate/simulate particles from
-         * \param k_eff the guess to use for k-effective to scale neutron
-         * production in fission.
-         */
-        void simulate( const FissionBank &bank, real_t k_eff );
+    /**
+     * \brief Perform an interaction of a particle with its underlying
+     * medium
+     */
+    void collide(Particle &p, int ixsreg);
 
-        /**
-         * \brief Perform an interaction of a particle with its underlying
-         * medium
-         */
-        void collide( Particle &p, int ixsreg );
+    /**
+     * \brief Return a reference to the internal \ref FissionBank
+     */
+    FissionBank &fission_bank()
+    {
+        return fission_bank_;
+    }
 
-        /**
-         * \brief Return a reference to the internal \ref FissionBank
-         */
-        FissionBank &fission_bank() {
-            return fission_bank_;
+    /**
+     * \brief Return a reference to the internal eigenvalue tally
+     */
+    const TallyScalar &k_tally() const
+    {
+        return k_tally_;
+    }
+
+    /**
+     * \brief Reset all tallies
+     */
+    void reset_tallies()
+    {
+        k_tally_.reset();
+        for (auto &flux_tally : scalar_flux_tally_) {
+            flux_tally.reset();
         }
+        return;
+    }
 
-        /**
-         * \brief Return a reference to the internal eigenvalue tally
-         */
-        TallyScalar k_tally() {
-            return k_tally_;
-        }
-    private:
-        const CoreMesh &mesh_;
-        const XSMesh &xs_mesh_;
-        int n_group_;
+    const auto &flux_tallies() const {
+        return scalar_flux_tally_;
+    }
 
-        // This fission bank stores new fission sites generated as the result of
-        // simulating particles. This bank is cleared every time
-        // simulate(FissionBank) is called
-        FissionBank fission_bank_;
+private:
+    const CoreMesh &mesh_;
+    const XSMesh &xs_mesh_;
+    int n_group_;
 
-        // A map from mesh regions to XSMesh regions. This is useful since the
-        // XSMesh goes from an XSMeshRegion to the mesh regions. It is more
-        // necessary for MC to look up the cross sections for the current
-        // region, somewhat at random.
-        std::vector<int> xsmesh_regions_;
+    // This fission bank stores new fission sites generated as the result of
+    // simulating particles. This bank is cleared every time
+    // simulate(FissionBank) is called
+    FissionBank fission_bank_;
 
-        // Eigenvalue tally
-        TallyScalar k_tally_;
-        // Guess to use for scaling fission neutron production. Warning: Don't
-        // try to use this as the actual system eigenvalue, since it is not tied
-        // directly to a specific tally
-        real_t k_eff_;
+    // A map from mesh regions to XSMesh regions. This is useful since the
+    // XSMesh goes from an XSMeshRegion to the mesh regions. It is more
+    // necessary for MC to look up the cross sections for the current
+    // region, somewhat at random.
+    std::vector<int> xsmesh_regions_;
 
-        // Do implicit capture?
-        bool do_implicit_capture_;
-    };
+    // Do implicit capture?
+    bool do_implicit_capture_;
+
+    // Eigenvalue tally
+    TallyScalar k_tally_;
+    // Guess to use for scaling fission neutron production. Warning: Don't
+    // try to use this as the actual system eigenvalue, since it is not tied
+    // directly to a specific tally
+    real_t k_eff_;
+
+    // Scalar flux tally
+    std::vector<TallySpatial> scalar_flux_tally_;
+
+};
 } // namespace mc
 } // namespace mocc

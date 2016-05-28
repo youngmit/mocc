@@ -16,12 +16,18 @@
 
 #include "monte_carlo_eigenvalue_solver.hpp"
 
+#include <iomanip>
+
 #include "pugixml.hpp"
 
 #include "error.hpp"
 #include "files.hpp"
 
 #include "mc/fission_bank.hpp"
+
+namespace {
+const int WIDTH = 15;
+}
 
 namespace mocc {
 namespace mc {
@@ -70,11 +76,14 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
 void MonteCarloEigenvalueSolver::solve()
 {
     LogScreen << "Performing inactive cycles:" << std::endl;
+    LogScreen << std::setw(15) << "Cycle K-eff";
+    LogScreen << std::setw(15) << "Avg. K-eff";
+    LogScreen << std::setw(15) << "Std. Dev.";
+    LogScreen << std::endl;
     k_eff_        = {1.0, 0.0};
     active_cycle_ = false;
     for (int i = 0; i < n_inactive_cycles_; i++) {
         this->step();
-        pusher_.k_tally().reset();
     }
 
     LogScreen << "Starting active cycles:" << std::endl;
@@ -93,16 +102,21 @@ void MonteCarloEigenvalueSolver::step()
     // Simulate all of the particles in the current fission bank
     pusher_.simulate(source_bank_, k_eff_.first);
 
-    k_eff_ = pusher_.k_tally().get();
-
     // Log data
+    k_eff_ = pusher_.k_tally().get();
     k_history_.push_back(k_eff_.first);
     h_history_.push_back(source_bank_.shannon_entropy());
-
-
-    LogScreen << "K-effective: " << k_eff_.first;
     if (active_cycle_) {
-        LogScreen << " Std-dev: " << k_eff_.second;
+        k_tally_.score(k_eff_.first);
+        k_tally_.add_weight(1.0);
+        k_mean_history_.push_back(k_tally_.get().first);
+        k_stdev_history_.push_back(k_tally_.get().second);
+    }
+
+    LogScreen << std::setw(15) << k_eff_.first;
+    if (active_cycle_) {
+        LogScreen << std::setw(15) << k_tally_.get().first;
+        LogScreen << std::setw(15) << k_tally_.get().second;
     }
     LogScreen << std::endl;
 
@@ -117,6 +131,23 @@ void MonteCarloEigenvalueSolver::output(H5Node &node) const
 {
     node.write("k_history", k_history_);
     node.write("h_history", h_history_);
+    node.write("k_mean_history", k_mean_history_);
+    node.write("k_stdev_history", k_stdev_history_);
+    node.create_group("flux");
+    for(unsigned ig=0; ig<pusher_.flux_tallies().size(); ig++ ) {
+        std::stringstream path;
+        path << "flux/" << std::setfill('0') << std::setw(3) << ig;
+        auto flux_result = pusher_.flux_tallies()[ig].get();
+        VecF flux_val; flux_val.reserve(flux_result.size());
+        VecF flux_stdev; flux_stdev.reserve(flux_result.size());
+        for( const auto &v: flux_result ) {
+            flux_val.push_back(v.first);
+            flux_stdev.push_back(v.second);
+        }
+        node.write(path.str(), flux_val);
+        path << "_stdev";
+        node.write(path.str(), flux_stdev);
+    }
     return;
 }
 } // namespace mc

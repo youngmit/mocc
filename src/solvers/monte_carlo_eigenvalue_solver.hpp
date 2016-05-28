@@ -48,12 +48,21 @@ private:
 
     FissionBank source_bank_;
 
+    // Cycle-by-cycle k history
     VecF k_history_;
+    // Averaged k history
+    VecF k_mean_history_;
+    // K standard deviation history
+    VecF k_stdev_history_;
+    // Source bank Shannon entropy
     VecF h_history_;
 
     bool active_cycle_;
 
     std::pair<real_t, real_t> k_eff_;
+
+    // Tally of results from the pusher_ tally
+    TallyScalar k_tally_;
 };
 } // namespace mc
 } // namespace mocc
