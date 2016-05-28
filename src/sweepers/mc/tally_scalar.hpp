@@ -26,6 +26,8 @@ namespace mc {
 
 /**
  * \brief Monte Carlo tally for a scalar quantity
+ *
+ * See \ref tally_page for more discussion about tallies
  */
 class TallyScalar {
 public:
@@ -73,7 +75,6 @@ public:
      */
     std::pair<real_t, real_t> get() const
     {
-std::cout << mean_ << " " << mean_square_ << " " << weight_ << std::endl;
         std::pair<real_t, real_t> val;
         real_t mean = mean_ / weight_;
         real_t mean_of_square = mean_square_/(weight_);
