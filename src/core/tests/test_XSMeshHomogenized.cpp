@@ -35,8 +35,7 @@ TEST( xsmeshhom ) {
         XSMeshHomogenized xs_mesh( mesh );
 
         H5Node h5f( "xsmesh_1.h5", H5Access::WRITE );
-        auto g = h5f.create_group("xs_mesh");
-        xs_mesh.output(g);
+        xs_mesh.output(h5f);
     }
     {
         pugi::xml_document geom_xml;
