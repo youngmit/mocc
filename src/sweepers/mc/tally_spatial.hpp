@@ -29,12 +29,13 @@ namespace mc {
  *
  * See \ref tally_page for more discussion about tallies
  */
-class TallyScalar {
+class TallySpatial {
 public:
     /**
      * \brief Make a new \ref TallyScalar
      */
-    TallyScalar() : mean_(0.0), mean_square_(0.0), weight_(0.0)
+    TallySpatial(const VecF &norm)
+        : nreg_(norm.size()), norm_(norm), data_(nreg_, {0.0, 0.0}), weight_(0.0)
     {
         return;
     }
@@ -42,10 +43,10 @@ public:
     /**
      * \brief Score some quantity to the tally
      */
-    void score(real_t value)
+    void score(int i, real_t value)
     {
-        mean_ += value;
-        mean_square_ += value * value;
+        data_[i].first += value;
+        data_[i].second += value*value;
 
         return;
     }
@@ -63,31 +64,37 @@ public:
      */
     void reset()
     {
-        mean_        = 0.0;
-        mean_square_ = 0.0;
-        weight_      = 0.0;
+        for (auto &d : data_) {
+            d = {0.0, 0.0};
+        }
+        weight_ = 0.0;
         return;
     }
 
     /**
-     * \brief Return the estimates for the tally mean and standard deviation
+     * \brief Return the estimates for the tally mean and variance
      */
-    std::pair<real_t, real_t> get() const
+    const std::vector<std::pair<real_t, real_t>> get() const
     {
-        std::pair<real_t, real_t> val;
-        real_t mean = mean_ / weight_;
-        real_t mean_of_square = mean_square_/weight_;
-        real_t square_of_mean = mean * mean;
-        real_t variance = (mean_of_square - square_of_mean)/(weight_ - 1.0 );
+        std::vector<std::pair<real_t, real_t>> ret;
+        ret.reserve(data_.size());
+        for( unsigned i=0; i<data_.size(); i++) {
+            real_t mean           = data_[i].first / (weight_*norm_[i]);
+            real_t mean_of_square = data_[i].second / (weight_*norm_[i]);
+            real_t square_of_mean = mean * mean;
+            real_t variance =
+                (mean_of_square - square_of_mean) / (weight_ - 1.0);
 
-        val.first = mean;
-        val.second = std::sqrt(variance);
-        return val;
+            ret.push_back({mean, variance});
+        }
+
+        return ret;
     }
 
 private:
-    real_t mean_;
-    real_t mean_square_;
+    unsigned nreg_;
+    const VecF &norm_;
+    std::vector<std::pair<real_t, real_t>> data_;
     real_t weight_;
 };
 }
