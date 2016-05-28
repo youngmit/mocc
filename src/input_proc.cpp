@@ -51,27 +51,26 @@ namespace {
 }
 
 namespace mocc{
-    InputProcessor::InputProcessor(int argc, char* argv[]):
+    InputProcessor::InputProcessor( std::vector<std::string> args):
         timer_(RootTimer.new_timer("Input Processor", true)),
         core_mesh_(nullptr),
         solver_(nullptr),
-        argc_(argc),
-        argv_(argv)
+        args_(args)
     {
 
         std::vector<std::string> replacements;
         std::string filename = "";
         bool good_cmd = true;
         std::string command_error = "";
-        for( int iarg=1; iarg<argc; iarg++ ) {
-            std::string arg = argv[iarg];
+        for( size_t iarg=1; iarg<args_.size(); iarg++ ) {
+            std::string arg = args_[iarg];
             if( arg == "-a" ) {
                 // Make sure that there is a next argument
-                if( iarg == argc-1 ) {
+                if( iarg == args_.size()-1 ) {
                     good_cmd = false;
                 } else {
                     // Make sure that the next argument isnt another flag
-                    if( argv[iarg+1][0] == '-' ) {
+                    if( args_[iarg+1][0] == '-' ) {
                         good_cmd = false;
                     }
                 }
@@ -82,11 +81,11 @@ namespace mocc{
                 }
 
                 // Read the replacement string. Pre-increment is intended
-                replacements.push_back(argv[++iarg]);
+                replacements.push_back(args_[++iarg]);
             } else {
                 // This should be the filename
                 if( filename == "" ) {
-                    filename = argv[iarg];
+                    filename = args_[iarg];
                 } else {
                     // Filename already defined
                     good_cmd = false;

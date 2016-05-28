@@ -39,7 +39,7 @@ namespace mocc{
         * Given the filename of an XML document, parses the document into a tree
         * structure, then uses it to generate a CoreMesh and top-level Solver.
         */
-        InputProcessor(int argc, char* argv[]);
+        InputProcessor( std::vector<std::string> args );
 
         /**
          * \brief Actually process the contents of the file and construct
@@ -89,8 +89,7 @@ namespace mocc{
         // XML document
         pugi::xml_document doc_;
 
-        int argc_;
-        char **argv_;
+        std::vector<std::string> args_;
 
         std::string case_name_;
 

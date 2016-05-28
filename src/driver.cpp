@@ -100,7 +100,18 @@ void int_handler(int p) {
  * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref
  * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
  */
-int run( int argc, char* argv[] ) {
+int run( int argc, char *argv[] ) {
+    std::vector<std::string> args(argc);
+
+    for( int i=0; i<argc; i++ ) {
+        args.push_back(argv[i]);
+    }
+
+    return run( args );
+}
+
+
+int run( const std::vector<std::string> &args ) {
     std::signal( SIGINT, int_handler );
 
     print_banner();
@@ -109,7 +120,7 @@ int run( int argc, char* argv[] ) {
         RootTimer.tic();
 
         // Set up an input processor
-        input_proc.reset( new InputProcessor(argc, argv) );
+        input_proc.reset( new InputProcessor(args) );
 
         // Spin up the log file. We do this after we peek at the input
         // processor for a case_name tag

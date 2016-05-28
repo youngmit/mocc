@@ -19,7 +19,8 @@
 #include "driver.hpp"
 
 TEST(test_3x3) {
-    run("3x3.xml");
+    std::vector<std::string> args = {"int_test", "3x3.xml"};
+    run(args);
 }
 
 int main() {
