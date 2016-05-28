@@ -228,7 +228,7 @@ int PinMesh_Cyl::trace(Point2 p1, Point2 p2, int first_reg, VecF &s,
  */
 int PinMesh_Cyl::find_reg(Point2 p) const {
     // Test that the point is inside the pin mesh
-    if ((fabs(p.x) > 0.5 * pitch_x_) | (fabs(p.y) > 0.5 * pitch_y_)) {
+    if ((fabs(p.x) > 0.5 * pitch_x_) || (fabs(p.y) > 0.5 * pitch_y_)) {
         return -1;
     }
 
@@ -251,14 +251,17 @@ int PinMesh_Cyl::find_reg(Point2 p) const {
     int ia = azi / (TWOPI / sub_azi_[0]);
     int ireg = ir * sub_azi_[0] + ia;
 
-    assert((0 <= ireg) & (ireg < n_reg_));
+    assert((0 <= ireg) && (ireg < n_reg_));
 
     return ireg;
 }
 
 int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
     // Test that the point is inside the pin mesh
-    if ((fabs(p.x) > 0.5 * pitch_x_) | (fabs(p.y) > 0.5 * pitch_y_)) {
+    if(((p.x < -0.5*pitch_x_) && (dir.ox<0.0)) ||
+       ((p.x > 0.5*pitch_x_) && (dir.ox>0.0)) ||
+       ((p.y < -0.5*pitch_y_) && (dir.oy<0.0)) ||
+       ((p.y > 0.5*pitch_y_) && (dir.oy>0.0))) {
         return -1;
     }
 
@@ -272,7 +275,7 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
     // lie on one of the rings, the index 'ir' will be that of the ring it lies
     // on. Therefore, in that case, we with to increment the index if the
     // direction is pointing to the exterior of the circle.
-    if (fp_equiv_ulp(r, radii_[ir])) {
+    if (ir < (int)radii_.size() && fp_equiv_ulp(r, radii_[ir])) {
         // Use a "dot product" of dir's direction cosines and the point. If its
         // negative, bump to the next smallest ring
         real_t dot = p.x*dir.ox + p.y*dir.oy;
@@ -303,7 +306,7 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
     // Determine the actual region index
     int ireg = ir * sub_azi_[0] + ia;
 
-    assert((0 <= ireg) & (ireg < n_reg_));
+    assert((0 <= ireg) && (ireg < n_reg_));
 
     return ireg;
 }
