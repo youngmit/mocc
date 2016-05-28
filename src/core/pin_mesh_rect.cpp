@@ -175,10 +175,10 @@ void PinMesh_Rect::print(std::ostream &os) const {
 
 int PinMesh_Rect::find_reg(Point2 p, Direction dir) const {
     // Make sure the point is inside the pin
-    if (fabs(p.x) > 0.5 * pitch_x_) {
-        return -1;
-    }
-    if (fabs(p.y) > 0.5 * pitch_y_) {
+    if(((p.x < -0.5*pitch_x_) && (dir.ox<0.0)) ||
+       ((p.x > 0.5*pitch_x_) && (dir.ox>0.0)) ||
+       ((p.y < -0.5*pitch_y_) && (dir.oy<0.0)) ||
+       ((p.y > 0.5*pitch_y_) && (dir.oy>0.0))) {
         return -1;
     }
 
