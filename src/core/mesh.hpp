@@ -212,11 +212,11 @@ namespace mocc {
         }
 
         real_t coarse_volume( size_t cell ) const {
-            return vol_[cell];
+            return coarse_vol_[cell];
         }
 
         const VecF& coarse_volume() const {
-            return vol_;
+            return coarse_vol_;
         }
 
         /**
@@ -837,7 +837,7 @@ namespace mocc {
         VecF dz_vec_;
 
         /// Coarse cell volumes
-        VecF vol_;
+        VecF coarse_vol_;
 
         /// Vector of \ref Line objects, representing pin boundaries. This
         /// greatly simplifies the ray trace.

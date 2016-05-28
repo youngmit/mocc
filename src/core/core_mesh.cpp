@@ -173,10 +173,10 @@ CoreMesh::CoreMesh(const pugi::xml_node& input) {
      * necessary data to pass to the Mesh constructor before parsing the
      * core first. Going to have to come up with something.
      */
-    vol_ = VecF(this->n_pin());
+    coarse_vol_ = VecF(this->n_pin());
     for (size_t i = 0; i < this->n_pin(); i++) {
         auto pos = this->coarse_position(i);
-        vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
+        coarse_vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
     }
 
     // Add up the number of regions and XS regions in the entire problem
@@ -186,6 +186,18 @@ CoreMesh::CoreMesh(const pugi::xml_node& input) {
     for (auto& a : core_.assemblies()) {
         n_reg_ += a->n_reg();
         n_xsreg_ += a->n_xsreg();
+    }
+
+    // Set up array of fine mesh volumes
+    volumes_.reserve(n_reg_);
+    int ipin = 0;
+    for( const auto &pin: *this ) {
+        real_t hz = dz_vec_[ipin/(nx_*ny_)];
+        auto &pm = pin->mesh();
+        for(const auto &v: pm.vols()){
+            volumes_.push_back(v*hz);
+        }
+        ipin++;
     }
 
     // calculate surface indices

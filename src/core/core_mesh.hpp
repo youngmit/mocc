@@ -288,6 +288,10 @@ namespace mocc {
             return ireg;
         }
 
+        const VecF &volumes() const {
+            return volumes_;
+        }
+
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
         std::map<int, UP_PinMesh_t> pin_meshes_;
@@ -317,9 +321,6 @@ namespace mocc {
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
 
-        // List of plane heights
-        VecF hz_vec_;
-
         // Number of assemblies
         size_t nasy_;
 
@@ -333,6 +334,9 @@ namespace mocc {
 
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
+
+        // Vector of fine-mesh volumes
+        VecF volumes_;
 
         int n_fuel_2d_;
     };
