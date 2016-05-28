@@ -110,7 +110,7 @@ void int_handler(int p) {
  * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
  */
 int run( int argc, char *argv[] ) {
-    std::vector<std::string> args(argc);
+    std::vector<std::string> args;
 
     for( int i=0; i<argc; i++ ) {
         args.push_back(argv[i]);

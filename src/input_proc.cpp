@@ -57,7 +57,6 @@ namespace mocc{
         solver_(nullptr),
         args_(args)
     {
-
         std::vector<std::string> replacements;
         std::string filename = "";
         bool good_cmd = true;
@@ -89,7 +88,10 @@ namespace mocc{
                 } else {
                     // Filename already defined
                     good_cmd = false;
-                    command_error = "Filename appears to be multiply-defined.";
+                    std::stringstream error;
+                    error << "Filename appears to be multiply-defined: "
+                        << filename;
+                    command_error = error.str();
                 }
             }
         }
@@ -178,8 +180,6 @@ namespace mocc{
         LogFile <<
 " ============================================================================="
                 << std::endl << std::endl;
-        
-
 
         // Read the <parallel /> tag, if present. This isnt the best place for
         // this in the long term, but since we only do OpenMP right now we can
