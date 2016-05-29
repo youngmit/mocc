@@ -37,7 +37,7 @@ namespace mc {
  */
 class ParticlePusher {
 public:
-    ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh, RNGSwarm &rng);
+    ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh);
 
     /**
      * \brief Simulate a particle history
@@ -96,8 +96,6 @@ public:
 private:
     const CoreMesh &mesh_;
     const XSMesh &xs_mesh_;
-
-    RNGSwarm &rng_;
 
     int n_group_;
 

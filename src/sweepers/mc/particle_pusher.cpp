@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <omp.h>
 
 #include "particle.hpp"
 
@@ -27,11 +28,15 @@ using std::cin;
 
 namespace mocc {
 namespace mc {
-ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh,
-                               RNGSwarm &rng)
+
+// Extern hack needed to get GCC to allow threadprivate instance of non-POD type
+extern RNG_LCG RNG;
+#pragma omp threadprivate(RNG)
+RNG_LCG RNG;
+
+ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
     : mesh_(mesh),
       xs_mesh_(xs_mesh),
-      rng_(rng),
       n_group_(xs_mesh.n_group()),
       fission_bank_(mesh),
       do_implicit_capture_(false),
@@ -55,17 +60,17 @@ void ParticlePusher::collide(Particle &p, int ixsreg)
     // Sample the type of interaction;
     const auto &xsreg = xs_mesh_[ixsreg];
     Reaction reaction =
-        (Reaction)RNG_MC.sample_cdf(xsreg.reaction_cdf(p.group));
+        (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
 
     switch (reaction) {
     case Reaction::SCATTER: {
         // scatter. only isotropic for now
         // sample new energy
         VecF cdf = xsreg.xsmacsc().out_cdf(p.group);
-        p.group  = RNG_MC.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
+        p.group  = RNG.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
 
         // sample new angle
-        p.direction = Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI));
+        p.direction = Direction(RNG.random(TWOPI), RNG.random(-HPI, HPI));
     } break;
 
     case Reaction::FISSION:
@@ -74,14 +79,14 @@ void ParticlePusher::collide(Particle &p, int ixsreg)
         {
             real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
             assert(k_eff_ > 0.0);
-            int n_fis = p.weight * nu / k_eff_ + RNG_MC.random();
+            int n_fis = p.weight * nu / k_eff_ + RNG.random();
 
             // Make new particles and push them onto the fission bank
             for (int i = 0; i < n_fis; i++) {
-                int ig = RNG_MC.sample_cdf(xsreg.chi_cdf());
+                int ig = RNG.sample_cdf(xsreg.chi_cdf());
                 Particle new_p(
                     p.location_global,
-                    Direction(RNG_MC.random(TWOPI), RNG_MC.random(-HPI, HPI)),
+                    Direction(RNG.random(TWOPI), RNG.random(-HPI, HPI)),
                     ig);
                 fission_bank_.push_back(new_p);
             }
@@ -137,7 +142,7 @@ void ParticlePusher::simulate(Particle p)
 
         // Sample distance to collision
         real_t xstr           = xs_mesh_[ixsreg].xsmactr(p.group);
-        real_t d_to_collision = -std::log(RNG_MC.random()) / xstr;
+        real_t d_to_collision = -std::log(RNG.random()) / xstr;
 
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
@@ -208,9 +213,16 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
 
     k_eff_ = k_eff;
 
-    for (const auto &p : bank) {
-        this->simulate(p);
+    // Get the tread-local RNG
+    int tid = omp_get_thread_num();
+    RNG = RNG_SWARM[tid];
+    unsigned np = bank.size();
+    for (unsigned ip=0; ip<np; ip++) {
+        this->simulate(bank[ip]);
     }
+
+    // Replace the RNG in the swarm
+    RNG_SWARM[tid] = RNG;
     return;
 }
 } // namespace mc

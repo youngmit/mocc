@@ -17,6 +17,8 @@
 #pragma once
 
 #include <cassert>
+#include <iostream>
+#include <random>
 
 #include "global_config.hpp"
 #include "util/force_inline.hpp"
@@ -29,22 +31,29 @@ namespace mocc {
  */
 class RNG_LCG {
 public:
-    RNG_LCG(unsigned long seed = 1ul) : seed_(seed), current_seed_(seed)
+    RNG_LCG(unsigned long seed = 1ul) : generator_(seed)
     {
         return;
     }
 
-    MOCC_FORCE_INLINE unsigned long operator()() {
-        current_seed_ = (current_seed_ * m_ + increment_) & mask_;
-        return current_seed_;
+    RNG_LCG &operator=(const RNG_LCG &other)
+    {
+        // Skip self-assignment check, since we only have POD data members
+        generator_ = other.generator_;
+        return *this;
+    }
+
+    unsigned long operator()()
+    {
+        return generator_();
     }
 
     /**
      * \brief Generate a uniformly-distributed random number on [0,1)
      */
-    MOCC_FORCE_INLINE real_t random()
+    real_t random()
     {
-        return float_scale_ * (*this)();
+        return float_scale_ * generator_();
     }
 
     /**
@@ -55,7 +64,7 @@ public:
     {
         assert(ubound > 0.0);
 
-        real_t v = float_scale_ * (*this)();
+        real_t v = float_scale_ * generator_();
         return v * ubound;
     }
 
@@ -67,7 +76,9 @@ public:
     {
         assert(ubound > lbound);
 
-        real_t v = float_scale_ * (*this)();
+        real_t v = float_scale_ * generator_();
+        assert(v >= 0.0);
+        assert(v < 1.0);
         return lbound + (ubound - lbound) * v;
     }
 
@@ -111,18 +122,17 @@ public:
     void jump_ahead(int n)
     {
         for (int i = 0; i < n; i++) {
-            this->get();
+            generator_();
         }
     }
 
 private:
-    const unsigned long seed_;
-    unsigned long current_seed_;
-    static const int bits_                = 63;
-    static const unsigned long m_         = 2806196910506780709ul;
-    static const unsigned long mod_       = -1;
-    static const unsigned long increment_ = 1;
-    static constexpr real_t float_scale_  = 1.0 / (std::pow(2.0, bits_));
+    std::linear_congruential_engine<unsigned long, 2806196910506780709ul, 1ul,
+                                    0>
+        generator_;
+    static constexpr real_t float_scale_ = 1.0 /
+        std::linear_congruential_engine<unsigned long, 2806196910506780709ul,
+                                        1ul, 0>::max();
 };
 
 } // namespace mocc

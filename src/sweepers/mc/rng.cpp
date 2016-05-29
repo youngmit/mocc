@@ -16,10 +16,16 @@
 
 #include "rng.hpp"
 
+#include <omp.h>
+
 namespace mocc {
-    /**
-     * This is the executable-global random number generator. If ever there were
-     * a reason to have global data, this is it.
-     */
-    RNG_LCG RNG_MC;
+namespace mc {
+/**
+ * This is the executable-global random number generator, used by any of the
+ * monte carlo components that need it. If ever there were a reason to have
+ * global data, this is it.
+ */
+RNGSwarm RNG_SWARM(0, omp_get_max_threads());
+
+} // namespace mc
 } // namespace mocc

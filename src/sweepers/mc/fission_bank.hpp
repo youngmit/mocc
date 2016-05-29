@@ -28,9 +28,9 @@
 #include "core/xs_mesh.hpp"
 
 #include "particle.hpp"
-#include "rng.hpp"
 
 namespace mocc {
+namespace mc {
 /**
  * A FissionBank stores a sequence of fission sites. Nothing fancy
  */
@@ -104,6 +104,73 @@ public:
      */
     void swap(FissionBank &other);
 
+=======
+
+    auto begin()
+    {
+        return sites_.begin();
+    }
+
+    const auto begin() const
+    {
+        return sites_.cbegin();
+    }
+
+    auto end()
+    {
+        return sites_.end();
+    }
+
+    const auto end() const
+    {
+        return sites_.cend();
+    }
+
+    int size() const
+    {
+        return sites_.size();
+    }
+
+    const auto &operator[](unsigned i) const
+    {
+        return sites_[i];
+    }
+
+    /**
+     * \brief Add a new fission site to the \ref FissionBank
+     *
+     * \param p a \ref Point3 for the location of the fission site
+     *
+     * This method adds a new fission site to the fission bank, and makes a
+     * contribution to the total number of neutrons that were generated into
+     * the bank.
+     */
+    void push_back(Particle &p)
+    {
+        sites_.push_back(p);
+        total_fission_ += p.weight;
+        return;
+    }
+
+    /**
+     * \brief Return the Shannon entropy of the fission bank.
+     *
+     * This is used to estimate the change in the spatial distribution of
+     * fission sites from generation to generation. Observing little
+     * variation in this metric throughout the active cycles lends some
+     * confidence that the fission source distribution was well converged
+     * before beginning active cycles.
+     */
+    real_t shannon_entropy() const;
+
+    /**
+     * \brief Swap contents with another \ref FissionBank
+     *
+     * \param other the other \ref FissionBank to swap with
+     */
+    void swap(FissionBank &other);
+
+>>>>>>> More work on parallel RNG
     /**
      * \brief Clear the \ref FissionBank of all fission sites
      */
@@ -127,4 +194,8 @@ private:
     std::vector<Particle> sites_;
     real_t total_fission_;
 };
+<<<<<<< 65a82b7e30d260053f317fa84e24dc2c80751803
+=======
+} // namespace mc
+>>>>>>> More work on parallel RNG
 } // namespace mocc

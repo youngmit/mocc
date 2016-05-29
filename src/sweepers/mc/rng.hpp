@@ -28,10 +28,10 @@ public:
         assert(rank >= 0);
         assert(width > 0);
         // Advance the master generator up by rank*width;
-        master_.jump_ahead(rand_ * width_);
+        master_.jump_ahead(rank_ * width_);
         generators_.reserve(width_);
-        for (int i = 0; i < width_; i++) {
-            generators_.emplace_back(master_.get());
+        for (unsigned i = 0; i < width_; i++) {
+            generators_.emplace_back(master_());
         }
         return;
     }
@@ -43,6 +43,11 @@ public:
 private:
     RNG_LCG master_;
     std::vector<RNG_LCG> generators_;
+    unsigned rank_;
+    unsigned width_;
 };
+
+extern RNGSwarm RNG_SWARM;
+
 }
 }
