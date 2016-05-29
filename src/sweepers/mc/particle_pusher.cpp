@@ -213,16 +213,21 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
 
     k_eff_ = k_eff;
 
+#pragma omp parallel
+    {
+
     // Get the tread-local RNG
     int tid = omp_get_thread_num();
     RNG = RNG_SWARM[tid];
     unsigned np = bank.size();
+#pragma omp for
     for (unsigned ip=0; ip<np; ip++) {
         this->simulate(bank[ip]);
     }
 
     // Replace the RNG in the swarm
     RNG_SWARM[tid] = RNG;
+    }
     return;
 }
 } // namespace mc

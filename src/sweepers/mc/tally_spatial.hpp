@@ -45,7 +45,9 @@ public:
      */
     void score(int i, real_t value)
     {
+#pragma omp atomic
         data_[i].first += value;
+#pragma omp atomic
         data_[i].second += value*value;
 
         return;
@@ -56,6 +58,7 @@ public:
      */
     void add_weight(real_t w)
     {
+#pragma omp atomic
         weight_ += w;
     }
 
@@ -64,6 +67,7 @@ public:
      */
     void reset()
     {
+#pragma omp single
         for (auto &d : data_) {
             d = {0.0, 0.0};
         }
