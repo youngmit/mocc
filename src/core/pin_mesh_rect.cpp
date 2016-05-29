@@ -184,14 +184,18 @@ int PinMesh_Rect::find_reg(Point2 p, Direction dir) const {
 
     int ix = std::distance(
         hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
+    ix = std::min((int)hx_.size()-1, ix);
     if (fp_equiv_abs(p.x, hx_[ix])) {
         ix = (dir.ox > 0.0) ? ix + 1 : ix;
     }
+
     int iy = std::distance(
         hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
+    iy = std::min((int)hy_.size()-1, iy);
     if (fp_equiv_abs(p.y, hy_[iy])) {
         iy = (dir.oy > 0.0) ? iy + 1 : iy;
     }
+
     int ireg = (hx_.size() + 1) * iy + ix;
     assert(ireg < n_reg_);
     return ireg;
