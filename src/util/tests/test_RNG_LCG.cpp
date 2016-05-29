@@ -19,6 +19,7 @@
 #include "rng_lcg.hpp"
 
 #include <fstream>
+#include <iostream>
 
 
 TEST(test_RNG_LCG) {
@@ -37,6 +38,22 @@ TEST(test_RNG_LCG) {
         for( int i=0; i<10000; i++ ) {
             fout << rng.random() << std::endl;
         }
+    }
+}
+
+TEST(uniformity) {
+    mocc::RNG_LCG rng;
+    std::vector<int> histogram(100, 0);
+    int N = 100000000;
+    for(int i=0; i<N; i++) {
+        histogram[int(rng.random()*100)]++;
+    }
+
+    std::ofstream fout("histogram_uniform.txt");
+    for( const auto &v: histogram ) {
+        double vs = (double)v/(N/100);
+        std::cout << vs << std::endl;
+        fout << vs << std::endl;
     }
 }
 
