@@ -100,15 +100,29 @@ public:
                              std::lower_bound(cdf.begin(), cdf.end(), v));
     }
 
+    /**
+     * \brief Move the state of the generator forward in the sequence
+     *
+     * \param n the number of elements in the sequence to jump ahead by
+     *
+     * This is using the stupid approach for now. \todo use the logarithmic
+     * approach
+     */
+    void jump_ahead(int n)
+    {
+        for (int i = 0; i < n; i++) {
+            this->get();
+        }
+    }
+
 private:
     const unsigned long seed_;
     unsigned long current_seed_;
-    const int bits_                = 63;
-    const unsigned long m_         = 2806196910506780709ul;
-    const unsigned long mask_      = ~(1ul<<63);
-    const unsigned long mod_       = 1ul << 63;
-    const unsigned long increment_ = 1;
-    const real_t float_scale_      = 1.0 / (1ul << bits_);
+    static const int bits_                = 63;
+    static const unsigned long m_         = 2806196910506780709ul;
+    static const unsigned long mod_       = -1;
+    static const unsigned long increment_ = 1;
+    static constexpr real_t float_scale_  = 1.0 / (std::pow(2.0, bits_));
 };
 
 } // namespace mocc

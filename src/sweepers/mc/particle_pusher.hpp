@@ -23,6 +23,7 @@
 
 #include "fission_bank.hpp"
 #include "particle.hpp"
+#include "rng.hpp"
 #include "tally_scalar.hpp"
 #include "tally_spatial.hpp"
 
@@ -36,7 +37,7 @@ namespace mc {
  */
 class ParticlePusher {
 public:
-    ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh);
+    ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh, RNGSwarm &rng);
 
     /**
      * \brief Simulate a particle history
@@ -95,6 +96,9 @@ public:
 private:
     const CoreMesh &mesh_;
     const XSMesh &xs_mesh_;
+
+    RNGSwarm &rng_;
+
     int n_group_;
 
     // This fission bank stores new fission sites generated as the result of

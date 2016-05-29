@@ -19,5 +19,30 @@
 #include "util/rng_lcg.hpp"
 
 namespace mocc {
-    extern RNG_LCG RNG_MC;
+namespace mc {
+class RNGSwarm {
+public:
+    RNGSwarm(int rank, int width, unsigned long int seed = 1)
+        : master_(seed), generators_(), rank_(rank), width_(width)
+    {
+        assert(rank >= 0);
+        assert(width > 0);
+        // Advance the master generator up by rank*width;
+        master_.jump_ahead(rand_ * width_);
+        generators_.reserve(width_);
+        for (int i = 0; i < width_; i++) {
+            generators_.emplace_back(master_.get());
+        }
+        return;
+    }
+
+    RNG_LCG &operator[](int i){
+        return generators_[i];
+    }
+
+private:
+    RNG_LCG master_;
+    std::vector<RNG_LCG> generators_;
+};
+}
 }

@@ -27,9 +27,11 @@ using std::cin;
 
 namespace mocc {
 namespace mc {
-ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
+ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh,
+                               RNGSwarm &rng)
     : mesh_(mesh),
       xs_mesh_(xs_mesh),
+      rng_(rng),
       n_group_(xs_mesh.n_group()),
       fission_bank_(mesh),
       do_implicit_capture_(false),
