@@ -31,89 +31,100 @@
 #include "rng.hpp"
 
 namespace mocc {
-    /**
-     * A FissionBank stores a sequence of fission sites. Nothing fancy
-     */
-    class FissionBank {
-    public:
-        FissionBank( const CoreMesh &mesh);
+/**
+ * A FissionBank stores a sequence of fission sites. Nothing fancy
+ */
+class FissionBank {
+public:
+    FissionBank(const CoreMesh &mesh);
 
-        FissionBank( const pugi::xml_node &input, int n, const CoreMesh &mesh,
+    FissionBank(const pugi::xml_node &input, int n, const CoreMesh &mesh,
                 const XSMesh &xs_mesh);
 
-        auto begin() {
-            return sites_.begin();
-        }
+    auto begin()
+    {
+        return sites_.begin();
+    }
 
-        const auto begin() const {
-            return sites_.cbegin();
-        }
+    const auto begin() const
+    {
+        return sites_.cbegin();
+    }
 
-        auto end() {
-            return sites_.end();
-        }
+    auto end()
+    {
+        return sites_.end();
+    }
 
-        const auto end() const {
-            return sites_.cend();
-        }
+    const auto end() const
+    {
+        return sites_.cend();
+    }
 
-        int size() const {
-            return sites_.size();
-        }
+    int size() const
+    {
+        return sites_.size();
+    }
 
-        /**
-         * \brief Add a new fission site to the \ref FissionBank
-         *
-         * \param p a \ref Point3 for the location of the fission site
-         *
-         * This method adds a new fission site to the fission bank, and makes a
-         * contribution to the total number of neutrons that were generated into
-         * the bank.
-         */
-        void push_back( Particle &p ) {
+    /**
+     * \brief Add a new fission site to the \ref FissionBank
+     *
+     * \param p a \ref Point3 for the location of the fission site
+     *
+     * This method adds a new fission site to the fission bank, and makes a
+     * contribution to the total number of neutrons that were generated into
+     * the bank.
+     */
+    void push_back(Particle &p)
+    {
+#pragma omp critical
+        {
             sites_.push_back(p);
             total_fission_ += p.weight;
-            return;
         }
+        return;
+    }
 
-        /**
-         * \brief Return the Shannon entropy of the fission bank.
-         *
-         * This is used to estimate the change in the spatial distribution of
-         * fission sites from generation to generation. Observing little
-         * variation in this metric throughout the active cycles lends some
-         * confidence that the fission source distribution was well converged
-         * before beginning active cycles.
-         */
-        real_t shannon_entropy() const;
 
-        /**
-         * \brief Swap contents with another \ref FissionBank
-         *
-         * \param other the other \ref FissionBank to swap with
-         */
-        void swap( FissionBank &other );
+    /**
+     * \brief Return the Shannon entropy of the fission bank.
+     *
+     * This is used to estimate the change in the spatial distribution of
+     * fission sites from generation to generation. Observing little
+     * variation in this metric throughout the active cycles lends some
+     * confidence that the fission source distribution was well converged
+     * before beginning active cycles.
+     */
+    real_t shannon_entropy() const;
 
-        /**
-         * \brief Clear the \ref FissionBank of all fission sites
-         */
-        void clear() {
-            sites_.clear();
-            total_fission_ = 0.0;
-        }
+    /**
+     * \brief Swap contents with another \ref FissionBank
+     *
+     * \param other the other \ref FissionBank to swap with
+     */
+    void swap(FissionBank &other);
 
-        void resize( unsigned int n );
+    /**
+     * \brief Clear the \ref FissionBank of all fission sites
+     */
+    void clear()
+    {
+        sites_.clear();
+        total_fission_ = 0.0;
+    }
 
-        real_t total_fission() const {
-            return total_fission_;
-        }
+    void resize(unsigned int n);
 
-        friend std::ostream &operator<<(std::ostream &os,
-                const FissionBank &bank);
+    real_t total_fission() const
+    {
+        return total_fission_;
+    }
 
-    private:
-        const CoreMesh &mesh_;
-        std::vector<Particle> sites_;
-        real_t total_fission_;
-    };
+    friend std::ostream &operator<<(std::ostream &os, const FissionBank &bank);
+
+private:
+    const CoreMesh &mesh_;
+    std::vector<Particle> sites_;
+    real_t total_fission_;
+};
 } // namespace mocc
