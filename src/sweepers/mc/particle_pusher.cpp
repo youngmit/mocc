@@ -197,14 +197,14 @@ void ParticlePusher::simulate(Particle p)
  * site in the \ref FissionBank and calling \c this->simulate() for that
  * particle.
  */
-void ParticlePusher::simulate(const FissionBank &bank, real_t k)
+void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
 {
     // Clear the internal FissionBank to store new fission sites for this
     // cycle
     fission_bank_.clear();
     k_tally_.reset();
 
-    k_eff_ = k;
+    k_eff_ = k_eff;
 
     for (const auto &p : bank) {
         this->simulate(p);

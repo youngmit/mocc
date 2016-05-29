@@ -41,7 +41,7 @@ public:
     /**
      * \brief Simulate a particle history
      *
-     * \param particle the \ref Particle to simulate
+     * \param p the \ref Particle to simulate
      */
     void simulate(Particle p);
 

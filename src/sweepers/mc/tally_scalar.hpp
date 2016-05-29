@@ -59,7 +59,7 @@ public:
     }
 
     /**
-     * \breif Reset the tally, forgetting all history
+     * \brief Reset the tally, forgetting all history
      */
     void reset()
     {

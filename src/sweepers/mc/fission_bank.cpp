@@ -35,6 +35,8 @@ namespace mocc {
      * \param input XML node containing bounds of a 3-D box within which to
      * sample initial fission sites
      * \param n the number of initial sites to sample
+     * \param mesh the \ref CoreMesh to use for initial sampling
+     * \param xs_mesh the \ref XSMesh to use for initial sampling
      *
      * This constructor initializes a \ref FissionBank using input specified in
      * an XML node.

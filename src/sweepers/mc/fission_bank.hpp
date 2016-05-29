@@ -65,8 +65,6 @@ namespace mocc {
          * \brief Add a new fission site to the \ref FissionBank
          *
          * \param p a \ref Point3 for the location of the fission site
-         * \param fission the total number of fission neutrons generated at the
-         * site.
          *
          * This method adds a new fission site to the fission bank, and makes a
          * contribution to the total number of neutrons that were generated into

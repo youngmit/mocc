@@ -98,7 +98,7 @@ namespace mocc {
          * Given a point in pin-local coordinates, return the mesh region index
          * in which the point resides
         */
-        virtual int find_reg( Point2 p ) const =0;
+        virtual int find_reg(Point2 p)const=0;
 
         /**
          * \brief Find a pin-local region index corresponding to the \ref Point2
@@ -106,16 +106,16 @@ namespace mocc {
          *
          * \param p a \ref Point2 containing the pin-local coordinates to look
          * up a region for.
-         * \param d a \ref Direction of travel, used to establish sense w.r.t.
+         * \param dir a \ref Direction of travel, used to establish sense w.r.t.
          * internal surfaces.
          *
-         * This is similar to \ref PinMeshBase::find_reg(Point2), except that it
+         * This is similar to PinMeshBase::find_reg(Point2), except that it
          * handles the case where the point \p p lies directly on one of the
          * surfaces in a well-defined manner. In such cases, the returned region
          * index should refer to the region on the side of the surface pointed
          * to by \p dir.
          */
-        virtual int find_reg( Point2 p, Direction dir) const=0;
+        virtual int find_reg(Point2 p, Direction dir) const=0;
 
         /**
          * Return the number of flat source regions corresponding to an XS
@@ -136,22 +136,19 @@ namespace mocc {
          * and the boundary of the pin if that surface is at the edge of the
          * pin.
          *
-         * \param p a Point3 containing the location from which to measure
-         * \param d a Direction containing the direction in which to measure
-         * \param reg the region we think the point should belong to to start
+         * \param p a Point2 containing the location from which to measure
+         * \param dir a Direction containing the direction in which to measure
          */
         virtual std::pair<real_t, Surface> distance_to_surface(Point2 p,
-                Direction d ) const =0;
+                Direction dir)const =0;
 
         /**
-         * \brief \copybrief distance_to_surface(Point2, Direction, int)
-         *
          * This essentially wraps the \ref Point2 version
          */
         std::pair<real_t, Surface> distance_to_surface(Point3 p,
-                                                       Direction d) const
+                                                       Direction dir)const
         {
-            return this->distance_to_surface(p.to_2d(), d);
+            return this->distance_to_surface(p.to_2d(), dir);
         }
 
         /**
