@@ -34,14 +34,17 @@ public:
         return;
     }
 
+    MOCC_FORCE_INLINE unsigned long operator()() {
+        current_seed_ = (current_seed_ * m_ + increment_) & mask_;
+        return current_seed_;
+    }
+
     /**
      * \brief Generate a uniformly-distributed random number on [0,1)
      */
     MOCC_FORCE_INLINE real_t random()
     {
-        current_seed_ = current_seed_ * m_ + increment_;
-
-        return float_scale_ * current_seed_;
+        return float_scale_ * (*this)();
     }
 
     /**
@@ -51,9 +54,8 @@ public:
     MOCC_FORCE_INLINE real_t random(real_t ubound)
     {
         assert(ubound > 0.0);
-        current_seed_ = current_seed_ * m_ + increment_;
 
-        real_t v = float_scale_ * current_seed_;
+        real_t v = float_scale_ * (*this)();
         return v * ubound;
     }
 
@@ -64,9 +66,8 @@ public:
     MOCC_FORCE_INLINE real_t random(real_t lbound, real_t ubound)
     {
         assert(ubound > lbound);
-        current_seed_ = current_seed_ * m_ + increment_;
 
-        real_t v = float_scale_ * current_seed_;
+        real_t v = float_scale_ * (*this)();
         return lbound + (ubound - lbound) * v;
     }
 
@@ -102,11 +103,12 @@ public:
 private:
     const unsigned long seed_;
     unsigned long current_seed_;
-    const int bits_                = 64;
+    const int bits_                = 63;
     const unsigned long m_         = 2806196910506780709ul;
-    const unsigned long mod_       = -1;
+    const unsigned long mask_      = ~(1ul<<63);
+    const unsigned long mod_       = 1ul << 63;
     const unsigned long increment_ = 1;
-    const real_t float_scale_      = 1.0 / (std::pow(2.0, bits_));
+    const real_t float_scale_      = 1.0 / (1ul << bits_);
 };
 
 } // namespace mocc
