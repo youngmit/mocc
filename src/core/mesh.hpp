@@ -455,13 +455,13 @@ namespace mocc {
             if((p.z < REAL_FUZZ) && (dir.oz < 0.0)) {
                 surf = Surface::BOTTOM;
             }
-            if((p.x > hx_-REAL_FUZZ) && (dir.ox > 0.0)) {
+            if((p.x/hx_ > 1.0-REAL_FUZZ) && (dir.ox > 0.0)) {
                 surf = Surface::EAST;
             }
-            if((p.y > hy_-REAL_FUZZ) && (dir.oy > 0.0)) {
+            if((p.y/hy_ > 1.0-REAL_FUZZ) && (dir.oy > 0.0)) {
                 surf = Surface::NORTH;
             }
-            if((p.z > hz_-REAL_FUZZ) && (dir.oz > 0.0)) {
+            if((p.z/hz_ > 1.0-REAL_FUZZ) && (dir.oz > 0.0)) {
                 surf = Surface::TOP;
             }
             return surf;
@@ -744,7 +744,7 @@ namespace mocc {
          */
         int plane_index( real_t z, real_t oz=0.0 ) const {
             assert(z > -REAL_FUZZ);
-            assert(z < hz_+REAL_FUZZ);
+            assert(z/hz_ < 1.0+REAL_FUZZ);
             int iz = std::distance(z_vec_.begin(),
                     std::lower_bound(z_vec_.begin(), z_vec_.end(), z,
                                      fuzzy_lt));

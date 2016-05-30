@@ -45,10 +45,13 @@ namespace mocc {
 
         std::string draw() const;
     private:
-        // Vector containing the x divisions, starting at the first internal
-        // division, ending at the half-pitch
+        unsigned nx_;
+        unsigned ny_;
+        // Vector containing the locations of the x divisions, including pin
+        // boundaries
         VecF hx_;
-        // Vector containing the y divisions, defined similarly to the above.
+        // Vector containing the locations of the y divisions, including pin
+        // boundaries
         VecF hy_;
         std::vector<Line> lines_;
     };

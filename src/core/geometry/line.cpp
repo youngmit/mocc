@@ -40,7 +40,6 @@ real_t Line::distance_to_surface(Point2 p, Direction dir) const {
     }
 
     real_t d = -f / proj;
-//std::cout << d*dir.ox << " " << d*dir.oy << " " << REAL_FUZZ << std::endl;
     if ((d > 0.0) && std::abs(f) > REAL_FUZZ ) {
         return d;
     }
