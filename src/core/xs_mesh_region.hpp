@@ -119,14 +119,8 @@ namespace mocc {
                 cdf.push_back(sum);
             }
 
-            // Calculate reciprocal to reduce strength of the operation from
-            // division to multiplication
-            sum = 1.0/sum;
-
-            // Scale the CDF to unity
-            for( auto &v: cdf ) {
-                v *= sum;
-            }
+            // Shouldnt have to scale this CDF, since it started as a proper
+            // PDF to begin with
 
             return cdf;
         }
