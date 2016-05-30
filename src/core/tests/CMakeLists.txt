@@ -33,4 +33,6 @@ if(${BUILD_TESTS})
     copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/2x3_2.xml 
             ${CMAKE_CURRENT_BINARY_DIR}/2x3_2.xml test_XSMeshHomogenized)
 
+    add_unit_test(test_XSMesh core pugixml ${HDF5_LIBRARIES})
+
 endif()
