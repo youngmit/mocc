@@ -170,6 +170,8 @@ namespace mocc {
          *
          * This includes self-scatter, and is equivalent to a column sum of the
          * full scattering matrix.
+         *
+         * \todo this is improperly-named. Should just be "total" or something
          */
         real_t out( unsigned int ig ) const {
             return out_[ig];
