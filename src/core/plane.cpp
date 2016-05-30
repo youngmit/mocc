@@ -95,8 +95,8 @@ namespace mocc {
             Direction dir) const {
         assert(p.x > -REAL_FUZZ);
         assert(p.y > -REAL_FUZZ);
-        assert(p.x < hx_.back()+REAL_FUZZ);
-        assert(p.y < hy_.back()+REAL_FUZZ);
+        assert(p.x/hx_.back() < 1.0+REAL_FUZZ);
+        assert(p.y/hy_.back() < 1.0+REAL_FUZZ);
         // Locate the lattice
         unsigned ix = std::distance(
             hx_.begin(),
