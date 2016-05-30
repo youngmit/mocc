@@ -27,7 +27,7 @@ namespace mocc {
 /**
  * \brief A linear congruential random number generator
  *
- * Most of the parameters are from OpenMC. Thanks, dudes!
+ * Most of the parameters are from OpenMC/MCNP random number generators
  */
 class RNG_LCG {
 public:
@@ -79,7 +79,8 @@ public:
         real_t v = float_scale_ * generator_();
         assert(v >= 0.0);
         assert(v < 1.0);
-        return lbound + (ubound - lbound) * v;
+        v = lbound + (ubound - lbound) * v;
+        return v;
     }
 
     /**
@@ -128,11 +129,11 @@ public:
 
 private:
     std::linear_congruential_engine<unsigned long, 2806196910506780709ul, 1ul,
-                                    0>
+                                    (1ul<<63)>
         generator_;
     static constexpr real_t float_scale_ = 1.0 /
         std::linear_congruential_engine<unsigned long, 2806196910506780709ul,
-                                        1ul, 0>::max();
+                                        1ul, (1ul<<63)>::max();
 };
 
 } // namespace mocc
