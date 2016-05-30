@@ -74,7 +74,7 @@ public:
      */
     const TallyScalar &k_tally() const
     {
-        return k_tally_;
+        return k_tally_collision_;
     }
 
     /**
@@ -83,6 +83,7 @@ public:
     void reset_tallies()
     {
         k_tally_.reset();
+        k_tally_collision_.reset();
         for (auto &flux_tally : scalar_flux_tally_) {
             flux_tally.reset();
         }
@@ -115,6 +116,7 @@ private:
 
     // Eigenvalue tally
     TallyScalar k_tally_;
+    TallyScalar k_tally_collision_;
     // Guess to use for scaling fission neutron production. Warning: Don't
     // try to use this as the actual system eigenvalue, since it is not tied
     // directly to a specific tally

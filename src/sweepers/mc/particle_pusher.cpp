@@ -59,8 +59,10 @@ void ParticlePusher::collide(Particle &p, int ixsreg)
 {
     // Sample the type of interaction;
     const auto &xsreg = xs_mesh_[ixsreg];
-    Reaction reaction =
-        (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
+    Reaction reaction = (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
+    real_t k_score = p.weight*xs_mesh_[ixsreg].xsmacnf(p.group) / 
+        xs_mesh_[ixsreg].xsmactr(p.group);
+    k_tally_collision_.score(k_score);
 
     switch (reaction) {
     case Reaction::SCATTER: {
@@ -86,8 +88,7 @@ void ParticlePusher::collide(Particle &p, int ixsreg)
                 int ig = RNG.sample_cdf(xsreg.chi_cdf());
                 Particle new_p(
                     p.location_global,
-                    Direction(RNG.random(TWOPI), RNG.random(-HPI, HPI)),
-                    ig);
+                    Direction(RNG.random(TWOPI), RNG.random(-HPI, HPI)), ig);
                 fission_bank_.push_back(new_p);
             }
         }
@@ -105,6 +106,7 @@ void ParticlePusher::simulate(Particle p)
 {
     // Register this particle with the tallies
     k_tally_.add_weight(p.weight);
+    k_tally_collision_.add_weight(p.weight);
     for (auto &tally : scalar_flux_tally_) {
         tally.add_weight(p.weight);
     }
@@ -116,9 +118,9 @@ void ParticlePusher::simulate(Particle p)
         auto location_info =
             mesh_.get_location_info(p.location_global, p.direction);
         real_t z_min = mesh_.z(location_info.pos.z);
-        real_t z_max = mesh_.z(location_info.pos.z) + 1;
-        p.location   = location_info.local_point;
-        int ireg     = location_info.reg_offset +
+        real_t z_max = mesh_.z(location_info.pos.z + 1);
+        p.location = location_info.local_point;
+        int ireg = location_info.reg_offset +
                    location_info.pm->find_reg(p.location, p.direction);
         assert(ireg >= 0);
         assert(ireg < mesh_.n_reg());
@@ -132,8 +134,8 @@ void ParticlePusher::simulate(Particle p)
         // intersection
         real_t d_to_plane =
             (p.direction.oz > 0.0)
-                ? (z_max - p.location_global.z) / p.direction.oz
-                : (z_min - p.location_global.z) / p.direction.oz;
+                ? std::max(0.0, (z_max - p.location_global.z) / p.direction.oz)
+                : std::max(0.0, (z_min - p.location_global.z) / p.direction.oz);
         if (d_to_plane < d_to_surf.first) {
             d_to_surf.first = d_to_plane;
             d_to_surf.second =
@@ -143,6 +145,7 @@ void ParticlePusher::simulate(Particle p)
         // Sample distance to collision
         real_t xstr           = xs_mesh_[ixsreg].xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG.random()) / xstr;
+        d_to_collision        = 0.0;
 
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
@@ -164,9 +167,13 @@ void ParticlePusher::simulate(Particle p)
                 // Particle crossed an internal boundary in the pin.
                 // Update its location and region index
                 p.move(d_to_surf.first);
+                // for now delegate to the stronger, but slower kitchen-sink
+                // implementation above
+                /*
                 ireg = location_info.pm->find_reg(p.location, p.direction) +
                        location_info.reg_offset;
                 ixsreg = xsmesh_regions_[ireg];
+                */
             }
             else {
                 // Particle crossed a pin boundary. Move to neighboring pin,
@@ -210,23 +217,24 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     // cycle
     fission_bank_.clear();
     k_tally_.reset();
+    k_tally_collision_.reset();
 
     k_eff_ = k_eff;
 
 #pragma omp parallel
     {
 
-    // Get the tread-local RNG
-    int tid = omp_get_thread_num();
-    RNG = RNG_SWARM[tid];
-    unsigned np = bank.size();
+        // Get the tread-local RNG
+        int tid     = omp_get_thread_num();
+        RNG         = RNG_SWARM[tid];
+        unsigned np = bank.size();
 #pragma omp for
-    for (unsigned ip=0; ip<np; ip++) {
-        this->simulate(bank[ip]);
-    }
+        for (unsigned ip = 0; ip < np; ip++) {
+            this->simulate(bank[ip]);
+        }
 
-    // Replace the RNG in the swarm
-    RNG_SWARM[tid] = RNG;
+        // Replace the RNG in the swarm
+        RNG_SWARM[tid] = RNG;
     }
     return;
 }
