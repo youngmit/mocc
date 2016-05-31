@@ -147,18 +147,41 @@ int PinMesh_Rect::find_reg(Point2 p) const
         return -1;
     }
 
-    int ix;
-    for (ix = 0; ix < (int)hx_.size(); ix++) {
-        if (hx_[ix] > p.x) {
-            break;
-        }
+    int ix = std::distance(
+        hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
+    int iy = std::distance(
+        hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
+    ix--;
+    iy--;
+
+    int ireg = nx_ * iy + ix;
+    assert(ireg < n_reg_);
+    return ireg;
+}
+
+int PinMesh_Rect::find_reg(Point2 p, Direction dir) const
+{
+    // Make sure the point is inside the pin
+    if (((p.x < -0.5 * pitch_x_ + REAL_FUZZ) && (dir.ox < 0.0)) ||
+        ((p.x > 0.5 * pitch_x_ - REAL_FUZZ) && (dir.ox > 0.0)) ||
+        ((p.y < -0.5 * pitch_y_ + REAL_FUZZ) && (dir.oy < 0.0)) ||
+        ((p.y > 0.5 * pitch_y_ - REAL_FUZZ) && (dir.oy > 0.0))) {
+        return -1;
     }
-    int iy;
-    for (iy = 0; iy < (int)hy_.size(); iy++) {
-        if (hy_[iy] > p.y) {
-            break;
-        }
+
+    int ix = std::distance(
+        hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
+    if (fp_equiv_abs(p.x, hx_[ix])) {
+        ix = (dir.ox > 0.0) ? ix + 1 : ix;
     }
+    ix = std::max(0, std::min((int)nx_ - 1, ix - 1));
+
+    int iy = std::distance(
+        hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
+    if (fp_equiv_abs(p.y, hy_[iy])) {
+        iy = (dir.oy > 0.0) ? iy + 1 : iy;
+    }
+    iy = std::max(0, std::min((int)ny_ - 1, iy - 1));
 
     int ireg = nx_ * iy + ix;
     assert(ireg < n_reg_);
@@ -179,35 +202,6 @@ void PinMesh_Rect::print(std::ostream &os) const
         os << "    " << yi << std::endl;
     }
     return;
-}
-
-int PinMesh_Rect::find_reg(Point2 p, Direction dir) const
-{
-    // Make sure the point is inside the pin
-    if (((p.x < -0.5 * pitch_x_ + REAL_FUZZ) && (dir.ox < 0.0)) ||
-        ((p.x > 0.5 * pitch_x_ - REAL_FUZZ) && (dir.ox > 0.0)) ||
-        ((p.y < -0.5 * pitch_y_ + REAL_FUZZ) && (dir.oy < 0.0)) ||
-        ((p.y > 0.5 * pitch_y_ - REAL_FUZZ) && (dir.oy > 0.0))) {
-        return -1;
-    }
-
-    int ix = std::distance(
-        hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
-    if (fp_equiv_abs(p.x, hx_[ix])) {
-        ix = (dir.ox > 0.0) ? ix + 1 : ix;
-    }
-    ix = std::max(0, std::min((int)nx_-1, ix-1));
-
-    int iy = std::distance(
-        hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
-    if (fp_equiv_abs(p.y, hy_[iy])) {
-        iy = (dir.oy > 0.0) ? iy + 1 : iy;
-    }
-    iy = std::max(0, std::min((int)ny_-1, iy-1));
-
-    int ireg = nx_ * iy + ix;
-    assert(ireg < n_reg_);
-    return ireg;
 }
 
 std::string PinMesh_Rect::draw() const
