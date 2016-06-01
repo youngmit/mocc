@@ -16,11 +16,14 @@
 
 #include "UnitTest++/UnitTest++.h"
 
-#include "rng_lcg.hpp"
 #include "fp_utils.hpp"
+#include "rng_lcg.hpp"
 
 #include <fstream>
 #include <iostream>
+
+using std::cout;
+using std::endl;
 
 using namespace mocc;
 
@@ -41,10 +44,16 @@ TEST(test_RNG_LCG)
         for (int i = 0; i < 10000; i++) {
             fout << rng.random() << " " << rng.random() << std::endl;
         }
+        real_t v = rng.random();
+        cout << "current random value: " << v << endl;
+        // reset and skip ahead
+        rng.set_seed(1);
+        rng.jump_ahead(20000);
+        CHECK_EQUAL(v, rng.random());
     }
 }
 
-TEST(uniformity)
+TEST(uniformity_standard)
 {
     mocc::RNG_LCG rng;
     std::vector<int> histogram(100, 0);
@@ -60,13 +69,24 @@ TEST(uniformity)
         double vs = (double)v / (N / 100);
         max_diff  = std::max(max_diff, std::abs(vs - 1.0));
         rms_diff += (vs - 1.0) * (vs - 1.0);
-        std::cout << vs << std::endl;
         fout << vs << std::endl;
     }
     std::cout << "Max variation from 1: " << max_diff << std::endl;
-    CHECK(max_diff < 0.001);
+    CHECK(max_diff < 0.008);
 
     std::cout << "RMS: " << rms_diff << std::endl;
+}
+
+TEST(uniformity_custom_bounds)
+{
+    mocc::RNG_LCG rng;
+    std::vector<int> histogram(100, 0);
+    int N = 1000000;
+    for (int i = 0; i < N; i++) {
+//cout << rng.random(-5.0, 1.0) << endl;
+//std::cin.ignore();
+//        histogram[int(rng.random() * 100)]++;
+    }
 }
 
 TEST(estimate_pi)
@@ -123,7 +143,7 @@ TEST(sample_cdf)
     VecF cdf;
     real_t prev = 0.0;
     for (const auto &p : pdf) {
-        cdf.push_back(prev+p);
+        cdf.push_back(prev + p);
         prev = cdf.back();
     }
     CHECK_CLOSE(1.0, cdf.back(), REAL_FUZZ);
@@ -136,10 +156,9 @@ TEST(sample_cdf)
     }
 
     std::ofstream sample_out("pdf.txt");
-    for(int i=0; i<pdf.size(); i++) {
-        std::cout << samples[i]/N << std::endl;
-        sample_out << samples[i]/N  << " " << pdf[i] << std::endl;
-
+    for (unsigned i = 0; i < pdf.size(); i++) {
+        std::cout << samples[i] / N << std::endl;
+        sample_out << samples[i] / N << " " << pdf[i] << std::endl;
     }
 }
 

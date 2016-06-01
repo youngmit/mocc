@@ -27,6 +27,8 @@
 #include "core/geometry/geom.hpp"
 #include "core/xs_mesh.hpp"
 
+#include "util/rng_lcg.hpp"
+
 #include "particle.hpp"
 
 namespace mocc {
@@ -39,7 +41,7 @@ public:
     FissionBank(const CoreMesh &mesh);
 
     FissionBank(const pugi::xml_node &input, int n, const CoreMesh &mesh,
-                const XSMesh &xs_mesh);
+                const XSMesh &xs_mesh, RNG_LCG &rng);
 
     auto begin()
     {
@@ -120,7 +122,7 @@ public:
         }
     }
 
-    void resize(unsigned int n);
+    void resize(unsigned int n, RNG_LCG &rng);
 
     real_t total_fission() const
     {

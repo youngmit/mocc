@@ -22,8 +22,6 @@
 
 #include "core/error.hpp"
 
-#include "rng.hpp"
-
 namespace mocc {
 namespace mc {
 FissionBank::FissionBank(const CoreMesh &mesh) : mesh_(mesh)
@@ -44,7 +42,8 @@ FissionBank::FissionBank(const CoreMesh &mesh) : mesh_(mesh)
  * an XML node.
  */
 FissionBank::FissionBank(const pugi::xml_node &input, int n,
-                         const CoreMesh &mesh, const XSMesh &xs_mesh)
+                         const CoreMesh &mesh, const XSMesh &xs_mesh,
+                         RNG_LCG &rng)
     : mesh_(mesh), total_fission_(0.0)
 {
     if (input.empty()) {
@@ -52,9 +51,6 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
     }
 
     int ng = xs_mesh.n_group();
-
-    // Borrow an RNG from the swarm
-    RNG_LCG rng = RNG_SWARM[0];
 
     // Make sure that all of the bounds are specified.
     if (input.attribute("x_min").empty() || input.attribute("x_max").empty() ||
@@ -86,7 +82,7 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
                      rng.random(z_min, z_max));
             Direction dir(rng.random(TWOPI), rng.random(-HPI, HPI));
             int ig = rng.random_int(ng);
-            sites_.emplace_back(p, dir, ig);
+            sites_.emplace_back(p, dir, ig, i);
         }
     }
     else {
@@ -96,12 +92,9 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
                      rng.random(z_min, z_max));
             Direction dir(rng.random(TWOPI), rng.random(-HPI, HPI));
             int ig = rng.random_int(ng);
-            sites_.emplace_back(p, dir, ig);
+            sites_.emplace_back(p, dir, ig, i);
         }
     }
-
-    // Return the RNG to the swarm
-    RNG_SWARM[0] = rng;
 
     return;
 }
@@ -114,6 +107,9 @@ real_t FissionBank::shannon_entropy() const
 
     for (const auto &p : sites_) {
         int icell = mesh_.coarse_cell_point(p.location_global);
+        if (icell < 0 || icell > (int)mesh_.n_pin()) {
+            Warn("ga");
+        }
         populations[icell] += p.weight;
     }
 
@@ -125,12 +121,9 @@ real_t FissionBank::shannon_entropy() const
     return h;
 }
 
-void FissionBank::resize(unsigned int n)
+void FissionBank::resize(unsigned int n, RNG_LCG &rng)
 {
     assert(sites_.size() > 0);
-
-    // Borrow a RNG
-    RNG_LCG rng = RNG_SWARM[0];
 
     if (n > sites_.size()) {
         // Fission bank is too small. Randomly sample fission sites to
@@ -159,8 +152,6 @@ void FissionBank::resize(unsigned int n)
         }
     }
 
-    // Give the RNG back to the swarm
-    RNG_SWARM[0] = rng;
     return;
 }
 

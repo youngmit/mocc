@@ -129,8 +129,8 @@ namespace mocc {
             Direction dir ) const {
         assert(p.x > -REAL_FUZZ);
         assert(p.y > -REAL_FUZZ);
-        assert(p.x < hx_+REAL_FUZZ);
-        assert(p.y < hy_+REAL_FUZZ);
+        assert(p.x/hx_ < 1.0+REAL_FUZZ);
+        assert(p.y/hy_ < 1.0+REAL_FUZZ);
         // Locate the pin, and offset the point to pin-local coordinates.
         /// \todo This is potentially pretty brittle. Future PinMesh types might
         /// break the assumption here that all PinMesh origins are smack-dab in

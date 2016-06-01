@@ -331,19 +331,29 @@ namespace mocc {
 
         return;
     }
-
-    /// For now, this is a 2D routine. The cell returned is forced into the
-    /// zeroth plane
+    
+    /**
+     * \brief Return a \ref Position corresponding to a \ref Point2.
+     *
+     * The returned \ref Position is always in the zero-th plane.
+     * It is possible to produce an invalid \ref Position, if the supplied point
+     * does not lie in the domain.
+     */
     int Mesh::coarse_cell_point( Point2 p ) const {
         auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) -
             x_vec_.begin() - 1;
         auto iy = std::distance( y_vec_.begin(),
                 std::lower_bound( y_vec_.begin(), y_vec_.end(), p.y ) ) - 1;
 
-        /// \todo add z support
         return this->coarse_cell( Position(ix, iy, 0) );
     }
 
+    /**
+     * \brief Return a \ref Position corresponding to a \ref Point3.
+     *
+     * It is possible to produce an invalid \ref Position, if the supplied point
+     * does not lie in the domain.
+     */
     int Mesh::coarse_cell_point( Point3 p ) const {
         auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) -
             x_vec_.begin() - 1;

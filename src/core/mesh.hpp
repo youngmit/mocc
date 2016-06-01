@@ -344,7 +344,9 @@ namespace mocc {
         /**
          * \brief Return the coarse cell index given a pin \ref Position.
          *
-         * Cell indexing is natural in x, y z.
+         * Cell indexing is natural in x, y z. This can return invalid indices,
+         * so in applications where an invalid Position might passed, check that
+         * the return value is in [0,n_pin).
         */
         inline int coarse_cell( Position pos ) const {
             return pos.z*nx_*ny_ + pos.y*nx_ + pos.x;
@@ -442,27 +444,30 @@ namespace mocc {
                 std::array<int, 2> &s ) const;
 
         /**
-         * \brief Return the \ref Surface that a point is on, if any.
+         * \brief Return the \ref Surface of the domain that a point is on, if
+         * any.
+         *
+         * This returns an std::array<Surface, 3>, since it is possible for the
+         * point to be outside of multiple bounds.
          */
-        Surface boundary_surface( Point3 p, Direction dir ) const {
-            Surface surf = Surface::INTERNAL;
+        std::array<Surface, 3> boundary_surface( Point3 p, Direction dir ) const {
+            std::array<Surface, 3> surf = { Surface::INTERNAL,
+                                            Surface::INTERNAL,
+                                            Surface::INTERNAL };
             if((p.x < REAL_FUZZ) && (dir.ox < 0.0)) {
-                surf = Surface::WEST;
-            }
-            if((p.y < REAL_FUZZ) && (dir.oy < 0.0)) {
-                surf = Surface::SOUTH;
+                surf[0] = Surface::WEST;
+            } else if((p.y < REAL_FUZZ) && (dir.oy < 0.0)) {
+                surf[0] = Surface::SOUTH;
             }
             if((p.z < REAL_FUZZ) && (dir.oz < 0.0)) {
-                surf = Surface::BOTTOM;
-            }
-            if((p.x/hx_ > 1.0-REAL_FUZZ) && (dir.ox > 0.0)) {
-                surf = Surface::EAST;
+                surf[1] = Surface::BOTTOM;
+            } else if((p.x/hx_ > 1.0-REAL_FUZZ) && (dir.ox > 0.0)) {
+                surf[1] = Surface::EAST;
             }
             if((p.y/hy_ > 1.0-REAL_FUZZ) && (dir.oy > 0.0)) {
-                surf = Surface::NORTH;
-            }
-            if((p.z/hz_ > 1.0-REAL_FUZZ) && (dir.oz > 0.0)) {
-                surf = Surface::TOP;
+                surf[2] = Surface::NORTH;
+            } else if((p.z/hz_ > 1.0-REAL_FUZZ) && (dir.oz > 0.0)) {
+                surf[2] = Surface::TOP;
             }
             return surf;
         }
@@ -743,8 +748,6 @@ namespace mocc {
          *  interface.
          */
         int plane_index( real_t z, real_t oz=0.0 ) const {
-            assert(z > -REAL_FUZZ);
-            assert(z/hz_ < 1.0+REAL_FUZZ);
             int iz = std::distance(z_vec_.begin(),
                     std::lower_bound(z_vec_.begin(), z_vec_.end(), z,
                                      fuzzy_lt));

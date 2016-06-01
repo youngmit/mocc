@@ -46,6 +46,8 @@ private:
     int n_inactive_cycles_;
     int particles_per_cycle_;
 
+    RNG_LCG rng_;
+
     FissionBank source_bank_;
 
     // Cycle-by-cycle k history
@@ -63,6 +65,8 @@ private:
 
     // Tally of results from the pusher_ tally
     TallyScalar k_tally_;
+
+    int cycle_;
 };
 } // namespace mc
 } // namespace mocc

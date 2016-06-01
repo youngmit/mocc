@@ -20,13 +20,16 @@
 
 namespace mocc {
     std::ostream &operator<<(std::ostream &os, const Particle &p) {
-        os << "Global position: " << p.location_global.x << " "
+        os << "{" << std::endl;
+        os << "\tID: " << p.id << std::endl;
+        os << "\tGlobal position: " << p.location_global.x << " "
                                   << p.location_global.y << " "
                                   << p.location_global.z << std::endl;
-        os << "Pin-local position: " << p.location.x << " "
+        os << "\tPin-local position: " << p.location.x << " "
                                      << p.location.y << std::endl;
-        os << "Direction: " << p.direction << std::endl;
-        os << "Group: " << p.group;
+        os << "\tDirection: " << p.direction << std::endl;
+        os << "\tGroup: " << p.group << std::endl;
+        os << "}";
         return os;
     }
 }

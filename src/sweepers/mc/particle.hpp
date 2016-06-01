@@ -22,8 +22,7 @@
 #include "core/geometry/direction.hpp"
 #include "core/geometry/points.hpp"
 #include "core/global_config.hpp"
-
-#include "rng.hpp"
+#include "position.hpp"
 
 namespace mocc {
     /**
@@ -53,27 +52,30 @@ namespace mocc {
     public:
         Particle() { }
 
-        Particle(Point3 loc, Direction dir, int ig):
-            location_global(loc),
-            direction(dir),
-            group(ig),
+        Particle(Point3 loc, Direction dir, int ig, unsigned id):
             weight(1.0),
+            group(ig),
+            direction(dir),
+            location_global(loc),
+            id(id),
             alive(true)
         {
             return;
         }
-
-        // Particle's location in the pin-local domain
-        Point2 location;
-        // Particle's location in the global domain
-        Point3 location_global;
-        Direction direction;
-
-        // Particle's energy group
-        int group;
-
         // Particle weight (for variance reduction and the like)
         real_t weight;
+        // Particle's energy group
+        int group;
+        // Particle's location in the pin-local domain
+        Point2 location;
+        Direction direction;
+        // Particle's location in the global domain
+        Point3 location_global;
+        // Particles pin cell position
+        Position pin_position;
+
+        // ID, used for sorting and seeding RNG
+        unsigned id;
 
         bool alive;
 
@@ -93,6 +95,14 @@ namespace mocc {
             location_global.y += d*direction.oy;
             location_global.z += d*direction.oz;
             return;
+        }
+
+        /**
+         * \brief A \ref Particle is considered "less than" another particle if
+         * its ID is smaller.
+         */
+        bool operator<( const Particle &other ) const {
+            return id<other.id;
         }
 
         friend std::ostream &operator<<(std::ostream &os, const Particle &p);

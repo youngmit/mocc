@@ -19,11 +19,11 @@
 #include <vector>
 
 #include "core/core_mesh.hpp"
+#include "core/output_interface.hpp"
 #include "core/xs_mesh.hpp"
 
 #include "fission_bank.hpp"
 #include "particle.hpp"
-#include "rng.hpp"
 #include "tally_scalar.hpp"
 #include "tally_spatial.hpp"
 
@@ -35,7 +35,7 @@ namespace mc {
  * death and the death of all of its progeny (which would arise from
  * variance reduction techniques such as russian roulette/splitting).
  */
-class ParticlePusher {
+class ParticlePusher : public HasOutput {
 public:
     ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh);
 
@@ -90,8 +90,15 @@ public:
         return;
     }
 
-    const auto &flux_tallies() const {
+    const auto &flux_tallies() const
+    {
         return scalar_flux_tally_;
+    }
+
+    void output(H5Node &node) const override
+    {
+
+        return;
     }
 
 private:
@@ -125,6 +132,13 @@ private:
     // Scalar flux tally
     std::vector<TallySpatial> scalar_flux_tally_;
 
+    // Used to generate unique particle IDs
+    unsigned id_offset_;
+
+    unsigned n_cycles_;
+    bool print_particles_;
+
+    // tally number of boundary crossings
 };
 } // namespace mc
 } // namespace mocc

@@ -25,7 +25,7 @@ namespace mocc {
 namespace mc {
 
 /**
- * \brief Monte Carlo tally for a scalar quantity
+ * \brief Monte Carlo tally for a spatially-dependent quantity
  *
  * See \ref tally_page for more discussion about tallies
  */
