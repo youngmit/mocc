@@ -31,7 +31,7 @@ namespace mocc {
  */
 class RNG_LCG {
 public:
-    RNG_LCG(unsigned long seed = 1ul) : generator_(seed)
+    RNG_LCG(unsigned long seed = 1ul) : current_seed_(seed)
     {
         return;
     }
@@ -39,13 +39,19 @@ public:
     RNG_LCG &operator=(const RNG_LCG &other)
     {
         // Skip self-assignment check, since we only have POD data members
-        generator_ = other.generator_;
+        current_seed_ = other.current_seed_;
         return *this;
+    }
+
+    void set_seed(unsigned long seed)
+    {
+        current_seed_ = seed;
     }
 
     unsigned long operator()()
     {
-        return generator_();
+        current_seed_ = (current_seed_ * m_ + b_) & mask_;
+        return current_seed_;
     }
 
     /**
@@ -53,7 +59,7 @@ public:
      */
     real_t random()
     {
-        return float_scale_ * generator_();
+        return float_scale_ * (*this)();
     }
 
     /**
@@ -64,7 +70,7 @@ public:
     {
         assert(ubound > 0.0);
 
-        real_t v = float_scale_ * generator_();
+        real_t v = float_scale_ * (*this)();
         return v * ubound;
     }
 
@@ -76,9 +82,7 @@ public:
     {
         assert(ubound > lbound);
 
-        real_t v = float_scale_ * generator_();
-        assert(v >= 0.0);
-        assert(v < 1.0);
+        real_t v = this->random();
         v = lbound + (ubound - lbound) * v;
         return v;
     }
@@ -117,23 +121,45 @@ public:
      *
      * \param n the number of elements in the sequence to jump ahead by
      *
-     * This is using the stupid approach for now. \todo use the logarithmic
-     * approach
      */
     void jump_ahead(int n)
     {
-        for (int i = 0; i < n; i++) {
-            generator_();
+        long int nskip = n;
+
+        while (nskip < 0l) {
+            nskip += mod_;
         }
+
+        unsigned long g     = m_;
+        unsigned long b     = b_;
+        unsigned long g_new = 1;
+        unsigned long b_new = 0;
+        while (nskip > 0l) {
+            if (nskip & 1ul) {
+                g_new = g_new * g & mask_;
+                b_new = (b_new * g + b) & mask_;
+            }
+
+            b = ((g + 1) * b) & mask_;
+            g = (g * g) & mask_;
+
+            // Shift bits left
+            nskip = nskip >> 1;
+        }
+
+        current_seed_ = (g_new * current_seed_ + b_new) & mask_;
+        return;
     }
 
 private:
-    std::linear_congruential_engine<unsigned long, 2806196910506780709ul, 1ul,
-                                    (1ul<<63)>
-        generator_;
-    static constexpr real_t float_scale_ = 1.0 /
-        std::linear_congruential_engine<unsigned long, 2806196910506780709ul,
-                                        1ul, (1ul<<63)>::max();
+    unsigned long current_seed_;
+    static const unsigned long m_ = 2806196910506780709ul;
+    static const unsigned long b_ = 1ul;
+    // The mask performs the equivalent of a modulo (%) when ANDed with
+    // left-hand operand.
+    static const unsigned long mask_     = ~(1ul << 63);
+    static const unsigned long mod_      = 1ul << 63;
+    static constexpr real_t float_scale_ = 1.0 / (1ul << 63);
 };
 
 } // namespace mocc
