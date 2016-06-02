@@ -21,6 +21,9 @@
 
 #include "core/global_config.hpp"
 
+using std::cout;
+using std::endl;
+
 namespace mocc {
 namespace mc {
 
@@ -35,7 +38,10 @@ public:
      * \brief Make a new \ref TallyScalar
      */
     TallySpatial(const VecF &norm)
-        : nreg_(norm.size()), norm_(norm), data_(nreg_, {0.0, 0.0}), weight_(0.0)
+        : nreg_(norm.size()),
+          norm_(norm),
+          data_(nreg_, {0.0, 0.0}),
+          weight_(0.0)
     {
         return;
     }
@@ -48,7 +54,7 @@ public:
 #pragma omp atomic
         data_[i].first += value;
 #pragma omp atomic
-        data_[i].second += value*value;
+        data_[i].second += value * value;
 
         return;
     }
@@ -82,9 +88,9 @@ public:
     {
         std::vector<std::pair<real_t, real_t>> ret;
         ret.reserve(data_.size());
-        for( unsigned i=0; i<data_.size(); i++) {
-            real_t mean           = data_[i].first / (weight_*norm_[i]);
-            real_t mean_of_square = data_[i].second / (weight_*norm_[i]);
+        for (unsigned i = 0; i < data_.size(); i++) {
+            real_t mean           = data_[i].first / (weight_ * norm_[i]);
+            real_t mean_of_square = data_[i].second / (weight_ * norm_[i]);
             real_t square_of_mean = mean * mean;
             real_t variance =
                 (mean_of_square - square_of_mean) / (weight_ - 1.0);
@@ -93,6 +99,32 @@ public:
         }
 
         return ret;
+    }
+
+    /**
+     * \brief Return a pin-homogenized tally on the passed \ref CoreMesh
+     */
+    const std::vector<std::pair<real_t, real_t>>
+    get_homogenized(const CoreMesh &mesh) const
+    {
+        assert(data_.size() == mesh.n_reg());
+
+        TallySpatial coarse_tally( mesh.coarse_volume() );
+
+        int ipin = 0;
+        int ireg = 0;
+        for( const auto &pin: mesh) {
+            for( int ir=0; ir<pin->n_reg(); ir++ ) {
+                coarse_tally.data_[ipin].first += data_[ireg].first;
+                coarse_tally.data_[ipin].second += data_[ireg].second;
+                ireg++;
+            }
+            ipin++;
+        }
+
+        coarse_tally.weight_ = weight_;
+
+        return coarse_tally.get();
     }
 
 private:

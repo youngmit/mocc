@@ -179,6 +179,27 @@ namespace mocc {
         }
 
         /**
+         * \brief Write a scalar unsigned long integer.
+         */
+        void write( std::string path, unsigned long data ) {
+            hsize_t dims_a[1];
+
+            dims_a[0] = 1;
+
+            try {
+                H5::DataSpace space( 1, dims_a );
+                H5::DataSet dataset = node_->createDataSet(path,
+                        H5::PredType::NATIVE_ULONG, space);
+                dataset.write(&data, H5::PredType::NATIVE_ULONG);
+            } catch (...) {
+                std::stringstream msg;
+                msg << "Failed to write dataset: " << path;
+                throw EXCEPT(msg.str().c_str());
+            }
+            return;
+        }
+
+        /**
          * \brief Read data from an \ref H5Node into an STL vector
          */
         void read( std::string path, std::vector<double> &data ) const;
@@ -195,6 +216,7 @@ namespace mocc {
 
         /**
          * \brief Read data from an \ref H5Node into a Blitz++ array.
+         *
          *
          * This will attempt to read the dataset specified by the path relative
          * the location of the \ref H5Node into the passed Blitz array.

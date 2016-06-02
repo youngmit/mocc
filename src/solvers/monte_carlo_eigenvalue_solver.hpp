@@ -46,6 +46,8 @@ private:
     int n_inactive_cycles_;
     int particles_per_cycle_;
 
+    unsigned long seed_;
+
     RNG_LCG rng_;
 
     FissionBank source_bank_;

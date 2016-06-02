@@ -45,6 +45,7 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
       n_group_(xs_mesh.n_group()),
       fission_bank_(mesh),
       do_implicit_capture_(false),
+      seed_(1),
       scalar_flux_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
       id_offset_(0),
       n_cycles_(0),
@@ -302,7 +303,7 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
         unsigned np = bank.size();
 #pragma omp for
         for (unsigned ip = 0; ip < np; ip++) {
-            RNG.set_seed(1);
+            RNG.set_seed(seed_);
             RNG.jump_ahead((bank[ip].id+id_offset_)*10000);
             this->simulate(bank[ip]);
         }
@@ -311,6 +312,34 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     } // OMP Parallel
 
     id_offset_ += bank.size();
+    return;
+}
+
+void ParticlePusher::output( H5Node &node ) const {
+    auto dims = mesh_.dimensions();
+    std::reverse( dims.begin(), dims.end() );
+
+    node.write( "ng", n_group_ );
+    node.write( "eubounds", xs_mesh_.eubounds(), VecI(1, n_group_) );
+
+    node.create_group("flux");
+    for (unsigned ig = 0; ig < scalar_flux_tally_.size(); ig++) {
+        std::stringstream path;
+        path << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
+
+        auto flux_result = scalar_flux_tally_[ig].get_homogenized(mesh_);
+        VecF flux_val;
+        flux_val.reserve(flux_result.size());
+        VecF flux_stdev;
+        flux_stdev.reserve(flux_result.size());
+        for (const auto &v : flux_result) {
+            flux_val.push_back(v.first);
+            flux_stdev.push_back(v.second);
+        }
+        node.write(path.str(), flux_val, dims);
+        path << "_stdev";
+        node.write(path.str(), flux_stdev, dims);
+    }
     return;
 }
 } // namespace mc

@@ -90,16 +90,19 @@ public:
         return;
     }
 
+    /**
+     * \brief Assign a new seed to the RNG
+     */
+    void set_seed( unsigned long seed ) {
+        seed_ = seed;
+    }
+
     const auto &flux_tallies() const
     {
         return scalar_flux_tally_;
     }
 
-    void output(H5Node &node) const override
-    {
-
-        return;
-    }
+    void output(H5Node &node) const override;
 
 private:
     const CoreMesh &mesh_;
@@ -120,6 +123,8 @@ private:
 
     // Do implicit capture?
     bool do_implicit_capture_;
+
+    unsigned long seed_;
 
     // Eigenvalue tally
     TallyScalar k_tally_;
