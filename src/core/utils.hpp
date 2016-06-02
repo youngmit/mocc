@@ -26,7 +26,7 @@ namespace mocc {
      * the range.
      */
     template <class InputIterator>
-    void Normalize( InputIterator first, InputIterator last ) {
+    auto Normalize( InputIterator first, InputIterator last ) {
         typedef typename std::iterator_traits<InputIterator>::value_type T;
 
         // Count the number of elements greater than zero
@@ -46,6 +46,19 @@ namespace mocc {
             *it *= f;
         }
 
+        return f;
+    }
+
+    /**
+     * Scale the range of values in [first, last) by a constant factor, \c f.
+     */
+    template <class InputIterator>
+    auto Scale( InputIterator first, InputIterator last, decltype(*first) f ) {
+        for( auto it=first; it!=last; ++it ) {
+            *it *= f;
+        }
+
+        return f;
     }
 
 }

@@ -20,6 +20,9 @@
 #include <iostream>
 #include <omp.h>
 
+#include "core/blitz_typedefs.hpp"
+#include "core/utils.hpp"
+
 #include "particle.hpp"
 
 using std::cout;
@@ -79,12 +82,6 @@ void ParticlePusher::collide(Particle &p, int ixsreg)
             cout << "scatter from group " << p.group << endl;
         // scatter. only isotropic for now
         // sample new energy
-        VecF cdf = xsreg.xsmacsc().out_cdf(p.group);
-        // cout << "scatter CDF: " << endl;
-        // for(const auto &v: xsreg.xsmacsc().out_cdf(p.group)) {
-        //    cout << v << " ";
-        //}
-        // cout << endl;
         p.group = RNG.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
         if (print_particles_) {
             cout << "New group: " << p.group << endl;
@@ -321,23 +318,30 @@ void ParticlePusher::output(H5Node &node) const
     node.write("ng", n_group_);
     node.write("eubounds", xs_mesh_.eubounds(), VecI(1, n_group_));
 
+    ArrayB2 flux_mg(n_group_, mesh_.n_pin());
+    ArrayB2 stdev_mg(n_group_, mesh_.n_pin());
+
     node.create_group("flux");
-    for (unsigned ig = 0; ig < scalar_flux_tally_.size(); ig++) {
+    for (int ig = 0; ig < (int)scalar_flux_tally_.size(); ig++) {
+        auto flux_result = scalar_flux_tally_[ig].get_homogenized(mesh_);
+        int ipin         = 0;
+        for (const auto &v : flux_result) {
+            flux_mg(ig, ipin)  = v.first;
+            stdev_mg(ig, ipin) = v.second;
+            ipin++;
+        }
+    }
+
+    real_t f = Normalize(flux_mg.begin(), flux_mg.end());
+    Scale(stdev_mg.begin(), stdev_mg.end(), f);
+
+    for (int ig = 0; ig < (int)scalar_flux_tally_.size(); ig++) {
         std::stringstream path;
         path << "flux/" << std::setfill('0') << std::setw(3) << ig + 1;
 
-        auto flux_result = scalar_flux_tally_[ig].get_homogenized(mesh_);
-        VecF flux_val;
-        flux_val.reserve(flux_result.size());
-        VecF flux_stdev;
-        flux_stdev.reserve(flux_result.size());
-        for (const auto &v : flux_result) {
-            flux_val.push_back(v.first);
-            flux_stdev.push_back(v.second);
-        }
-        node.write(path.str(), flux_val, dims);
+        node.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
         path << "_stdev";
-        node.write(path.str(), flux_stdev, dims);
+        node.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
     }
     return;
 }
