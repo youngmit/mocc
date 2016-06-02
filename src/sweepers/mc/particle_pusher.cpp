@@ -75,31 +75,33 @@ void ParticlePusher::collide(Particle &p, int ixsreg)
 
     switch (reaction) {
     case Reaction::SCATTER: {
-if(print_particles_)
-cout << "scatter from group " << p.group << endl;
+        if (print_particles_)
+            cout << "scatter from group " << p.group << endl;
         // scatter. only isotropic for now
         // sample new energy
         VecF cdf = xsreg.xsmacsc().out_cdf(p.group);
-//cout << "scatter CDF: " << endl;
-//for(const auto &v: xsreg.xsmacsc().out_cdf(p.group)) {
-//    cout << v << " ";
-//}
-//cout << endl;
-        p.group  = RNG.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
-if(print_particles_)
-cout << "New group: " << p.group << endl;
+        // cout << "scatter CDF: " << endl;
+        // for(const auto &v: xsreg.xsmacsc().out_cdf(p.group)) {
+        //    cout << v << " ";
+        //}
+        // cout << endl;
+        p.group = RNG.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
+        if (print_particles_) {
+            cout << "New group: " << p.group << endl;
+        }
 
         // sample new angle
         p.direction = Direction(RNG.random(TWOPI), RNG.random(PI));
-if(print_particles_)
-cout << "New angle: " << p.direction << endl;
+        if (print_particles_) {
+            cout << "New angle: " << p.direction << endl;
+        }
     } break;
 
     case Reaction::FISSION:
-if(print_particles_)
-cout << "fission at " << p.location_global.x  << " "
-    << p.location_global.y << " " 
-    << p.location_global.z << endl;
+        if (print_particles_) {
+            cout << "fission at " << p.location_global.x << " "
+                 << p.location_global.y << " " << p.location_global.z << endl;
+        }
         // fission
         // sample number of new particles to generate
         {
@@ -110,18 +112,18 @@ cout << "fission at " << p.location_global.x  << " "
             // Make new particles and push them onto the fission bank
             for (int i = 0; i < n_fis; i++) {
                 int ig = RNG.sample_cdf(xsreg.chi_cdf());
-                Particle new_p(
-                    p.location_global,
-                    Direction(RNG.random(TWOPI), RNG.random(PI)), ig,
-                    p.id);
+                Particle new_p(p.location_global,
+                               Direction(RNG.random(TWOPI), RNG.random(PI)), ig,
+                               p.id);
                 fission_bank_.push_back(new_p);
             }
         }
         p.alive = false;
         break;
     default:
-if(print_particles_)
-cout << "capture" << endl;
+        if (print_particles_) {
+            cout << "capture" << endl;
+        }
         // capture
         p.alive = false;
     }
@@ -131,8 +133,8 @@ cout << "capture" << endl;
 
 void ParticlePusher::simulate(Particle p)
 {
-if(print_particles_)
-cout << endl << "NEW PARTICLE:" << endl;
+    if (print_particles_)
+        cout << endl << "NEW PARTICLE:" << endl;
     // Register this particle with the tallies
     k_tally_.add_weight(p.weight);
     k_tally_collision_.add_weight(p.weight);
@@ -151,16 +153,14 @@ cout << endl << "NEW PARTICLE:" << endl;
     assert(ireg < (int)mesh_.n_reg());
     int ixsreg = xsmesh_regions_[ireg];
 
-
-
     p.alive = true;
 
     while (p.alive) {
-if(print_particles_){
-cout << "Where we are now:" << endl;
-cout << p << endl;
-cout << "ireg/xsreg: " << ireg << " " << ixsreg << endl;
-}
+        if (print_particles_) {
+            cout << "Where we are now:" << endl;
+            cout << p << endl;
+            cout << "ireg/xsreg: " << ireg << " " << ixsreg << endl;
+        }
         // Determine distance to nearest surface
         auto d_to_surf =
             location_info.pm->distance_to_surface(p.location, p.direction);
@@ -181,8 +181,10 @@ cout << "ireg/xsreg: " << ireg << " " << ixsreg << endl;
         real_t xstr           = xs_mesh_[ixsreg].xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG.random()) / xstr;
 
-if(print_particles_)
-cout << "distance to surface/collision: " << d_to_surf.first << " " << d_to_collision << endl;
+        if (print_particles_) {
+            cout << "distance to surface/collision: " << d_to_surf.first << " "
+                 << d_to_collision << endl;
+        }
 
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
@@ -195,13 +197,6 @@ cout << "distance to surface/collision: " << d_to_surf.first << " " << d_to_coll
             // Particle collided within the current region. Move particle to
             // collision site and handle interaction.
             p.move(d_to_collision);
-            auto p_surf = mesh_.boundary_surface(p.location_global, p.direction);
-            if((p_surf[0] != Surface::INTERNAL) ||
-               (p_surf[1] != Surface::INTERNAL) ||
-               (p_surf[2] != Surface::INTERNAL)) {
-cout << "wtf?" << endl;
-cin.ignore();
-            }
             this->collide(p, ixsreg);
         }
         else {
@@ -220,18 +215,20 @@ cin.ignore();
                 // handle boundary condition, etc.
                 // Regardless of what happens, move the particle
                 p.move(d_to_surf.first + BUMP);
-if(print_particles_) {
-    cout << "particle after move to surf:" << endl;
-    cout << p << endl;
-}
+
+                if (print_particles_) {
+                    cout << "particle after move to surf:" << endl;
+                    cout << p << endl;
+                }
 
                 // Check for domain boundary crossing
                 auto bound_surf =
                     mesh_.boundary_surface(p.location_global, p.direction);
                 bool reflected = false;
                 for (const auto &b : bound_surf) {
-if(print_particles_)
-cout << b << endl;
+                    if (print_particles_) {
+                        cout << b << endl;
+                    }
                     if ((b != Surface::INTERNAL) && (p.alive)) {
                         // We are exiting a domain boundary. Handle the boundary
                         // condition.
@@ -256,10 +253,11 @@ cout << b << endl;
 
                 if (reflected) {
                     p.move(2.0 * BUMP);
-if(print_particles_){
-cout << "Particle after reflection and move back:" << endl;
-cout << p << endl;
-}
+                    if (print_particles_) {
+                        cout << "Particle after reflection and move back:"
+                             << endl;
+                        cout << p << endl;
+                    }
                 }
 
                 // If the particle is still alive, relocate it
@@ -304,7 +302,7 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
 #pragma omp for
         for (unsigned ip = 0; ip < np; ip++) {
             RNG.set_seed(seed_);
-            RNG.jump_ahead((bank[ip].id+id_offset_)*10000);
+            RNG.jump_ahead((bank[ip].id + id_offset_) * 10000);
             this->simulate(bank[ip]);
         }
 
@@ -315,17 +313,18 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     return;
 }
 
-void ParticlePusher::output( H5Node &node ) const {
+void ParticlePusher::output(H5Node &node) const
+{
     auto dims = mesh_.dimensions();
-    std::reverse( dims.begin(), dims.end() );
+    std::reverse(dims.begin(), dims.end());
 
-    node.write( "ng", n_group_ );
-    node.write( "eubounds", xs_mesh_.eubounds(), VecI(1, n_group_) );
+    node.write("ng", n_group_);
+    node.write("eubounds", xs_mesh_.eubounds(), VecI(1, n_group_));
 
     node.create_group("flux");
     for (unsigned ig = 0; ig < scalar_flux_tally_.size(); ig++) {
         std::stringstream path;
-        path << "flux/" << std::setfill('0') << std::setw(3) << ig+1;
+        path << "flux/" << std::setfill('0') << std::setw(3) << ig + 1;
 
         auto flux_result = scalar_flux_tally_[ig].get_homogenized(mesh_);
         VecF flux_val;
