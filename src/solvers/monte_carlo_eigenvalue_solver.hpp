@@ -65,8 +65,9 @@ private:
 
     std::pair<real_t, real_t> k_eff_;
 
-    // Tally of results from the pusher_ tally
+    // Tally of results from the pusher_ tally, for computing batch statistics
     TallyScalar k_tally_;
+    std::vector<TallySpatial> flux_tallies_;
 
     int cycle_;
 };

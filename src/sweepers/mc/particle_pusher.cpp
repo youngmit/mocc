@@ -49,7 +49,8 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
       fission_bank_(mesh),
       do_implicit_capture_(false),
       seed_(1),
-      scalar_flux_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
+      scalar_flux_tally_(xs_mesh.n_group(),
+                         TallySpatial(mesh_.coarse_volume())),
       id_offset_(0),
       n_cycles_(0),
       print_particles_(false)
@@ -146,6 +147,7 @@ void ParticlePusher::simulate(Particle p)
     p.location   = location_info.local_point;
     int ireg     = location_info.reg_offset +
                location_info.pm->find_reg(p.location, p.direction);
+    int ipin_coarse = mesh_.coarse_cell(location_info.pos);
     assert(ireg >= 0);
     assert(ireg < (int)mesh_.n_reg());
     int ixsreg = xsmesh_regions_[ireg];
@@ -188,7 +190,7 @@ void ParticlePusher::simulate(Particle p)
         // Contribute to track length-based tallies
         k_tally_.score(tl * p.weight * xs_mesh_[ixsreg].xsmacnf(p.group));
 
-        scalar_flux_tally_[p.group].score(ireg, tl);
+        scalar_flux_tally_[p.group].score(ipin_coarse, tl);
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
@@ -266,6 +268,7 @@ void ParticlePusher::simulate(Particle p)
                     p.location = location_info.local_point;
                     ireg       = location_info.reg_offset +
                            location_info.pm->find_reg(p.location, p.direction);
+                    ipin_coarse = mesh_.coarse_cell(location_info.pos);
                     assert(ireg >= 0);
                     assert(ireg < (int)mesh_.n_reg());
                     ixsreg = xsmesh_regions_[ireg];
@@ -318,31 +321,6 @@ void ParticlePusher::output(H5Node &node) const
     node.write("ng", n_group_);
     node.write("eubounds", xs_mesh_.eubounds(), VecI(1, n_group_));
 
-    ArrayB2 flux_mg(n_group_, mesh_.n_pin());
-    ArrayB2 stdev_mg(n_group_, mesh_.n_pin());
-
-    node.create_group("flux");
-    for (int ig = 0; ig < (int)scalar_flux_tally_.size(); ig++) {
-        auto flux_result = scalar_flux_tally_[ig].get_homogenized(mesh_);
-        int ipin         = 0;
-        for (const auto &v : flux_result) {
-            flux_mg(ig, ipin)  = v.first;
-            stdev_mg(ig, ipin) = v.second;
-            ipin++;
-        }
-    }
-
-    real_t f = Normalize(flux_mg.begin(), flux_mg.end());
-    Scale(stdev_mg.begin(), stdev_mg.end(), f);
-
-    for (int ig = 0; ig < (int)scalar_flux_tally_.size(); ig++) {
-        std::stringstream path;
-        path << "flux/" << std::setfill('0') << std::setw(3) << ig + 1;
-
-        node.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
-        path << "_stdev";
-        node.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
-    }
     return;
 }
 } // namespace mc

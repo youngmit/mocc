@@ -20,8 +20,9 @@
 
 #include "pugixml.hpp"
 
-#include "error.hpp"
-#include "files.hpp"
+#include "core/utils.hpp"
+#include "core/error.hpp"
+#include "core/files.hpp"
 
 #include "mc/fission_bank.hpp"
 
@@ -49,6 +50,7 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
                    xs_mesh_, rng_),
       k_history_(),
       h_history_(),
+      k_tally_(),
       cycle_(0)
 {
     // Check for valid input
@@ -57,7 +59,7 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
                      "be empty.");
     }
 
-    if(seed_ % 2 == 0) {
+    if (seed_ % 2 == 0) {
         throw EXCEPT("The RNG seed should be odd.");
     }
     if (n_cycles_ < 0) {
@@ -79,6 +81,12 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
     }
     if (particles_per_cycle_ == 0) {
         Warn("Zero particles per cycle requested. You sure?");
+    }
+
+    // Make them tallies
+    flux_tallies_.reserve(xs_mesh_.n_group());
+    for(unsigned ig=0; ig<xs_mesh_.n_group(); ig++) {
+        flux_tallies_.emplace_back(mesh_.coarse_volume());
     }
 
     // Propagate the seed to the pusher
@@ -127,6 +135,11 @@ void MonteCarloEigenvalueSolver::step()
     if (active_cycle_) {
         k_tally_.score(k_eff_.first);
         k_tally_.add_weight(1.0);
+        for (unsigned ig = 0; ig < flux_tallies_.size(); ig++) {
+            flux_tallies_[ig].add_weight(1.0);
+            flux_tallies_[ig].score(pusher_.flux_tallies()[ig]);
+        }
+
         k_mean_history_.push_back(k_tally_.get().first);
         k_stdev_history_.push_back(k_tally_.get().second);
     }
@@ -151,20 +164,57 @@ void MonteCarloEigenvalueSolver::step()
         p.id = i++;
     }
 
+    // Reset the tallies on the particle pusher, since we are keeping batch
+    // statistics, rather than history-based statistics
+    pusher_.reset_tallies();
+
     return;
 } // MonteCarloEigenvalueSolver::step()
 
 void MonteCarloEigenvalueSolver::output(H5Node &node) const
 {
+    auto dims = mesh_.dimensions();
+    std::reverse(dims.begin(), dims.end());
+    
     node.write("k_history", k_history_);
     node.write("h_history", h_history_);
     node.write("k_mean_history", k_mean_history_);
     node.write("k_stdev_history", k_stdev_history_);
-    node.write("seed", seed_ );
+    node.write("seed", seed_);
+    
+    // We use a separate tally to handle the homogenization, since it makes it
+    // easier to track the statistics.
+    /// \todo this
+
+    ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_pin());
+    ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_pin());
+
+    node.create_group("flux");
+    for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
+        auto flux_result = flux_tallies_[ig].get();
+        int ipin         = 0;
+        for (const auto &v : flux_result) {
+            flux_mg(ig, ipin)  = v.first;
+            stdev_mg(ig, ipin) = v.second;
+            ipin++;
+        }
+    }
+
+    real_t f = Normalize(flux_mg.begin(), flux_mg.end());
+    Scale(stdev_mg.begin(), stdev_mg.end(), f);
+
+    for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
+        std::stringstream path;
+        path << "flux/" << std::setfill('0') << std::setw(3) << ig + 1;
+
+        node.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
+        path << "_stdev";
+        node.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
+    }
+
 
     pusher_.output(node);
 
-    
     return;
 }
 } // namespace mc

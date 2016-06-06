@@ -48,6 +48,13 @@ public:
 
     /**
      * \brief Score some quantity to the tally
+     *
+     * This contributes to the running sum for the mean and the sum of squares.
+     * This is correct for collision-style estimates, but yeilds incorrect
+     * statistical estimates for track length-based elements, since the tallies
+     * for each entire history should be squared, not each individual track. For
+     * now we use batch statistics to get around this, but at some point it
+     * might be nice to do track length tallies directly.
      */
     void score(int i, real_t value)
     {
@@ -56,6 +63,26 @@ public:
 #pragma omp atomic
         data_[i].second += value * value;
 
+        return;
+    }
+
+    /**
+     * \brief Score the contents of an entire tally to this tally.
+     *
+     * This is particularly useful for computing batch statistics
+     */
+    void score(const TallySpatial &other)
+    {
+#pragma omp single
+        {
+            assert(data_.size() == other.data_.size());
+            real_t w = other.weight_;
+            for (unsigned i = 0; i < data_.size(); i++) {
+                real_t v = other.data_[i].first / (w);
+                data_[i].first += v;
+                data_[i].second += v * v;
+            }
+        }
         return;
     }
 
@@ -82,49 +109,28 @@ public:
     }
 
     /**
-     * \brief Return the estimates for the tally mean and variance
+     * \brief Return the estimates for the tally mean and relative standard
+     * deviation
      */
     const std::vector<std::pair<real_t, real_t>> get() const
     {
+        // Plenty of room for optimization in here
+        assert(weight_ > 0.0);
         std::vector<std::pair<real_t, real_t>> ret;
         ret.reserve(data_.size());
         for (unsigned i = 0; i < data_.size(); i++) {
-            real_t mean           = data_[i].first / (weight_ * norm_[i]);
-            real_t mean_of_square = data_[i].second / (weight_ * norm_[i]);
-            real_t square_of_mean = mean * mean;
-            real_t variance =
-                (mean_of_square - square_of_mean) / (weight_ - 1.0);
+            real_t r_norm = 1.0 / norm_[i];
+            real_t mean   = data_[i].first / weight_;
+            real_t square_of_mean =
+                data_[i].first * data_[i].first / (weight_ * (weight_ - 1.0));
+            real_t mean_of_square = data_[i].second / (weight_ - 1.0);
+            real_t variance       = mean_of_square - square_of_mean;
 
-            ret.push_back({mean, variance});
+            ret.push_back({mean * r_norm,
+                           std::sqrt(variance * r_norm) / (mean * r_norm)});
         }
 
         return ret;
-    }
-
-    /**
-     * \brief Return a pin-homogenized tally on the passed \ref CoreMesh
-     */
-    const std::vector<std::pair<real_t, real_t>>
-    get_homogenized(const CoreMesh &mesh) const
-    {
-        assert(data_.size() == mesh.n_reg());
-
-        TallySpatial coarse_tally( mesh.coarse_volume() );
-
-        int ipin = 0;
-        int ireg = 0;
-        for( const auto &pin: mesh) {
-            for( int ir=0; ir<pin->n_reg(); ir++ ) {
-                coarse_tally.data_[ipin].first += data_[ireg].first;
-                coarse_tally.data_[ipin].second += data_[ireg].second;
-                ireg++;
-            }
-            ipin++;
-        }
-
-        coarse_tally.weight_ = weight_;
-
-        return coarse_tally.get();
     }
 
 private:
