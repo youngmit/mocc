@@ -59,7 +59,7 @@ public:
      * \brief Perform an interaction of a particle with its underlying
      * medium
      */
-    void collide(Particle &p, int ixsreg);
+    void collide(Particle &p);
 
     /**
      * \brief Return a reference to the internal \ref FissionBank
@@ -80,12 +80,23 @@ public:
     /**
      * \brief Reset all tallies
      */
-    void reset_tallies()
+    void reset_tallies(bool clear_persistent = false)
     {
         k_tally_.reset();
         k_tally_collision_.reset();
         for (auto &flux_tally : scalar_flux_tally_) {
             flux_tally.reset();
+        }
+
+        for (auto &flux_tally : fine_flux_tally_) {
+            flux_tally.reset();
+        }
+
+        if( clear_persistent ) {
+std::cout << "clearing persistent tallies" <<std::endl; 
+            for(auto &tally: fine_flux_col_tally_ ) {
+                tally.reset();
+            }
         }
         return;
     }
@@ -93,13 +104,19 @@ public:
     /**
      * \brief Assign a new seed to the RNG
      */
-    void set_seed( unsigned long seed ) {
+    void set_seed(unsigned long seed)
+    {
         seed_ = seed;
     }
 
     const auto &flux_tallies() const
     {
         return scalar_flux_tally_;
+    }
+
+    const auto &fine_flux_tallies() const
+    {
+        return fine_flux_tally_;
     }
 
     void output(H5Node &node) const override;
@@ -134,16 +151,16 @@ private:
     // directly to a specific tally
     real_t k_eff_;
 
-    // Scalar flux tally
+    // Scalar flux tallies
     std::vector<TallySpatial> scalar_flux_tally_;
+    std::vector<TallySpatial> fine_flux_tally_;
+    std::vector<TallySpatial> fine_flux_col_tally_;
 
     // Used to generate unique particle IDs
     unsigned id_offset_;
 
     unsigned n_cycles_;
     bool print_particles_;
-
-    // tally number of boundary crossings
 };
 } // namespace mc
 } // namespace mocc

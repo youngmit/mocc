@@ -68,6 +68,7 @@ private:
     // Tally of results from the pusher_ tally, for computing batch statistics
     TallyScalar k_tally_;
     std::vector<TallySpatial> flux_tallies_;
+    std::vector<TallySpatial> fine_flux_tallies_;
 
     int cycle_;
 };

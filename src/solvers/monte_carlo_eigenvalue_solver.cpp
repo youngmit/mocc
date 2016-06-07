@@ -20,9 +20,9 @@
 
 #include "pugixml.hpp"
 
-#include "core/utils.hpp"
 #include "core/error.hpp"
 #include "core/files.hpp"
+#include "core/utils.hpp"
 
 #include "mc/fission_bank.hpp"
 
@@ -85,8 +85,10 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
 
     // Make them tallies
     flux_tallies_.reserve(xs_mesh_.n_group());
-    for(unsigned ig=0; ig<xs_mesh_.n_group(); ig++) {
+    fine_flux_tallies_.reserve(xs_mesh_.n_group());
+    for (unsigned ig = 0; ig < xs_mesh_.n_group(); ig++) {
         flux_tallies_.emplace_back(mesh_.coarse_volume());
+        fine_flux_tallies_.emplace_back(mesh_.volumes());
     }
 
     // Propagate the seed to the pusher
@@ -109,6 +111,7 @@ void MonteCarloEigenvalueSolver::solve()
     for (int i = 0; i < n_inactive_cycles_; i++) {
         this->step();
     }
+    pusher_.reset_tallies(true);
 
     LogScreen << "Starting active cycles:" << std::endl;
     active_cycle_ = true;
@@ -138,6 +141,8 @@ void MonteCarloEigenvalueSolver::step()
         for (unsigned ig = 0; ig < flux_tallies_.size(); ig++) {
             flux_tallies_[ig].add_weight(1.0);
             flux_tallies_[ig].score(pusher_.flux_tallies()[ig]);
+            fine_flux_tallies_[ig].add_weight(1.0);
+            fine_flux_tallies_[ig].score(pusher_.fine_flux_tallies()[ig]);
         }
 
         k_mean_history_.push_back(k_tally_.get().first);
@@ -175,43 +180,67 @@ void MonteCarloEigenvalueSolver::output(H5Node &node) const
 {
     auto dims = mesh_.dimensions();
     std::reverse(dims.begin(), dims.end());
-    
+
     node.write("k_history", k_history_);
     node.write("h_history", h_history_);
     node.write("k_mean_history", k_mean_history_);
     node.write("k_stdev_history", k_stdev_history_);
     node.write("seed", seed_);
-    
-    // We use a separate tally to handle the homogenization, since it makes it
-    // easier to track the statistics.
-    /// \todo this
 
-    ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_pin());
-    ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_pin());
+    // Coarse flux tallies
+    {
+        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_pin());
+        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_pin());
 
-    node.create_group("flux");
-    for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
-        auto flux_result = flux_tallies_[ig].get();
-        int ipin         = 0;
-        for (const auto &v : flux_result) {
-            flux_mg(ig, ipin)  = v.first;
-            stdev_mg(ig, ipin) = v.second;
-            ipin++;
+        auto g = node.create_group("flux");
+        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
+            auto flux_result = flux_tallies_[ig].get();
+            int ipin         = 0;
+            for (const auto &v : flux_result) {
+                flux_mg(ig, ipin)  = v.first;
+                stdev_mg(ig, ipin) = v.second;
+                ipin++;
+            }
+        }
+
+        real_t f = Normalize(flux_mg.begin(), flux_mg.end());
+        Scale(stdev_mg.begin(), stdev_mg.end(), f);
+
+        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
+            std::stringstream path;
+            path << std::setfill('0') << std::setw(3) << ig + 1;
+
+            g.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
+            path << "_stdev";
+            g.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
         }
     }
 
-    real_t f = Normalize(flux_mg.begin(), flux_mg.end());
-    Scale(stdev_mg.begin(), stdev_mg.end(), f);
+    // Fine flux tallies
+    {
+        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_reg());
+        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_reg());
 
-    for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
-        std::stringstream path;
-        path << "flux/" << std::setfill('0') << std::setw(3) << ig + 1;
+        auto g = node.create_group("fsr_flux");
+        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
+            auto flux_result = fine_flux_tallies_[ig].get();
+            int ipin         = 0;
+            for (const auto &v : flux_result) {
+                flux_mg(ig, ipin)  = v.first;
+                stdev_mg(ig, ipin) = v.second;
+                ipin++;
+            }
+        }
 
-        node.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
-        path << "_stdev";
-        node.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
+        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
+            std::stringstream path;
+            path << std::setfill('0') << std::setw(3) << ig + 1;
+
+            g.write(path.str(), flux_mg(ig, blitz::Range::all()) );
+            path << "_stdev";
+            g.write(path.str(), stdev_mg(ig, blitz::Range::all()) );
+        }
     }
-
 
     pusher_.output(node);
 

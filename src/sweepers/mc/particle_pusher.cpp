@@ -51,6 +51,8 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
       seed_(1),
       scalar_flux_tally_(xs_mesh.n_group(),
                          TallySpatial(mesh_.coarse_volume())),
+      fine_flux_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
+      fine_flux_col_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
       id_offset_(0),
       n_cycles_(0),
       print_particles_(false)
@@ -68,14 +70,16 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
     return;
 }
 
-void ParticlePusher::collide(Particle &p, int ixsreg)
+void ParticlePusher::collide(Particle &p)
 {
     // Sample the type of interaction;
-    const auto &xsreg = xs_mesh_[ixsreg];
+    const auto &xsreg = xs_mesh_[p.ixsreg];
     Reaction reaction = (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
-    real_t k_score    = p.weight * xs_mesh_[ixsreg].xsmacnf(p.group) /
-                     xs_mesh_[ixsreg].xsmactr(p.group);
+    real_t k_score =
+        p.weight * xs_mesh_[p.ixsreg].xsmacnf(p.group) / xsreg.xsmactr(p.group);
     k_tally_collision_.score(k_score);
+    fine_flux_col_tally_[p.group].score(p.ireg,
+                                        p.weight / xsreg.xsmactr(p.group));
 
     switch (reaction) {
     case Reaction::SCATTER: {
@@ -139,18 +143,25 @@ void ParticlePusher::simulate(Particle p)
     for (auto &tally : scalar_flux_tally_) {
         tally.add_weight(p.weight);
     }
+    for (auto &tally : fine_flux_tally_) {
+        tally.add_weight(p.weight);
+    }
+    for (auto &tally : fine_flux_col_tally_) {
+        tally.add_weight(p.weight);
+    }
+
     // Figure out where we are
     auto location_info =
         mesh_.get_location_info(p.location_global, p.direction);
     real_t z_min = mesh_.z(location_info.pos.z);
     real_t z_max = mesh_.z(location_info.pos.z + 1);
     p.location   = location_info.local_point;
-    int ireg     = location_info.reg_offset +
-               location_info.pm->find_reg(p.location, p.direction);
+    p.ireg       = location_info.reg_offset +
+             location_info.pm->find_reg(p.location, p.direction);
     int ipin_coarse = mesh_.coarse_cell(location_info.pos);
-    assert(ireg >= 0);
-    assert(ireg < (int)mesh_.n_reg());
-    int ixsreg = xsmesh_regions_[ireg];
+    assert(p.ireg >= 0);
+    assert(p.ireg < (int)mesh_.n_reg());
+    p.ixsreg = xsmesh_regions_[p.ireg];
 
     p.alive = true;
 
@@ -158,7 +169,7 @@ void ParticlePusher::simulate(Particle p)
         if (print_particles_) {
             cout << "Where we are now:" << endl;
             cout << p << endl;
-            cout << "ireg/xsreg: " << ireg << " " << ixsreg << endl;
+            cout << "ireg/xsreg: " << p.ireg << " " << p.ixsreg << endl;
         }
         // Determine distance to nearest surface
         auto d_to_surf =
@@ -177,7 +188,7 @@ void ParticlePusher::simulate(Particle p)
         }
 
         // Sample distance to collision
-        real_t xstr           = xs_mesh_[ixsreg].xsmactr(p.group);
+        real_t xstr           = xs_mesh_[p.ixsreg].xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG.random()) / xstr;
 
         if (print_particles_) {
@@ -188,15 +199,16 @@ void ParticlePusher::simulate(Particle p)
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
         // Contribute to track length-based tallies
-        k_tally_.score(tl * p.weight * xs_mesh_[ixsreg].xsmacnf(p.group));
+        k_tally_.score(tl * p.weight * xs_mesh_[p.ixsreg].xsmacnf(p.group));
 
         scalar_flux_tally_[p.group].score(ipin_coarse, tl);
+        fine_flux_tally_[p.group].score(p.ireg, tl);
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
             // collision site and handle interaction.
             p.move(d_to_collision);
-            this->collide(p, ixsreg);
+            this->collide(p);
         }
         else {
             // Particle reached a surface before colliding. Move to the
@@ -205,9 +217,9 @@ void ParticlePusher::simulate(Particle p)
                 // Particle crossed an internal boundary in the pin.
                 // Update its location and region index
                 p.move(d_to_surf.first + BUMP);
-                ireg = location_info.pm->find_reg(p.location, p.direction) +
-                       location_info.reg_offset;
-                ixsreg = xsmesh_regions_[ireg];
+                p.ireg = location_info.pm->find_reg(p.location, p.direction) +
+                         location_info.reg_offset;
+                p.ixsreg = xsmesh_regions_[p.ireg];
             }
             else {
                 // Particle crossed a pin boundary. Move to neighboring pin,
@@ -266,12 +278,13 @@ void ParticlePusher::simulate(Particle p)
                     z_min      = mesh_.z(location_info.pos.z);
                     z_max      = mesh_.z(location_info.pos.z + 1);
                     p.location = location_info.local_point;
-                    ireg       = location_info.reg_offset +
-                           location_info.pm->find_reg(p.location, p.direction);
+                    p.ireg =
+                        location_info.reg_offset +
+                        location_info.pm->find_reg(p.location, p.direction);
                     ipin_coarse = mesh_.coarse_cell(location_info.pos);
-                    assert(ireg >= 0);
-                    assert(ireg < (int)mesh_.n_reg());
-                    ixsreg = xsmesh_regions_[ireg];
+                    assert(p.ireg >= 0);
+                    assert(p.ireg < (int)mesh_.n_reg());
+                    p.ixsreg = xsmesh_regions_[p.ireg];
                 }
             }
         } // collision or new region?
@@ -289,8 +302,6 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     // Clear the internal FissionBank to store new fission sites for this
     // cycle
     fission_bank_.clear();
-    k_tally_.reset();
-    k_tally_collision_.reset();
 
     k_eff_ = k_eff;
 
@@ -320,6 +331,29 @@ void ParticlePusher::output(H5Node &node) const
 
     node.write("ng", n_group_);
     node.write("eubounds", xs_mesh_.eubounds(), VecI(1, n_group_));
+
+    // Fine flux tallies (collision)
+    {
+        VecF flux_mg(mesh_.n_reg());
+        VecF stdev_mg(mesh_.n_reg());
+
+        auto g = node.create_group("fsr_flux_col");
+        for (int ig = 0; ig < (int)fine_flux_col_tally_.size(); ig++) {
+            std::stringstream path;
+            path << std::setfill('0') << std::setw(3) << ig + 1;
+            auto flux_result = fine_flux_col_tally_[ig].get();
+            int ireg = 0;
+            for (const auto &v : flux_result) {
+                flux_mg[ireg]  = v.first;
+                stdev_mg[ireg] = v.second;
+                ireg++;
+            }
+
+            g.write(path.str(), flux_mg);
+            path << "_stdev";
+            g.write(path.str(), stdev_mg);
+        }
+    }
 
     return;
 }

@@ -69,6 +69,9 @@ namespace mocc {
         // Particle's location in the pin-local domain
         Point2 location;
         Direction direction;
+        // Particle's region indices
+        int ireg;
+        int ixsreg;
         // Particle's location in the global domain
         Point3 location_global;
         // Particles pin cell position
