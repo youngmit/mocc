@@ -187,8 +187,6 @@ namespace mocc { namespace sn {
         ArrayB3 powers(mesh_.nz(), mesh_.ny(), mesh_.nx());
         powers = 0.0;
 
-        real_t tot_pow = 0.0;
-
         for(int ireg=0; ireg<n_reg_; ireg++ ) {
             auto pos = mesh_.coarse_position(ireg);
             const XSMeshRegion &xsr = (*xs_mesh_)[ireg];
@@ -197,13 +195,10 @@ namespace mocc { namespace sn {
             for( int ig=0; ig<n_group_; ig++ ) {
                 real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
                 powers(pos.z, pos.y, pos.x) += p;
-                tot_pow += p;
             }
         }
 
-        tot_pow = powers.size()/tot_pow;
-
-        powers *= tot_pow;
+        Normalize(powers.begin(), powers.end());
 
         return powers;
     }
