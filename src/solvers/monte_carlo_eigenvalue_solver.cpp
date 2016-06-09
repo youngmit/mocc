@@ -83,14 +83,6 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
         Warn("Zero particles per cycle requested. You sure?");
     }
 
-    // Make them tallies
-    flux_tallies_.reserve(xs_mesh_.n_group());
-    fine_flux_tallies_.reserve(xs_mesh_.n_group());
-    for (unsigned ig = 0; ig < xs_mesh_.n_group(); ig++) {
-        flux_tallies_.emplace_back(mesh_.coarse_volume());
-        fine_flux_tallies_.emplace_back(mesh_.volumes());
-    }
-
     // Propagate the seed to the pusher
     pusher_.set_seed(seed_);
 
@@ -138,12 +130,6 @@ void MonteCarloEigenvalueSolver::step()
     if (active_cycle_) {
         k_tally_.score(k_eff_.first);
         k_tally_.add_weight(1.0);
-        for (unsigned ig = 0; ig < flux_tallies_.size(); ig++) {
-            flux_tallies_[ig].add_weight(1.0);
-            flux_tallies_[ig].score(pusher_.flux_tallies()[ig]);
-            fine_flux_tallies_[ig].add_weight(1.0);
-            fine_flux_tallies_[ig].score(pusher_.fine_flux_tallies()[ig]);
-        }
 
         k_mean_history_.push_back(k_tally_.get().first);
         k_stdev_history_.push_back(k_tally_.get().second);
@@ -169,8 +155,8 @@ void MonteCarloEigenvalueSolver::step()
         p.id = i++;
     }
 
-    // Reset the tallies on the particle pusher, since we are keeping batch
-    // statistics, rather than history-based statistics
+    // Reset the tallies on the Pusher. This should only reset the k-effective
+    // tally, since all others are managed internally
     pusher_.reset_tallies();
 
     return;
@@ -186,61 +172,6 @@ void MonteCarloEigenvalueSolver::output(H5Node &node) const
     node.write("k_mean_history", k_mean_history_);
     node.write("k_stdev_history", k_stdev_history_);
     node.write("seed", seed_);
-
-    // Coarse flux tallies
-    {
-        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_pin());
-        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_pin());
-
-        auto g = node.create_group("flux");
-        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
-            auto flux_result = flux_tallies_[ig].get();
-            int ipin         = 0;
-            for (const auto &v : flux_result) {
-                flux_mg(ig, ipin)  = v.first;
-                stdev_mg(ig, ipin) = v.second;
-                ipin++;
-            }
-        }
-
-        real_t f = Normalize(flux_mg.begin(), flux_mg.end());
-        Scale(stdev_mg.begin(), stdev_mg.end(), f);
-
-        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
-            std::stringstream path;
-            path << std::setfill('0') << std::setw(3) << ig + 1;
-
-            g.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
-            path << "_stdev";
-            g.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
-        }
-    }
-
-    // Fine flux tallies
-    {
-        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_reg());
-        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_reg());
-
-        auto g = node.create_group("fsr_flux");
-        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
-            auto flux_result = fine_flux_tallies_[ig].get();
-            int ipin         = 0;
-            for (const auto &v : flux_result) {
-                flux_mg(ig, ipin)  = v.first;
-                stdev_mg(ig, ipin) = v.second;
-                ipin++;
-            }
-        }
-
-        for (int ig = 0; ig < (int)flux_tallies_.size(); ig++) {
-            std::stringstream path;
-            path << std::setfill('0') << std::setw(3) << ig + 1;
-
-            g.write(path.str(), flux_mg(ig, blitz::Range::all()) );
-            path << "_stdev";
-            g.write(path.str(), stdev_mg(ig, blitz::Range::all()) );
-        }
-    }
 
     pusher_.output(node);
 

@@ -53,6 +53,7 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
                          TallySpatial(mesh_.coarse_volume())),
       fine_flux_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
       fine_flux_col_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
+      pin_power_tally_(mesh_.coarse_volume()),
       id_offset_(0),
       n_cycles_(0),
       print_particles_(false)
@@ -149,6 +150,7 @@ void ParticlePusher::simulate(Particle p)
     for (auto &tally : fine_flux_col_tally_) {
         tally.add_weight(p.weight);
     }
+    pin_power_tally_.add_weight(p.weight);
 
     // Figure out where we are
     auto location_info =
@@ -166,6 +168,7 @@ void ParticlePusher::simulate(Particle p)
     p.alive = true;
 
     while (p.alive) {
+        const XSMeshRegion &xsreg = xs_mesh_[p.ixsreg];
         if (print_particles_) {
             cout << "Where we are now:" << endl;
             cout << p << endl;
@@ -188,7 +191,7 @@ void ParticlePusher::simulate(Particle p)
         }
 
         // Sample distance to collision
-        real_t xstr           = xs_mesh_[p.ixsreg].xsmactr(p.group);
+        real_t xstr           = xsreg.xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG.random()) / xstr;
 
         if (print_particles_) {
@@ -199,10 +202,10 @@ void ParticlePusher::simulate(Particle p)
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
         // Contribute to track length-based tallies
-        k_tally_.score(tl * p.weight * xs_mesh_[p.ixsreg].xsmacnf(p.group));
-
-        scalar_flux_tally_[p.group].score(ipin_coarse, tl);
-        fine_flux_tally_[p.group].score(p.ireg, tl);
+        k_tally_.score(tl * p.weight * xsreg.xsmacnf(p.group));
+        pin_power_tally_.score(ipin_coarse, tl*p.weight*xsreg.xsmacf(p.group));
+        scalar_flux_tally_[p.group].score(ipin_coarse, tl*p.weight);
+        fine_flux_tally_[p.group].score(p.ireg, tl*p.weight);
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
@@ -317,6 +320,8 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
             this->simulate(bank[ip]);
         }
 
+        this->commit_tallies();
+
         n_cycles_++;
     } // OMP Parallel
 
@@ -331,6 +336,60 @@ void ParticlePusher::output(H5Node &node) const
 
     node.write("ng", n_group_);
     node.write("eubounds", xs_mesh_.eubounds(), VecI(1, n_group_));
+
+    // Coarse flux tallies
+    {
+        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_pin());
+        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_pin());
+
+        auto g = node.create_group("flux");
+        for (int ig = 0; ig < (int)scalar_flux_tally_.size(); ig++) {
+            auto flux_result = scalar_flux_tally_[ig].get();
+            int ipin         = 0;
+            for (const auto &v : flux_result) {
+                flux_mg(ig, ipin)  = v.first;
+                stdev_mg(ig, ipin) = v.second;
+                ipin++;
+            }
+        }
+
+        Normalize(flux_mg.begin(), flux_mg.end());
+
+        for (int ig = 0; ig < (int)scalar_flux_tally_.size(); ig++) {
+            std::stringstream path;
+            path << std::setfill('0') << std::setw(3) << ig + 1;
+
+            g.write(path.str(), flux_mg(ig, blitz::Range::all()), dims);
+            path << "_stdev";
+            g.write(path.str(), stdev_mg(ig, blitz::Range::all()), dims);
+        }
+    }
+
+    // Fine flux tallies (TL)
+    {
+        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_reg());
+        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_reg());
+
+        auto g = node.create_group("fsr_flux");
+        for (int ig = 0; ig < (int)fine_flux_tally_.size(); ig++) {
+            auto flux_result = fine_flux_tally_[ig].get();
+            int ipin         = 0;
+            for (const auto &v : flux_result) {
+                flux_mg(ig, ipin)  = v.first;
+                stdev_mg(ig, ipin) = v.second;
+                ipin++;
+            }
+        }
+
+        for (int ig = 0; ig < (int)fine_flux_tally_.size(); ig++) {
+            std::stringstream path;
+            path << std::setfill('0') << std::setw(3) << ig + 1;
+
+            g.write(path.str(), flux_mg(ig, blitz::Range::all()) );
+            path << "_stdev";
+            g.write(path.str(), stdev_mg(ig, blitz::Range::all()) );
+        }
+    }
 
     // Fine flux tallies (collision)
     {
@@ -353,6 +412,25 @@ void ParticlePusher::output(H5Node &node) const
             path << "_stdev";
             g.write(path.str(), stdev_mg);
         }
+    }
+
+    // Pin powers
+    {
+        VecF pin_power;
+        VecF stdev;
+        pin_power.reserve(mesh_.n_pin());
+        stdev.reserve(mesh_.n_pin());
+
+        auto result = pin_power_tally_.get();
+        for( const auto &v: result){
+            pin_power.push_back(v.first);
+            stdev.push_back(v.second);
+        }
+
+        Normalize(pin_power.begin(), pin_power.end());
+
+        node.write("pin_power", pin_power, dims);
+        node.write("pin_power_stdev", stdev, dims);
     }
 
     return;

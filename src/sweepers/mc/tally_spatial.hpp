@@ -41,7 +41,9 @@ public:
         : nreg_(norm.size()),
           norm_(norm),
           data_(nreg_, {0.0, 0.0}),
-          weight_(0.0)
+          realization_scores_(norm.size(), 0.0),
+          weight_(0.0),
+          n_(0)
     {
         return;
     }
@@ -59,11 +61,28 @@ public:
     void score(int i, real_t value)
     {
 #pragma omp atomic
-        data_[i].first += value;
-#pragma omp atomic
-        data_[i].second += value * value;
+        realization_scores_[i] += value;
 
         return;
+    }
+
+    /**
+     * \brief Commit tally contributions for a given realization to the tally
+     */
+    void commit_realization()
+    {
+#pragma omp single
+        {
+            real_t r_weight = 1.0/weight_;
+            for (unsigned i = 0; i < realization_scores_.size(); i++) {
+                real_t v = realization_scores_[i] * r_weight;
+                data_[i].first += v;
+                data_[i].second += v*v;
+                realization_scores_[i] = 0.0;
+            }
+            n_++;
+            weight_ = 0.0;
+        }
     }
 
     /**
@@ -75,6 +94,8 @@ public:
     {
 #pragma omp single
         {
+
+throw EXCEPT("shouldnt be using this anymore");
             assert(data_.size() == other.data_.size());
             real_t w = other.weight_;
             for (unsigned i = 0; i < data_.size(); i++) {
@@ -101,10 +122,16 @@ public:
     void reset()
     {
 #pragma omp single
-        for (auto &d : data_) {
-            d = {0.0, 0.0};
+        {
+            for (auto &d : data_) {
+                d = {0.0, 0.0};
+            }
+            for (auto &d : realization_scores_) {
+                d = 0.0;
+            }
+            weight_ = 0.0;
+            n_ = 0;
         }
-        weight_ = 0.0;
         return;
     }
 
@@ -116,14 +143,15 @@ public:
     {
         // Plenty of room for optimization in here
         assert(weight_ > 0.0);
+        assert(n_ > 0);
         std::vector<std::pair<real_t, real_t>> ret;
         ret.reserve(data_.size());
         for (unsigned i = 0; i < data_.size(); i++) {
             real_t r_norm = 1.0 / norm_[i];
-            real_t mean   = data_[i].first / weight_;
+            real_t mean   = data_[i].first / n_;
             real_t square_of_mean =
-                data_[i].first * data_[i].first / (weight_ * (weight_ - 1.0));
-            real_t mean_of_square = data_[i].second / (weight_ - 1.0);
+                data_[i].first * data_[i].first / (n_ * (n_ - 1.0));
+            real_t mean_of_square = data_[i].second / (n_ - 1.0);
             real_t variance       = mean_of_square - square_of_mean;
 
             ret.push_back({mean * r_norm,
@@ -137,7 +165,9 @@ private:
     unsigned nreg_;
     const VecF &norm_;
     std::vector<std::pair<real_t, real_t>> data_;
+    VecF realization_scores_;
     real_t weight_;
+    int n_;
 };
 }
 } // namespaces

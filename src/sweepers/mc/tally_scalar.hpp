@@ -85,10 +85,9 @@ public:
         // Plenty of room for optimization in here
         std::pair<real_t, real_t> val;
         real_t mean           = mean_ / weight_;
-        real_t mean_of_square = mean_square_ / (weight_);
-        real_t square_of_mean = mean_ * mean_ / weight_ * (weight_);
+        real_t mean_of_square = mean_square_ / (weight_-1.0);
+        real_t square_of_mean = mean_ * mean_ / (weight_ * (weight_-1.0));
         real_t variance = mean_of_square - square_of_mean;
-        variance = (mean_square_ - mean_*mean_/(weight_))/(weight_ - 1.0);
 
         val.first  = mean;
         val.second = std::sqrt(variance) / mean;

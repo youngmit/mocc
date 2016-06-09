@@ -84,20 +84,38 @@ public:
     {
         k_tally_.reset();
         k_tally_collision_.reset();
-        for (auto &flux_tally : scalar_flux_tally_) {
-            flux_tally.reset();
-        }
 
-        for (auto &flux_tally : fine_flux_tally_) {
-            flux_tally.reset();
-        }
+        if (clear_persistent) {
+            for (auto &flux_tally : scalar_flux_tally_) {
+                flux_tally.reset();
+            }
 
-        if( clear_persistent ) {
-std::cout << "clearing persistent tallies" <<std::endl; 
-            for(auto &tally: fine_flux_col_tally_ ) {
+            for (auto &flux_tally : fine_flux_tally_) {
+                flux_tally.reset();
+            }
+
+            for (auto &tally : fine_flux_col_tally_) {
                 tally.reset();
             }
+            pin_power_tally_.reset();
         }
+        return;
+    }
+
+    void commit_tallies()
+    {
+        for (auto &t : scalar_flux_tally_) {
+            t.commit_realization();
+        }
+        for (auto &t : fine_flux_tally_) {
+            t.commit_realization();
+        }
+        for (auto &t : fine_flux_col_tally_) {
+            t.commit_realization();
+        }
+
+        pin_power_tally_.commit_realization();
+
         return;
     }
 
@@ -155,6 +173,9 @@ private:
     std::vector<TallySpatial> scalar_flux_tally_;
     std::vector<TallySpatial> fine_flux_tally_;
     std::vector<TallySpatial> fine_flux_col_tally_;
+
+    // Pin power tally
+    TallySpatial pin_power_tally_;
 
     // Used to generate unique particle IDs
     unsigned id_offset_;
