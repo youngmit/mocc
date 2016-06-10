@@ -134,9 +134,9 @@ void MoCSweeper_2D3D::output(H5Node &node) const
     LogFile << "MoC Sweeper 2D3D output:" << std::endl;
     LogFile << "    Number of sweeps, outer: " << n_sweep_ << std::endl;
     LogFile << "    Number of sweeps, inner: " << n_sweep_inner_ << std::endl;
-    ;
 
     MoCSweeper::output(node);
+
     if (internal_coupling_) {
         corrections_->output(node);
         sn_xs_mesh_->update();
@@ -162,6 +162,7 @@ void MoCSweeper_2D3D::output(H5Node &node) const
         g.write("alpha_y", ay);
         g.write("beta", b);
     }
+    return;
 }
 }
 } // Namespace mocc::cmdo
