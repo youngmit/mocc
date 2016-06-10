@@ -19,11 +19,10 @@
 #include <algorithm>
 #include <array>
 #include <memory>
-
+#include "util/error.hpp"
+#include "util/global_config.hpp"
 #include "geometry/geom.hpp"
 #include "constants.hpp"
-#include "error.hpp"
-#include "global_config.hpp"
 #include "position.hpp"
 
 namespace mocc {

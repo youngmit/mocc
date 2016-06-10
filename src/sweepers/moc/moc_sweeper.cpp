@@ -19,14 +19,12 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "files.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/string_utils.hpp"
+#include "util/utils.hpp"
 #include "moc_current_worker.hpp"
-#include "string_utils.hpp"
-#include "utils.hpp"
 
 using std::endl;
 using std::cout;

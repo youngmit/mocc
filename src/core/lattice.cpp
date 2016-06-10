@@ -20,12 +20,10 @@
 #include <iostream>
 #include <map>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
+#include "util/error.hpp"
+#include "util/string_utils.hpp"
 #include "pin.hpp"
-#include "string_utils.hpp"
 
 using std::string;
 using std::cout;

@@ -18,9 +18,9 @@
 
 #include <vector>
 
+#include "util/global_config.hpp"
 #include "geometry/direction.hpp"
 #include "geometry/geom.hpp"
-#include "global_config.hpp"
 #include "lattice.hpp"
 
 namespace mocc {

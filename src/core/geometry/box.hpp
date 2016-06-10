@@ -17,9 +17,7 @@
 #pragma once
 
 #include <array>
-
-#include "core/global_config.hpp"
-
+#include "util/global_config.hpp"
 #include "angle.hpp"
 #include "line.hpp"
 #include "points.hpp"

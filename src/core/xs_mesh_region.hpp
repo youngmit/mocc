@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
 #include "constants.hpp"
-#include "fp_utils.hpp"
-#include "global_config.hpp"
 #include "scattering_matrix.hpp"
 
 namespace mocc {

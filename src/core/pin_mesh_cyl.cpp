@@ -22,14 +22,12 @@
 #include <math.h>
 #include <sstream>
 #include <string>
-
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/global_config.hpp"
+#include "util/string_utils.hpp"
 #include "constants.hpp"
-#include "error.hpp"
-#include "files.hpp"
-#include "global_config.hpp"
-#include "string_utils.hpp"
 
 using std::string;
 using std::stringstream;

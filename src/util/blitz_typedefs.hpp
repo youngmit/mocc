@@ -18,8 +18,7 @@
 
 #include <blitz/array.h>
 #include <cassert>
-
-#include <global_config.hpp>
+#include "global_config.hpp"
 
 namespace mocc {
 

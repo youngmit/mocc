@@ -20,11 +20,10 @@
 #include <cassert>
 #include <map>
 #include <vector>
-
+#include "util/pugifwd.hpp"
 #include "geometry/geom.hpp"
 #include "assembly.hpp"
 #include "constants.hpp"
-#include "pugifwd.hpp"
 
 namespace mocc {
 class Core {

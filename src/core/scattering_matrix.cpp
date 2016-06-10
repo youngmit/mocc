@@ -18,8 +18,7 @@
 
 #include <iomanip>
 #include <iostream>
-
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace {
 using namespace mocc;

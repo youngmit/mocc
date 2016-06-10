@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "core/error.hpp"
+#include "util/error.hpp"
 #include "core/source.hpp"
 
 namespace mocc {

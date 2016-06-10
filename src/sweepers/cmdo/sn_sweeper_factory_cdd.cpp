@@ -15,10 +15,8 @@
 */
 
 #include "sn_sweeper_factory_cdd.hpp"
-
 #include "sn_sweeper_factory.hpp"
-
-#include "string_utils.hpp"
+#include "util/string_utils.hpp"
 
 namespace mocc {
 namespace cmdo {

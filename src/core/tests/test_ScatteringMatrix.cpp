@@ -18,10 +18,9 @@
 
 #include <iostream>
 #include <vector>
-
-#include "blitz_typedefs.hpp"
-#include "fp_utils.hpp"
-#include "global_config.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
 #include "scattering_matrix.hpp"
 
 using std::cout;

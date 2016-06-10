@@ -16,14 +16,12 @@
 
 #pragma once
 
+#include <blitz/array.h>
 #include <memory>
 #include <vector>
-
-#include <blitz/array.h>
-
-#include "core/blitz_typedefs.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/global_config.hpp"
 #include "core/eigen_interface.hpp"
-#include "core/global_config.hpp"
 #include "core/mesh.hpp"
 
 namespace mocc {

@@ -17,11 +17,9 @@
 #pragma once
 
 #include <utility>
-
-#include "core_mesh.hpp"
-#include "pugifwd.hpp"
-#include "solver.hpp"
-
+#include "util/pugifwd.hpp"
+#include "core/core_mesh.hpp"
+#include "core/solver.hpp"
 #include "mc/fission_bank.hpp"
 #include "mc/particle_pusher.hpp"
 

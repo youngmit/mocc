@@ -21,9 +21,8 @@
 #include <iomanip>
 #include <iostream>
 #include <valarray>
-
+#include "util/files.hpp"
 #include "correction_worker.hpp"
-#include "files.hpp"
 
 using std::cout;
 using std::cin;

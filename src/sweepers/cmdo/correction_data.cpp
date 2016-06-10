@@ -17,11 +17,9 @@
 #include "correction_data.hpp"
 
 #include <iomanip>
-
 #include "pugixml.hpp"
-
-#include "core/files.hpp"
-#include "core/string_utils.hpp"
+#include "util/files.hpp"
+#include "util/string_utils.hpp"
 
 using std::setfill;
 using std::setw;

@@ -18,9 +18,9 @@
 
 #include <cmath>
 
+#include "util/global_config.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/geometry/angle.hpp"
-#include "core/global_config.hpp"
 
 namespace mocc {
 namespace sn {

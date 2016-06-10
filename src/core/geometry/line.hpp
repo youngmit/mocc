@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include "core/global_config.hpp"
-
+#include "util/global_config.hpp"
 #include "direction.hpp"
 #include "points.hpp"
 

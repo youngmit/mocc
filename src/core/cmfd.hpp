@@ -20,12 +20,12 @@
 
 #include <Eigen/Sparse>
 
+#include "util/global_config.hpp"
+#include "util/timers.hpp"
 #include "coarse_data.hpp"
 #include "eigen_interface.hpp"
-#include "global_config.hpp"
 #include "mesh.hpp"
 #include "source_isotropic.hpp"
-#include "timers.hpp"
 #include "xs_mesh_homogenized.hpp"
 
 namespace mocc {

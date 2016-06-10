@@ -18,11 +18,9 @@
 
 #include <algorithm>
 #include <iostream>
-
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
 #include "core/constants.hpp"
-#include "core/error.hpp"
 
 namespace mocc {
 Source::Source(int nreg, const XSMesh *xs_mesh, const ArrayB2 &flux)

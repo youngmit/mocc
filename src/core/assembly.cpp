@@ -20,11 +20,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "string_utils.hpp"
+#include "util/error.hpp"
+#include "util/string_utils.hpp"
 
 using std::string;
 using std::endl;

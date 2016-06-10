@@ -20,12 +20,10 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
-
 #include "pugixml.hpp"
-
 #include "constants.hpp"
-#include "error.hpp"
-#include "global_config.hpp"
+#include "util/error.hpp"
+#include "util/global_config.hpp"
 
 namespace mocc {
 Angle::Angle(const pugi::xml_node &input)

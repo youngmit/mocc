@@ -18,10 +18,10 @@
 #include <map>
 #include <string>
 
-#include "core/file_scrubber.hpp"
-#include "core/global_config.hpp"
+#include "util/file_scrubber.hpp"
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "core/material.hpp"
-#include "core/pugifwd.hpp"
 
 namespace mocc {
 typedef std::map<unsigned int, const Material *> MaterialMap;

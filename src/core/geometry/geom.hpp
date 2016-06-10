@@ -20,15 +20,13 @@
 #include <cassert>
 #include <cmath>
 #include <iosfwd>
-
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
 #include "angle.hpp"
 #include "box.hpp"
 #include "circle.hpp"
 #include "line.hpp"
 #include "points.hpp"
-
-#include "core/fp_utils.hpp"
-#include "core/global_config.hpp"
 
 namespace {
 template <typename T> int sgn(T val)

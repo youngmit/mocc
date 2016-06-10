@@ -17,11 +17,10 @@
 #pragma once
 #include <string>
 #include <vector>
-
-#include "core/error.hpp"
+#include "util/error.hpp"
+#include "util/pugifwd.hpp"
 #include "core/geometry/geom.hpp"
 #include "core/pin_mesh_base.hpp"
-#include "core/pugifwd.hpp"
 
 namespace mocc {
 class PinMesh_Rect : public PinMesh {

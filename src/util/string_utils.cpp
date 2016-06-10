@@ -18,9 +18,8 @@
 
 #include <ctype.h>
 #include <sstream>
-
-#include "core/error.hpp"
-#include "core/global_config.hpp"
+#include "util/error.hpp"
+#include "util/global_config.hpp"
 
 using mocc::Exception;
 

@@ -18,20 +18,18 @@
 
 #include <array>
 #include <omp.h>
-
-#include "moc/ray_data.hpp"
-
+#include "util/pugifwd.hpp"
+#include "util/timers.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/boundary_condition.hpp"
 #include "core/coarse_data.hpp"
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
 #include "core/exponential.hpp"
-#include "core/pugifwd.hpp"
-#include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/xs_mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
+#include "moc/ray_data.hpp"
 
 namespace mocc {
 namespace moc {

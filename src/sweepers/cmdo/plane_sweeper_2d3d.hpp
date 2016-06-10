@@ -17,14 +17,11 @@
 #pragma once
 
 #include <blitz/array.h>
-
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "core/angular_quadrature.hpp"
-#include "core/global_config.hpp"
 #include "core/output_interface.hpp"
-#include "core/pugifwd.hpp"
-
 #include "sn/sn_sweeper_variant.hpp"
-
 #include "correction_data.hpp"
 #include "moc_sweeper_2d3d.hpp"
 #include "sn_sweeper_cdd.hpp"

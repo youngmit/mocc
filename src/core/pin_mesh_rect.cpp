@@ -21,10 +21,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace mocc {
 PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input)

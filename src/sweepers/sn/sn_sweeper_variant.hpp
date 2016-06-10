@@ -17,19 +17,17 @@
 #pragma once
 
 #include "pugixml.hpp"
-
+#include "util/blitz_typedefs.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/global_config.hpp"
+#include "util/utils.hpp"
 #include "core/angular_quadrature.hpp"
-#include "core/blitz_typedefs.hpp"
 #include "core/coarse_data.hpp"
 #include "core/core_mesh.hpp"
-#include "core/error.hpp"
-#include "core/files.hpp"
-#include "core/global_config.hpp"
 #include "core/mesh.hpp"
 #include "core/transport_sweeper.hpp"
-#include "core/utils.hpp"
 #include "core/xs_mesh_homogenized.hpp"
-
 #include "sn_current_worker.hpp"
 #include "sn_sweeper.hpp"
 

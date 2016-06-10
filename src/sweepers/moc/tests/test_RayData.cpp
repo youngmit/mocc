@@ -18,13 +18,11 @@
 
 #include <cassert>
 #include <string>
-
 #include "pugixml.hpp"
-
+#include "util/global_config.hpp"
 #include "angular_quadrature.hpp"
 #include "constants.hpp"
 #include "core_mesh.hpp"
-#include "global_config.hpp"
 #include "ray_data.hpp"
 
 using namespace mocc;

@@ -21,17 +21,14 @@
 #include <memory>
 #include <omp.h>
 #include <string>
-
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
+#include "util/file_scrubber.hpp"
+#include "util/files.hpp"
+#include "util/timers.hpp"
 #include "core/angular_quadrature.hpp"
-#include "core/error.hpp"
-#include "core/file_scrubber.hpp"
-#include "core/files.hpp"
 #include "core/material_lib.hpp"
 #include "core/pin_mesh.hpp"
-#include "core/timers.hpp"
-
 #include "auxiliary/geometry_output.hpp"
 
 using std::cout;

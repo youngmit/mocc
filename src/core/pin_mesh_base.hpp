@@ -18,10 +18,10 @@
 
 #include <string>
 
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "geometry/geom.hpp"
-#include "global_config.hpp"
 #include "position.hpp"
-#include "pugifwd.hpp"
 
 namespace mocc {
 /**

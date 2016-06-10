@@ -18,11 +18,9 @@
 
 #include <iostream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "string_utils.hpp"
+#include "util/error.hpp"
+#include "util/string_utils.hpp"
 
 namespace mocc {
 Boundary bc_parse(const pugi::xml_node &input, const char *surf)

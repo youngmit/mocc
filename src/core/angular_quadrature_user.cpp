@@ -16,8 +16,7 @@
 #include "angular_quadrature_user.hpp"
 
 #include "pugixml.hpp"
-
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace mocc {
 

@@ -8,3 +8,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/force_inline.hpp.in"
 
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+
+file(GLOB util_src "*.cpp")
+add_library(util ${util_src})
+target_link_libraries(util pugixml ${HDF5_LIBRARIES})

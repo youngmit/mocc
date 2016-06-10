@@ -18,14 +18,11 @@
 
 #include <cmath>
 #include <iosfwd>
-
-#include "pugifwd.hpp"
-
-#include "direction.hpp"
-
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "core/constants.hpp"
-#include "core/fp_utils.hpp"
-#include "core/global_config.hpp"
+#include "direction.hpp"
 
 namespace mocc {
 inline real_t RadToDeg(real_t rad)

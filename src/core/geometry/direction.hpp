@@ -18,10 +18,9 @@
 
 #include <cassert>
 #include <iosfwd>
-
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
 #include "core/constants.hpp"
-#include "core/fp_utils.hpp"
-#include "core/global_config.hpp"
 
 namespace mocc {
 struct Direction {

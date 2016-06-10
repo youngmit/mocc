@@ -17,11 +17,9 @@
 #include "eigen_solver.hpp"
 
 #include <iomanip>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "files.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
 
 const static int out_w = 14;
 

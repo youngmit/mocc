@@ -20,15 +20,12 @@
 #include <iosfwd>
 #include <vector>
 
-#include "global_config.hpp"
-#include "pugifwd.hpp"
-
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
+#include "util/rng_lcg.hpp"
 #include "core/core_mesh.hpp"
 #include "core/geometry/geom.hpp"
 #include "core/xs_mesh.hpp"
-
-#include "util/rng_lcg.hpp"
-
 #include "particle.hpp"
 
 namespace mocc {

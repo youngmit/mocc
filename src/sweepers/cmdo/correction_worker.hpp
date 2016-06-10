@@ -16,16 +16,14 @@
 
 #pragma once
 
+#include "util/global_config.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/coarse_data.hpp"
-#include "core/global_config.hpp"
 #include "core/mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
-
 #include "sweepers/moc/moc_current_worker.hpp"
 #include "sweepers/moc/ray.hpp"
 #include "sweepers/moc/ray_data.hpp"
-
 #include "correction_data.hpp"
 
 namespace mocc {

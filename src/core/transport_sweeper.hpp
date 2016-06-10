@@ -19,15 +19,13 @@
 #include <iosfwd>
 #include <memory>
 #include <vector>
-
+#include "util/blitz_typedefs.hpp"
+#include "util/error.hpp"
+#include "util/global_config.hpp"
 #include "util/range.hpp"
-
 #include "core/angular_quadrature.hpp"
-#include "core/blitz_typedefs.hpp"
 #include "core/coarse_data.hpp"
 #include "core/eigen_interface.hpp"
-#include "core/error.hpp"
-#include "core/global_config.hpp"
 #include "core/output_interface.hpp"
 #include "core/source.hpp"
 #include "core/source_factory.hpp"

@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "h5file.hpp"
+#include "util/h5file.hpp"
 
 namespace mocc {
 /**

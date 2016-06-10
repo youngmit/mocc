@@ -18,13 +18,12 @@
 
 #include <cassert>
 #include <memory>
-
-#include "core/blitz_typedefs.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "core/constants.hpp"
-#include "core/global_config.hpp"
 #include "core/mesh.hpp"
 #include "core/output_interface.hpp"
-#include "core/pugifwd.hpp"
 
 namespace mocc {
 /**

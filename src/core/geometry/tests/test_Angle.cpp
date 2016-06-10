@@ -18,10 +18,9 @@
 
 #include <iostream>
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
 #include "angle.hpp"
 #include "constants.hpp"
-#include "error.hpp"
 
 using mocc::Angle;
 using mocc::Exception;

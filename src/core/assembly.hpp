@@ -20,10 +20,9 @@
 #include <map>
 #include <memory>
 #include <vector>
-
-#include "global_config.hpp"
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "lattice.hpp"
-#include "pugifwd.hpp"
 
 namespace mocc {
 class Assembly {

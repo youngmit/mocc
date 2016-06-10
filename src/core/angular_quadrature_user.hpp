@@ -18,8 +18,8 @@
 
 #include <vector>
 
+#include "util/pugifwd.hpp"
 #include "core/geometry/angle.hpp"
-#include "pugifwd.hpp"
 
 namespace mocc {
 std::vector<Angle> GenUserQuadrature(const pugi::xml_node &input);

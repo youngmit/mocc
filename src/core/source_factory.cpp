@@ -17,11 +17,9 @@
 #include "source_factory.hpp"
 
 #include <string>
-
 #include "pugixml.hpp"
-
+#include "util/string_utils.hpp"
 #include "source_isotropic.hpp"
-#include "string_utils.hpp"
 
 enum class ScatteringTreatment { P0, PN, INVALID };
 

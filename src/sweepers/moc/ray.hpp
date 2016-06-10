@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include "util/global_config.hpp"
 #include "geometry/geom.hpp"
 #include "core_mesh.hpp"
-#include "global_config.hpp"
 
 #define MAX_NSEG 255
 

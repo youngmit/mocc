@@ -17,13 +17,10 @@
 #pragma once
 
 #include <cmath>
-
+#include "util/force_inline.hpp"
+#include "util/global_config.hpp"
 #include "core/constants.hpp"
 #include "core/geometry/angle.hpp"
-#include "core/global_config.hpp"
-
-#include "util/force_inline.hpp"
-
 #include "ray.hpp"
 
 namespace mocc {

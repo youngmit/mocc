@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "pugifwd.hpp"
+#include "util/pugifwd.hpp"
 #include "source.hpp"
 
 namespace mocc {

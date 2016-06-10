@@ -19,10 +19,10 @@
 #include <math.h>
 #include <vector>
 
-#include "core/blitz_typedefs.hpp"
-#include "core/error.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/error.hpp"
+#include "util/global_config.hpp"
 #include "core/geometry/angle.hpp"
-#include "core/global_config.hpp"
 
 using namespace mocc;
 

@@ -16,13 +16,11 @@
 
 #pragma once
 
-#include <iosfwd>
-
 #include <blitz/array.h>
-
-#include "blitz_typedefs.hpp"
-#include "eigen_interface.hpp"
-#include "global_config.hpp"
+#include <iosfwd>
+#include "util/blitz_typedefs.hpp"
+#include "util/global_config.hpp"
+#include "core/eigen_interface.hpp"
 #include "xs_mesh.hpp"
 
 namespace mocc {

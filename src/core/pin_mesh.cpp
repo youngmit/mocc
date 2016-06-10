@@ -21,11 +21,9 @@
 
 #include <iostream>
 #include <sstream>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "files.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
 
 namespace mocc {
 // Determine which type of pin to create from an XML object, produce a mesh

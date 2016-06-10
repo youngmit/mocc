@@ -21,11 +21,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "files.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
 #include "material.hpp"
 
 using std::stringstream;

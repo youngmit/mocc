@@ -18,15 +18,12 @@
 
 #include <cassert>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "moc/ray_data.hpp"
-
+#include "util/global_config.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/constants.hpp"
 #include "core/core_mesh.hpp"
-#include "core/global_config.hpp"
+#include "moc/ray_data.hpp"
 
 using namespace mocc;
 using namespace mocc::moc;

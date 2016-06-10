@@ -22,13 +22,11 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include "pugixml.hpp"
-
 #include "core/constants.hpp"
-#include "core/error.hpp"
-#include "core/files.hpp"
-#include "core/string_utils.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/string_utils.hpp"
 
 using std::cout;
 using std::endl;

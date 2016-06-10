@@ -20,17 +20,15 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/fp_utils.hpp"
+#include "util/string_utils.hpp"
 #include "core/angular_quadrature_user.hpp"
 #include "core/constants.hpp"
-#include "core/error.hpp"
-#include "core/files.hpp"
-#include "core/fp_utils.hpp"
 #include "core/level_symmetric.hpp"
 #include "core/product_quadrature.hpp"
-#include "core/string_utils.hpp"
 
 namespace mocc {
 const int AngularQuadrature::reflection_[3][8] = {{1, 0, 3, 2, 5, 4, 7, 6},

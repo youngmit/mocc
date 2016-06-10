@@ -15,13 +15,12 @@
 */
 #pragma once
 
+#include "util/pugifwd.hpp"
+#include "util/timers.hpp"
+#include "util/utils.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/boundary_condition.hpp"
-#include "core/pugifwd.hpp"
-#include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
-#include "core/utils.hpp"
-
 #include "cell_worker.hpp"
 
 namespace mocc {

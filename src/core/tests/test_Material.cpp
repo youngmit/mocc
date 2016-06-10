@@ -19,10 +19,9 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-
-#include "file_scrubber.hpp"
-#include "fp_utils.hpp"
-#include "global_config.hpp"
+#include "util/file_scrubber.hpp"
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
 #include "material.hpp"
 #include "material_lib.hpp"
 

@@ -16,7 +16,7 @@
 
 #include "core/boundary_condition.hpp"
 
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace mocc {
 

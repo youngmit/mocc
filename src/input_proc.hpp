@@ -19,12 +19,9 @@
 #include <map>
 #include <memory>
 #include <string>
-
 #include "pugixml.hpp"
-
+#include "util/timers.hpp"
 #include "core/core_mesh.hpp"
-#include "core/timers.hpp"
-
 #include "solvers/solver_factory.hpp"
 
 namespace mocc {

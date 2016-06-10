@@ -19,10 +19,8 @@
 #include <cmath>
 #include <iostream>
 #include <omp.h>
-
-#include "core/blitz_typedefs.hpp"
-#include "core/utils.hpp"
-
+#include "util/blitz_typedefs.hpp"
+#include "util/utils.hpp"
 #include "particle.hpp"
 
 using std::cout;

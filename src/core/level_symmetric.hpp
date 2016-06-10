@@ -19,9 +19,9 @@
 #include <math.h>
 #include <vector>
 
-#include "core/error.hpp"
+#include "util/error.hpp"
+#include "util/global_config.hpp"
 #include "core/geometry/angle.hpp"
-#include "core/global_config.hpp"
 
 using namespace mocc;
 
@@ -53,7 +53,6 @@ int w_map_offset[] = {0, 1, 4, 10, 20, 35, 63};
 // 'order'
 std::vector<Angle> GenSn(int order)
 {
-
     if (order % 2 != 0) {
         throw EXCEPT("Sn quadrature order must be even.");
     }

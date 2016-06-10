@@ -16,10 +16,8 @@
 
 #pragma once
 
-#include "core/global_config.hpp"
-
+#include "util/global_config.hpp"
 #include "sweepers/moc/moc_sweeper.hpp"
-
 #include "correction_data.hpp"
 
 namespace mocc {

@@ -20,6 +20,7 @@
 #include <map>
 #include <memory>
 
+#include "util/pugifwd.hpp"
 #include "core/assembly.hpp"
 #include "core/core.hpp"
 #include "core/lattice.hpp"
@@ -28,7 +29,6 @@
 #include "core/pin.hpp"
 #include "core/pin_mesh.hpp"
 #include "core/plane.hpp"
-#include "core/pugifwd.hpp"
 
 namespace mocc {
 /**

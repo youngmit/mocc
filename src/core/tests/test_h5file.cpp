@@ -16,9 +16,9 @@
 
 #include "UnitTest++/UnitTest++.h"
 
-#include "blitz_typedefs.hpp"
-#include "error.hpp"
-#include "h5file.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/error.hpp"
+#include "util/h5file.hpp"
 
 using std::cout;
 using std::endl;

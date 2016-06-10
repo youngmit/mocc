@@ -17,14 +17,12 @@
 #pragma once
 
 #include <iosfwd>
-
 #include "core/cmfd.hpp"
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
-#include "core/h5file.hpp"
-#include "core/pugifwd.hpp"
+#include "util/h5file.hpp"
+#include "util/pugifwd.hpp"
 #include "core/transport_sweeper.hpp"
-
 #include "fixed_source_solver.hpp"
 #include "solver.hpp"
 

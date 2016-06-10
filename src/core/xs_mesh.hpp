@@ -17,11 +17,10 @@
 #pragma once
 
 #include <vector>
-
-#include "blitz_typedefs.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/fp_utils.hpp"
+#include "util/global_config.hpp"
 #include "core_mesh.hpp"
-#include "fp_utils.hpp"
-#include "global_config.hpp"
 #include "output_interface.hpp"
 #include "xs_mesh_region.hpp"
 

@@ -19,18 +19,15 @@
 #include <iostream>
 #include <memory>
 #include <string>
-
-#include "core/error.hpp"
-#include "core/string_utils.hpp"
+#include "util/error.hpp"
+#include "util/string_utils.hpp"
 #include "core/transport_sweeper.hpp"
-
-#include "sn/sn_sweeper.hpp"
-#include "sn/sn_sweeper_dd.hpp"
-#include "sn/sn_sweeper_variant.hpp"
-
 #include "cmdo/correction_data.hpp"
 #include "cmdo/sn_sweeper_cdd.hpp"
 #include "cmdo/sn_sweeper_factory_cdd.hpp"
+#include "sn/sn_sweeper.hpp"
+#include "sn/sn_sweeper_dd.hpp"
+#include "sn/sn_sweeper_variant.hpp"
 
 using mocc::sn::UP_SnSweeper_t;
 

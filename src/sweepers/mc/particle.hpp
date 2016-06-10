@@ -19,9 +19,9 @@
 #include <array>
 #include <iosfwd>
 
+#include "util/global_config.hpp"
 #include "core/geometry/direction.hpp"
 #include "core/geometry/points.hpp"
-#include "core/global_config.hpp"
 #include "position.hpp"
 
 namespace mocc {

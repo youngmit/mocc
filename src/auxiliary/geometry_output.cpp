@@ -15,13 +15,10 @@
 */
 
 #include "geometry_output.hpp"
-
 #include <fstream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
+#include "util/error.hpp"
 
 using std::ofstream;
 using std::endl;

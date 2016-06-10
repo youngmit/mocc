@@ -21,7 +21,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "core/global_config.hpp"
+#include "util/global_config.hpp"
 
 namespace mocc {
 /**

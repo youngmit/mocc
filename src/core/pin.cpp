@@ -19,14 +19,12 @@
 #include <iostream>
 #include <map>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
-#include "files.hpp"
-#include "global_config.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/global_config.hpp"
+#include "util/string_utils.hpp"
 #include "pin_mesh.hpp"
-#include "string_utils.hpp"
 
 namespace mocc {
 /**

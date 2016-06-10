@@ -20,13 +20,12 @@
 #include <map>
 #include <memory>
 #include <vector>
-
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
 #include "core/geometry/direction.hpp"
 #include "core/geometry/geom.hpp"
-#include "core/global_config.hpp"
 #include "core/pin.hpp"
 #include "core/pin_mesh_base.hpp"
-#include "core/pugifwd.hpp"
 
 namespace mocc {
 class Lattice {

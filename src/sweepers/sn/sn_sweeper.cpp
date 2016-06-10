@@ -18,11 +18,9 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "files.hpp"
-#include "string_utils.hpp"
+#include "util/files.hpp"
+#include "util/string_utils.hpp"
 
 namespace {
 using namespace mocc;

@@ -19,12 +19,10 @@
 #include <cmath>
 #include <iomanip>
 #include <vector>
-
 #include "pugixml.hpp"
-
-#include "core/error.hpp"
-#include "core/files.hpp"
-#include "core/global_config.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/global_config.hpp"
 
 typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;

@@ -18,15 +18,12 @@
 
 #include <iostream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "core/blitz_typedefs.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/global_config.hpp"
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
-#include "core/global_config.hpp"
 #include "core/material_lib.hpp"
-
 #include "sweepers/moc/moc_sweeper.hpp"
 
 using namespace mocc;

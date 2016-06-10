@@ -18,10 +18,10 @@
 
 #include <array>
 
+#include "util/blitz_typedefs.hpp"
+#include "util/global_config.hpp"
 #include "angular_quadrature.hpp"
-#include "blitz_typedefs.hpp"
 #include "constants.hpp"
-#include "global_config.hpp"
 
 namespace mocc {
 

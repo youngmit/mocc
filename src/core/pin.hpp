@@ -19,8 +19,7 @@
 #include <map>
 #include <memory>
 #include <vector>
-
-#include "global_config.hpp"
+#include "util/global_config.hpp"
 #include "material_lib.hpp"
 #include "pin_mesh.hpp"
 

@@ -19,11 +19,10 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-
+#include "util//global_config.hpp"
+#include "util/fp_utils.hpp"
 #include "core/constants.hpp"
-#include "core/fp_utils.hpp"
 #include "core/geometry/geom.hpp"
-#include "core/global_config.hpp"
 #include "core/mesh.hpp"
 
 using std::cout;

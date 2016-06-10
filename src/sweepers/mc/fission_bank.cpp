@@ -17,10 +17,8 @@
 #include "fission_bank.hpp"
 
 #include <iostream>
-
 #include "pugixml.hpp"
-
-#include "core/error.hpp"
+#include "util/error.hpp"
 
 namespace mocc {
 namespace mc {

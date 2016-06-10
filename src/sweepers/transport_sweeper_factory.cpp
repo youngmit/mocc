@@ -17,11 +17,9 @@
 #include "transport_sweeper_factory.hpp"
 
 #include <string>
-
-#include "core/error.hpp"
-#include "core/files.hpp"
+#include "util/error.hpp"
+#include "util/files.hpp"
 #include "core/mesh.hpp"
-
 #include "cmdo/plane_sweeper_2d3d.hpp"
 #include "moc/moc_sweeper.hpp"
 #include "sn_sweeper_factory.hpp"

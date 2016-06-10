@@ -16,12 +16,11 @@
 
 #pragma once
 
+#include "util/force_inline.hpp"
+#include "util/global_config.hpp"
 #include "core/coarse_data.hpp"
 #include "core/constants.hpp"
-#include "core/global_config.hpp"
 #include "core/mesh.hpp"
-
-#include "util/force_inline.hpp"
 
 namespace mocc {
 namespace sn {

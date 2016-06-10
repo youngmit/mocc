@@ -18,8 +18,7 @@
 
 #include <iostream>
 #include <utility>
-
-#include "core/global_config.hpp"
+#include "util/global_config.hpp"
 
 using std::cout;
 using std::endl;

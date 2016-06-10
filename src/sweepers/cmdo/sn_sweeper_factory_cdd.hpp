@@ -18,10 +18,8 @@
 
 #include <memory>
 #include <utility>
-
+#include "util/pugifwd.hpp"
 #include "core/core_mesh.hpp"
-#include "core/pugifwd.hpp"
-
 #include "correction_data.hpp"
 #include "sn_sweeper_cdd.hpp"
 

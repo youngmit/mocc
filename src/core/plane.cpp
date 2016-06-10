@@ -18,8 +18,8 @@
 
 #include <iostream>
 
-#include "error.hpp"
-#include "fp_utils.hpp"
+#include "util/error.hpp"
+#include "util/fp_utils.hpp"
 
 namespace mocc {
 Plane::Plane(const std::vector<const Lattice *> &lattices, size_t nx, size_t ny)

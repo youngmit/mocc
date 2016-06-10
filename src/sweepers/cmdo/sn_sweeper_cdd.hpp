@@ -17,18 +17,14 @@
 #pragma once
 
 #include <memory>
-
+#include "util/files.hpp"
+#include "util/force_inline.hpp"
+#include "util/pugifwd.hpp"
 #include "core/core_mesh.hpp"
 #include "core/exponential.hpp"
-#include "core/files.hpp"
-#include "core/pugifwd.hpp"
-
-#include "util/force_inline.hpp"
-
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
 #include "sn/sn_sweeper_variant.hpp"
-
 #include "correction_data.hpp"
 
 namespace mocc {

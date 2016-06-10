@@ -19,13 +19,11 @@
 #include <iosfwd>
 #include <memory>
 #include <vector>
-
+#include "util/pugifwd.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/core_mesh.hpp"
 #include "core/geometry/angle.hpp"
 #include "core/geometry/geom.hpp"
-#include "core/pugifwd.hpp"
-
 #include "ray.hpp"
 
 namespace mocc {

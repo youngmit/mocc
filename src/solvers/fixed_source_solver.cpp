@@ -17,14 +17,11 @@
 #include "fixed_source_solver.hpp"
 
 #include <iostream>
-
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/h5file.hpp"
 #include "transport_sweeper_factory.hpp"
-
-#include "core/error.hpp"
-#include "core/files.hpp"
-#include "core/h5file.hpp"
 
 using std::cout;
 using std::endl;

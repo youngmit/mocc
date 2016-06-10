@@ -17,8 +17,7 @@
 #pragma once
 
 #include "Eigen/Dense"
-
-#include "global_config.hpp"
+#include "util/global_config.hpp"
 
 // For now we only want the dense matrix storage. Configure that for the
 // precision we want

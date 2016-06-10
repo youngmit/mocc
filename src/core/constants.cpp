@@ -17,8 +17,7 @@
 #include "constants.hpp"
 
 #include <iostream>
-
-#include <error.hpp>
+#include "util/error.hpp"
 
 namespace mocc {
 const Surface AllSurfaces[] = {Surface::EAST,  Surface::NORTH, Surface::WEST,

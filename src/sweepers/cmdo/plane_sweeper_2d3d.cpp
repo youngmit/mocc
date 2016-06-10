@@ -19,10 +19,8 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
-
+#include "util/error.hpp"
 #include "util/range.hpp"
-
-#include "core/error.hpp"
 
 using mocc::sn::SnSweeper;
 
