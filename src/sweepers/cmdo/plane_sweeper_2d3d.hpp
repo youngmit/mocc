@@ -72,7 +72,16 @@ namespace mocc { namespace cmdo {
          */
         real_t set_pin_flux_1g( int group, const ArrayB1 &pin_flux ) {
             sn_sweeper_->set_pin_flux_1g( group, pin_flux );
-            real_t diff = moc_sweeper_.set_pin_flux_1g( group, pin_flux );
+
+            real_t diff = 0.0;
+            if( discrepant_flux_update_ ) {
+                ArrayB1 moc_pin_flux(pin_flux.size());
+                for( int i=0; i<(int)moc_pin_flux.size(); i++) {
+                    moc_pin_flux = pin_flux(i) - sn_resid_(group, i);
+                }
+            } else {
+                diff = moc_sweeper_.set_pin_flux_1g( group, pin_flux );
+            }
 
             return diff;
         }
@@ -197,8 +206,11 @@ namespace mocc { namespace cmdo {
         AngularQuadrature ang_quad_;
         ArrayB2 tl_;
 
-        // Sn-MoC residuals by group sweep
-        std::vector<VecF> sn_resid_;
+        // L-2 norm of the Sn-MoC residuals by group sweep
+        std::vector<VecF> sn_resid_norm_;
+
+        // Actual Sn-MoC residuals
+        ArrayB2 sn_resid_;
 
         // Pre-Sn projection moc flux. Useful for keeping track of MoC-Sn
         // residual
@@ -228,5 +240,7 @@ namespace mocc { namespace cmdo {
         int moc_modulo_;
         // Relaxation factor for the flux updates
         real_t relax_;
+        // Whether to incorporate MoC/Sn error in CMFD flux update
+        bool discrepant_flux_update_;
     };
 } } // Namespace mocc::cmdo

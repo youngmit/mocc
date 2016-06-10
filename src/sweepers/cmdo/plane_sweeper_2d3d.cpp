@@ -45,7 +45,8 @@ namespace mocc { namespace cmdo {
         moc_sweeper_(input.child("moc_sweeper"), mesh),
         ang_quad_(moc_sweeper_.get_ang_quad()),
         tl_( sn_sweeper_->n_group(), mesh_.n_pin() ),
-        sn_resid_( sn_sweeper_->n_group() ),
+        sn_resid_norm_( sn_sweeper_->n_group() ),
+        sn_resid_( sn_sweeper_->n_group(), mesh_.n_pin() ),
         prev_moc_flux_( sn_sweeper_->n_group(), mesh_.n_pin()),
         i_outer_( -1 )
     {
@@ -134,15 +135,18 @@ namespace mocc { namespace cmdo {
         for( size_t i=0; i<prev_moc_flux.size(); i++ ) {
             residual += (prev_moc_flux(i) - sn_sweeper_->flux( group, i )) *
                         (prev_moc_flux(i) - sn_sweeper_->flux( group, i ));
+            sn_resid_(group, (int)i) = sn_sweeper_->flux(group, i) -
+                prev_moc_flux(i);
+            
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
         cout << "MoC/Sn residual: " << residual;
-        if( sn_resid_[group].size() > 0 ) {
-             cout << "   \t" << residual/sn_resid_[group].back();
+        if( sn_resid_norm_[group].size() > 0 ) {
+             cout << "   \t" << residual/sn_resid_norm_[group].back();
         }
         cout << endl;
-        sn_resid_[group].push_back(residual);
+        sn_resid_norm_[group].push_back(residual);
 
     }
 
@@ -219,8 +223,8 @@ namespace mocc { namespace cmdo {
         for( int g=0; g<n_group_; g++ ) {
             std::stringstream setname;
             setname << "/SnResid/" << setfill('0') << setw(3) << g;
-            VecI niter(1, sn_resid_[g].size());
-            file.write( setname.str(), sn_resid_[g], niter );
+            VecI niter(1, sn_resid_norm_[g].size());
+            file.write( setname.str(), sn_resid_norm_[g], niter );
         }
 
         {
@@ -266,6 +270,7 @@ namespace mocc { namespace cmdo {
         n_inactive_moc_ = 0;
         moc_modulo_ = 1;
         relax_ = 1.0;
+        discrepant_flux_update_ = false;
 
         // Override with entries in the input node
         if( !input.attribute("expose_sn").empty() ) {
@@ -291,6 +296,10 @@ namespace mocc { namespace cmdo {
         }
         if( !input.attribute("relax").empty() ) {
             relax_ = input.attribute("relax").as_bool();
+        }
+        if( !input.attribute("discrepant_flux_update").empty() ) {
+            discrepant_flux_update_ =
+                input.attribute("discrepant_flux_update").as_bool();
         }
 
         // Throw a warning if TL is disabled
@@ -320,6 +329,8 @@ namespace mocc { namespace cmdo {
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
         LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;
+        LogFile << "    Apply Sn-MoC flux residual to CMFD updates: "
+                << discrepant_flux_update_ << std::endl;
 
 
     }
