@@ -31,7 +31,7 @@ using std::endl;
 namespace mocc {
     void CorrectionData::from_data( const pugi::xml_node &input ) {
 
-        if( input.empty() ) {
+        if( input.child("data").empty() ) {
             // There isn't actually any data. Go ahead and return
             LogFile << "CorrectionData::from_data() was called, but <data/> "
                 "was empty or non-existent.";

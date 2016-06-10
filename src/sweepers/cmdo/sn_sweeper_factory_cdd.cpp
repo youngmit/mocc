@@ -64,7 +64,9 @@ namespace mocc { namespace cmdo {
             corrections = std::make_shared<CorrectionData>(
                 mesh, swp->ang_quad().ndir()/2,
                 swp->n_group());
-            corrections->from_data( input );
+            if(!input.child("data").empty()) {
+                corrections->from_data( input );
+            }
 
             swp->set_corrections( corrections );
             sweeper.reset( swp );
@@ -77,7 +79,9 @@ namespace mocc { namespace cmdo {
             corrections = std::make_shared<CorrectionData>(
                 mesh, swp->ang_quad().ndir()/2,
                 swp->n_group());
-            corrections->from_data( input );
+            if(!input.child("data").empty()) {
+                corrections->from_data( input );
+            }
 
             swp->set_corrections( corrections );
             sweeper.reset( swp );
@@ -90,7 +94,9 @@ namespace mocc { namespace cmdo {
             corrections = std::make_shared<CorrectionData>(
                 mesh, swp->ang_quad().ndir()/2,
                 swp->n_group());
-            corrections->from_data( input );
+            if(!input.child("data").empty()) {
+                corrections->from_data( input );
+            }
 
             swp->set_corrections( corrections );
             sweeper.reset( swp );
