@@ -1,17 +1,17 @@
- /*
-   Copyright 2016 Mitchell Young
+/*
+  Copyright 2016 Mitchell Young
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 */
 
 #include "UnitTest++/UnitTest++.h"
@@ -21,8 +21,8 @@
 #include <iostream>
 #include <sstream>
 
-
-TEST( test_TeeStream ) {
+TEST(test_TeeStream)
+{
 
     std::stringstream truth;
 
@@ -35,8 +35,8 @@ TEST( test_TeeStream ) {
     ts << "something about foxes" << std::endl;
     truth << "something about foxes" << std::endl;
 
-    CHECK_EQUAL( truth.str(), s1.str() );
-    CHECK_EQUAL( truth.str(), s2.str() );
+    CHECK_EQUAL(truth.str(), s1.str());
+    CHECK_EQUAL(truth.str(), s2.str());
 
     std::cout << s1.str();
     std::cout << s2.str();
@@ -45,7 +45,7 @@ TEST( test_TeeStream ) {
     std::stringstream s4;
 
     // Make sure the new streams are used
-    ts.reset( s3, s4);
+    ts.reset(s3, s4);
 
     ts << "something else about a lazy dog" << std::endl;
     truth.str("");
@@ -56,7 +56,6 @@ TEST( test_TeeStream ) {
 
     CHECK_EQUAL(truth.str(), s3.str());
     CHECK_EQUAL(truth.str(), s4.str());
-
 
     onullstream null_stream;
 
@@ -74,9 +73,9 @@ TEST( test_TeeStream ) {
     CHECK_EQUAL(s3.str(), s4.str());
 
     std::cout << s1.str();
-
 }
 
-int main() {
+int main()
+{
     return UnitTest::RunAllTests();
 }

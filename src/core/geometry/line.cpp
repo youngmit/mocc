@@ -19,7 +19,8 @@
 #include <iostream>
 
 namespace mocc {
-real_t Line::distance_to_surface(Point2 p, Direction dir) const {
+real_t Line::distance_to_surface(Point2 p, Direction dir) const
+{
     const std::numeric_limits<real_t> lim;
 
     // Cast the line into the general form. This might be worth doing ahead of
@@ -40,11 +41,11 @@ real_t Line::distance_to_surface(Point2 p, Direction dir) const {
     }
 
     real_t d = -f / proj;
-    if ((d > 0.0) && std::abs(f) > REAL_FUZZ ) {
+    if ((d > 0.0) && std::abs(f) > REAL_FUZZ) {
         return d;
     }
 
     return lim.max();
 
-}  // Line::distance_to_surface()
-}  // namespace mocc
+} // Line::distance_to_surface()
+} // namespace mocc

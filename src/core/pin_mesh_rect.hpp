@@ -24,35 +24,37 @@
 #include "core/pugifwd.hpp"
 
 namespace mocc {
-    class PinMesh_Rect: public PinMesh{
-    public:
-        PinMesh_Rect(const pugi::xml_node &input);
+class PinMesh_Rect : public PinMesh {
+public:
+    PinMesh_Rect(const pugi::xml_node &input);
 
-        int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
-                VecI &reg ) const override final;
+    int trace(Point2 p1, Point2 p2, int first_reg, VecF &s,
+              VecI &reg) const override final;
 
-        int find_reg( Point2 p ) const override final;
-        int find_reg( Point2 p, Direction dir ) const override final;
+    int find_reg(Point2 p) const override final;
+    int find_reg(Point2 p, Direction dir) const override final;
 
-        size_t n_fsrs( unsigned int xsreg ) const {
-            return 1;
-        }
+    size_t n_fsrs(unsigned int xsreg) const
+    {
+        return 1;
+    }
 
-        virtual std::pair<real_t, Surface> distance_to_surface(Point2 p,
-                Direction dir ) const;
+    virtual std::pair<real_t, Surface> distance_to_surface(Point2 p,
+                                                           Direction dir) const;
 
-        void print( std::ostream &os ) const;
+    void print(std::ostream &os) const;
 
-        std::string draw() const;
-    private:
-        unsigned nx_;
-        unsigned ny_;
-        // Vector containing the locations of the x divisions, including pin
-        // boundaries
-        VecF hx_;
-        // Vector containing the locations of the y divisions, including pin
-        // boundaries
-        VecF hy_;
-        std::vector<Line> lines_;
-    };
+    std::string draw() const;
+
+private:
+    unsigned nx_;
+    unsigned ny_;
+    // Vector containing the locations of the x divisions, including pin
+    // boundaries
+    VecF hx_;
+    // Vector containing the locations of the y divisions, including pin
+    // boundaries
+    VecF hy_;
+    std::vector<Line> lines_;
+};
 }

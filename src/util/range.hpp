@@ -19,11 +19,12 @@
 /**
  * \brief Return a vector containing integers in the range [\p stt, \p stp)
  */
-inline auto Range( int stt, int stp ) {
+inline auto Range(int stt, int stp)
+{
     std::vector<int> range;
-    range.reserve(std::abs(stp-stt)+1);
-    int stride = (stp-stt) >= 0 ? 1 : -1;
-    for( int i=stt; i<stp; i+=stride ) {
+    range.reserve(std::abs(stp - stt) + 1);
+    int stride = (stp - stt) >= 0 ? 1 : -1;
+    for (int i = stt; i < stp; i += stride) {
         range.push_back(i);
     }
 
@@ -33,6 +34,7 @@ inline auto Range( int stt, int stp ) {
 /**
  * \brief Return a vector containing the integers in the interval [0, \p stp)
  */
-inline auto Range( int stp ) {
+inline auto Range(int stp)
+{
     return Range(0, stp);
 }

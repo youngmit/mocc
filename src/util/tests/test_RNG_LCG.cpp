@@ -83,9 +83,9 @@ TEST(uniformity_custom_bounds)
     std::vector<int> histogram(100, 0);
     int N = 1000000;
     for (int i = 0; i < N; i++) {
-//cout << rng.random(-5.0, 1.0) << endl;
-//std::cin.ignore();
-//        histogram[int(rng.random() * 100)]++;
+        // cout << rng.random(-5.0, 1.0) << endl;
+        // std::cin.ignore();
+        //        histogram[int(rng.random() * 100)]++;
     }
 }
 

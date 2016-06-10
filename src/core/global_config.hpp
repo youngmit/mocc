@@ -17,28 +17,27 @@
 #pragma once
 
 #include <cstddef>
-#include <limits>
-#include <vector>
-#include <valarray>
 #include <iosfwd>
+#include <limits>
+#include <valarray>
+#include <vector>
 
 namespace mocc {
 
 #ifdef FORCE_SINGLE
-    typedef float real_t;
+typedef float real_t;
 #else
-    typedef double real_t;
+typedef double real_t;
 #endif
 
-    // General purpose vector of floats, ints, etc
-    typedef std::vector<real_t> VecF;
-    typedef std::vector<int> VecI;
-    typedef std::vector<int> VecSI;
+// General purpose vector of floats, ints, etc
+typedef std::vector<real_t> VecF;
+typedef std::vector<int> VecI;
+typedef std::vector<int> VecSI;
 
-    // valarray of floats
-    typedef std::valarray<real_t> ArrayF;
-    typedef std::slice_array<real_t> SliceF;
+// valarray of floats
+typedef std::valarray<real_t> ArrayF;
+typedef std::slice_array<real_t> SliceF;
 }
 
 #define PROG_NAME "MOCC"
-

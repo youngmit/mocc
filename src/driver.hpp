@@ -27,7 +27,6 @@
  * \param argv the command line arguments. Probably just forwarded from \c
  * main()
  */
-int run(int argc, char * argv[]);
+int run(int argc, char *argv[]);
 
-
-int run( const std::vector<std::string> &args );
+int run(const std::vector<std::string> &args);

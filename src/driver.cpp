@@ -20,8 +20,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <exception>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <omp.h>
 #include <sstream>
 
@@ -39,7 +39,6 @@
 #include "git_SHA1.hpp"
 #include "input_proc.hpp"
 
-
 using std::cout;
 using std::cin;
 using std::endl;
@@ -56,11 +55,12 @@ SP_CoreMesh_t mesh;
 std::unique_ptr<InputProcessor> input_proc;
 
 // Generate output from the solver
-void generate_output() {
+void generate_output()
+{
     std::string out_name = input_proc->case_name();
     out_name.append(".h5");
-    H5Node outfile( out_name, H5Access::WRITE );
-    solver->output( outfile );
+    H5Node outfile(out_name, H5Access::WRITE);
+    solver->output(outfile);
 
     LogFile << std::endl;
     LogFile << "Full input:" << std::endl;
@@ -72,19 +72,21 @@ void generate_output() {
 
     outfile.write("git_sha1", std::string(g_GIT_SHA1));
 
-    if( Warnings.size() > 0 ) {
-        if( Warnings.size() == 1 ) {
+    if (Warnings.size() > 0) {
+        if (Warnings.size() == 1) {
             std::cout << "There was ";
-        } else {
+        }
+        else {
             std::cout << "There were ";
         }
         std::cout << Warnings.size();
-        if( Warnings.size() == 1 ) {
+        if (Warnings.size() == 1) {
             std::cout << " warning:" << std::endl;
-        } else {
+        }
+        else {
             std::cout << " warnings:" << std::endl;
         }
-        for( const auto &warning: Warnings ) {
+        for (const auto &warning : Warnings) {
             std::cout << "\t" << warning.second << std::endl;
         }
     }
@@ -97,31 +99,32 @@ void generate_output() {
 void print_banner();
 
 // Signal handler for SIGINT. Calls output() and quits
-void int_handler(int p) {
+void int_handler(int p)
+{
     std::cout << "Caught SIGINT. Bailing." << std::endl;
     generate_output();
     std::exit(EXIT_FAILURE);
 }
-
 
 /**
  * This does the whole shebang: parse command line, open and parse the input
  * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref
  * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
  */
-int run( int argc, char *argv[] ) {
+int run(int argc, char *argv[])
+{
     std::vector<std::string> args;
 
-    for( int i=0; i<argc; i++ ) {
+    for (int i = 0; i < argc; i++) {
         args.push_back(argv[i]);
     }
 
-    return run( args );
+    return run(args);
 }
 
-
-int run( const std::vector<std::string> &args ) {
-    std::signal( SIGINT, int_handler );
+int run(const std::vector<std::string> &args)
+{
+    std::signal(SIGINT, int_handler);
 
     print_banner();
 
@@ -129,22 +132,21 @@ int run( const std::vector<std::string> &args ) {
         RootTimer.tic();
 
         // Set up an input processor
-        input_proc.reset( new InputProcessor(args) );
+        input_proc.reset(new InputProcessor(args));
 
         // Spin up the log file. We do this after we peek at the input
         // processor for a case_name tag
         StartLogFile(input_proc->case_name());
 
         LogScreen << "Running case: " << input_proc->case_name() << std::endl;
-        LogScreen << "Using MOCC executable built with GIT SHA1: " <<
-            g_GIT_SHA1 << std::endl;
+        LogScreen << "Using MOCC executable built with GIT SHA1: " << g_GIT_SHA1
+                  << std::endl;
         {
             time_t t;
             time(&t);
             LogScreen << "Local time: " << ctime(&t);
         }
         LogScreen << std::endl << std::endl;
-
 
         // Actually process the XML input. We waited until now to do this,
         // because we want to be able to log the progress to a file, but needed
@@ -155,8 +157,8 @@ int run( const std::vector<std::string> &args ) {
         {
 #pragma omp master
             {
-                LogScreen << "Running with " << omp_get_num_threads() << " treads"
-                    << std::endl;
+                LogScreen << "Running with " << omp_get_num_threads()
+                          << " treads" << std::endl;
             }
         }
 
@@ -171,7 +173,6 @@ int run( const std::vector<std::string> &args ) {
         // Output stuff
         generate_output();
 
-
         RootTimer.toc();
         std::cout << RootTimer << std::endl;
         RootTimer.print(LogFile);
@@ -179,7 +180,7 @@ int run( const std::vector<std::string> &args ) {
         StopLogFile();
     }
 
-    catch(Exception e) {
+    catch (Exception e) {
         cout << "Error:" << endl;
         cout << e.what();
         return 1;
@@ -187,14 +188,16 @@ int run( const std::vector<std::string> &args ) {
     return 0;
 }
 
-void print_banner() {
+void print_banner()
+{
     std::string space = "                         ";
     std::cout << space << "01001101010011110100001101000011" << std::endl;
-    std::cout << space << " __  __   _____   _____   _____" <<std::endl;
+    std::cout << space << " __  __   _____   _____   _____" << std::endl;
     std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
     std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
     std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
-    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/\\ " << std::endl;
+    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/\\ "
+              << std::endl;
     std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
     std::cout << space << std::endl;
     std::cout << space << "01101101011011110110001101100011 " << std::endl;

@@ -30,65 +30,64 @@ using std::string;
 
 namespace mocc {
 
-    std::unordered_map<std::string, Warning> Warnings;
+std::unordered_map<std::string, Warning> Warnings;
 
-    void Error(const char* msg) {
-        cout << "ERROR: " << msg << endl;
-        exit(EXIT_FAILURE);
+void Error(const char *msg)
+{
+    cout << "ERROR: " << msg << endl;
+    exit(EXIT_FAILURE);
+}
+
+void Warn(const std::string &msg)
+{
+    auto it = Warnings.find(msg);
+    if (it == Warnings.end()) {
+        Warnings.emplace(msg, msg);
+        LogScreen << "WARNING: " << msg << endl;
     }
-
-    void Warn( const std::string &msg ) {
-        auto it = Warnings.find(msg);
-        if( it == Warnings.end() ) {
-            Warnings.emplace(msg, msg);
-            LogScreen << "WARNING: " << msg << endl;
-        } else {
-            it->second.count++;
-        }
+    else {
+        it->second.count++;
     }
+}
 
-    void Fail( Exception e ) {
-        std::cout << e.what();
-        exit(EXIT_FAILURE);
-    }
+void Fail(Exception e)
+{
+    std::cout << e.what();
+    exit(EXIT_FAILURE);
+}
 
-    Exception::Exception( const char* file, int line, const char* func,
-                const char* msg ):
-        file_( file ),
-        line_( line ),
-        func_( func ),
-        message_( msg )
-    {
-        std::stringstream ret;
-        ret << file_ << ":" << line_ << " in " << func_ << endl;
-        ret << message_ << std::endl;
-        print_message_ = ret.str();
+Exception::Exception(const char *file, int line, const char *func,
+                     const char *msg)
+    : file_(file), line_(line), func_(func), message_(msg)
+{
+    std::stringstream ret;
+    ret << file_ << ":" << line_ << " in " << func_ << endl;
+    ret << message_ << std::endl;
+    print_message_ = ret.str();
 
-        return;
-    }
+    return;
+}
 
-    Exception::Exception( const char* file, int line, const char* func,
-                const std::string &msg ):
-        file_( file ),
-        line_( line ),
-        func_( func ),
-        message_( msg )
-    {
-        std::stringstream ret;
-        ret << file_ << ":" << line_ << " in " << func_ << endl;
-        ret << message_ << std::endl;
-        print_message_ = ret.str();
+Exception::Exception(const char *file, int line, const char *func,
+                     const std::string &msg)
+    : file_(file), line_(line), func_(func), message_(msg)
+{
+    std::stringstream ret;
+    ret << file_ << ":" << line_ << " in " << func_ << endl;
+    ret << message_ << std::endl;
+    print_message_ = ret.str();
 
-        return;
-    }
+    return;
+}
 
+const char *Exception::what() const noexcept
+{
+    return print_message_.c_str();
+}
 
-    const char* Exception::what() const noexcept {
-        return print_message_.c_str();
-    }
-
-    std::ostream &operator<<( std::ostream &os, const Warning &warn ) {
-        os << warn.count << ": " << warn.description;
-        return os;
-    }
+std::ostream &operator<<(std::ostream &os, const Warning &warn)
+{
+    os << warn.count << ": " << warn.description;
+    return os;
+}
 }

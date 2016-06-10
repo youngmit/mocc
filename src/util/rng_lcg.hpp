@@ -20,8 +20,8 @@
 #include <iostream>
 #include <random>
 
-#include "global_config.hpp"
 #include "util/force_inline.hpp"
+#include "global_config.hpp"
 
 namespace mocc {
 /**
@@ -83,7 +83,7 @@ public:
         assert(ubound > lbound);
 
         real_t v = this->random();
-        v = lbound + (ubound - lbound) * v;
+        v        = lbound + (ubound - lbound) * v;
         return v;
     }
 

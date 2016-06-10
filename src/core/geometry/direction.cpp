@@ -19,8 +19,9 @@
 #include <iostream>
 
 namespace mocc {
-    std::ostream &operator<<(std::ostream &os, const Direction &dir) {
-        os << dir.ox << " " << dir.oy << " " << dir.oz;
-        return os;
-    }
+std::ostream &operator<<(std::ostream &os, const Direction &dir)
+{
+    os << dir.ox << " " << dir.oy << " " << dir.oz;
+    return os;
+}
 }

@@ -73,11 +73,11 @@ public:
     {
 #pragma omp single
         {
-            real_t r_weight = 1.0/weight_;
+            real_t r_weight = 1.0 / weight_;
             for (unsigned i = 0; i < realization_scores_.size(); i++) {
                 real_t v = realization_scores_[i] * r_weight;
                 data_[i].first += v;
-                data_[i].second += v*v;
+                data_[i].second += v * v;
                 realization_scores_[i] = 0.0;
             }
             n_++;
@@ -95,7 +95,7 @@ public:
 #pragma omp single
         {
 
-throw EXCEPT("shouldnt be using this anymore");
+            throw EXCEPT("shouldnt be using this anymore");
             assert(data_.size() == other.data_.size());
             real_t w = other.weight_;
             for (unsigned i = 0; i < data_.size(); i++) {
@@ -130,7 +130,7 @@ throw EXCEPT("shouldnt be using this anymore");
                 d = 0.0;
             }
             weight_ = 0.0;
-            n_ = 0;
+            n_      = 0;
         }
         return;
     }

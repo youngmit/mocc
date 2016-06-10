@@ -26,7 +26,7 @@
 
 namespace mocc {
 class Box {
-   public:
+public:
     /**
      * \note The Lines should be ordered in the same way as the \ref Surface
      * enumeration in \ref constants.hpp
@@ -37,7 +37,8 @@ class Box {
           lines_({Line(Point2(p2_.x, p1_.y), p2_),
                   Line(Point2(p1_.x, p2_.y), p2_),
                   Line(p1_, Point2(p1_.x, p2_.y)),
-                  Line(p1_, Point2(p2_.x, p1_.y))}) {
+                  Line(p1_, Point2(p2_.x, p1_.y))})
+    {
         return;
     }
 
@@ -46,9 +47,9 @@ class Box {
     std::pair<real_t, Surface> distance_to_surface(Point2 p,
                                                    Direction dir) const;
 
-   private:
+private:
     // corners of the box
     Point2 p1_, p2_;
     std::array<Line, 4> lines_;
 };
-}  // namespace mocc
+} // namespace mocc

@@ -203,9 +203,10 @@ void ParticlePusher::simulate(Particle p)
 
         // Contribute to track length-based tallies
         k_tally_.score(tl * p.weight * xsreg.xsmacnf(p.group));
-        pin_power_tally_.score(ipin_coarse, tl*p.weight*xsreg.xsmacf(p.group));
-        scalar_flux_tally_[p.group].score(ipin_coarse, tl*p.weight);
-        fine_flux_tally_[p.group].score(p.ireg, tl*p.weight);
+        pin_power_tally_.score(ipin_coarse,
+                               tl * p.weight * xsreg.xsmacf(p.group));
+        scalar_flux_tally_[p.group].score(ipin_coarse, tl * p.weight);
+        fine_flux_tally_[p.group].score(p.ireg, tl * p.weight);
 
         if (d_to_collision < d_to_surf.first) {
             // Particle collided within the current region. Move particle to
@@ -385,9 +386,9 @@ void ParticlePusher::output(H5Node &node) const
             std::stringstream path;
             path << std::setfill('0') << std::setw(3) << ig + 1;
 
-            g.write(path.str(), flux_mg(ig, blitz::Range::all()) );
+            g.write(path.str(), flux_mg(ig, blitz::Range::all()));
             path << "_stdev";
-            g.write(path.str(), stdev_mg(ig, blitz::Range::all()) );
+            g.write(path.str(), stdev_mg(ig, blitz::Range::all()));
         }
     }
 
@@ -401,7 +402,7 @@ void ParticlePusher::output(H5Node &node) const
             std::stringstream path;
             path << std::setfill('0') << std::setw(3) << ig + 1;
             auto flux_result = fine_flux_col_tally_[ig].get();
-            int ireg = 0;
+            int ireg         = 0;
             for (const auto &v : flux_result) {
                 flux_mg[ireg]  = v.first;
                 stdev_mg[ireg] = v.second;
@@ -422,7 +423,7 @@ void ParticlePusher::output(H5Node &node) const
         stdev.reserve(mesh_.n_pin());
 
         auto result = pin_power_tally_.get();
-        for( const auto &v: result){
+        for (const auto &v : result) {
             pin_power.push_back(v.first);
             stdev.push_back(v.second);
         }

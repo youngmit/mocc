@@ -30,10 +30,9 @@
 #include "core/fp_utils.hpp"
 #include "core/global_config.hpp"
 
-
 namespace {
-template <typename T>
-int sgn(T val) {
+template <typename T> int sgn(T val)
+{
     return (T(0) < val) - (val < T(0));
 }
 }
@@ -43,8 +42,9 @@ namespace mocc {
 // Intersection between a circle and a line segment. Return value carries
 // the number of valid intersections that were found
 // http://mathworld.wolfram.com/Circle-LineIntersection.html
-inline int Intersect(Line l, Circle circ, Point2 &p1, Point2 &p2) {
-    int ret = 0;
+inline int Intersect(Line l, Circle circ, Point2 &p1, Point2 &p2)
+{
+    int ret   = 0;
     real_t u1 = l.p2.x - l.p1.x;
     real_t u2 = l.p2.y - l.p1.y;
     real_t w1 = l.p1.x - circ.c.x;
@@ -59,28 +59,29 @@ inline int Intersect(Line l, Circle circ, Point2 &p1, Point2 &p2) {
         return 0;
     }
 
-    real_t a = u1 * u1 + u2 * u2;
+    real_t a            = u1 * u1 + u2 * u2;
     real_t discriminant = b * b - a * c;
     if (discriminant < 0.0) {
         // No intersection
         p1.ok = false;
         p2.ok = false;
         return 0;
-
-    } else if (fp_equiv_rel(discriminant, 0.0)) {
+    }
+    else if (fp_equiv_rel(discriminant, 0.0)) {
         // Tangent. Dont bother
         p1.ok = false;
         p2.ok = false;
         return 0;
-    } else {
+    }
+    else {
         // Whoopie, we have a couple of points
         p1.ok = true;
         p2.ok = true;
 
-        real_t ra = 1.0 / a;
+        real_t ra    = 1.0 / a;
         discriminant = sqrt(discriminant);
-        real_t t1 = (-b - discriminant) * ra;
-        real_t t2 = (-b + discriminant) * ra;
+        real_t t1    = (-b - discriminant) * ra;
+        real_t t2    = (-b + discriminant) * ra;
         if ((0.0 < t1) & (t1 < 1.0)) {
             p1 = l.p1;
             p1.x += u1 * t1;
@@ -96,7 +97,8 @@ inline int Intersect(Line l, Circle circ, Point2 &p1, Point2 &p2) {
                 p1.x += u1 * t2;
                 p1.y += u2 * t2;
                 p1.ok = true;
-            } else {
+            }
+            else {
                 p2 = l.p1;
                 p2.x += u1 * t2;
                 p2.y += u2 * t2;
@@ -108,7 +110,8 @@ inline int Intersect(Line l, Circle circ, Point2 &p1, Point2 &p2) {
     }
 }
 
-inline int Intersect(Line l1, Line l2, Point2 &p) {
+inline int Intersect(Line l1, Line l2, Point2 &p)
+{
     real_t u1 = l1.p2.x - l1.p1.x;
     real_t u2 = l1.p2.y - l1.p1.y;
     real_t v1 = l2.p2.x - l2.p1.x;
@@ -136,7 +139,8 @@ inline int Intersect(Line l1, Line l2, Point2 &p) {
         p.y += s * u2;
         p.ok = true;
         return 1;
-    } else {
+    }
+    else {
         // Intersection beyond bounds of line segments
         p.ok = false;
         return 0;

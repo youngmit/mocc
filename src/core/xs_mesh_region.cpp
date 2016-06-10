@@ -19,28 +19,24 @@
 #include <algorithm>
 
 namespace mocc {
-    XSMeshRegion::XSMeshRegion( const VecI &fsrs,
-            real_t *xstr,
-            real_t *xsnf,
-            real_t *xsch,
-            real_t *xsf,
-            real_t *xsrm,
-            const ScatteringMatrix& xssc ):
-        reg_(fsrs),
-        xsmactr_(xstr),
-        xsmacnf_(xsnf),
-        xsmacf_(xsf),
-        xsmacch_(xsch),
-        xsmacrm_(xsrm),
-        xsmacsc_(xssc)
-    {
-        is_fissile_ = false;
-        for( int ig=0; ig<this->n_group(); ig++ ) {
-            xsmacrm_[ig] = xsmactr_[ig] - xsmacsc_.self_scat(ig);
-            if( xsmacnf_[ig] > 0.0 ) {
-                is_fissile_ = true;
-            }
+XSMeshRegion::XSMeshRegion(const VecI &fsrs, real_t *xstr, real_t *xsnf,
+                           real_t *xsch, real_t *xsf, real_t *xsrm,
+                           const ScatteringMatrix &xssc)
+    : reg_(fsrs),
+      xsmactr_(xstr),
+      xsmacnf_(xsnf),
+      xsmacf_(xsf),
+      xsmacch_(xsch),
+      xsmacrm_(xsrm),
+      xsmacsc_(xssc)
+{
+    is_fissile_ = false;
+    for (int ig = 0; ig < this->n_group(); ig++) {
+        xsmacrm_[ig] = xsmactr_[ig] - xsmacsc_.self_scat(ig);
+        if (xsmacnf_[ig] > 0.0) {
+            is_fissile_ = true;
         }
-        return;
     }
+    return;
+}
 } // namespace mocc

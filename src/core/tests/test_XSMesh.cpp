@@ -39,16 +39,15 @@ TEST(test)
 
     auto cdf = xs_mesh[0].reaction_cdf(0);
     cout << "Reaction CDF:" << endl;
-    for(const auto &v:cdf) {
-        cout << v  << endl;
+    for (const auto &v : cdf) {
+        cout << v << endl;
     }
 
     cdf = xs_mesh[0].chi_cdf();
     cout << "Chi CDF:" << endl;
-    for(const auto &v:cdf) {
-        cout << v  << endl;
+    for (const auto &v : cdf) {
+        cout << v << endl;
     }
-
 }
 
 int main()

@@ -115,7 +115,7 @@ real_t FissionBank::shannon_entropy() const
 
     for (const auto &p : populations) {
         real_t pj = p / sites_.size();
-        if( pj > 0.0 ) {
+        if (pj > 0.0) {
             h -= pj * std::log2(pj);
         }
     }

@@ -18,14 +18,15 @@
 
 namespace mocc {
 std::pair<real_t, Surface> Box::distance_to_surface(Point2 p,
-                                                    Direction dir) const {
-    real_t dist = std::numeric_limits<real_t>::max();
+                                                    Direction dir) const
+{
+    real_t dist  = std::numeric_limits<real_t>::max();
     Surface surf = Surface::INTERNAL;
 
     int il = 0;
     for (const auto &l : lines_) {
         real_t d = l.distance_to_surface(p, dir);
-        if( d < dist ) {
+        if (d < dist) {
             dist = d;
             surf = (Surface)il;
         }
@@ -35,7 +36,8 @@ std::pair<real_t, Surface> Box::distance_to_surface(Point2 p,
     return std::pair<real_t, Surface>(dist, surf);
 }
 
-Point2 Box::intersect(Point2 p, Angle ang) const {
+Point2 Box::intersect(Point2 p, Angle ang) const
+{
     // Project ox/oy to 2D plane
     real_t ox = cos(ang.alpha);
     real_t oy = sin(ang.alpha);
@@ -52,9 +54,9 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     d = (p1_.x - p.x) / ox;
     y = p.y + oy * d;
     if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
-        d_min = fabs(d);
-        p_out.x = x;
-        p_out.y = y;
+        d_min    = fabs(d);
+        p_out.x  = x;
+        p_out.y  = y;
         p_out.ok = true;
     }
 
@@ -62,9 +64,9 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     d = (p2_.x - p.x) / ox;
     y = p.y + oy * d;
     if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (y > p1_.y) && (y < p2_.y)) {
-        d_min = fabs(d);
-        p_out.x = x;
-        p_out.y = y;
+        d_min    = fabs(d);
+        p_out.x  = x;
+        p_out.y  = y;
         p_out.ok = true;
     }
 
@@ -73,9 +75,9 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     d = (p1_.y - p.y) / oy;
     x = p.x + ox * d;
     if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
-        d_min = fabs(d);
-        p_out.x = x;
-        p_out.y = y;
+        d_min    = fabs(d);
+        p_out.x  = x;
+        p_out.y  = y;
         p_out.ok = true;
     }
 
@@ -83,13 +85,13 @@ Point2 Box::intersect(Point2 p, Angle ang) const {
     d = (p2_.y - p.y) / oy;
     x = p.x + ox * d;
     if ((fabs(d) > REAL_FUZZ) && (d < d_min) && (x > p1_.x) && (x < p2_.x)) {
-        d_min = fabs(d);
-        p_out.x = x;
-        p_out.y = y;
+        d_min    = fabs(d);
+        p_out.x  = x;
+        p_out.y  = y;
         p_out.ok = true;
     }
 
     return p_out;
 }
 
-}  // namespace mocc
+} // namespace mocc

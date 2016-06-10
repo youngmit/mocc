@@ -22,7 +22,5 @@ private:
     unsigned num_treads_;
     unsigned num_nodes_;
     bool is_master_;
-
 };
-
 }

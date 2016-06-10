@@ -24,7 +24,8 @@
 
 using namespace mocc;
 
-TEST(test_cyl) {
+TEST(test_cyl)
+{
     std::string xml_input =
         "<mesh type=\"cyl\" id=\"1\"  pitch=\"1.26\"><radii>0.54 "
         "0.62</radii><sub_radii>4 2</sub_radii><sub_azi>8</sub_azi>";
@@ -54,4 +55,7 @@ TEST(test_cyl) {
         55, pm->find_reg(Point2(0.62, 0.0), Direction(7.0 * PI / 4.0, HPI)));
 }
 
-int main() { return UnitTest::RunAllTests(); }
+int main()
+{
+    return UnitTest::RunAllTests();
+}

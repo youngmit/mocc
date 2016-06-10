@@ -24,181 +24,163 @@
 #include "core/global_config.hpp"
 
 namespace mocc {
-    struct Direction {
-    public:
-        /// x-component of the angle
-        real_t ox;
-        /// y-component of the angle
-        real_t oy;
-        /// z-component of the angle
-        real_t oz;
-        /// azimuthal angle
-        real_t alpha;
-        /// polar cosine
-        real_t theta;
-        /// Reciprocal of the sine of the polar angle. This is useful for
-        /// computing true ray segment length from 2D projected length.
-        real_t rsintheta;
+struct Direction {
+public:
+    /// x-component of the angle
+    real_t ox;
+    /// y-component of the angle
+    real_t oy;
+    /// z-component of the angle
+    real_t oz;
+    /// azimuthal angle
+    real_t alpha;
+    /// polar cosine
+    real_t theta;
+    /// Reciprocal of the sine of the polar angle. This is useful for
+    /// computing true ray segment length from 2D projected length.
+    real_t rsintheta;
 
-        /**
-         * Construct a default \ref Direction, pointing somewhere in the
-         * positive x, y and z directions.
-         */
-        Direction():
-            Direction( 0.57735026918962576450914878050196,
-                       0.57735026918962576450914878050196,
-                       0.57735026918962576450914878050196 )
-        {
-            return;
-        }
+    /**
+     * Construct a default \ref Direction, pointing somewhere in the
+     * positive x, y and z directions.
+     */
+    Direction()
+        : Direction(0.57735026918962576450914878050196,
+                    0.57735026918962576450914878050196,
+                    0.57735026918962576450914878050196)
+    {
+        return;
+    }
 
-        /**
-         * Construct using alpha/theta
-         */
-        Direction( real_t alpha, real_t theta ):
-            alpha(alpha),
-            theta(theta)
-        {
-            ox = std::sin((long double)theta)*std::cos((long double)alpha);
-            oy = std::sin((long double)theta)*std::sin((long double)alpha);
-            oz = std::cos((long double)theta);
-            rsintheta = 1.0/std::sin((long double)theta);
-        }
+    /**
+     * Construct using alpha/theta
+     */
+    Direction(real_t alpha, real_t theta) : alpha(alpha), theta(theta)
+    {
+        ox        = std::sin((long double)theta) * std::cos((long double)alpha);
+        oy        = std::sin((long double)theta) * std::sin((long double)alpha);
+        oz        = std::cos((long double)theta);
+        rsintheta = 1.0 / std::sin((long double)theta);
+    }
 
-        /**
-         * Construct using direction cosines
-         */
-        Direction( real_t ox, real_t oy, real_t oz ):
-            ox(ox), oy(oy), oz(oz)
-        {
-            long double ox_big = ox;
-            long double oz_big = oz;
-            long double theta_big = std::acos(oz_big);
-            theta = theta_big;
-            alpha = std::acos(ox_big/std::sin(theta_big));
-            if( oy < 0.0 ) {
-                alpha = TWOPI - alpha;
-            }
-            rsintheta = 1.0l/std::sin(theta_big);
-            return;
+    /**
+     * Construct using direction cosines
+     */
+    Direction(real_t ox, real_t oy, real_t oz) : ox(ox), oy(oy), oz(oz)
+    {
+        long double ox_big    = ox;
+        long double oz_big    = oz;
+        long double theta_big = std::acos(oz_big);
+        theta                 = theta_big;
+        alpha                 = std::acos(ox_big / std::sin(theta_big));
+        if (oy < 0.0) {
+            alpha = TWOPI - alpha;
         }
+        rsintheta = 1.0l / std::sin(theta_big);
+        return;
+    }
 
-        /**
-         * \brief Change the azimuthal angle of this Direction, and update all
-         * other values accordingly.
-         */
-        void modify_alpha( real_t new_alpha ) {
-            *this = Direction(new_alpha, theta);
-            return;
-        }
-        
-        /**
-         * \brief Return the upwind surface of the angle, given a \ref Normal
-         * direction.
-         */
-        Surface upwind_surface( Normal norm ) const {
-            switch( norm ) {
-                case Normal::X_NORM:
-                    return (ox > 0.0) ? Surface::WEST : Surface::EAST;
-                case Normal::Y_NORM:
-                    return (oy > 0.0) ? Surface::SOUTH : Surface::NORTH;
-                case Normal::Z_NORM:
-                    return (oz > 0.0) ? Surface::BOTTOM : Surface::TOP;
-                default:
-                    return Surface::INVALID;
-            }
+    /**
+     * \brief Change the azimuthal angle of this Direction, and update all
+     * other values accordingly.
+     */
+    void modify_alpha(real_t new_alpha)
+    {
+        *this = Direction(new_alpha, theta);
+        return;
+    }
+
+    /**
+     * \brief Return the upwind surface of the angle, given a \ref Normal
+     * direction.
+     */
+    Surface upwind_surface(Normal norm) const
+    {
+        switch (norm) {
+        case Normal::X_NORM:
+            return (ox > 0.0) ? Surface::WEST : Surface::EAST;
+        case Normal::Y_NORM:
+            return (oy > 0.0) ? Surface::SOUTH : Surface::NORTH;
+        case Normal::Z_NORM:
+            return (oz > 0.0) ? Surface::BOTTOM : Surface::TOP;
+        default:
             return Surface::INVALID;
         }
+        return Surface::INVALID;
+    }
 
-        /**
-         * \brief Reflect the \ref Direction across the passed Surface
-         */
-        void reflect( Surface surf ) {
-            if( (surf == Surface::EAST) || (surf == Surface::WEST) ) {
-                *this = Direction(-ox, oy, oz);
-            }
-            if( (surf == Surface::NORTH) || (surf == Surface::SOUTH) ) {
-                *this = Direction(ox, -oy, oz);
-            }
-            if( (surf == Surface::TOP) || (surf == Surface::BOTTOM) ) {
-                *this = Direction(ox, oy, -oz);
-            }
+    /**
+     * \brief Reflect the \ref Direction across the passed Surface
+     */
+    void reflect(Surface surf)
+    {
+        if ((surf == Surface::EAST) || (surf == Surface::WEST)) {
+            *this = Direction(-ox, oy, oz);
         }
-        
-        /**
-         * \brief Provide operator==
-         *
-         * Equivalence between two \ref Direction objects means that all angle
-         * components are within FP tolerance
-         */
-        bool operator==( const Direction &other ) const {
-            return !(*this != other);
+        if ((surf == Surface::NORTH) || (surf == Surface::SOUTH)) {
+            *this = Direction(ox, -oy, oz);
         }
-
-        /**
-         * \brief Provide operator!=
-         *
-         * \copydetails operator==
-         *
-         * We only fully implement \c operator!=, since a bunch of OR'd
-         * not-equivalent conditions can short-circuit, wheras a bunch of AND'd
-         * equivalent conditions must all be evaluated.
-         */
-        bool operator!=( const Direction &other ) const {
-            bool not_equal =
-            (
-                !fp_equiv_ulp( ox, other.ox ) ||
-                !fp_equiv_ulp( oy, other.oy ) ||
-                !fp_equiv_ulp( oz, other.oz ) ||
-                !fp_equiv_ulp( alpha, other.alpha ) ||
-                !fp_equiv_ulp( theta, other.theta ) ||
-                !fp_equiv_ulp( rsintheta, other.rsintheta )
-            );
-            return not_equal;
+        if ((surf == Surface::TOP) || (surf == Surface::BOTTOM)) {
+            *this = Direction(ox, oy, -oz);
         }
+    }
 
-        // Return a new Direction, reflected into the requested octant
-        Direction to_octant( int octant ) const {
-            assert( (0 < octant) & (octant < 9) );
+    /**
+     * \brief Provide operator==
+     *
+     * Equivalence between two \ref Direction objects means that all angle
+     * components are within FP tolerance
+     */
+    bool operator==(const Direction &other) const
+    {
+        return !(*this != other);
+    }
 
-            switch( octant ) {
-                case 1:
-                    return Direction(  fabs(ox),
-                                       fabs(oy),
-                                       fabs(oz));
-                case 2:
-                    return Direction( -fabs(ox),
-                                       fabs(oy),
-                                       fabs(oz));
-                case 3:
-                    return Direction( -fabs(ox),
-                                      -fabs(oy),
-                                       fabs(oz));
-                case 4:
-                    return Direction(  fabs(ox),
-                                      -fabs(oy),
-                                       fabs(oz));
-                case 5:
-                    return Direction(  fabs(ox),
-                                       fabs(oy),
-                                      -fabs(oz));
-                case 6:
-                    return Direction( -fabs(ox),
-                                       fabs(oy),
-                                      -fabs(oz));
-                case 7:
-                    return Direction( -fabs(ox),
-                                      -fabs(oy),
-                                      -fabs(oz));
-                case 8:
-                    return Direction(  fabs(ox),
-                                      -fabs(oy),
-                                      -fabs(oz));
-            }
-            return Direction(0.0, 0.0, 0.0);
+    /**
+     * \brief Provide operator!=
+     *
+     * \copydetails operator==
+     *
+     * We only fully implement \c operator!=, since a bunch of OR'd
+     * not-equivalent conditions can short-circuit, wheras a bunch of AND'd
+     * equivalent conditions must all be evaluated.
+     */
+    bool operator!=(const Direction &other) const
+    {
+        bool not_equal =
+            (!fp_equiv_ulp(ox, other.ox) || !fp_equiv_ulp(oy, other.oy) ||
+             !fp_equiv_ulp(oz, other.oz) || !fp_equiv_ulp(alpha, other.alpha) ||
+             !fp_equiv_ulp(theta, other.theta) ||
+             !fp_equiv_ulp(rsintheta, other.rsintheta));
+        return not_equal;
+    }
+
+    // Return a new Direction, reflected into the requested octant
+    Direction to_octant(int octant) const
+    {
+        assert((0 < octant) & (octant < 9));
+
+        switch (octant) {
+        case 1:
+            return Direction(fabs(ox), fabs(oy), fabs(oz));
+        case 2:
+            return Direction(-fabs(ox), fabs(oy), fabs(oz));
+        case 3:
+            return Direction(-fabs(ox), -fabs(oy), fabs(oz));
+        case 4:
+            return Direction(fabs(ox), -fabs(oy), fabs(oz));
+        case 5:
+            return Direction(fabs(ox), fabs(oy), -fabs(oz));
+        case 6:
+            return Direction(-fabs(ox), fabs(oy), -fabs(oz));
+        case 7:
+            return Direction(-fabs(ox), -fabs(oy), -fabs(oz));
+        case 8:
+            return Direction(fabs(ox), -fabs(oy), -fabs(oz));
         }
+        return Direction(0.0, 0.0, 0.0);
+    }
 
-        friend std::ostream &operator<<( std::ostream &os,
-                const Direction &dir);
-    };
+    friend std::ostream &operator<<(std::ostream &os, const Direction &dir);
+};
 } // namespace mocc

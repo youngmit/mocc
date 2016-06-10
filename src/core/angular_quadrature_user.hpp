@@ -22,6 +22,6 @@
 #include "pugifwd.hpp"
 
 namespace mocc {
-    std::vector<Angle> GenUserQuadrature( const pugi::xml_node &input );
+std::vector<Angle> GenUserQuadrature(const pugi::xml_node &input);
 
 } // namespace mocc

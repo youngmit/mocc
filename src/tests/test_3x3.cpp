@@ -18,11 +18,13 @@
 
 #include "driver.hpp"
 
-TEST(test_3x3) {
+TEST(test_3x3)
+{
     std::vector<std::string> args = {"int_test", "3x3.xml"};
     run(args);
 }
 
-int main() {
+int main()
+{
     return UnitTest::RunAllTests();
 }

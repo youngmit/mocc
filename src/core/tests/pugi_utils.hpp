@@ -24,15 +24,16 @@
 /**
  * \brief Make an XML document inline, from a string containing the XML
  */
-auto inline_xml( const char* input ) {
-    std::unique_ptr<pugi::xml_document>
-        doc(std::make_unique<pugi::xml_document>());
-    pugi::xml_parse_result result = doc->load_string( input );
+auto inline_xml(const char *input)
+{
+    std::unique_ptr<pugi::xml_document> doc(
+        std::make_unique<pugi::xml_document>());
+    pugi::xml_parse_result result = doc->load_string(input);
 
-    if(!result) {
+    if (!result) {
         std::cout << result.description() << std::endl;
     }
-    assert( result );
+    assert(result);
 
     return doc;
 }
@@ -40,15 +41,16 @@ auto inline_xml( const char* input ) {
 /**
  * \brief Make an XML document inline, from a filename
  */
-auto inline_xml_file( const char* input ) {
-    std::unique_ptr<pugi::xml_document>
-        doc(std::make_unique<pugi::xml_document>());
-    pugi::xml_parse_result result = doc->load_file( input );
+auto inline_xml_file(const char *input)
+{
+    std::unique_ptr<pugi::xml_document> doc(
+        std::make_unique<pugi::xml_document>());
+    pugi::xml_parse_result result = doc->load_file(input);
 
-    if(!result) {
+    if (!result) {
         std::cout << result.description() << std::endl;
     }
-    assert( result );
+    assert(result);
 
     return doc;
 }

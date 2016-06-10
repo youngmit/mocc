@@ -20,14 +20,15 @@
 #include <limits>
 
 namespace mocc {
-std::ostream &operator<<(std::ostream &os, const Point2 &p) {
+std::ostream &operator<<(std::ostream &os, const Point2 &p)
+{
     os << "[ " << p.x << ", " << p.y << " ]";
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, Line &l) {
+std::ostream &operator<<(std::ostream &os, Line &l)
+{
     os << "[" << l.p1 << ", " << l.p2 << "]";
     return os;
 }
-
 }

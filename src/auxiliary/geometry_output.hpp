@@ -16,11 +16,12 @@
 
 #pragma once
 
-
-#include "moc/ray_data.hpp"
 #include "core/core_mesh.hpp"
 #include "core/pugifwd.hpp"
+#include "moc/ray_data.hpp"
 
-namespace mocc { namespace aux {
-    void output_geometry( const pugi::xml_node &input, const CoreMesh &mesh );
-} } //namespaces
+namespace mocc {
+namespace aux {
+void output_geometry(const pugi::xml_node &input, const CoreMesh &mesh);
+}
+} // namespaces

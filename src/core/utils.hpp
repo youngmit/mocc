@@ -20,45 +20,46 @@
 #include <iterator>
 
 namespace mocc {
-    /**
-     * Normalize the range of values in [first, last). The normalization
-     * guarantees that the values will sum to the number of non-zero entries in
-     * the range.
-     */
-    template <class InputIterator>
-    auto Normalize( InputIterator first, InputIterator last ) {
-        typedef typename std::iterator_traits<InputIterator>::value_type T;
+/**
+ * Normalize the range of values in [first, last). The normalization
+ * guarantees that the values will sum to the number of non-zero entries in
+ * the range.
+ */
+template <class InputIterator>
+auto Normalize(InputIterator first, InputIterator last)
+{
+    typedef typename std::iterator_traits<InputIterator>::value_type T;
 
-        // Count the number of elements greater than zero
-        int n = 0;
+    // Count the number of elements greater than zero
+    int n = 0;
 
-        T sum = 0.0;
-        for( auto it=first; it!=last; ++it ) {
-            if( *it > 0.0 ) {
-                n++;
-            }
-            sum += *it;
+    T sum = 0.0;
+    for (auto it = first; it != last; ++it) {
+        if (*it > 0.0) {
+            n++;
         }
-
-        T f = (T)n/sum;
-
-        for( auto it=first; it!=last; ++it ) {
-            *it *= f;
-        }
-
-        return f;
+        sum += *it;
     }
 
-    /**
-     * Scale the range of values in [first, last) by a constant factor, \c f.
-     */
-    template <class InputIterator>
-    auto Scale( InputIterator first, InputIterator last, decltype(*first) f ) {
-        for( auto it=first; it!=last; ++it ) {
-            *it *= f;
-        }
+    T f = (T)n / sum;
 
-        return f;
+    for (auto it = first; it != last; ++it) {
+        *it *= f;
     }
 
+    return f;
+}
+
+/**
+ * Scale the range of values in [first, last) by a constant factor, \c f.
+ */
+template <class InputIterator>
+auto Scale(InputIterator first, InputIterator last, decltype(*first) f)
+{
+    for (auto it = first; it != last; ++it) {
+        *it *= f;
+    }
+
+    return f;
+}
 }
