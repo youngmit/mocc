@@ -16,7 +16,6 @@
 
 #pragma once
 #include <cmath>
-
 #include "global_config.hpp"
 
 namespace mocc {
@@ -72,6 +71,27 @@ inline bool fp_equiv_rel(real_t v1, real_t v2)
 inline bool fp_equiv_abs(real_t v1, real_t v2)
 {
     return std::abs(v1 - v2) < REAL_FUZZ;
+}
+
+/**
+ * \brief Compare two floating point values for aproximate equivalence.
+ *
+ * This one is the kitchen sink; if the two numbers are close by absolute
+ * comparison, return true, otherwise apply a ULP-based comparison. This is one
+ * of the methods suggested by randomascii.
+ */
+inline bool fp_equiv(real_t v1, real_t v2)
+{
+    if (fp_equiv_abs(v1, v2)) {
+        return true;
+    }
+
+    // If the signs differ, not equal
+    if ((v1 < 0.0) != (v2 < 0.0)) {
+        return false;
+    }
+
+    return fp_equiv_ulp(real_t v1, real_t v2);
 }
 
 /**
