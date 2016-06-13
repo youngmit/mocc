@@ -91,7 +91,7 @@ inline bool fp_equiv(real_t v1, real_t v2)
         return false;
     }
 
-    return fp_equiv_ulp(real_t v1, real_t v2);
+    return fp_equiv_ulp(v1, v2);
 }
 
 /**
