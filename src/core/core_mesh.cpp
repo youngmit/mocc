@@ -137,8 +137,6 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
         for (auto h : lat->hx_vec()) {
             dx_vec_.push_back(h);
             x_vec_.push_back(h + h_prev);
-            lines_.push_back(
-                Line(Point2(h + h_prev, 0.0), Point2(h + h_prev, hy_)));
             h_prev += h;
         }
     }
@@ -150,11 +148,18 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
         for (auto h : lat->hy_vec()) {
             dy_vec_.push_back(h);
             y_vec_.push_back(h + h_prev);
-            lines_.push_back(
-                Line(Point2(0.0, h + h_prev), Point2(hx_, h + h_prev)));
             h_prev += h;
         }
     }
+
+    // Form lines for internal pin boundaries and domain bounding box
+    for (auto xi = x_vec_.cbegin() + 1; xi != x_vec_.cend() - 1; ++xi) {
+        lines_.push_back(Line(Point2(*xi, 0.0), Point2(*xi, hx_)));
+    }
+    for (auto yi = y_vec_.cbegin() + 1; yi != y_vec_.cend() - 1; ++yi) {
+        lines_.push_back(Line(Point2(0.0, *yi), Point2(hx_, *yi)));
+    }
+    bounding_box_ = Box(Point2(0.0, 0.0), Point2(hx_, hy_));
 
     dz_vec_ = core_.dz();
     z_vec_.reserve(dz_vec_.size() + 1);
@@ -255,7 +260,7 @@ CoreMesh::LocationInfo CoreMesh::get_location_info(Point3 p,
     int ix = std::distance(
         x_vec_.begin(),
         std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x, fuzzy_lt));
-    if (fp_equiv_abs(ix, x_vec_[ix])) {
+    if (fp_equiv(ix, x_vec_[ix])) {
         ix = (dir.ox > 0.0) ? ix + 1 : ix;
     }
     info.pos.x = ix - 1;
@@ -263,7 +268,7 @@ CoreMesh::LocationInfo CoreMesh::get_location_info(Point3 p,
     int iy = std::distance(
         y_vec_.begin(),
         std::lower_bound(y_vec_.begin(), y_vec_.end(), p.y, fuzzy_lt));
-    if (fp_equiv_abs(iy, y_vec_[iy])) {
+    if (fp_equiv(iy, y_vec_[iy])) {
         iy = (dir.oy > 0.0) ? iy + 1 : iy;
     }
     info.pos.y = iy - 1;

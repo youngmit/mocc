@@ -48,7 +48,6 @@ class Ray {
         friend std::ostream &operator<<(std::ostream &os,
                                         const RayCoarseData rcd)
         {
-
             os << rcd.fw << " " << rcd.nseg_fw << "\t|\t" << rcd.bw << " "
                << rcd.nseg_bw;
 

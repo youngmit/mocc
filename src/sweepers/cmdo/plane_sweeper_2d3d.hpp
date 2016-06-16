@@ -252,6 +252,8 @@ private:
     real_t relax_;
     // Whether to incorporate MoC/Sn error in CMFD flux update
     bool discrepant_flux_update_;
+    // Write correction factors to HDF5 file?
+    bool dump_corrections_;
 };
 }
 } // Namespace mocc::cmdo

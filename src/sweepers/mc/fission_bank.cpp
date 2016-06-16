@@ -106,7 +106,9 @@ real_t FissionBank::shannon_entropy() const
     for (const auto &p : sites_) {
         int icell = mesh_.coarse_cell_point(p.location_global);
         if (icell < 0 || icell > (int)mesh_.n_pin()) {
-            Warn("ga");
+            std::stringstream msg;
+            msg << "Couldnt locate particle: " << p << std::endl;
+            throw EXCEPT(msg.str());
         }
         populations[icell] += p.weight;
     }

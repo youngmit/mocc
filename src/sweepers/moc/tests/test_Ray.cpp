@@ -31,6 +31,19 @@ using namespace mocc::moc;
 using std::cout;
 using std::endl;
 
+TEST(big_ray)
+{
+    pugi::xml_document geom_xml;
+    geom_xml.load_file("large.xml");
+
+    mocc::CoreMesh mesh(geom_xml);
+
+    Ray ray(Point2(64.050000000000011, 0.0),
+            Point2(64.260000000000019, 0.024230769230770152), {0, 0}, 0, mesh);
+    CHECK_EQUAL(1, ray.cm_data().size());
+    return;
+}
+
 TEST(simple_ray)
 {
     pugi::xml_document geom_xml;
@@ -130,6 +143,7 @@ TEST(nasty_ray)
         Ray ray(Point2(3.78, 2.52), Point2(2.52, 3.78), {0, 0}, 0, mesh);
     }
 }
+
 
 int main()
 {

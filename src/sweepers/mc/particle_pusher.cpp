@@ -27,11 +27,6 @@ using std::cout;
 using std::endl;
 using std::cin;
 
-namespace {
-using namespace mocc;
-const real_t BUMP = 1.0e-11;
-}
-
 namespace mocc {
 namespace mc {
 
@@ -57,7 +52,7 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
       print_particles_(false)
 {
     // Build the map from mesh regions into the XS mesh
-    xsmesh_regions_.reserve(mesh.n_reg());
+    xsmesh_regions_.resize(mesh.n_reg(), -1);
 
     int ixs = 0;
     for (const auto &xsreg : xs_mesh_) {
@@ -69,8 +64,7 @@ ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
     return;
 }
 
-void ParticlePusher::collide(Particle &p)
-{
+void ParticlePusher::collide(Particle &p) {
     // Sample the type of interaction;
     const auto &xsreg = xs_mesh_[p.ixsreg];
     Reaction reaction = (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
@@ -132,10 +126,13 @@ void ParticlePusher::collide(Particle &p)
     return;
 }
 
-void ParticlePusher::simulate(Particle p)
-{
-    if (print_particles_)
+void ParticlePusher::simulate(Particle p) {
+    Particle p_orig = p;
+    bool print      = print_particles_;
+    if (print) {
         cout << endl << "NEW PARTICLE:" << endl;
+    }
+
     // Register this particle with the tallies
     k_tally_.add_weight(p.weight);
     k_tally_collision_.add_weight(p.weight);
@@ -159,22 +156,26 @@ void ParticlePusher::simulate(Particle p)
     p.ireg       = location_info.reg_offset +
              location_info.pm->find_reg(p.location, p.direction);
     int ipin_coarse = mesh_.coarse_cell(location_info.pos);
+    assert(ipin_coarse >= 0);
+    assert(ipin_coarse < (int)mesh_.n_pin());
     assert(p.ireg >= 0);
     assert(p.ireg < (int)mesh_.n_reg());
     p.ixsreg = xsmesh_regions_[p.ireg];
+    assert(p.ixsreg >= 0);
+    assert(p.ixsreg < (int)xs_mesh_.size());
 
     p.alive = true;
 
     while (p.alive) {
         const XSMeshRegion &xsreg = xs_mesh_[p.ixsreg];
-        if (print_particles_) {
+        if (print) {
             cout << "Where we are now:" << endl;
             cout << p << endl;
             cout << "ireg/xsreg: " << p.ireg << " " << p.ixsreg << endl;
         }
         // Determine distance to nearest surface
-        auto d_to_surf =
-            location_info.pm->distance_to_surface(p.location, p.direction);
+        auto d_to_surf = location_info.pm->distance_to_surface(
+            p.location, p.direction, p.coincident);
         // Determine distance to plane boundaries. If it is less than the
         // distance to surface, use it as the distance to surf and force a pin
         // intersection
@@ -192,7 +193,7 @@ void ParticlePusher::simulate(Particle p)
         real_t xstr           = xsreg.xsmactr(p.group);
         real_t d_to_collision = -std::log(RNG.random()) / xstr;
 
-        if (print_particles_) {
+        if (print) {
             cout << "distance to surface/collision: " << d_to_surf.first << " "
                  << d_to_collision << endl;
         }
@@ -211,25 +212,29 @@ void ParticlePusher::simulate(Particle p)
             // collision site and handle interaction.
             p.move(d_to_collision);
             this->collide(p);
-        }
-        else {
+        } else {
             // Particle reached a surface before colliding. Move to the
             // surface and re-sample distance to collision.
-            if (d_to_surf.second == Surface::INTERNAL) {
+            if (!d_to_surf.second) {
                 // Particle crossed an internal boundary in the pin.
                 // Update its location and region index
-                p.move(d_to_surf.first + BUMP);
+                p.move(d_to_surf.first);
                 p.ireg = location_info.pm->find_reg(p.location, p.direction) +
                          location_info.reg_offset;
+                assert(p.ireg >= 0);
+                assert(p.ireg < (int)mesh_.n_reg());
                 p.ixsreg = xsmesh_regions_[p.ireg];
-            }
-            else {
+
+                assert(p.ixsreg >= 0);
+                assert(p.ixsreg < (int)xs_mesh_.size());
+            } else {
                 // Particle crossed a pin boundary. Move to neighboring pin,
                 // handle boundary condition, etc.
                 // Regardless of what happens, move the particle
-                p.move(d_to_surf.first + BUMP);
+                p.coincident = -1;
+                p.move(d_to_surf.first);
 
-                if (print_particles_) {
+                if (print) {
                     cout << "particle after move to surf:" << endl;
                     cout << p << endl;
                 }
@@ -239,7 +244,7 @@ void ParticlePusher::simulate(Particle p)
                     mesh_.boundary_surface(p.location_global, p.direction);
                 bool reflected = false;
                 for (const auto &b : bound_surf) {
-                    if (print_particles_) {
+                    if (print) {
                         cout << b << endl;
                     }
                     if ((b != Surface::INTERNAL) && (p.alive)) {
@@ -265,8 +270,8 @@ void ParticlePusher::simulate(Particle p)
                 }
 
                 if (reflected) {
-                    p.move(2.0 * BUMP);
-                    if (print_particles_) {
+                    p.move(BUMP);
+                    if (print) {
                         cout << "Particle after reflection and move back:"
                              << endl;
                         cout << p << endl;
@@ -284,13 +289,22 @@ void ParticlePusher::simulate(Particle p)
                         location_info.reg_offset +
                         location_info.pm->find_reg(p.location, p.direction);
                     ipin_coarse = mesh_.coarse_cell(location_info.pos);
+                    assert(ipin_coarse >= 0);
+                    assert(ipin_coarse < (int)mesh_.n_pin());
                     assert(p.ireg >= 0);
                     assert(p.ireg < (int)mesh_.n_reg());
                     p.ixsreg = xsmesh_regions_[p.ireg];
+                    if (p.ixsreg >= (int)xs_mesh_.size()) {
+                        std::cout << p;
+                        std::cout << std::endl;
+                    }
+                    assert(p.ixsreg >= 0);
+                    assert(p.ixsreg < (int)xs_mesh_.size());
                 }
             }
         } // collision or new region?
     }     // particle alive
+
     return;
 }
 
@@ -299,8 +313,7 @@ void ParticlePusher::simulate(Particle p)
  * site in the \ref FissionBank and calling \c this->simulate() for that
  * particle.
  */
-void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
-{
+void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff) {
     // Clear the internal FissionBank to store new fission sites for this
     // cycle
     fission_bank_.clear();
@@ -328,8 +341,7 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     return;
 }
 
-void ParticlePusher::output(H5Node &node) const
-{
+void ParticlePusher::output(H5Node &node) const {
     auto dims = mesh_.dimensions();
     std::reverse(dims.begin(), dims.end());
 

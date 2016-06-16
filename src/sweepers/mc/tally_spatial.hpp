@@ -113,6 +113,7 @@ public:
     {
 #pragma omp atomic
         weight_ += w;
+        return;
     }
 
     /**
@@ -141,7 +142,6 @@ public:
     const std::vector<std::pair<real_t, real_t>> get() const
     {
         // Plenty of room for optimization in here
-        assert(weight_ > 0.0);
         assert(n_ > 0);
         std::vector<std::pair<real_t, real_t>> ret;
         ret.reserve(data_.size());

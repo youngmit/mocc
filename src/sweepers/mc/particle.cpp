@@ -29,6 +29,7 @@ std::ostream &operator<<(std::ostream &os, const Particle &p)
        << std::endl;
     os << "\tDirection: " << p.direction << std::endl;
     os << "\tGroup: " << p.group << std::endl;
+    os << "\tCoincident surf: " << p.coincident << std::endl;
     os << "}";
     return os;
 }

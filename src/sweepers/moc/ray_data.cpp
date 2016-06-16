@@ -239,15 +239,15 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 // int. Ray i will start (i+0.5)*spacing into the domain, so
                 // dividing the ray position by the spacing and casting to
                 // an int gives i.
-                if (fp_equiv_abs(p2.x, hx)) {
+                if (fp_equiv(p2.x, hx)) {
                     // BC is on the right/east boundary of the domain
                     bc[1] = p2.y / space_y;
                 }
-                else if (fp_equiv_abs(p2.y, hy)) {
+                else if (fp_equiv(p2.y, hy)) {
                     // BC is on the top/north boundary of the domain
                     bc[1] = p2.x / space_x + Ny;
                 }
-                else if (fp_equiv_abs(p2.x, 0.0)) {
+                else if (fp_equiv(p2.x, 0.0)) {
                     // BC is on the left/west boundary of the domain
                     bc[1] = p2.y / space_y;
                 }
@@ -270,15 +270,15 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 p1.y      = 0.0;
                 Point2 p2 = core_box.intersect(p1, *ang);
                 bc[0]     = iray + Ny;
-                if (fp_equiv_abs(p2.x, hx)) {
+                if (fp_equiv(p2.x, hx)) {
                     // BC is on the right/east boundary of the core
                     bc[1] = p2.y / space_y;
                 }
-                else if (fp_equiv_abs(p2.y, hy)) {
+                else if (fp_equiv(p2.y, hy)) {
                     // BC is on the top/north boundary of the core
                     bc[1] = p2.x / space_x + Ny;
                 }
-                else if (fp_equiv_abs(p2.x, 0.0)) {
+                else if (fp_equiv(p2.x, 0.0)) {
                     // BC is on the left/west boundary of the core
                     bc[1] = p2.y / space_y;
                 }

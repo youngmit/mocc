@@ -20,11 +20,15 @@
 #include <iosfwd>
 
 #include "util/global_config.hpp"
+#include "util/sign.hpp"
 #include "core/geometry/direction.hpp"
 #include "core/geometry/points.hpp"
 #include "position.hpp"
 
+
 namespace mocc {
+const real_t BUMP   = 1.0e-11;
+
 /**
  * \brief Struct representing the state of a particle for Monte Carlo
  * simulation.
@@ -60,6 +64,7 @@ public:
           direction(dir),
           location_global(loc),
           id(id),
+          coincident(-1),
           alive(true)
     {
         return;
@@ -82,6 +87,8 @@ public:
     // ID, used for sorting and seeding RNG
     unsigned id;
 
+    int coincident;
+
     bool alive;
 
     /**
@@ -94,12 +101,15 @@ public:
      */
     void move(real_t d)
     {
-        location.x += d * direction.ox;
-        location.y += d * direction.oy;
+        location.x += (d + BUMP) * direction.ox + BUMP * sgn(direction.ox);
+        location.y += (d + BUMP) * direction.oy + BUMP * sgn(direction.oy);
 
-        location_global.x += d * direction.ox;
-        location_global.y += d * direction.oy;
-        location_global.z += d * direction.oz;
+        location_global.x +=
+            (d + BUMP) * direction.ox + BUMP * sgn(direction.ox);
+        location_global.y +=
+            (d + BUMP) * direction.oy + BUMP * sgn(direction.oy);
+        location_global.z +=
+            (d + BUMP) * direction.oz + BUMP * sgn(direction.oz);
         return;
     }
 

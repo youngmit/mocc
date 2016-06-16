@@ -71,6 +71,15 @@ public:
     /**
      * \brief Construct a \ref Mesh using cell boundaries specified
      * externally.
+     *
+     * \param n_reg The total expected number of regions
+     * \param n_xsreg The total expected number of XS mesh regions
+     * \param hx a vector containing the inter-pin boundaries for the X
+     * dimension. Starts at 0.0, ends at the farthest extent of the mesh
+     * \param hy a vector containing the inter-pin boundaries for the Y
+     * dimension. Starts at 0.0, ends at the farthest extent of the mesh
+     * \param hz a vector containing the inter-pin boundaries for the Z
+     * dimension. Starts at 0.0, ends at the farthest extent of the mesh
      */
     Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
          std::array<Boundary, 6> bc);
@@ -789,7 +798,7 @@ public:
             z_vec_.begin(),
             std::lower_bound(z_vec_.begin(), z_vec_.end(), z, fuzzy_lt));
 
-        if (fp_equiv_abs(z, z_vec_[iz])) {
+        if (fp_equiv(z, z_vec_[iz])) {
             if (oz == 0.0) {
                 throw EXCEPT("Ambiguous plane index, without valid "
                              "z-direction.");
@@ -882,9 +891,12 @@ protected:
     /// Coarse cell volumes
     VecF coarse_vol_;
 
-    /// Vector of \ref Line objects, representing pin boundaries. This
+    /// Vector of \ref Line objects, representing internal pin boundaries. This
     /// greatly simplifies the ray trace.
     std::vector<Line> lines_;
+
+    /// Bounding box of the domain, also useful for tracing/particle tracking.
+    Box bounding_box_;
 
     /// Number of surfaces per plane (doesn't consider the top surface)
     size_t n_surf_plane_;

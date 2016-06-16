@@ -147,16 +147,16 @@ public:
      * \param p a Point2 containing the location from which to measure
      * \param dir a Direction containing the direction in which to measure
      */
-    virtual std::pair<real_t, Surface>
-    distance_to_surface(Point2 p, Direction dir) const = 0;
+    virtual std::pair<real_t, bool>
+    distance_to_surface(Point2 p, Direction dir, int &coincident) const = 0;
 
     /**
      * This essentially wraps the \ref Point2 version
      */
-    std::pair<real_t, Surface> distance_to_surface(Point3 p,
-                                                   Direction dir) const
+    std::pair<real_t, bool> distance_to_surface(Point3 p, Direction dir,
+                                                int &coincident) const
     {
-        return this->distance_to_surface(p.to_2d(), dir);
+        return this->distance_to_surface(p.to_2d(), dir, coincident);
     }
 
     /**

@@ -56,6 +56,8 @@ public:
 
     const XSMeshRegion &operator[](size_t i) const
     {
+        assert(i >= 0 );
+        assert(i < regions_.size());
         return regions_[i];
     }
 

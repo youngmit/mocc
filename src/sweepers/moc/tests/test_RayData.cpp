@@ -17,6 +17,7 @@
 #include "UnitTest++/UnitTest++.h"
 
 #include <cassert>
+#include <iostream>
 #include <string>
 #include "pugixml.hpp"
 #include "util/global_config.hpp"
@@ -33,6 +34,7 @@ TEST(raydata)
     pugi::xml_parse_result result = geom_xml.load_file("square.xml");
 
     CoreMesh mesh(geom_xml);
+    std::cout << "mesh" << std::endl;
 
     pugi::xml_document angquad_xml;
     result = angquad_xml.load_string("<ang_quad type=\"ls\" order=\"4\" />");
