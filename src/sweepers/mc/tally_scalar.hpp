@@ -33,7 +33,7 @@ public:
     /**
      * \brief Make a new \ref TallyScalar
      */
-    TallyScalar() : mean_(0.0), mean_square_(0.0), weight_(0.0)
+    TallyScalar() : sum_(0.0), sum_square_(0.0), weight_(0.0)
     {
         return;
     }
@@ -44,9 +44,9 @@ public:
     void score(real_t value)
     {
 #pragma omp atomic
-        mean_ += value;
+        sum_ += value;
 #pragma omp atomic
-        mean_square_ += value * value;
+        sum_square_ += value * value;
 
         return;
     }
@@ -67,9 +67,9 @@ public:
     {
 #pragma omp single
         {
-            mean_        = 0.0;
-            mean_square_ = 0.0;
-            weight_      = 0.0;
+            sum_        = 0.0;
+            sum_square_ = 0.0;
+            weight_     = 0.0;
         }
 
         return;
@@ -77,25 +77,24 @@ public:
 
     /**
      * \brief Return the estimates for the tally mean and relative standard
-     * deviation
+     * deviation of the mean
      */
     std::pair<real_t, real_t> get() const
     {
         // Plenty of room for optimization in here
         std::pair<real_t, real_t> val;
-        real_t mean           = mean_ / weight_;
-        real_t mean_of_square = mean_square_ / (weight_ - 1.0);
-        real_t square_of_mean = mean_ * mean_ / (weight_ * (weight_ - 1.0));
-        real_t variance       = mean_of_square - square_of_mean;
+        real_t mean           = sum_ / weight_;
 
         val.first  = mean;
-        val.second = std::sqrt(variance) / mean;
+        val.second = 1.0 / (weight_ - 1.0) *
+                     ((1.0 / weight_) * sum_square_ - mean * mean);
+        val.second = std::sqrt(val.second) / mean;
         return val;
     }
 
 private:
-    real_t mean_;
-    real_t mean_square_;
+    real_t sum_;
+    real_t sum_square_;
     real_t weight_;
 };
 }
