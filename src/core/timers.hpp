@@ -1,8 +1,23 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <cassert>
 #include <map>
-#include <omp.h>
 
 #include "global_config.hpp"
 
@@ -68,13 +83,7 @@ namespace mocc {
          * \brief Return the time accumulated so far for the timer.
          *
          */
-        real_t time() const {
-            if( running_ ) {
-                return time_ + omp_get_wtime() - wtime_;
-            } else {
-                return time_;
-            }
-        }
+        real_t time() const;
 
         /**
          * \brief Return a reference the child Timer of the passed name
@@ -103,7 +112,7 @@ namespace mocc {
             children_.emplace( name, Timer(name) );
             return children_.at(name);
         }
-        
+
         /**
          * \brief Create and return a new child \ref Timer, possibly starting it
          * automatically

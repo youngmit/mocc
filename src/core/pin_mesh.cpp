@@ -1,10 +1,28 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 // This exists as the entry point into all pin mesh types, also providing a
 // factory method for generating deferred-type pin mesh objects
 
 #include "pin_mesh.hpp"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
+
+#include "pugixml.hpp"
 
 #include "error.hpp"
 #include "files.hpp"
@@ -42,6 +60,11 @@ namespace mocc {
             << mesh.attribute( "id" ).value() << std::endl;
             UP_PinMesh_t pm( PinMeshFactory( mesh ) );
             int id = pm->id();
+            if( pin_meshes.find(id) != pin_meshes.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate pin mesh ID (" << id << ")";
+                throw EXCEPT(msg.str());
+            }
             pin_meshes.emplace(id, std::move( pm ) );
         }
 

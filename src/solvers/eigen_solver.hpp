@@ -1,13 +1,28 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
-
-#include "pugixml.hpp"
+#include <iosfwd>
 
 #include "core/eigen_interface.hpp"
+#include "core/cmfd.hpp"
 #include "core/core_mesh.hpp"
 #include "core/h5file.hpp"
-#include "core/cmfd.hpp"
+#include "core/pugifwd.hpp"
 #include "core/transport_sweeper.hpp"
 
 #include "fixed_source_solver.hpp"
@@ -74,6 +89,10 @@ namespace mocc{
         // Maximum allowable outer iterations
         unsigned int max_iterations_;
         unsigned int min_iterations_;
+
+        // Number of fissile regions in the problem. We will use this to scale
+        // the volumetric convergence criteria
+        int n_fissile_regions_;
 
         // Vector of the convergence criteria. We will export these to the HDF5
         // file at the end of the run for posterity

@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include "core/error.hpp"
@@ -33,7 +49,7 @@ namespace mocc { namespace cmdo {
             mesh_(moc.mesh()),
             sn_source_( sn.n_reg(), &(sn.xs_mesh()), sn.flux() )
         {
-            this->set_scale_transport(true);
+            return;
         }
 
         /**
@@ -59,12 +75,13 @@ namespace mocc { namespace cmdo {
          * which we are getting.
          */
         void fission( const ArrayB1 &fs, int ig ) {
-            assert( (fs.size() == n_reg_) ||
-                    (fs.size() == sn_source_.n_reg()) );
+            assert( ((int)fs.size() == n_reg_) ||
+                    ((int)fs.size() == sn_source_.n_reg()) );
 
-            Source::fission( fs, ig );
 
-            if( fs.size() == n_reg_ ) {
+            if( (int)fs.size() == n_reg_ && n_reg_ != sn_source_.n_reg() ) {
+                // Set the MoC source if the mesh is contiguous.
+                Source::fission( fs, ig );
                 // We need to homogenize the fission source to the Sn mesh
                 ArrayB1 sn_fs(sn_source_.n_reg());
                 sn_fs = 0.0;

@@ -1,9 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "lattice.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <map>
 #include <string>
+
+#include "pugixml.hpp"
 
 #include "error.hpp"
 #include "pin.hpp"
@@ -38,7 +56,7 @@ namespace mocc {
         // We should be done parsing and checking things from the XML
         //
         // Arrange the pins in a 2-D array. This flips the y index from the
-        // order in the input file so that thie row 0, col 0 origin is in
+        // order in the input file so that the row 0, col 0 origin is in
         // the lower left.
         pins_.resize( ny_*nx_ );
         for ( unsigned int iy=0; iy<ny_; iy++ ) {
@@ -107,26 +125,37 @@ namespace mocc {
         return;
     }
 
-    const PinMesh* Lattice::get_pinmesh( Point2 &p, int &first_reg ) const {
+    const PinMesh* Lattice::get_pinmesh( Point2 &p, int &first_reg,
+            Direction dir ) const {
+        assert(p.x > -REAL_FUZZ);
+        assert(p.y > -REAL_FUZZ);
+        assert(p.x < hx_+REAL_FUZZ);
+        assert(p.y < hy_+REAL_FUZZ);
         // Locate the pin, and offset the point to pin-local coordinates.
         /// \todo This is potentially pretty brittle. Future PinMesh types might
-        /// breake the assumption here that all PinMesh origins are smack-dab in
+        /// break the assumption here that all PinMesh origins are smack-dab in
         /// middle of the mesh. Should provide some functionality on the PinMesh
         /// itself to provide its origin to clients.
-        unsigned int ix=0;
-        unsigned int iy=0;
-        for (ix=0; ix<nx_; ix++) {
-            if(p.x < x_vec_[ix+1]) {
-                p.x = 0.5*(x_vec_[ix+1] + x_vec_[ix]);
-                break;
-            }
+        unsigned ix = std::distance(
+            x_vec_.cbegin(),
+            std::lower_bound(x_vec_.cbegin(), x_vec_.cend(), p.x, fuzzy_lt));
+        if(fp_equiv_abs(p.x, x_vec_[ix])) {
+            ix = (dir.ox > 0.0) ? ix+1 : ix;
         }
-        for (iy=0; iy<ny_; iy++) {
-            if(p.y < y_vec_[iy+1]) {
-                p.y = 0.5*(y_vec_[iy+1] + y_vec_[iy]);
-                break;
-            }
+        ix--;
+        ix = std::min(nx_-1, std::max(0u, ix));
+
+        p.x = 0.5*(x_vec_[ix+1] + x_vec_[ix]);
+
+        unsigned iy = std::distance(
+            y_vec_.cbegin(),
+            std::lower_bound(y_vec_.cbegin(), y_vec_.cend(), p.y, fuzzy_lt));
+        if(fp_equiv_abs(p.y, y_vec_[iy])) {
+            iy = (dir.oy > 0.0) ? iy+1 : iy;
         }
+        iy--;
+        iy = std::min(ny_-1, std::max(0u, iy));
+        p.y = 0.5*(y_vec_[iy+1] + y_vec_[iy]);
 
         unsigned int i = iy*nx_ + ix;
 
@@ -141,6 +170,12 @@ namespace mocc {
         for ( pugi::xml_node lat = input.child( "lattice" ); lat;
                 lat = lat.next_sibling( "lattice" )) {
             UP_Lattice_t lattice( new Lattice(lat, pins) );
+            if( lattices.find(lattice->id()) != lattices.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate lattice ID (" << lattice->id()
+                    << ") specified";
+                throw EXCEPT(msg.str());
+            }
             lattices[lattice->id()] = lattice;
         }
 
@@ -149,34 +184,34 @@ namespace mocc {
 
     bool Lattice::compatible( const Lattice &other ) const {
         if( hx_ != other.hx_ ) {
-cout << "hx " << hx_ << " " << other.hx_ << endl;
+            cout << "hx " << hx_ << " " << other.hx_ << endl;
             return false;
         }
         if( hy_ != other.hy_ ) {
-cout << "hy" << endl;
+            cout << "hy" << endl;
             return false;
         }
 
         if( nx_ != other.nx_ ) {
-cout << "nx" << endl;
+            cout << "nx" << endl;
             return false;
         }
         if( ny_ != other.ny_ ) {
-cout << "ny" << endl;
+            cout << "ny" << endl;
             return false;
         }
 
         if( !std::equal( hx_vec_.begin(), hx_vec_.end(),
                     other.hx_vec_.begin() ) )
         {
-cout << "hx_vec" << endl;
+            cout << "hx_vec" << endl;
             return false;
         }
 
         if( !std::equal( hy_vec_.begin(), hy_vec_.end(),
                     other.hy_vec_.begin() ) )
         {
-cout << "hy_vec" << endl;
+            cout << "hy_vec" << endl;
             return false;
         }
         return true;

@@ -1,28 +1,35 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include "pugixml.hpp"
 
 #include "core/core_mesh.hpp"
 #include "core/h5file.hpp"
+#include "core/pugifwd.hpp"
 #include "core/source.hpp"
 #include "core/transport_sweeper.hpp"
 
 #include "solver.hpp"
 
 namespace mocc{
-    /**
-    * This \ref Solver attempts to solve the fixed source problem. For now, the
-    * fixed source must be provided by some solver above the FSS, in the form of
-    * a \ref Source object, however in the future it might be useful to be able
-    * to supply a user-defined Source for non-eigenvalue problems.
-    *
-    * Right now, the FSS is used by the \ref EigenSolver to converge the flux
-    * solution for intermediate "fixed" sources for each eigenvalue step.
-    */
     class FixedSourceSolver: public Solver {
     public:
         /**
-        * Initialize a FSS using an XML node and CoreMesh. The expects the
+        * Initialize a FSS using an XML node and CoreMesh. This expects the
         * passed XML node to be a valid \<solver\> tag containing a relevant
         * \<sweeper\> tag, which is needed by the \ref TransportSweeperFactory()
         * to generate a \ref TransportSweeper.

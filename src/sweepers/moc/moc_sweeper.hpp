@@ -1,9 +1,23 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
+#include <array>
 #include <omp.h>
-
-#include "pugixml.hpp"
 
 #include "moc/ray_data.hpp"
 
@@ -13,6 +27,7 @@
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
 #include "core/exponential.hpp"
+#include "core/pugifwd.hpp"
 #include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/xs_mesh.hpp"
@@ -41,6 +56,11 @@ namespace mocc { namespace moc {
         }
 
         /**
+         * \brief \copybrief TransportSweeper::update_incoming_flux()
+         */
+        void update_incoming_flux();
+
+        /**
          * \copybrief TransportSweeper::create_source()
          *
          * This mostly calls the base \ref TransportSweeper::create_source()
@@ -49,7 +69,6 @@ namespace mocc { namespace moc {
          */
         virtual UP_Source_t create_source( const pugi::xml_node &input ) const {
             auto source = TransportSweeper::create_source( input );
-            source->set_scale_transport(true);
             return source;
         }
 
@@ -65,6 +84,16 @@ namespace mocc { namespace moc {
             xsm->set_flux(flux_);
             return xsm;
         }
+
+        /**
+         * \brief Apply a transverse leakage source
+         *
+         * This will apply the passed-in transverse leakage source to the
+         * sweeper's source. If enabled and necessary, source splitting will be
+         * used to enforce non-negativity on the external (non-self scatter)
+         * source.
+         */
+        void apply_transverse_leakage( int group, const ArrayB1 &tl );
 
         void check_balance( int group ) const;
 
@@ -82,12 +111,17 @@ namespace mocc { namespace moc {
         // One-group, outgoing boundary flux
         std::vector<BoundaryCondition> boundary_out_;
 
-        // Array of one group transport cross sections
+        // Array of one group transport cross sections, including transverse
+        // leakage splitting, if necessary
         ArrayB1 xstr_;
 
         // Reference to a one-group slice of flux_. This should be
         // default-constructed, so that it only references data in flux_
         ArrayB1 flux_1g_;
+
+        // The source splitting variable. This stores the degree by which to
+        // alter the transport cross section for the current group
+        ArrayB1 split_;
 
         // Number of inner iterations per group sweep
         unsigned int n_inner_;
@@ -96,10 +130,23 @@ namespace mocc { namespace moc {
         std::array<Boundary, 6> bc_type_;
 
         // Exponential table
-        Exponential_Linear exp_;
+        Exponential_Linear<10000> exp_;
 
         bool dump_rays_;
         bool gauss_seidel_boundary_;
+        bool allow_splitting_;
+
+
+        // Methods
+        /**
+         * \brief Expand the transport cross sections from the XS mesh to the
+         * FSR basis.
+         *
+         * This provides more efficient access to the transport cross sections
+         * throughout the sweep, without having to store an enormous nreg-by-ng
+         * array of transport cross sections.
+         */
+        virtual void expand_xstr( int group );
 
         /**
          * \brief Perform an MoC sweep
@@ -143,13 +190,13 @@ namespace mocc { namespace moc {
                     Angle ang = ang_quad_[iang];
 
                     // Get the boundary condition storage
-                    const real_t *bc_in_1 = 
+                    const real_t *bc_in_1 =
                         boundary_in.get_boundary( group, iang1 ).second;
-                    real_t *bc_out_1 = 
+                    real_t *bc_out_1 =
                         boundary_out.get_boundary( 0, iang1 ).second;
-                    const real_t *bc_in_2 = 
+                    const real_t *bc_in_2 =
                         boundary_in.get_boundary( group, iang2 ).second;
-                    real_t *bc_out_2 = 
+                    real_t *bc_out_2 =
                         boundary_out.get_boundary( 0, iang2 ).second;
 
                     // Set up the current worker for sweeping this angle
@@ -166,8 +213,10 @@ namespace mocc { namespace moc {
 
                         int bc1 = ray.bc(0);
                         int bc2 = ray.bc(1);
-                        assert(bc1 < boundary_in.get_boundary( group, iang1 ).first);
-                        assert(bc2 < boundary_in.get_boundary( group, iang1 ).first);
+                        assert(bc1 < boundary_in.get_boundary( group,
+                                    iang1 ).first);
+                        assert(bc2 < boundary_in.get_boundary( group,
+                                    iang1 ).first);
 
                         // Compute exponentials
                         for( int iseg=0; iseg<ray.nseg(); iseg++ ) {
@@ -253,6 +302,43 @@ namespace mocc { namespace moc {
             cw.post_sweep();
 
             } // OMP Parallel
+
+            return;
+        } // sweep1g
+
+        template< class Function >
+        void update_incoming_generic( Function f ) {
+            // There are probably more efficient ways to do this, but for now, just
+            // loop over all of the rays, look up the appropriate surface from the
+            // Mesh, and adjust the BC accordingly
+            for( auto g: groups_ ) {
+                int iplane = 0;
+                for( auto plane_geom_id: mesh_.unique_planes() ) {
+                    auto &bc = boundary_[iplane];
+                    const auto &rays = rays_[plane_geom_id];
+                    int iang = 0;
+                    for( const auto &ang_rays: rays ) {
+                        int iang1 = iang;
+                        int iang2 = ang_quad_.reverse(iang);
+
+                        real_t* bc_fw = bc.get_boundary(g, iang1).second;
+                        real_t* bc_bw = bc.get_boundary(g, iang2).second;
+
+                        for( const auto &ray: ang_rays ) {
+                            int is1 = ray.cm_cell_fw();
+                            int is2 = ray.cm_cell_bw();
+                            int bc1 = ray.bc(0);
+                            int bc2 = ray.bc(1);
+
+                            bc_fw[bc1] = f(bc_fw[bc1], is1, g);
+                            bc_bw[bc2] = f(bc_bw[bc2], is2, g);
+                        } // rays
+
+                        iang++;
+                    } // angles
+                    iplane++;
+                } // planes
+            } // groups
 
             return;
         }

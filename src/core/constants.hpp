@@ -1,6 +1,22 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 
 #define PI 3.1415926535897932
 #define TWOPI (2.0*PI)
@@ -12,6 +28,10 @@
 
 namespace mocc {
     // Surface and direction indexing
+    // This is not an enum class, because it is used elsewhere in a bitfield (i
+    // know, i know), and compilers tend to complain when you try to guarantee
+    // to them in one place that they get 8 bits and another that they get 4 or
+    // whatever.
     enum Surface {
         EAST  = 0,
         NORTH = 1,
@@ -19,12 +39,17 @@ namespace mocc {
         SOUTH = 3,
         TOP = 4,
         BOTTOM = 5,
-        INVALID = 6
+        INTERNAL = 6,
+        INVALID = 7
     };
 
+    enum class Reaction : unsigned char {
+        SCATTER = 0,
+        FISSION = 1,
+        CAPTURE = 2
+    };
 
-
-    enum class Direction : unsigned char {
+    enum class Cardinal : unsigned char {
         EAST  = 0,
         NORTH = 1,
         WEST  = 2,
@@ -48,7 +73,6 @@ namespace mocc {
 
     extern const Normal AllNormals[3];
 
-
     // Boundary condition enumeration
     enum class Boundary {
         /**
@@ -69,7 +93,7 @@ namespace mocc {
         PERIODIC,
         /**
          * Boundary condition prescribed as incoming angular flux, namely,
-         * Dirichlet boundary.
+         * Dirichelet boundary.
          */
         PRESCRIBED,
 

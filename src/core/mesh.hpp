@@ -1,13 +1,30 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
+#include <array>
 #include <algorithm>
-#include <iostream>
 #include <memory>
 
 #include "constants.hpp"
 #include "error.hpp"
-#include "geom.hpp"
+#include "geometry/geom.hpp"
 #include "global_config.hpp"
+#include "position.hpp"
 
 namespace mocc {
     /**
@@ -46,6 +63,11 @@ namespace mocc {
         typedef std::array< std::array< Boundary, 2 >, 3 > BCArray_t;
 
         Mesh() { };
+
+        /**
+         * Disable the copy constructor
+         */
+        Mesh( const Mesh &other ) = delete;
 
         /**
          * \brief Construct a \ref Mesh using cell boundaries specified
@@ -90,6 +112,17 @@ namespace mocc {
         */
         const std::array<Boundary, 6>& boundary() const {
             return bc_;
+        }
+
+        /**
+         * \brief Return the boundary condition associated with the given \ref
+         * Surface of the mesh
+         */
+        Boundary boundary_condition( Surface surf ) const {
+            assert((int)surf >= (int)Surface::EAST);
+            assert((int)surf <= (int)Surface::BOTTOM);
+
+            return bc_[(int)surf];
         }
 
         /**
@@ -155,6 +188,16 @@ namespace mocc {
         }
 
         /**
+         * \brief Return the indexed plane boundary.
+         *
+         * The 0-th value should be 0.0, and the last value should be to total
+         * height of the domain.
+         */
+        inline real_t z( int iz ) const {
+            return z_vec_[iz];
+        }
+
+        /**
         * \brief Return the pin boundary locations along the x dimension
         */
         const VecF& pin_dx() const {
@@ -169,11 +212,11 @@ namespace mocc {
         }
 
         real_t coarse_volume( size_t cell ) const {
-            return vol_[cell];
+            return coarse_vol_[cell];
         }
 
         const VecF& coarse_volume() const {
-            return vol_;
+            return coarse_vol_;
         }
 
         /**
@@ -190,7 +233,7 @@ namespace mocc {
          */
         real_t cell_thickness( size_t cell, Normal norm ) const {
             assert( cell < this->n_pin() );
-            assert( (norm == Normal::X_NORM) || (norm == Normal::Y_NORM) || 
+            assert( (norm == Normal::X_NORM) || (norm == Normal::Y_NORM) ||
                     (norm == Normal::Z_NORM) );
             auto pos = this->coarse_position( cell );
             real_t h = 0;
@@ -314,6 +357,12 @@ namespace mocc {
         int coarse_cell_point( Point2 p ) const;
 
         /**
+         * \brief Return the coarse cell index corresponding to the \ref Point3
+         * passed.
+         */
+        int coarse_cell_point( Point3 p ) const;
+
+        /**
          * \brief Return the \ref Position of a coarse mesh cell index.
         */
         Position coarse_position( size_t cell ) const {
@@ -391,6 +440,32 @@ namespace mocc {
         */
         int coarse_surf_point( Point2 p, int cell,
                 std::array<int, 2> &s ) const;
+
+        /**
+         * \brief Return the \ref Surface that a point is on, if any.
+         */
+        Surface boundary_surface( Point3 p, Direction dir ) const {
+            Surface surf = Surface::INTERNAL;
+            if((p.x < REAL_FUZZ) && (dir.ox < 0.0)) {
+                surf = Surface::WEST;
+            }
+            if((p.y < REAL_FUZZ) && (dir.oy < 0.0)) {
+                surf = Surface::SOUTH;
+            }
+            if((p.z < REAL_FUZZ) && (dir.oz < 0.0)) {
+                surf = Surface::BOTTOM;
+            }
+            if((p.x > hx_-REAL_FUZZ) && (dir.ox > 0.0)) {
+                surf = Surface::EAST;
+            }
+            if((p.y > hy_-REAL_FUZZ) && (dir.oy > 0.0)) {
+                surf = Surface::NORTH;
+            }
+            if((p.z > hz_-REAL_FUZZ) && (dir.oz > 0.0)) {
+                surf = Surface::TOP;
+            }
+            return surf;
+        }
 
         /**
          * \brief Return the coarse cell indices straddling the surface
@@ -655,6 +730,38 @@ namespace mocc {
         }
 
         /**
+         * \brief Return the plane index for the given axial position
+         *
+         * \param z the axial location
+         * \param oz a direction in the z direction to be used to disabmiguate
+         * between planes, if the value \p z lies directly on a plane interface.
+         * Defaults to zero, and gives the following behavior:
+         *  - If zero: Throw an exception if \p z lies on a plane interface.
+         *  - If negative: Return the lower plane index if \p z lies on a plane
+         *  interface.
+         *  - If positive: Return the higher plane index if \p z lies on a plane
+         *  interface.
+         */
+        int plane_index( real_t z, real_t oz=0.0 ) const {
+            assert(z > -REAL_FUZZ);
+            assert(z < hz_+REAL_FUZZ);
+            int iz = std::distance(z_vec_.begin(),
+                    std::lower_bound(z_vec_.begin(), z_vec_.end(), z,
+                                     fuzzy_lt));
+
+            if( fp_equiv_abs(z, z_vec_[iz])) {
+                if( oz == 0.0 ) {
+                    throw EXCEPT("Ambiguous plane index, without valid "
+                            "z-direction.");
+                } else {
+                    iz = (oz > 0.0) ? iz+1 : iz;
+                }
+            }
+
+            return std::max(0, std::min(iz-1, nz_-1));
+        }
+
+        /**
          * \brief Return the surface normal of the given surface.
          */
         Normal surface_normal( int surface ) const {
@@ -730,7 +837,7 @@ namespace mocc {
         VecF dz_vec_;
 
         /// Coarse cell volumes
-        VecF vol_;
+        VecF coarse_vol_;
 
         /// Vector of \ref Line objects, representing pin boundaries. This
         /// greatly simplifies the ray trace.

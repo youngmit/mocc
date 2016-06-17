@@ -1,9 +1,23 @@
-#pragma once
+/*
+   Copyright 2016 Mitchell Young
 
-#include "pugixml.hpp"
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+#pragma once
 
 #include "core/angular_quadrature.hpp"
 #include "core/boundary_condition.hpp"
+#include "core/pugifwd.hpp"
 #include "core/timers.hpp"
 #include "core/transport_sweeper.hpp"
 #include "core/utils.hpp"
@@ -30,6 +44,11 @@ namespace mocc { namespace sn {
 
             return;
         }
+
+        /**
+         * \brief \copybrief TransportSweeper::update_incoming_flux()
+         */
+        void update_incoming_flux();
 
         ArrayB3 pin_powers() const;
 
@@ -68,6 +87,7 @@ namespace mocc { namespace sn {
         Timer &timer_;
         Timer &timer_init_;
         Timer &timer_sweep_;
+        Timer &timer_xsupdate_;
         const CoreMesh &mesh_;
 
         unsigned int n_inner_;
@@ -90,9 +110,9 @@ namespace mocc { namespace sn {
 
         // Gauss-Seidel BC update?
         bool gs_boundary_;
-        
+
         // Protected methods
-        /** 
+        /**
          * \brief Grab data (XS, etc.) from one or more external files
          */
         void add_data( const pugi::xml_node &input );
@@ -101,6 +121,92 @@ namespace mocc { namespace sn {
          * \brief Check the neutron balance in all of the cells of the sweeper
          */
         void check_balance( int group ) const;
+
+        /**
+         * This funtion template is used to permit flexibility in the incoming
+         * flux update without incurring lots of code duplication, and withot
+         * affecting performance. The loop over surfaces is somewhat involved,
+         * and replicating it by hand for each flux update method would be
+         * unmaintainable.
+         *
+         * The update for each surface is performed using a lambda function,
+         * upon which this template is instantiated, which, under optimization,
+         * should be inlined.
+         */
+        template< class Function >
+        void update_incoming_generic( Function f )
+        {
+            for( auto g: groups_ ) {
+                int iang = 0;
+                for( auto ang: ang_quad_ ) {
+                    // X-normal
+                    {
+                        real_t *face = bc_in_.get_face( g, iang,
+                                Normal::X_NORM ).second;
+                        int ixx = (ang.ox > 0.0) ? 0 : mesh_.nx()-1;
+                        Surface upwind = (ang.ox > 0.0) ? Surface::WEST :
+                                                          Surface::EAST;
+                        int sense = (upwind == Surface::WEST) ? 1 : 0;
+                        int i = 0;
+                        for( unsigned iz=0; iz<mesh_.nz(); iz++ ) {
+                            for( unsigned iy=0; iy<mesh_.ny(); iy++) {
+                                int icell = mesh_.coarse_cell(
+                                        Position( ixx, iy, iz) );
+                                int is = mesh_.coarse_surf( icell, upwind );
+
+                                face[i] = f( face[i], is, g, sense );
+
+                                i++;
+                            }
+                        }
+                    } // X-normal
+                    // Y-normal
+                    {
+                        real_t *face = bc_in_.get_face( g, iang,
+                                Normal::Y_NORM ).second;
+                        int iyy = (ang.oy > 0.0) ? 0 : mesh_.ny()-1;
+                        Surface upwind = (ang.oy > 0.0) ? Surface::SOUTH :
+                                                          Surface::NORTH;
+                        int sense = (upwind == Surface::SOUTH) ? 1 : 0;
+                        int i = 0;
+                        for( unsigned iz=0; iz<mesh_.nz(); iz++ ) {
+                            for( unsigned ix=0; ix<mesh_.nx(); ix++) {
+                                int icell = mesh_.coarse_cell(
+                                        Position( ix, iyy, iz) );
+                                int is = mesh_.coarse_surf( icell, upwind );
+
+                                face[i] = f( face[i], is, g, sense );
+
+                                i++;
+                            }
+                        }
+                    } // Y-normal
+                    // Z-normal
+                    {
+                        real_t *face = bc_in_.get_face( g, iang,
+                                Normal::Z_NORM ).second;
+                        int izz = (ang.oz > 0.0) ? 0 : mesh_.nz()-1;
+                        Surface upwind = (ang.oz > 0.0) ? Surface::BOTTOM :
+                                                          Surface::TOP;
+                        int sense = (upwind == Surface::BOTTOM) ? 1 : 0;
+                        int i = 0;
+                        for( unsigned iy=0; iy<mesh_.ny(); iy++ ) {
+                            for( unsigned ix=0; ix<mesh_.nx(); ix++) {
+                                int icell = mesh_.coarse_cell(
+                                        Position( ix, iy, izz) );
+                                int is = mesh_.coarse_surf( icell, upwind );
+
+                                face[i] = f( face[i], is, g, sense );
+
+                                i++;
+                            }
+                        }
+                    } // Z-normal
+
+                    iang++;
+                } // angles
+            } // groups
+        }
 
     private:
 

@@ -1,12 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <string>
 #include <vector>
 
-#include "pugixml.hpp"
-
-#include "global_config.hpp"
-#include "pin_mesh_base.hpp"
+#include "core/global_config.hpp"
+#include "core/pin_mesh_base.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     class PinMesh_Cyl : public PinMesh {
@@ -15,9 +30,10 @@ namespace mocc {
         ~PinMesh_Cyl();
 
         int trace( Point2 p1, Point2 p2, int first_reg, VecF &s,
-                VecI &reg ) const;
+                VecI &reg ) const final override;
 
-        int find_reg( Point2 p ) const;
+        int find_reg( Point2 p ) const final override;
+        int find_reg( Point2 p, Direction dir ) const final override;
 
         // If i ever get more general with the azimuthal subdivision, i will
         // have to generalize this as well. make sure not to forget.
@@ -30,6 +46,9 @@ namespace mocc {
             }
             return n;
         }
+
+        std::pair<real_t, Surface> distance_to_surface(Point2 p,
+                Direction dir ) const;
 
         void print( std::ostream &os ) const;
 

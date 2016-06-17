@@ -1,16 +1,32 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
+#include <iosfwd>
 #include <memory>
-#include <vector>
 #include <map>
-#include <iostream>
+#include <vector>
 
-#include "pugixml.hpp"
-
-#include "pin.hpp"
-#include "geom.hpp"
-#include "pin_mesh_base.hpp"
-#include "global_config.hpp"
+#include "core/geometry/direction.hpp"
+#include "core/geometry/geom.hpp"
+#include "core/global_config.hpp"
+#include "core/pin.hpp"
+#include "core/pin_mesh_base.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     class Lattice {
@@ -110,14 +126,25 @@ namespace mocc {
         }
 
         /**
-         * Return a const reference to the Pin Mesh object located at the
-         * provided point and increment the passed in first_reg by the pin's
-         * first-region offset. These calls are chained from the CoreMesh ->
-         * Plane -> Lattice, with each level in the geometrical hierarchy moving
-         * the point to the appropriate local coordinates and offsetting the
-         * first_reg value.
+         * \brief Return a const pointer to the \ref PinMesh object located at
+         * the provided point, incrementing the passed in first_reg by the pin's
+         * first-region offset.
+         *
+         * \param[in,out] p a \ref Point2 in lattice-local coordinates to look
+         * up. Will be updated to the location of the pin origin.
+         * \param[in,out] first_reg should be passed in as the first region
+         * index in the lattice, and will be incremented to give the first index
+         * in the returned \ref PinMesh
+         * \param[in] dir a \ref Direction used to disambiguate which \ref
+         * PinMesh is desired when the \p p lies directly on a pin boundary. The
+         * convention is to return the \ref PinMesh towards which \p dir points.
+         *
+         * These calls are chained from the CoreMesh -> Plane -> Lattice, with
+         * each level in the geometrical hierarchy moving the point to the
+         * appropriate local coordinates and offsetting the first_reg value.
          */
-        const PinMesh* get_pinmesh( Point2 &p, int &first_reg ) const;
+        const PinMesh* get_pinmesh( Point2 &p, int &first_reg,
+                Direction dir=Direction() ) const;
 
         /**
          * \brief Return whether the current \ref Lattice and the passed \ref
@@ -130,8 +157,8 @@ namespace mocc {
 
     private:
         size_t id_;
-        size_t nx_;
-        size_t ny_;
+        unsigned nx_;
+        unsigned ny_;
         size_t n_reg_;
         size_t n_xsreg_;
         real_t hx_;

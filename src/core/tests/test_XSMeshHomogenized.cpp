@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "UnitTest++/UnitTest++.h"
 
 #include "pugixml.hpp"
@@ -19,8 +35,7 @@ TEST( xsmeshhom ) {
         XSMeshHomogenized xs_mesh( mesh );
 
         H5Node h5f( "xsmesh_1.h5", H5Access::WRITE );
-        auto g = h5f.create_group("xs_mesh");
-        xs_mesh.output(g);
+        xs_mesh.output(h5f);
     }
     {
         pugi::xml_document geom_xml;
@@ -34,7 +49,7 @@ TEST( xsmeshhom ) {
         H5Node h5f( "xsmesh_2.h5", H5Access::WRITE );
         xs_mesh.output(h5f);
     }
-    
+
 }
 
 // Tests some of the error checking involved in constructing an XSMeshHom from
@@ -53,7 +68,7 @@ TEST( fromdata_fail ) {
     {
         cout << "invalid" << endl;
         pugi::xml_document xsmesh_xml;
-        std::string xml = 
+        std::string xml =
             "<data file=\"xsmesh_1.h5\" top_plane=\"-1\"/>";
         xsmesh_xml.load_string( xml.c_str() );
 
@@ -62,7 +77,7 @@ TEST( fromdata_fail ) {
     {
         cout << "out of order" << endl;
         pugi::xml_document xsmesh_xml;
-        std::string xml = 
+        std::string xml =
             "<data file=\"xsmesh_1.h5\" top_plane=\"5\"/>"
             "<data file=\"xsmesh_2.h5\" top_plane=\"1\"/>";
         xsmesh_xml.load_string( xml.c_str() );
@@ -85,7 +100,7 @@ TEST( fromdata )
     CoreMesh mesh( geom_xml );
 
     pugi::xml_document xsmesh_xml;
-    std::string xml = 
+    std::string xml =
         "<data file=\"xsmesh_2.h5\" bottom_plane=\"0\" top_plane=\"7\"/>"
         "<data file=\"xsmesh_1.h5\" bottom_plane=\"8\" top_plane=\"11\"/>"
         "";

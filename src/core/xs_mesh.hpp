@@ -1,6 +1,21 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
 #include <vector>
 
 #include "xs_mesh_region.hpp"
@@ -47,6 +62,22 @@ namespace mocc {
             return eubounds_;
         }
 
+        /**
+         * \brief Update macroscopic cross sections if needed
+         *
+         * Since the stock XSMesh only deals in un-homogenized, macroscopic
+         * cross sections, this does nothing. When support for microscopic cross
+         * sections is added, this will need to start doing some work.
+         *
+         * For right now, this is overridden in the \ref XSMeshHomogenized class
+         * to calculate new homoginzed cross sections given a new state of the
+         * FM scalar flux.
+         */
+        virtual void update() {
+            // Do nothing for the regular XS Mesh... for now
+            return;
+        }
+
         virtual void output( H5Node &file ) const {
             // Not really implementing for the general XS Mesh type.
             assert(false);
@@ -78,12 +109,12 @@ namespace mocc {
             xstr_.resize(shape);
             xsnf_.resize(shape);
             xsch_.resize(shape);
-            xskf_.resize(shape);
+            xsf_.resize(shape);
             xsrm_.resize(shape);
             auto test_slice(xstr_(0, blitz::Range::all()));
             assert(test_slice.isStorageContiguous());
         }
-        
+
         size_t ng_;
 
         // Vector of xs mesh regions
@@ -93,7 +124,7 @@ namespace mocc {
         ArrayB2 xstr_;
         ArrayB2 xsnf_;
         ArrayB2 xsch_;
-        ArrayB2 xskf_;
+        ArrayB2 xsf_;
         ArrayB2 xsrm_;
 
         // Energy group upper bounds

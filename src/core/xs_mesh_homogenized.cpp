@@ -1,8 +1,26 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "xs_mesh_homogenized.hpp"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
+#include "pugixml.hpp"
 
 #include "files.hpp"
 #include "h5file.hpp"
@@ -26,7 +44,7 @@ namespace mocc {
 
         // Allocate space to store the cross sections
         this->allocate_xs(n_xsreg, ng_);
-        
+
         // Set up the regions
         regions_.reserve(n_xsreg);
         VecI fsrs(1);
@@ -36,7 +54,7 @@ namespace mocc {
                     &xstr_(i, 0),
                     &xsnf_(i, 0),
                     &xsch_(i, 0),
-                    &xskf_(i, 0),
+                    &xsf_(i, 0),
                     &xsrm_(i, 0),
                     ScatteringMatrix() );
         }
@@ -69,14 +87,14 @@ namespace mocc {
      * which the cross sections are to be applied. The data itself is assumed to
      * be coming from a call to \ref XSMesh::output().
      */
-    XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh, 
+    XSMeshHomogenized::XSMeshHomogenized( const CoreMesh &mesh,
             const pugi::xml_node &input ):
         XSMeshHomogenized( mesh )
     {
         if( input.child("data").empty() ) {
             throw EXCEPT("No data found in input tag.");
         }
-        
+
         int nreg_plane = mesh.nx()*mesh.ny();
 
         // First, validate the data tags. Make sure that they are the right
@@ -184,7 +202,7 @@ namespace mocc {
                 }
                 {
                     std::stringstream path;
-                    path << "/xsmesh/xskf/" << ig;
+                    path << "/xsmesh/xsf/" << ig;
                     h5d.read(path.str(), kf_buf);
                 }
 
@@ -196,7 +214,7 @@ namespace mocc {
                     xstr_(blitz::Range(stt, stp), ig) = tr_buf;
                     xsnf_(blitz::Range(stt, stp), ig) = nf_buf;
                     xsch_(blitz::Range(stt, stp), ig) = ch_buf;
-                    xskf_(blitz::Range(stt, stp), ig) = kf_buf;
+                    xsf_(blitz::Range(stt, stp), ig) = kf_buf;
                 }
             }
 
@@ -216,14 +234,14 @@ namespace mocc {
                                 &xstr_(i, 0),
                                 &xsnf_(i, 0),
                                 &xsch_(i, 0),
-                                &xskf_(i, 0),
+                                &xsf_(i, 0),
                                 &xsrm_(i, 0),
                                 ScatteringMatrix(scat_reg) );
             }
 
         } // <data> tag loop
 
-        
+
 
         return;
     } // HDF5 constructor
@@ -252,12 +270,12 @@ namespace mocc {
         return;
     }
 
-    void XSMeshHomogenized::homogenize_region( int i, const Pin& pin, 
+    void XSMeshHomogenized::homogenize_region( int i, const Pin& pin,
             XSMeshRegion &xsr ) const {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
         VecF xsnf( ng_, 0.0 );
-        VecF xskf( ng_, 0.0 );
+        VecF xsf( ng_, 0.0 );
         VecF xsch( ng_, 0.0 );
 
         std::vector<VecF> scat( ng_, VecF(ng_, 0.0) );
@@ -283,7 +301,7 @@ namespace mocc {
                     fvol += vols[ireg] * fsrc;
                     xstr[ig] += vols[ireg] * mat.xstr(ig);
                     xsnf[ig] += vols[ireg] * mat.xsnf(ig);
-                    xskf[ig] += vols[ireg] * mat.xskf(ig);
+                    xsf[ig] += vols[ireg] * mat.xsf(ig);
                     xsch[ig] += vols[ireg] * fsrc * mat.xsch(ig);
 
                     for( int igg=gmin; igg<=gmax; igg++ ) {
@@ -296,7 +314,7 @@ namespace mocc {
 
             xstr[ig] /= pin.vol();
             xsnf[ig] /= pin.vol();
-            xskf[ig] /= pin.vol();
+            xsf[ig] /= pin.vol();
             if( fvol > 0.0 ) {
                 xsch[ig] /= fvol;
             }
@@ -309,12 +327,12 @@ namespace mocc {
 
         ScatteringMatrix scat_mat(scat);
 
-        xsr.update(xstr, xsnf, xsch, xskf, scat_mat);
+        xsr.update(xstr, xsnf, xsch, xsf, scat_mat);
 
         return;
     }
 
-    void XSMeshHomogenized::homogenize_region_flux( int i, int first_reg, 
+    void XSMeshHomogenized::homogenize_region_flux( int i, int first_reg,
             const Pin& pin, XSMeshRegion &xsr ) const
     {
         assert(flux_);
@@ -326,7 +344,7 @@ namespace mocc {
         VecI fsrs( 1, i );
         VecF xstr( ng_, 0.0 );
         VecF xsnf( ng_, 0.0 );
-        VecF xskf( ng_, 0.0 );
+        VecF xsf( ng_, 0.0 );
         VecF xsch( ng_, 0.0 );
 
         std::vector<VecF> scat( ng_, VecF(ng_, 0.0) );
@@ -378,7 +396,7 @@ namespace mocc {
                     fluxvolsum += v * flux_i;
                     xstr[ig] += v * flux_i * mat.xstr(ig);
                     xsnf[ig] += v * flux_i * mat.xsnf(ig);
-                    xskf[ig] += v * flux_i * mat.xskf(ig);
+                    xsf[ig] += v * flux_i * mat.xsf(ig);
                     xsch[ig] += fs[ireg_local] * mat.xsch(ig);
 
                     for( size_t igg=0; igg<ng_; igg++ ){
@@ -403,7 +421,7 @@ namespace mocc {
 
             xstr[ig] /= fluxvolsum;
             xsnf[ig] /= fluxvolsum;
-            xskf[ig] /= fluxvolsum;
+            xsf[ig] /= fluxvolsum;
             if(fs_sum > 0.0) {
                 xsch[ig] /= fs_sum;
             }
@@ -411,20 +429,20 @@ namespace mocc {
 
         ScatteringMatrix scat_mat(scat);
 
-        xsr.update(xstr, xsnf, xsch, xskf, scat_mat);
+        xsr.update(xstr, xsnf, xsch, xsf, scat_mat);
 
         return;
     }
 
 
     void XSMeshHomogenized::output( H5Node &file ) const {
-        file.create_group( "/xsmesh" );
-        file.create_group( "/xsmesh/xstr" );
-        file.create_group( "/xsmesh/xsnf" );
-        file.create_group( "/xsmesh/xskf" );
-        file.create_group( "/xsmesh/xsch" );
+        auto xsm_g = file.create_group( "xsmesh" );
+        xsm_g.create_group( "xstr" );
+        xsm_g.create_group( "xsnf" );
+        xsm_g.create_group( "xsf" );
+        xsm_g.create_group( "xsch" );
 
-        file.write("/xsmesh/eubounds", eubounds_, VecI(1, ng_) );
+        xsm_g.write("eubounds", eubounds_, VecI(1, ng_) );
 
         auto d = mesh_.dimensions();
         std::reverse(d.begin(), d.end());
@@ -433,35 +451,35 @@ namespace mocc {
             // Transport cross section
             VecF xstr( this->size(), 0.0 );
             VecF xsnf( this->size(), 0.0 );
-            VecF xskf( this->size(), 0.0 );
+            VecF xsf( this->size(), 0.0 );
             VecF xsch( this->size(), 0.0 );
             int i = 0;
             for( auto xsr: regions_ ) {
                 xstr[i] = xsr.xsmactr(ig);
                 xsnf[i] = xsr.xsmacnf(ig);
-                xskf[i] = xsr.xsmackf(ig);
+                xsf[i] = xsr.xsmacf(ig);
                 xsch[i] = xsr.xsmacch(ig);
                 i++;
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xstr/" << ig;
-                file.write( setname.str(), xstr, d );
+                setname << "xstr/" << ig;
+                xsm_g.write( setname.str(), xstr, d );
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xsnf/" << ig;
-                file.write( setname.str(), xsnf, d );
+                setname << "xsnf/" << ig;
+                xsm_g.write( setname.str(), xsnf, d );
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xsch/" << ig;
-                file.write( setname.str(), xsch, d );
+                setname << "xsch/" << ig;
+                xsm_g.write( setname.str(), xsch, d );
             }
             {
                 std::stringstream setname;
-                setname << "/xsmesh/xskf/" << ig;
-                file.write( setname.str(), xskf, d );
+                setname << "xsf/" << ig;
+                xsm_g.write( setname.str(), xsf, d );
             }
 
         }
@@ -478,7 +496,7 @@ namespace mocc {
         dims[1] = ng_;
         dims[2] = ng_;
 
-        file.write( "/xsmesh/xssc", scat, dims );
+        xsm_g.write( "xssc", scat, dims );
 
 
         return;

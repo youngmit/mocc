@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <memory>
@@ -18,10 +34,10 @@ namespace mocc {
         CMFD( const pugi::xml_node &input, const Mesh *mesh,
                 SP_XSMeshHomogenized_t xsmesh );
 
-        void solve( real_t &k, const ArrayB2 &flux );
+        void solve( real_t &k );
 
         /**
-         * \brief Return a pointer to the coarse data. 
+         * \brief Return a pointer to the coarse data.
          *
          * This is used to couple sweepers and other objects that need access to
          * the coarse data to the CMFD solver.
@@ -60,7 +76,7 @@ namespace mocc {
          * \brief Set the eigenvalue convergence tolerance
          */
         void set_k_tolerance( real_t tol ) {
-            assert( tol > FLOAT_EPS );
+            assert( tol > REAL_FUZZ );
 
             k_tol_ = tol;
             return;
@@ -70,7 +86,7 @@ namespace mocc {
          * \brief Set the fission source convergence tolerance
          */
         void set_psi_tolerance( real_t tol ) {
-            assert( tol > FLOAT_EPS );
+            assert( tol > REAL_FUZZ );
 
             psi_tol_ = tol;
             return;
@@ -139,6 +155,9 @@ namespace mocc {
         ArrayB2 d_tilde_;
         ArrayB2 s_hat_;
         ArrayB2 s_tilde_;
+
+        // Number of times solve() has been called
+        int n_solve_;
 
         // Convergence options
         real_t k_tol_;

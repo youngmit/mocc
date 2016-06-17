@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "cmfd.hpp"
 
 #include <cmath>
@@ -12,10 +28,6 @@
 
 typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;
-
-using std::cout;
-using std::endl;
-using std::cin;
 
 namespace mocc {
     CMFD::CMFD( const pugi::xml_node &input, const Mesh *mesh,
@@ -39,6 +51,7 @@ namespace mocc {
         d_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_hat_( mesh_->n_surf(), xsmesh_->n_group() ),
         s_tilde_( mesh_->n_surf(), xsmesh_->n_group() ),
+        n_solve_(0),
         k_tol_( 1.0e-8 ),
         psi_tol_( 1.0e-8 ),
         max_iter_( 100 ),
@@ -89,8 +102,8 @@ namespace mocc {
                 }
             }
 
-            if( !input.attribute("zero_fixup").empty() ) {
-                zero_fixup_ = input.attribute("zero_fixup").as_bool(false);
+            if( !input.attribute("negative_fixup").empty() ) {
+                zero_fixup_ = input.attribute("negative_fixup").as_bool(false);
             }
 
             // Enabled
@@ -105,7 +118,7 @@ namespace mocc {
     }
 
 
-    void CMFD::solve( real_t &k, const ArrayB2 &flux ) {
+    void CMFD::solve( real_t &k ) {
         // Make sure we have the requisite data
         if( !xsmesh_ ) {
             throw EXCEPT("No XS Mesh data! Need!");
@@ -137,12 +150,12 @@ namespace mocc {
         real_t tfis = this->total_fission();
 
         auto flags = LogScreen.flags();
-        LogScreen << "CMFD Converging to " 
-                  << std::scientific << k_tol_ << " " 
+        LogScreen << "CMFD Converging to "
+                  << std::scientific << k_tol_ << " "
                   << std::scientific << psi_tol_ << std::endl;
         LogScreen.flags(flags);
 
-        int iter = 0; 
+        int iter = 0;
         real_t psi_err = 1.0;
         while( true ) {
             iter++;
@@ -187,10 +200,12 @@ namespace mocc {
         // Calculate the resultant currents and store back onto the coarse data
         this->store_currents();
 
+        n_solve_++;
+
         timer_solve_.toc();
         timer_.toc();
         return;
-    }
+    } // solve()
 
     void CMFD::solve_1g( int group ) {
         ArrayB1 flux_1g = coarse_data_.flux( blitz::Range::all(), group );
@@ -262,58 +277,70 @@ namespace mocc {
             ArrayB1 d_hat = d_hat_( blitz::Range::all(), group );
             ArrayB1 s_tilde = s_tilde_( blitz::Range::all(), group );
             ArrayB1 s_hat = s_hat_( blitz::Range::all(), group );
+
+            // Loop over the surfaces in the mesh, and calculate the inter-cell
+            // coupling coefficients
             for( int is=0; is<(int)n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
                 Normal norm = mesh_->surface_normal(is);
 
-                real_t diffusivity_1;
+                real_t diffusivity_1 = 0.0;
+                real_t diffusivity_2 = 0.0;
                 if( cells.first > -1 ) {
-                    // Real neighbor
                     diffusivity_1 = d_coeff[cells.first] /
                         mesh_->cell_thickness(cells.first, norm);
                 } else {
-                    // Boundary surface
-                    switch( bc[(int)norm][0] ) {
+                    switch( bc[(int)(norm)][0] ) {
                         case Boundary::REFLECT:
-                            diffusivity_1 = 0.0;
+                            diffusivity_1 = 0.0/2.0;
                             break;
                         case Boundary::VACUUM:
-                            diffusivity_1 = 0.5;
+                            diffusivity_1 = 0.5/2.0;
                             break;
                         default:
-                            cout << "Boundary: " << bc[(int)norm][0] << endl;
-                            throw EXCEPT("Unsupported boundary type.");
+                            throw EXCEPT("Unsupported boundary type");
                     }
                 }
 
-                real_t diffusivity_2;
                 if( cells.second > -1 ) {
-                    // Real neighbor
                     diffusivity_2 = d_coeff[cells.second] /
                         mesh_->cell_thickness(cells.second, norm);
                 } else {
-                    // Boundary surface
-                    switch( bc[(int)norm][1] ) {
+                    switch( bc[(int)(norm)][1] ) {
                         case Boundary::REFLECT:
-                            diffusivity_2 = 0.0;
+                            diffusivity_2 = 0.0/2.0;
                             break;
                         case Boundary::VACUUM:
-                            diffusivity_2 = 0.5;
+                            diffusivity_2 = 0.5/2.0;
                             break;
                         default:
-                            cout << "Boundary: " << bc[(int)norm][1] << endl;
-                            throw EXCEPT("Unsupported boundary type.");
+                            throw EXCEPT("Unsupported boundary type");
                     }
                 }
 
                 d_tilde(is) = 2.0*diffusivity_1*diffusivity_2 /
                     (diffusivity_1 + diffusivity_2);
 
+                // S-tilde is a mess. Since surface flux is calculated as
+                // phi = s_tilde*flux_left + (1-s_tilde)*flux_right, there is an
+                // inherent binding to a cell, as well as a surface. We assume
+                // the convention that if possible the bound cell is the one to
+                // the "left" of the surface. When such a cell is not present
+                // (domain boundary), the cell is to the "right"
+                real_t stil = (diffusivity_1 > 0.0 ) ?
+                    diffusivity_1/(diffusivity_1 + diffusivity_2) :
+                    diffusivity_2/(diffusivity_1 + diffusivity_2);
+
+                s_tilde(is) = stil;
+
+                // If we have currents defined from a transport sweeper or the
+                // like, calculate D-hat coefficients
                 bool have_data = norm == Normal::Z_NORM ?
                     coarse_data_.has_axial_data() :
                     coarse_data_.has_radial_data();
                 if( have_data ) {
                     real_t j = coarse_data_.current( is, group );
+                    real_t sfc_flux = coarse_data_.surface_flux( is, group );
                     real_t flux_l = cells.first >= 0 ?
                         coarse_data_.flux(cells.first, group) :
                         0.0;
@@ -322,11 +349,15 @@ namespace mocc {
                         0.0;
                     d_hat(is) = ( j + d_tilde(is)*(flux_r - flux_l)) /
                         (flux_l + flux_r);
+                    s_hat(is) = (cells.first >= 0) ?
+                        ( sfc_flux - s_tilde(is)*flux_l -
+                          (1.0-s_tilde(is))*flux_r ) / (flux_l + flux_r) :
+                        ( sfc_flux - s_tilde(is)*flux_r ) / (flux_r);
                 } else {
                     d_hat(is) = 0.0;
+                    s_hat(is) = 0.0;
                 }
-
-            }
+            } // surfaces
 
             // put values into the matrix. Optimal access patterns in sparse
             // matrix representations are not obvious, so the best way is to
@@ -388,26 +419,53 @@ namespace mocc {
         int n_group = xsmesh_->n_group();
         int n_surf = mesh_->n_surf();
         for( int ig=0; ig<n_group; ig++ ) {
+            auto all = blitz::Range::all();
+            auto current_1g = coarse_data_.current(blitz::Range::all(), ig);
+            auto surface_flux_1g =
+                coarse_data_.surface_flux(all, ig);
+            auto partial_1g =
+                coarse_data_.partial_current(all, ig);
+            auto partial_old_1g =
+                coarse_data_.partial_current_old(all, ig);
+
+            partial_old_1g = partial_1g;
+            coarse_data_.set_has_old_partial( n_solve_ > 0 );
+
             for( int is=0; is<n_surf; is++ ) {
                 auto cells = mesh_->coarse_neigh_cells(is);
                 real_t flux_r = cells.second >= 0 ?
                     coarse_data_.flux(cells.second, ig) : 0.0;
                 real_t flux_l = cells.first >= 0 ?
                     coarse_data_.flux(cells.first, ig) : 0.0;
-                real_t d_hat = d_hat_(is, ig);
-                real_t d_tilde = d_tilde_(is, ig);
 
+                real_t d_hat   = d_hat_(is, ig);
+                real_t d_tilde = d_tilde_(is, ig);
                 real_t current = -d_tilde*(flux_r - flux_l) +
-                                   d_hat*(flux_r + flux_l);
-                coarse_data_.current(is, ig) = current;
-            }
-        }
+                                  d_hat*(flux_r + flux_l);
+
+                current_1g(is) = current;
+
+                real_t s_hat   = s_hat_(is, ig);
+                real_t s_tilde = s_tilde_(is, ig);
+                real_t surface_flux = (cells.first >= 0) ?
+                    s_tilde*flux_l + (1.0-s_tilde)*flux_r +
+                    s_hat*(flux_l + flux_r) :
+                    s_tilde*flux_r + s_hat*(flux_l + flux_r);
+
+                surface_flux_1g(is) = surface_flux;
+
+                partial_1g(is) = {
+                    0.25*surface_flux + 0.5*current,
+                    0.25*surface_flux - 0.5*current
+                };
+            } // surfaces
+        } // groups
         return;
     }
 
     void CMFD::print( int iter, real_t k, real_t k_err, real_t psi_err ) {
         auto flags = LogScreen.flags();
-        LogScreen << "       " 
+        LogScreen << "       "
             << std::setprecision(5) << std::setw(6) << std::fixed
                     << RootTimer.time() << " "
             << iter << " "

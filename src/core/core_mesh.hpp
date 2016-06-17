@@ -1,10 +1,24 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <algorithm>
 #include <map>
 #include <memory>
-
-#include "pugixml.hpp"
 
 #include "core/assembly.hpp"
 #include "core/core.hpp"
@@ -14,6 +28,7 @@
 #include "core/plane.hpp"
 #include "core/pin.hpp"
 #include "core/pin_mesh.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     /**
@@ -63,10 +78,14 @@ namespace mocc {
         * PinMesh origin. See the note below.
         * \param[in] iz the index of the \ref Plane in which to search for the
         * \ref PinMesh.
-        * \param[inout] first_reg still need to accurately define
-        * this param
-        *
-        * \todo document thie first_reg parameter. important!
+        * \param[inout] first_reg the index offset to start with. This will be
+        * incremented by thie index of the first mesh region in the resultant
+        * \ref PinMesh. This parameter will typically be passed in as zero, or
+        * as the index of the first region of the <tt>iz</tt>th plane. The
+        * former would be useful for ray tracing purposes, where each
+        * geometrically-unique plane is traced independently, and the FSR
+        * indices are incremented at sweep time to the approbriate concrete
+        * plane. The latter is useful when the actual index is desired.
         *
         * This routine provides a means by which to locate the \ref PinMesh
         * object that fills the space in which the passed Point resides. This is
@@ -88,6 +107,16 @@ namespace mocc {
         */
         const PinMeshTuple get_pinmesh( Point2 &p, size_t iz,
                 int &first_reg) const;
+
+        struct LocationInfo {
+        public:
+            const PinMesh* pm;
+            Point2 local_point;
+            int reg_offset;
+            Position pos;
+        };
+
+        LocationInfo get_location_info( Point3 p, Direction dir ) const;
 
         /**
         * \brief Return a const reference to the indexed plane.
@@ -224,8 +253,8 @@ namespace mocc {
          * that both axial boundary conditions are reflective.
          */
         bool is_2d() const {
-            return (nz_ == 1) && (bc_[Surface::TOP] == Boundary::REFLECT) &&
-                (bc_[Surface::BOTTOM] == Boundary::REFLECT);
+            return (nz_ == 1) && (bc_[(int)Surface::TOP] == Boundary::REFLECT)
+                && (bc_[(int)Surface::BOTTOM] == Boundary::REFLECT);
         }
 
         /**
@@ -233,6 +262,35 @@ namespace mocc {
          */
         friend std::ostream& operator<<( std::ostream &os,
                 const CoreMesh &mesh);
+
+        /**
+         * \brief Return the region index at the point specified
+         *
+         * \param p a Point3 containing the coordinates to look up
+         *
+         * This method tracks down through the mesh hierarchy to find the region
+         * index for the specified point. It is not fast.
+         */
+        int region_at_point( Point3 p ) const {
+            int plane_index = this->plane_index(p.z);
+            const auto &plane = planes_[unique_plane_[plane_index]];
+
+            // Start with the first region for the plane
+            int ireg = first_reg_plane_[plane_index];
+
+            // Get a pointer to the appropriate pin mesh, set ireg to the
+            // beginning of that instance of the mesh.
+            Point2 p2d = p.to_2d();
+            const auto pm = plane.get_pinmesh( p2d, ireg );
+
+            ireg += pm->find_reg(p2d);
+
+            return ireg;
+        }
+
+        const VecF &volumes() const {
+            return volumes_;
+        }
 
     private:
         // Map for storing pin mesh objects indexed by user-specified IDs
@@ -263,9 +321,6 @@ namespace mocc {
         // Core object (essentially a 2D array of Assemblies)
         Core core_;
 
-        // List of plane heights
-        VecF hz_vec_;
-
         // Number of assemblies
         size_t nasy_;
 
@@ -279,6 +334,9 @@ namespace mocc {
 
         // Index of the first flat source region on each plane
         VecI first_reg_plane_;
+
+        // Vector of fine-mesh volumes
+        VecF volumes_;
 
         int n_fuel_2d_;
     };

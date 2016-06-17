@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "geometry_output.hpp"
 
 #include <fstream>
@@ -19,10 +35,12 @@ namespace mocc { namespace aux {
             throw EXCEPT("No input for geometry output.");
         }
 
+        string file;
         if( input.attribute("file").empty() ) {
-            throw EXCEPT("No \"file\" attribute specified.");
+            file = "geom.py";
+        } else {
+            file = input.attribute("file").value();
         }
-        string file = input.attribute("file").value();
 
         int plane = input.attribute("plane").as_int(0);
         if( (plane < 0) || (plane >= (int)mesh.nz() ) ) {

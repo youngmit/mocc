@@ -1,8 +1,26 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include <memory>
 #include <vector>
+
+#include "util/range.hpp"
 
 #include "core/angular_quadrature.hpp"
 #include "core/blitz_typedefs.hpp"
@@ -17,67 +35,17 @@
 #include "core/xs_mesh.hpp"
 #include "core/xs_mesh_homogenized.hpp"
 
-namespace {
-    using namespace mocc;
-    // Locate an ang_quad tag in the XML tree. Start by looking in the current
-    // node, and consulte parent nodes until an <ang_quad> is found. Return a
-    // reference to the first <ang_quad> node found. Throw if we get to the
-    // document root and still dont find one.
-    const pugi::xml_node find_angquad( const pugi::xml_node &input ) {
-        if( input.empty() ) {
-            throw EXCEPT("Passed node is empty!");
-        }
-
-        pugi::xml_node current_node = input;
-        while( true ) {
-            if( !current_node.child("ang_quad").empty() ) {
-                // We found an <ang_quad>. Return it.
-                return current_node.child("ang_quad");
-            } else if( !current_node.parent().empty() ) {
-                // We didnt find an <ang_quad>, but there is a parent node.
-                // look there.
-                current_node = current_node.parent();
-            } else {
-                // We reached the end of the line, but still didnt find an
-                // <ang_quad>. Fail
-                throw EXCEPT("Reached document root without finding an "
-                        "angular quadrature specification.");
-                break;
-            }
-        }
-        return input;
-    }
-}
 
 namespace mocc{
+    /**
+     * \todo clean up these constructors. Would be nice for the (input, mesh)
+     * version to be able to call the (input) version.
+     */
     class TransportSweeper: public HasOutput {
     public:
-        TransportSweeper( const pugi::xml_node& input, const CoreMesh& mesh ):
-            core_mesh_( &mesh ),
-            xs_mesh_( new XSMesh(mesh) ),
-            n_reg_( mesh.n_reg() ),
-            n_group_( xs_mesh_->n_group() ),
-            source_(nullptr),
-            flux_( n_reg_, n_group_ ),
-            flux_old_( n_reg_, n_group_ ),
-            vol_( n_reg_ ),
-            ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr),
-            n_sweep_(0),
-            n_sweep_inner_(0)
-        {
-            return;
-        }
+        TransportSweeper( const pugi::xml_node& input, const CoreMesh& mesh );
 
-        TransportSweeper( const pugi::xml_node &input ):
-            source_(nullptr),
-            ang_quad_( find_angquad(input) ),
-            coarse_data_(nullptr),
-            n_sweep_(0),
-            n_sweep_inner_(0)
-        {
-            return;
-        }
+        TransportSweeper( const pugi::xml_node &input );
 
         virtual ~TransportSweeper(){ }
 
@@ -91,6 +59,14 @@ namespace mocc{
          * etc.) to reasonable initial guesses.
          */
         virtual void initialize() = 0;
+
+        /**
+         * \brief Update the incoming boundary flux values.
+         *
+         * This alters the incoming angular flux values to reflect the state of
+         * the associated \ref CoarseData.
+         */
+        virtual void update_incoming_flux( ) = 0;
 
         /**
          * \brief Return a vector containing the pin-homogenizes multi-group
@@ -182,8 +158,15 @@ namespace mocc{
          */
         virtual SP_XSMeshHomogenized_t get_homogenized_xsmesh() = 0;
 
-        int n_reg() const {
+        virtual int n_reg() const {
             return n_reg_;
+        }
+
+        /**
+         * \brief Return the number of energy groups
+         */
+        int n_group() const {
+            return n_group_;
         }
 
         /**
@@ -219,17 +202,11 @@ namespace mocc{
         }
 
         /**
-         * \brief Return the number of energy groups
-         */
-        unsigned int n_group() const {
-            return n_group_;
-        }
-
-        /**
          * \brief Assign a CoarseData object to the sweeper, allowing it to
          * store currents and such.
          */
         virtual void set_coarse_data( CoarseData *cd ) {
+            assert( cd );
             coarse_data_ = cd;
         }
 
@@ -297,6 +274,7 @@ namespace mocc{
 
         int n_reg_;
         int n_group_;
+        std::vector<int> groups_;
 
         Source* source_;
 
@@ -322,6 +300,9 @@ namespace mocc{
 
         // Total number of inner iteration sweeps
         int n_sweep_inner_;
+
+        // Do incoming flux updates?
+        bool do_incoming_update_;
     };
 
     typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;

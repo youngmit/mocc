@@ -1,8 +1,25 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <vector>
 
-#include "geom.hpp"
+#include "geometry/direction.hpp"
+#include "geometry/geom.hpp"
 #include "global_config.hpp"
 #include "lattice.hpp"
 
@@ -13,19 +30,27 @@ namespace mocc {
                 size_t ny);
 
         const Lattice& at(size_t ix, size_t iy) const {
+            assert(ix >= 0);
+            assert(iy >= 0);
+            assert(ix < nx_);
+            assert(iy < ny_);
             return *(lattices_[ix + nx_*iy]);
         }
 
         /**
-         * \brief Return a const pointer to the \ref PinMesh that occupies the
-         * passed \ref Point2.
          *
-         * \param[in] p The point at which to find a \ref PinMesh
-         * \param[inout] first_reg the first region index of the returned \ref
-         * Pin. The value passed in is incremented by the region offset within
-         * the Plane.
+         * \brief Given a \ref Point2 in core-local coordinates, return a const
+         * pointer to the corresponding \ref PinMesh.
+         *
+         * \param[in,out] p a Point2 in core-local coordinates. Will be modified
+         * (see below).
+         * \param[in,out] first_reg the first FSR index of the Plane. Will be
+         * updated to the first region of the \ref Pin in which the pin resides.
+         * \param[in] dir optional \ref Direction to use to disambiguate when
+         * the \p p lies directly on a border.
          */
-        const PinMesh* get_pinmesh( Point2 &p, int &first_reg) const;
+        const PinMesh* get_pinmesh( Point2 &p, int &first_reg,
+                Direction dir=Direction()) const;
 
         /**
          * \brief Return a const pointer to the \ref PinMesh that is at the
@@ -79,11 +104,11 @@ namespace mocc {
         /**
          * Number of lattices in the x direction
          */
-        size_t nx_;
+        unsigned nx_;
         /**
          * Number of lattices in the y direction
          */
-        size_t ny_;
+        unsigned ny_;
 
         size_t n_reg_;
         size_t n_xsreg_;

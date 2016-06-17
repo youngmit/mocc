@@ -1,12 +1,32 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "correction_data.hpp"
 
 #include <iomanip>
+
+#include "pugixml.hpp"
 
 #include "core/files.hpp"
 #include "core/string_utils.hpp"
 
 using std::setfill;
 using std::setw;
+using std::cout;
+using std::endl;
 
 namespace mocc {
     void CorrectionData::from_data( const pugi::xml_node &input ) {
@@ -45,7 +65,7 @@ namespace mocc {
                 if(data.attribute("file").empty()) {
                     throw EXCEPT("No file specified.");
                 }
-                
+
                 for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                     if( plane_data[ip] ) {
                         std::stringstream msg;
@@ -85,15 +105,15 @@ namespace mocc {
                             "_" << setfill('0') << setw(3) << iang;
 
                         h5f.read_1d( path.str(), slice );
+                        assert( slice.size() == mesh_->n_cell_plane() );
                         for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                             int stt = mesh_->plane_cell_begin(ip);
                             int stp = mesh_->plane_cell_end(ip)-1;
-                            alpha_(ig, iang, blitz::Range(stt, stp), 
+                            alpha_(ig, iang, blitz::Range(stt, stp),
                                     (int)Normal::X_NORM) = slice;
-                            
                         }
                     }
-                    
+
                     {
                         std::stringstream path;
                         path << "/alpha_y/" << setfill('0') << setw(3) << ig <<
@@ -102,7 +122,7 @@ namespace mocc {
                         for( int ip=bot_plane; ip<=top_plane; ip++ ) {
                             int stt = mesh_->plane_cell_begin(ip);
                             int stp = mesh_->plane_cell_end(ip)-1;
-                            alpha_(ig, iang, blitz::Range(stt, stp), 
+                            alpha_(ig, iang, blitz::Range(stt, stp),
                                     (int)Normal::Y_NORM) = slice;
                         }
                     }
@@ -143,7 +163,7 @@ namespace mocc {
                 {
                     slice = beta_(g, a, blitz::Range::all());
                     std::stringstream setname;
-                    setname << "/beta/" << setfill('0') << setw(3) << g 
+                    setname << "/beta/" << setfill('0') << setw(3) << g
                             << "_"      << setfill('0') << setw(3) << a;
                     file.write( setname.str(), slice, dims );
                 }

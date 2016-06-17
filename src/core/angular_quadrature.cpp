@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "angular_quadrature.hpp"
 
 #include <vector>
@@ -5,6 +21,9 @@
 #include <iostream>
 #include <iomanip>
 
+#include "pugixml.hpp"
+
+#include "core/angular_quadrature_user.hpp"
 #include "core/constants.hpp"
 #include "core/error.hpp"
 #include "core/files.hpp"
@@ -27,15 +46,15 @@ namespace mocc {
             std::cerr << input.name() << std::endl;
             throw EXCEPT("Input is not an <ang_quad/> tag");
         }
-        
-        //extract the quadrature order
+
+        //extract the quadrature order, if present
         n_azimuthal_ = input.attribute("n_azimuthal").as_int(-1);
         n_polar_     = input.attribute("n_polar").as_int(-1);
 
         // Extract the quadrature type
         std::string type_str = input.attribute("type").value();
         sanitize(type_str);
-        if ( (type_str == "ls") || (type_str == "level-symmetric") ) {
+        if( (type_str == "ls") || (type_str == "level-symmetric") ) {
             type_ = QuadratureType::LS;
 
             // extract the quadrature order
@@ -43,7 +62,7 @@ namespace mocc {
 
             // Generate angles for octant 1
             angles_ = GenSn( order );
-        } else if ((type_str == "cg") || (type_str == "chebyshev-gauss" )) {
+        } else if((type_str == "cg") || (type_str == "chebyshev-gauss" )) {
             if( (n_azimuthal_ < 1) || (n_polar_ < 1) ) {
                 throw EXCEPT("Number of polar or azimuthal angles is invalid");
             }
@@ -52,7 +71,7 @@ namespace mocc {
             //Generate angles for octant 1
             angles_ = GenProduct(GenChebyshev(n_azimuthal_),
                     GenGauss(n_polar_));
-        } else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto" )) {
+        } else if((type_str == "cy") || (type_str == "chebyshev-yamamoto" )) {
             if( (n_azimuthal_ < 1) || (n_polar_ < 1) ) {
                 throw EXCEPT("Number of polar or azimuthal angles is invalid");
             }
@@ -61,6 +80,9 @@ namespace mocc {
             //Generate angles from octant 1
             angles_ = GenProduct(GenChebyshev(n_azimuthal_),
                     GenYamamoto(n_polar_));
+        } else if( type_str == "user" ) {
+            type_ = QuadratureType::USER;
+            angles_ = GenUserQuadrature( input );
         } else {
             std::cerr << "'" << type_str << "'" << std::endl;
             throw EXCEPT("Invalid angular quadrature type specified.");
@@ -96,7 +118,7 @@ namespace mocc {
         input.read("ang_quad/alpha", alpha);
         input.read("ang_quad/theta", theta);
 
-        if( (ox.size() != oy.size()) || (ox.size() != oz.size()) || 
+        if( (ox.size() != oy.size()) || (ox.size() != oz.size()) ||
                 (ox.size() != weights.size()) ) {
             throw EXCEPT("Incompatible data sizes");
         }
@@ -119,8 +141,8 @@ namespace mocc {
 
         }
 
-        type_ = QuadratureType::MANUAL;
-        
+        type_ = QuadratureType::IMPORT;
+
         return;
     }
 
@@ -155,7 +177,7 @@ namespace mocc {
         VecF oy;    oy.reserve(this->ndir());
         VecF oz;    oz.reserve(this->ndir());
         VecF w;     w.reserve(this->ndir());
-        
+
         for( auto a: angles_ ) {
             alpha.push_back(a.alpha);
             theta.push_back(a.theta);
@@ -182,11 +204,15 @@ namespace mocc {
         // Different quadratures will be adjusted differently
         switch(type_) {
         case QuadratureType::LS:
-            LogScreen << "Don't have weight updates for modularized "
-                "level-symmetric quadrature yet." << std::endl;
+            Warn( "Don't have weight updates for modularized "
+                  "level-symmetric quadrature yet.");
             break;
-        case QuadratureType::MANUAL:
+        case QuadratureType::IMPORT:
             LogScreen << "Manually-specified quadratures are not changed in "
+                "modularization." << std::endl;
+            break;
+        case QuadratureType::USER:
+            LogScreen << "User-specified quadrature weights are not changed in "
                 "modularization." << std::endl;
             break;
         // These product quadratures are based on the Chebyshev quadrature,
@@ -203,6 +229,10 @@ namespace mocc {
         return;
     }
 
+    /**
+     * \todo This should live with the quadrature type that it is updating (so
+     * somewhere in the product_quadrature.hpp file)
+     */
     void AngularQuadrature::update_chebyshev_weights() {
         // Get the set of polar angles
         std::vector<std::pair<real_t,real_t>> polar_angles;

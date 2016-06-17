@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "ray_data.hpp"
 
 #include <algorithm>
@@ -6,6 +22,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "pugixml.hpp"
 
 #include "core/constants.hpp"
 #include "core/error.hpp"
@@ -59,6 +77,25 @@ namespace mocc { namespace moc {
         if( opt_spacing <= 0.0 ) {
             throw EXCEPT("Failed to read valid ray spacing.");
         }
+
+        // Get the volume correction option
+        correction_type_ = VolumeCorrection::FLAT;
+        if( !input.attribute("volume_correction").empty() ) {
+            std::string type = input.attribute("volume_correction").value();
+            sanitize(type);
+            if( type == "flat" ) {
+                correction_type_ = VolumeCorrection::FLAT;
+            } else if( type == "angle" ) {
+                correction_type_ = VolumeCorrection::ANGLE;
+            } else if( type == "none" ) {
+                correction_type_ = VolumeCorrection::NONE;
+            } else {
+                throw EXCEPT("Unrecognized volume correction option in <rays>");
+            }
+        }
+
+        LogScreen << "Using " << correction_type_ << " volume correction for "
+            "rays" << std::endl;
 
         // Get the modularity setting
         bool core_modular = true;
@@ -118,7 +155,6 @@ namespace mocc { namespace moc {
                 Ny *= mesh.ny();
             }
 
-
             LogFile << "Total number of rays (Nx/Ny): "
                 << Nx << " " << Ny << std::endl;
 
@@ -163,9 +199,6 @@ namespace mocc { namespace moc {
             for ( auto ang = ang_quad_.octant(1);
                     ang != ang_quad_.octant(3); ++ang ) {
                 VecI nrayfsr( nreg_plane, 0 );
-                // We only define Nx, Ny and spacing above for the first octant,
-                // so mod the angle index with the number of angles per octant
-                // to cast it into the first octant.
                 int Nx = Nx_[iang];
                 int Ny = Ny_[iang];
                 std::array<int, 2> bc;
@@ -175,7 +208,6 @@ namespace mocc { namespace moc {
 
                 LogFile << "Spacing: " << ang->alpha << " " << space << " " <<
                     space_x << " " << space_y << std::endl;
-
 
                 std::vector<Ray> rays;
                 // Handle rays entering on the x-normal faces ( along the
@@ -271,35 +303,44 @@ namespace mocc { namespace moc {
                 // Sort the rays by length. This might improve threading
                 // performance
                 std::sort(rays.begin(), rays.end());
-
+                //std::reverse(rays.begin(), rays.end());
                 // Move the stack of rays into the vector of angular ray sets.
                 angle_rays.push_back(std::move(rays));
                 ++iang;
             } // Angle loop
             // Move the angular ray set to the vector of planar ray sets.
             rays_.push_back(std::move(angle_rays));
-        }
+        } // Plane loop
 
         // Adjust ray lengths to correct FSR volume. Use an angle integral to do
         // so.
-        this->correct_volume( mesh, FLAT );
+        this->correct_volume( mesh );
 
         LogScreen << "Done ray tracing" << std::endl;
-    }
 
-    void RayData::correct_volume( const CoreMesh& mesh, VolumeCorrection type )
+    } // RayData::RayData()
+
+    void RayData::correct_volume( const CoreMesh& mesh )
     {
-        switch(type) {
+        switch(correction_type_) {
             // Correct each angle independently, preserving volume integral of
             // region for each angle
-            case FLAT:
+            case VolumeCorrection::FLAT:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
+                    // flat_cf_max to log the maximum correction factor for
+                    // ecah angle
+                    // flat_cf_rms to log the rms of correction factor for
+                    // each angle
+                    VecF flat_cf_max(ang_quad_.ndir()/4, 0.0);
+                    VecF flat_cf_rms(ang_quad_.ndir()/4, 0.0);
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     int iang=0;
+
                     for ( auto ang = ang_quad_.octant(1);
                             ang!=ang_quad_.octant(3); ++ang )
                     {
                         VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
+                        VecF flat_cf(mesh.plane(iplane).n_reg(), 0.0);
                         std::vector<Ray>& rays = rays_[iplane][iang];
                         real_t space = spacing_[iang];
                         for( auto &ray: rays ) {
@@ -310,24 +351,53 @@ namespace mocc { namespace moc {
                             }
                         }
 
+                        for( size_t ireg=0; ireg<mesh.plane(iplane).n_reg(); ireg++ ) {
+                            flat_cf[ireg]=true_vol[ireg]/fsr_vol[ireg];
+                            if( flat_cf_max[iang] < flat_cf[ireg] ) {
+                                flat_cf_max[iang] = flat_cf[ireg];
+                            }
+                            flat_cf_rms[iang] += flat_cf[ireg]*flat_cf[ireg];
+                        }
+                        flat_cf_rms[iang] = sqrt(flat_cf_rms[iang]
+                                /mesh.plane(iplane).n_reg());
+
                         // Correct
                         for( auto &ray: rays ) {
                             for( int iseg=0; iseg<ray.nseg(); iseg++ )
                             {
                                 int ireg = ray.seg_index(iseg);
                                 ray.seg_len(iseg) = ray.seg_len(iseg) *
-                                    true_vol[ireg]/fsr_vol[ireg];
+                                    flat_cf[ireg];
                             }
                         }
                         iang++;
                     }
+                    LogFile << std::endl << std::endl;
+                    LogFile << "For plane " << iplane << ", the maximum "
+                        "correction factor for each angle in Octant 1 and 2 is"
+                        ": " << std::endl;
+                    for( auto &cf_max : flat_cf_max ) {
+                        LogFile << cf_max << " ";
+                    }
+                    LogFile << std::endl;
+
+                    LogFile << "The RMS of the correction factor for each angle"
+                        " is: " << std::endl;
+                    for( auto &cf_rms : flat_cf_rms ) {
+                        LogFile << cf_rms << " ";
+                    }
+                    LogFile << std::endl;
                 }
 
                 break;
             // Correct all angles at the same time, preserving the angular
             // integral of the region volumes for all angles
-            case ANGLE:
+            case VolumeCorrection::ANGLE:
                 for( size_t iplane=0; iplane<n_planes_; iplane++ ) {
+                    // angle_cf_max to log the maximum correction factor
+                    // angle_cf_rms to log the rms of correction factor
+                    real_t angle_cf_max=0.0;
+                    real_t angle_cf_rms=0.0;
                     const VecF& true_vol = mesh.plane(iplane).vols();
                     VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
                     int iang=0;
@@ -352,7 +422,14 @@ namespace mocc { namespace moc {
                             ireg++ )
                     {
                         fsr_vol[ireg] = true_vol[ireg]/fsr_vol[ireg];
+                        if( angle_cf_max < fsr_vol[ireg] ) {
+                            angle_cf_max = fsr_vol[ireg];
+                        }
+                        angle_cf_rms += fsr_vol[ireg]*fsr_vol[ireg];
                     }
+
+                    angle_cf_rms=sqrt(angle_cf_rms/(int)mesh.plane(iplane).n_reg());
+
                     // Correct ray lengths to enforce proper FSR volumes
                     iang = 0;
                     for( auto ang = ang_quad_.octant(1);
@@ -369,7 +446,18 @@ namespace mocc { namespace moc {
                         }
                         ++iang;
                     }
+
+                    LogFile << std::endl << std::endl;
+                    LogFile << "For plane " << iplane << ", the maximum "
+                        "correction factor is: " << std::endl
+                        << angle_cf_max << std::endl;
+
+                    LogFile << "The RMS of the correction factor is: "
+                        << std::endl << angle_cf_rms << std::endl;
+
                 } // Volume correction
+                break;
+            case VolumeCorrection::NONE:
                 break;
         }
     } // correct_volume
@@ -402,16 +490,38 @@ namespace mocc { namespace moc {
             for( auto &r: ang_rays ) {
                 os << r;
                 ray_pos = os.tellp();
-                os << "," << endl;
+                os << ",    # " << r.bc(0) << " " << r.bc(1)  << endl;
             }
+            // store the location before the comma
+            auto end_pos = os.tellp();
             os.seekp(ray_pos);
             os << " ]";
+            os.seekp(end_pos);
             angle_pos = os.tellp();
             os << "," << endl;
         }
+        // go back to before the last comma and overwrite with close ]
         os.seekp(angle_pos);
         os << " ]" << endl;
 
+        return os;
+    }
+
+    std::ostream &operator<<( std::ostream &os, VolumeCorrection vc ) {
+        switch( vc ) {
+            case VolumeCorrection::FLAT:
+                os << "FLAT";
+                break;
+            case VolumeCorrection::ANGLE:
+                os << "ANGLE";
+                break;
+            case VolumeCorrection::NONE:
+                os << "NONE";
+                break;
+            default:
+                os << "UNKNOWN";
+                break;
+        }
         return os;
     }
 } }

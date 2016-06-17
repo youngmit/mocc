@@ -1,6 +1,22 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 
 #include <blitz/array.h>
 
@@ -27,18 +43,11 @@ namespace mocc {
      * \note At some point, it may be nice to incorporate Pn scattering. Most of
      * the functionality for Pn scattering would end up in the Source class
      * hierarchy (probably by introducing a Pn variant of the \ref Source base
-     * class). How the implementation will occur is somewhat up in the air.
-     * Simplest approach would be to add a new virtual method (which just
-     * <tt>return</tt>s on non-Pn sources), which accepts angular flux as input
-     * somehow.  This could be done by passing in an FSR-dependent angular flux
-     * after each angle sweep and have the \ref Source contribute to angular
-     * flux moments internally. This probably isn't the most computationally
-     * efficient method, though. Ultimately, flux moments need to be stored
-     * somewhere, and the \ref Source is a great candidate; perhaps exposing a
-     * reference to those moments to the \ref TransportSweeper and coming up
-     * with a slick way for the \ref TransportSweeper to interact with those
-     * moments in an as-needed way would work better. Cross that river when we
-     * get to it, I suppose...
+     * class). How the implementation will work is somewhat up in the air. There
+     * is also a question as to how arbitrary sources will work with the
+     * fixed-source solver, so for now the split between the base \ref Source
+     * class and its derived \ref SourceIsotropic is a little arbitrary, and
+     * should become more clear as Pn and arbitrary sources get implemented.
      */
     class Source {
     public:
@@ -69,6 +78,7 @@ namespace mocc {
 
         /**
          * \brief Add a one-group auxiliary source
+         *
          * This adds some arbitrary source to the current group. Bear in mind
          * that the source definition starts with the MG fission source, then
          * contributions get tacked on from there.
@@ -77,27 +87,22 @@ namespace mocc {
 
         /**
          * \brief Add self-scatter source
+         *
          * Add a contribution due to self-scatter within the current group,
-         * returning the final source. This is usually called several times by a
+         * producing the final source. This is usually called several times by a
          * sweeper in its "inner" iterations, and therefore does not mutate the
-         * internal representation of the source, but instead returns the result
-         * to the caller through the qbar argument.
+         * internal representation of the source stored in source_1g_, but
+         * instead stores the result in a different location, which should be
+         * accessible via the \ref get_transport() method.
          */
-        virtual void self_scatter( size_t ig ) = 0;
+        virtual void self_scatter( size_t ig,
+                const ArrayB1 &xstr = ArrayB1(0) ) = 0;
 
         /**
          * \brief Return the number of regions for which the Source is defined.
          */
-        size_t n_reg() const {
+        int n_reg() const {
             return n_reg_;
-        }
-
-        /**
-         * \brief Define whether this \ref Source should scale itself by the
-         * transport cross section.
-         */
-        void set_scale_transport( bool scale ) {
-            scale_transport_ = scale;
         }
 
         /**
@@ -113,8 +118,8 @@ namespace mocc {
          * this right before using the source, after adding all contributions.
          */
         void scale( const VecF &v ) {
-            assert( v.size() == n_reg_ );
-            for( int i=0; i<(int)n_reg_; i++ ) {
+            assert( (int)v.size() == n_reg_ );
+            for( int i=0; i<n_reg_; i++ ) {
                 source_1g_(i) *= v[i];
             }
         }
@@ -153,10 +158,7 @@ namespace mocc {
          */
         virtual const VectorX& get_transport( int iang ) const = 0;
 
-        friend std::ostream& operator<<(std::ostream &os, const Source &src) {
-            std::cout << src.source_1g_ << std::endl;
-            return os;
-        }
+        friend std::ostream& operator<<(std::ostream &os, const Source &src);
 
     protected:
         /**
@@ -181,15 +183,12 @@ namespace mocc {
          */
         const XSMesh *xs_mesh_;
 
-        size_t n_group_;
+        int n_group_;
+        int n_reg_;
 
         // This is true if an external source has been specified. For now it's
         // initialized false.
         bool has_external_;
-
-        // Should we scale the source by the transport cross section? This is a
-        // useful optimization for MoC, but not necessarily other sweeper types.
-        bool scale_transport_;
 
         // The external source, if set
         ArrayB2 external_source_;
@@ -202,7 +201,6 @@ namespace mocc {
         // contributions, etc.
         const ArrayB2& flux_;
 
-        size_t n_reg_;
     };
 
     typedef std::shared_ptr<Source> SP_Source_t;

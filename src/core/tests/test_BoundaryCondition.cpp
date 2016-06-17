@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "UnitTest++/UnitTest++.h"
 
 #include "pugixml.hpp"
@@ -73,13 +89,13 @@ class BCIrregularFixture {
 TEST_FIXTURE( BCIrregularFixture, test_bc )
 {
     CHECK_EQUAL( 192, in.size() );
-    
+
     in.initialize_scalar( 7.345 );
     for( int ig=0; ig<ngroup; ig++ ) {
         for( int ia=0; ia<nang; ia++ ) {
             auto face = in.get_face( ig, ia, Normal::X_NORM );
             CHECK_EQUAL(nbc[ia][(int)Normal::X_NORM], face.first);
-            for( int ibc=0; ibc<8; ibc++ ) {
+            for( int ibc=0; ibc<face.first; ibc++ ) {
                 CHECK_EQUAL( 7.345, face.second[ibc] );
             }
         }

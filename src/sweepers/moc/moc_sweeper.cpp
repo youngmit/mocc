@@ -1,8 +1,26 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "moc_sweeper.hpp"
 
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+
+#include "pugixml.hpp"
 
 #include "error.hpp"
 #include "files.hpp"
@@ -16,6 +34,13 @@ using std::cin;
 
 mocc::VecF temp;
 
+/**
+ * \brief Return the appropriate sizing values for construcing a \ref
+ * mocc::BoundaryCondition.
+ *
+ * This exists so that it may be used to construct the boundary condition
+ * members of the \ref mocc::moc::MoCSweeper from the initializer list.
+ */
 std::vector<mocc::BC_Size_t> bc_size_helper( const mocc::moc::RayData &rays )
 {
     std::vector<mocc::BC_Size_t> bc_dims( rays.ang_quad().ndir_oct()*4 );
@@ -56,7 +81,10 @@ namespace mocc { namespace moc {
                 bc_size_helper(rays_) ) ),
         xstr_( n_reg_ ),
         flux_1g_( ),
-        bc_type_( mesh_.boundary() )
+        bc_type_( mesh_.boundary() ),
+        dump_rays_(false),
+        gauss_seidel_boundary_(true),
+        allow_splitting_(false)
     {
 
         LogFile << "Constructing a base MoC sweeper" << std::endl;
@@ -91,6 +119,12 @@ namespace mocc { namespace moc {
             }
         }
 
+        // Parse TL source splitting setting
+        allow_splitting_ = input.attribute("tl_splitting").as_bool(false);
+        if( allow_splitting_ ) {
+            split_.resize(n_reg_);
+        }
+
         // Set up the array of volumes (surface area)
         int ireg = 0;
         for( auto &pin: mesh_ ) {
@@ -113,7 +147,7 @@ namespace mocc { namespace moc {
         timer_.toc();
 
         return;
-    }
+    } // MoCSweeper( input, mesh )
 
     void MoCSweeper::sweep( int group ) {
         assert(source_);
@@ -122,19 +156,14 @@ namespace mocc { namespace moc {
         timer_sweep_.tic();
 
         // set up the xstr_ array
-        for( auto &xsr: *xs_mesh_ ) {
-            real_t xstr = xsr.xsmactr(group);
-            for( auto &ireg: xsr.reg() ) {
-                xstr_(ireg) = xstr;
-            }
-        }
+        this->expand_xstr( group );
 
         flux_1g_.reference( flux_( blitz::Range::all(), group ) );
 
         // Perform inner iterations
         for( unsigned int inner=0; inner<n_inner_; inner++ ) {
             // update the self-scattering source
-            source_->self_scatter( group );
+            source_->self_scatter( group, xstr_ );
 
             // Perform the stock sweep unless we are on the last outer and have
             // a CoarseData object.
@@ -155,30 +184,96 @@ namespace mocc { namespace moc {
         timer_.toc();
         timer_sweep_.toc();
         return;
-    }
+    } // sweep( group )
 
+    /**
+     * For now, this doesn't do anything remotely intelligent about the initial
+     * guess for the scalar and angular flux values and just sets them to unity
+     * and 1/4PI, respectively. At some point it might be useful to solve an IHM
+     * problem and use at least the spectrum. In reality, it'd only cut down on
+     * the initial CMFD iterations.
+     */
     void MoCSweeper::initialize() {
+        real_t val = 1.0;
+
         // Set the flux on the coarse mesh
         if( coarse_data_ ) {
-            coarse_data_->flux = 1.0;
+            coarse_data_->flux = val;
         }
         // There are better ways to do this, but for now, just start with 1.0
-        flux_ = 1.0;
+        flux_ = val;
 
         // Walk through the boundary conditions and initialize them the 1/4pi
-        real_t val = 1.0/FPI;
+        real_t bound_val = val/FPI;
         for( auto &boundary: boundary_ ) {
-            boundary.initialize_scalar(val);
+            boundary.initialize_scalar(bound_val);
+        }
+
+        return;
+    } // initialize()
+
+    void MoCSweeper::update_incoming_flux() {
+        assert(coarse_data_);
+
+        // Short circuit if explicitly disabled
+        if( !do_incoming_update_ ) {
+            return;
+        }
+
+        if( coarse_data_->has_old_partial() ) {
+            auto update = [&](real_t in, int is, int ig) {
+                real_t part =
+                        2.0 * ( coarse_data_->partial_current(is, ig)[0] +
+                                coarse_data_->partial_current(is, ig)[1]);
+                    real_t part_old =
+                        2.0 * ( coarse_data_->partial_current_old(is, ig)[0] +
+                                coarse_data_->partial_current_old(is, ig)[1]);
+
+                    if( part_old > 0.0 ) {
+                        real_t r = part/part_old;
+                        return in * r;
+                    } else {
+                        return in;
+                    }
+                };
+            update_incoming_generic<decltype(update)>( update );
+        } else {
+            auto update =
+                [&]( real_t in, int is, int ig ) {
+                    real_t out = (2.0*RFPI *
+                            (coarse_data_->partial_current(is, ig)[0] +
+                             coarse_data_->partial_current(is, ig)[1] ));
+                    return out;
+                };
+            update_incoming_generic<decltype(update)>( update );
         }
 
         return;
     }
 
+    void MoCSweeper::expand_xstr( int group ) {
+        if( allow_splitting_ ) {
+            for( auto &xsr: *xs_mesh_ ) {
+                real_t xstr = xsr.xsmactr(group);
+                for( auto &ireg: xsr.reg() ) {
+                    xstr_(ireg) = xstr + split_(ireg);
+                }
+            }
+        } else {
+            for( auto &xsr: *xs_mesh_ ) {
+                real_t xstr = xsr.xsmactr(group);
+                for( auto &ireg: xsr.reg() ) {
+                    xstr_(ireg) = xstr;
+                }
+            }
+        }
+    } // expand_xstr( group )
+
     void MoCSweeper::get_pin_flux_1g( int group, ArrayB1 &flux ) const {
         assert(flux.size() == mesh_.n_pin() );
-        for( auto &f: flux ) {
-            f = 0.0;
-        }
+        /// \todo Put this back in when we address index ordering
+        //assert(flux.isStorageContiguous());
+        flux = 0.0;
 
         int ireg = 0;
         int ipin = 0;
@@ -226,8 +321,49 @@ namespace mocc { namespace moc {
             ipin++;
         }
         return std::sqrt(resid);
-    }
+    } // set_pin_flux_1f( group, pin_flux )
 
+    void MoCSweeper::apply_transverse_leakage( int group, const ArrayB1 &tl ) {
+        assert((int)tl.size() == n_reg_);
+
+        flux_1g_.reference( flux_( blitz::Range::all(), group ) );
+
+        /// \todo for now, this is using a pretty invasive direct access the the
+        /// source. Might be good to do as a call to auxiliary() instead
+        if( allow_splitting_ ) {
+            int n_split = 0;
+            split_ = 0.0;
+            for( int ireg = 0; ireg < n_reg_; ireg++ ) {
+                real_t s = (*source_)[ireg] + tl(ireg);
+                /// \todo once we get this working, clean this branch up
+                if( s < 0.0 ) {
+                    n_split++;
+                    split_(ireg) = -s/flux_1g_(ireg);
+                    (*source_)[ireg] = 0.0;
+                } else {
+                    (*source_)[ireg] = s;
+                }
+            }
+
+            if( n_split > 0 ) {
+                LogScreen << "Split " << n_split << " region sources"
+                          << std::endl;
+            }
+        } else {
+            for( int ireg = 0; ireg < n_reg_; ireg++ ) {
+                real_t s = (*source_)[ireg] + tl(ireg);
+                (*source_)[ireg] = s;
+            }
+        }
+
+        return;
+    } // apply_transverse_leakage( tl )
+
+    /**
+     * \brief Check for the balance of neutrons within each pin cell.
+     *
+     * \todo Make sure this is valid in the presence of source splitting
+     */
     void MoCSweeper::check_balance( int group ) const {
         ArrayB1 b(mesh_.n_pin());
         b = 0.0;

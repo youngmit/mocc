@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "driver.hpp"
 
 #include <csignal>
@@ -8,6 +24,8 @@
 #include <iomanip>
 #include <omp.h>
 #include <sstream>
+
+#include "pugixml.hpp"
 
 #include "core/core_mesh.hpp"
 #include "core/error.hpp"
@@ -35,7 +53,7 @@ SP_Solver_t solver;
 SP_CoreMesh_t mesh;
 
 // Input processor
-std::unique_ptr<InputProc> input_proc;
+std::unique_ptr<InputProcessor> input_proc;
 
 // Generate output from the solver
 void generate_output() {
@@ -53,6 +71,26 @@ void generate_output() {
     outfile.write("input_file", filestream.str());
 
     outfile.write("git_sha1", std::string(g_GIT_SHA1));
+
+    if( Warnings.size() > 0 ) {
+        if( Warnings.size() == 1 ) {
+            std::cout << "There was ";
+        } else {
+            std::cout << "There were ";
+        }
+        std::cout << Warnings.size();
+        if( Warnings.size() == 1 ) {
+            std::cout << " warning:" << std::endl;
+        } else {
+            std::cout << " warnings:" << std::endl;
+        }
+        for( const auto &warning: Warnings ) {
+            std::cout << "\t" << warning.second << std::endl;
+        }
+    }
+
+    std::cout << "Output written to '" << input_proc->case_name() << "'"
+              << std::endl;
 }
 
 // Print the MOCC banner. Pretty!
@@ -67,25 +105,31 @@ void int_handler(int p) {
 
 
 /**
- * This does the whole shebang: open and parse the input file pointed to by \p
- * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref 
+ * This does the whole shebang: parse command line, open and parse the input
+ * file, producing a \ref mocc::Solver and \ref mocc::CoreMesh, calling \ref
  * mocc::Solver::solve(), then calling \ref mocc::Solver::output().
- *
- * To give some rhyme to the reason for why this isn't just \c main(): This is
- * so that integration tests can link against the driver, and call \c run(),
- * then interpret the results after, without collisions of \c main(). For the
- * actual MOCC entry point, look in \c mocc.cpp, which just calls this function.
  */
-int run( std::string file ) {
+int run( int argc, char *argv[] ) {
+    std::vector<std::string> args;
+
+    for( int i=0; i<argc; i++ ) {
+        args.push_back(argv[i]);
+    }
+
+    return run( args );
+}
+
+
+int run( const std::vector<std::string> &args ) {
     std::signal( SIGINT, int_handler );
 
     print_banner();
 
     try {
         RootTimer.tic();
-        
+
         // Set up an input processor
-        input_proc.reset( new InputProc(file) );
+        input_proc.reset( new InputProcessor(args) );
 
         // Spin up the log file. We do this after we peek at the input
         // processor for a case_name tag
@@ -101,20 +145,20 @@ int run( std::string file ) {
         }
         LogScreen << std::endl << std::endl;
 
-#pragma omp parallel
-        {
-#pragma omp master
-            {
-                LogFile << "Running with " << omp_get_num_threads() << " treads"
-                    << std::endl;
-            }
-        }
 
         // Actually process the XML input. We waited until now to do this,
         // because we want to be able to log the progress to a file, but needed
         // a case_name from the input file to be processed.
         input_proc->process();
 
+#pragma omp parallel
+        {
+#pragma omp master
+            {
+                LogScreen << "Running with " << omp_get_num_threads() << " treads"
+                    << std::endl;
+            }
+        }
 
         // Get an SP to the core mesh
         mesh = input_proc->core_mesh();
@@ -150,7 +194,7 @@ void print_banner() {
     std::cout << space << "|  \\/  | |  _  | /  __ \\ /  __ \\" << std::endl;
     std::cout << space << "| .  . | | | | | | /  \\/ | /  \\/" << std::endl;
     std::cout << space << "| |\\/| | | | | | | |     | |    " << std::endl;
-    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/ " << std::endl;
+    std::cout << space << "| |  | | \\ \\_/ / | \\__/\\ | \\__/\\ " << std::endl;
     std::cout << space << "\\_|  |_/  \\___/   \\____/  \\____/" << std::endl;
     std::cout << space << std::endl;
     std::cout << space << "01101101011011110110001101100011 " << std::endl;

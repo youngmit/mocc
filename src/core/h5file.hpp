@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <cassert>
@@ -66,7 +82,7 @@ namespace mocc {
          * \brief Return an \ref H5Node pointing to the path specified.
          */
         H5Node operator[]( std::string path ) {
-            std::shared_ptr<H5::CommonFG> 
+            std::shared_ptr<H5::CommonFG>
                 g(new H5::Group(node_->openGroup(path)));
             return H5Node( g, access_ );
         }
@@ -169,7 +185,7 @@ namespace mocc {
 
         /**
          * \brief Read data from an \ref H5Node into a 1-D Blitz array
-         * 
+         *
          * Dimensionality of the data in the HDF5 file is allowed to be more
          * than 1-D, in which case the data is copied linearly into the 1-D
          * Blitz array. This is not an overload of the regular \c read() method
@@ -213,7 +229,7 @@ namespace mocc {
                 msg << "Failed to access dataset: " << path;
                 throw EXCEPT(msg.str().c_str());
             }
-                
+
             if( (int)ndim != data.dimensions() ) {
             }
 
@@ -234,7 +250,7 @@ namespace mocc {
                     }
                     data.resize(shape);
                 }
-                
+
             } else {
                 if( data.dimensions() == 1 ) {
                     if( (int)data.size() != h5size ) {

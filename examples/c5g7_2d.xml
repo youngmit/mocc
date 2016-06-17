@@ -1,0 +1,145 @@
+<case_name>C5G7_2D</case_name>
+
+<mesh id="1" type="cyl" pitch="1.26">
+    <radii>0.54 0.62</radii>
+    <sub_radii>5 2</sub_radii>
+    <sub_azi>8</sub_azi>
+</mesh>
+<mesh id="2" type="rect" pitch="1.26">
+    <sub_x>3</sub_x>
+    <sub_y>3</sub_y>
+</mesh>
+
+<solver type="eigenvalue" k_tol="1.e-8" psi_tol="1.e-8" max_iter="100" cmfd="t">
+    <cmfd enabled="t" />
+    <source scattering="P0" />
+    <ang_quad type="chebyshev-gauss" n_azimuthal="8" n_polar="2" />
+
+    <sweeper type="moc" n_inner="10">
+            <rays spacing="0.05" modularity="core" />
+    </sweeper>
+</solver>
+
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-4.3" />
+    <material id="3" name="MOX-7.0" />
+    <material id="4" name="MOX-8.7" />
+    <material id="5" name="FissCham" />
+    <material id="6" name="Moderator" />
+    <material id="7" name="GuideTube" />
+    <material id="8" name="CRod" />
+</material_lib>
+
+<pin id="1" mesh="1">
+    1 6 6
+</pin>
+<pin id="2" mesh="1">
+    2 6 6
+</pin>
+<pin id="3" mesh="1">
+    3 6 6
+</pin>
+<pin id="4" mesh="1">
+    4 6 6
+</pin>
+<pin id="5" mesh="1">
+    5 6 6
+</pin>
+
+<pin id="6" mesh="2">
+    6 6 6
+    6 6 6
+    6 6 6
+</pin>
+
+<pin id="7" mesh="1">
+    7 6 6
+</pin>
+
+
+<lattice id="1" nx="17" ny="17">
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 7 1 1 7 1 1 7 1 1 1 1 1
+        1 1 1 7 1 1 1 1 1 1 1 1 1 7 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 7 1 1 7 1 1 7 1 1 7 1 1 7 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 7 1 1 7 1 1 5 1 1 7 1 1 7 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 7 1 1 7 1 1 7 1 1 7 1 1 7 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 7 1 1 1 1 1 1 1 1 1 7 1 1 1
+        1 1 1 1 1 7 1 1 7 1 1 7 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+</lattice>
+<lattice id="2" nx="17" ny="17">
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2
+        2 3 3 3 3 7 3 3 7 3 3 7 3 3 3 3 2
+        2 3 3 7 3 4 4 4 4 4 4 4 3 7 3 3 2
+        2 3 3 3 4 4 4 4 4 4 4 4 4 3 3 3 2
+        2 3 7 4 4 7 4 4 7 4 4 7 4 4 7 3 2
+        2 3 3 4 4 4 4 4 4 4 4 4 4 4 3 3 2
+        2 3 3 4 4 4 4 4 4 4 4 4 4 4 3 3 2
+        2 3 7 4 4 7 4 4 5 4 4 7 4 4 7 3 2
+        2 3 3 4 4 4 4 4 4 4 4 4 4 4 3 3 2
+        2 3 3 4 4 4 4 4 4 4 4 4 4 4 3 3 2
+        2 3 7 4 4 7 4 4 7 4 4 7 4 4 7 3 2
+        2 3 3 3 4 4 4 4 4 4 4 4 4 3 3 3 2
+        2 3 3 7 3 4 4 4 4 4 4 4 3 7 3 3 2
+        2 3 3 3 3 7 3 3 7 3 3 7 3 3 3 3 2
+        2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+</lattice>
+<lattice id="3" nx="17" ny="17">
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+</lattice>
+
+<assembly id="1" np="1" hz="1.0">
+    <lattices>
+        1
+    </lattices>
+</assembly>
+<assembly id="2" np="1" hz="1.0">
+    <lattices>
+        2
+    </lattices>
+</assembly>
+<assembly id="3" np="1" hz="1.0">
+    <lattices>
+        3
+    </lattices>
+</assembly>
+
+<core nx="3" ny="3" enabled="t"
+    north  = "reflect" 
+    south  = "vacuum" 
+    east   = "vacuum"
+    west   = "reflect"
+    top    = "reflect"
+    bottom = "reflect" >
+    1 2 3
+    2 1 3
+    3 3 3
+</core>

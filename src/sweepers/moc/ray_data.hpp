@@ -1,22 +1,40 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <vector>
+#include <iosfwd>
 #include <memory>
+#include <vector>
 
-#include "pugixml.hpp"
-
-#include "core/angle.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/core_mesh.hpp"
-#include "core/geom.hpp"
+#include "core/geometry/geom.hpp"
+#include "core/geometry/angle.hpp"
+#include "core/pugifwd.hpp"
 
 #include "ray.hpp"
 
 namespace mocc { namespace moc {
-    enum VolumeCorrection {
+    enum class VolumeCorrection {
         FLAT,
-        ANGLE
+        ANGLE,
+        NONE
     };
+    std::ostream &operator<<( std::ostream &os, VolumeCorrection vc );
 
     /**
     * The \ref RayData class is a collection of \ref Ray objects, organized by
@@ -140,7 +158,7 @@ namespace mocc { namespace moc {
         // This starts as a copy of the angular quadrature that is passed in
         AngularQuadrature ang_quad_;
 
-        // Vector of ray sets. The outer-most vector indexes the
+        // Vector of PlaneRays. The outer-most vector indexes the
         // geometrically-unique planes, the second index addresses the
         // individual angles, which span octants 1 and 2, and the last index
         // treats all of the rays for the given plane and angle.
@@ -162,6 +180,9 @@ namespace mocc { namespace moc {
         // n_unique_planes() on the CoreMesh used to initialize the ray data.
         size_t n_planes_;
 
+        // The type of volume correction to use
+        VolumeCorrection correction_type_;
+
         // Maximum number of ray segments in a single ray
         int max_seg_;
 
@@ -173,7 +194,7 @@ namespace mocc { namespace moc {
          * is technically more correct, however the latter is useful for
          * debugging purposes sometimes.
          */
-        void correct_volume( const CoreMesh& mesh, VolumeCorrection type );
+        void correct_volume( const CoreMesh& mesh );
     };
 
     typedef std::shared_ptr<RayData> SP_RayData_t;

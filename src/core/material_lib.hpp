@@ -1,12 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 #include <map>
 #include <string>
 
-#include "pugixml.hpp"
-
-#include "file_scrubber.hpp"
-#include "global_config.hpp"
-#include "material.hpp"
+#include "core/file_scrubber.hpp"
+#include "core/global_config.hpp"
+#include "core/material.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
     typedef std::map<unsigned int, const Material*> MaterialMap;
@@ -48,7 +63,7 @@ namespace mocc {
         const MaterialVec& materials() const {
             return lib_materials_;
         }
-        
+
         /**
          * Return the index of the material given a material ID
          */
@@ -107,7 +122,7 @@ namespace mocc {
         // having to do all sorts of iterator jiggery later
         MaterialVec assigned_materials_;
 
-        // Map from a material name to its corresponding index in materials_
+        // Map from a material name to its corresponding index in lib_materials_
         std::map<std::string, int> material_names_;
 
         // Map from a material ID to the corresponding index in the vector of

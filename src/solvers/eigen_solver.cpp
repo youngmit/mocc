@@ -1,13 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "eigen_solver.hpp"
 
 #include <iomanip>
 
+#include "pugixml.hpp"
+
 #include "error.hpp"
 #include "files.hpp"
-
-using std::endl;
-using std::cout;
-using std::cin;
 
 const static int out_w = 14;
 
@@ -60,6 +74,21 @@ namespace mocc{
             min_iterations_ = in_int;
         }
 
+        // Count the number of fissile mesh regions
+        n_fissile_regions_ = 0;
+        for( const auto &xsr: fss_.sweeper()->xs_mesh() ) {
+            bool has_fission = false;
+            for( int ig=0; ig<xsr.n_group(); ig++ ) {
+                if( xsr.xsmacnf(ig) > 0.0 ) {
+                    has_fission = true;
+                    break;
+                }
+            }
+            if( has_fission ) {
+                n_fissile_regions_ += xsr.reg().size();
+            }
+        }
+
         // CMFD acceleration
         bool do_cmfd = input.attribute("cmfd").as_bool(false);
         if( do_cmfd ) {
@@ -87,7 +116,6 @@ namespace mocc{
         // initialize the fixed source solver and calculation the initial
         // fission source
         fss_.initialize();
-        
 
         // Hand a reference to the fission source to the fixed source solver
         fss_.set_fission_source(&fission_source_);
@@ -97,11 +125,11 @@ namespace mocc{
 
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
 
-        cout << std::setw(out_w) << "Time"
-             << std::setw(out_w) << "Iter."
-             << std::setw(out_w) << "k"
-             << std::setw(out_w) << "k error"
-             << std::setw(out_w) << "psi error" << endl;
+        LogScreen << std::setw(out_w) << "Time"
+                  << std::setw(out_w) << "Iter."
+                  << std::setw(out_w) << "k"
+                  << std::setw(out_w) << "k error"
+                  << std::setw(out_w) << "psi error" << std::endl;
 
         for( size_t n_iterations=0; n_iterations < max_iterations_;
                 n_iterations++ )
@@ -114,11 +142,13 @@ namespace mocc{
             // use the old fission source to store the difference between new
             // and old, since we will be filling it with new in the next
             // iteration anyways.
-            real_t e = 0.0;
+            const auto & vol = fss_.sweeper()->volumes();
+            real_t efis = 0.0;
             for( int i=0; i<(int)fission_source_.size(); i++ ) {
-                e += std::pow((fission_source_(i)-fission_source_prev_(i)), 2);
+                real_t e = (fission_source_(i)-fission_source_prev_(i))*vol[i];
+                efis += e*e;
             }
-            error_psi_ = std::sqrt( e );
+            error_psi_ = std::sqrt( efis/n_fissile_regions_ );
 
             convergence_.push_back(
                     ConvergenceCriteria(keff_, error_k_, error_psi_) );
@@ -128,30 +158,29 @@ namespace mocc{
             this->print( n_iterations+1, convergence_.back() );
 
             if( n_iterations >= max_iterations_ ) {
-                std::cout << "Maximum number of iterations reached!"
+                LogScreen << "Maximum number of iterations reached!"
                           << std::endl;
                 break;
             }
 
             if( (error_k_ < tolerance_k_) && (error_psi_ < tolerance_psi_ ) &&
                 (n_iterations >= min_iterations_) ) {
-                std::cout << "Convergence criteria met!" << std::endl;
+                LogScreen << "Convergence criteria satisfied!" << std::endl;
                 break;
             }
         }
-    }
+    } // solve()
 
     void EigenSolver::step() {
-        // Store the old fission source
-        fission_source_prev_ = fission_source_;
 
         if( cmfd_ && cmfd_->is_enabled() ) {
             this->do_cmfd();
         }
 
-
         // Perform a group sweep with the FSS
         fss_.sweeper()->calc_fission_source(keff_, fission_source_);
+        // Store the old fission source
+        fission_source_prev_ = fission_source_;
         fss_.step();
 
         // Get the total fission sources
@@ -161,12 +190,17 @@ namespace mocc{
         // update estimate for k
         keff_prev_ = keff_;
         keff_ = keff_ * tfis1/tfis2;
+
+        // update the fission source
+        fss_.sweeper()->calc_fission_source(keff_, fission_source_);
+
+        return;
     }
 
     void EigenSolver::print( int iter, ConvergenceCriteria conv ) {
         LogScreen << std::setw(out_w) << std::fixed << std::setprecision(5)
              << RootTimer.time() << std::setw(out_w)
-             << iter << conv << endl;
+             << iter << conv << std::endl;
         return;
     }
 
@@ -194,8 +228,9 @@ namespace mocc{
             cmfd_->set_psi_tolerance( psi_tol );
             break;
         }
-        cmfd_->solve(keff_, fss_.sweeper()->flux());
+        cmfd_->solve( keff_ );
         fss_.sweeper()->set_pin_flux( cmfd_->flux() );
+        fss_.sweeper()->update_incoming_flux();
         return;
     }
 

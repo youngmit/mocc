@@ -1,9 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include "coarse_data.hpp"
-#include "constants.hpp"
-#include "global_config.hpp"
-#include "mesh.hpp"
+#include "core/coarse_data.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
+
+#include "util/force_inline.hpp"
 
 namespace mocc {
     namespace sn {
@@ -31,7 +49,7 @@ namespace mocc {
              * Store the upwind boundary condition as a contribution to the
              * coarse mesh current.
              */
-            inline void upwind_work( const real_t *x, const real_t *y,
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x, const real_t *y,
                     const real_t *z, const Angle &ang, int group ) {
 
                 size_t nx = mesh_->nx();
@@ -109,8 +127,8 @@ namespace mocc {
              * Store the upwind boundary condition as a contribution to the
              * coarse mesh current (2-D version).
              */
-            inline void upwind_work( const real_t *x, const real_t *y,
-                    const Angle &ang, int group ) {
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x,
+                    const real_t *y, const Angle &ang, int group ) {
 
                 size_t nx = mesh_->nx();
                 size_t ny = mesh_->ny();
@@ -162,8 +180,8 @@ namespace mocc {
              * Store the downwind surface flux of a single cell as a
              * contribution to the coarse mesh current.
              */
-            inline void current_work( real_t psi_x, real_t psi_y, real_t psi_z,
-                    size_t i, Angle &ang, int group )
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
+                    real_t psi_z, size_t i, Angle &ang, int group )
             {
                 real_t w = ang.weight * HPI;
 
@@ -208,7 +226,7 @@ namespace mocc {
              * Store the downwind surface flux of a single cell as a
              * contribution to the coarse mesh current. 2-D version.
              */
-            inline void current_work( real_t psi_x, real_t psi_y,
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
                     size_t i, Angle &ang, int group )
             {
                 real_t w = ang.weight * PI;
@@ -244,35 +262,24 @@ namespace mocc {
              * Configure the Current object to use the proper octant for looking
              * up surfaces.
              */
-            inline void set_octant( int oct ){
-                assert( (oct > 0) && (oct <=8) );
+            MOCC_FORCE_INLINE void set_octant( Angle ang ){
+                // Configure the upwind/downwind directions based on the angle
+                downwind_x_ = (ang.ox > 0.0) ? Surface::EAST : Surface::WEST;
+                upwind_x_   = (ang.ox > 0.0) ? Surface::WEST : Surface::EAST;
 
-                // Configure the upwind directions based on the angle
-                upwind_z_ = Surface::BOTTOM;
-                downwind_z_ = Surface::TOP;
-                if( oct > 4 ) {
-                    upwind_z_ = Surface::TOP;
-                    downwind_z_ = Surface::BOTTOM;
-                }
-                oct = ((oct-1) % 4) + 1;
+                downwind_y_ = (ang.oy > 0.0) ? Surface::NORTH : Surface::SOUTH;
+                upwind_y_   = (ang.oy > 0.0) ? Surface::SOUTH : Surface::NORTH;
 
-                upwind_x_ = Surface::WEST;
-                downwind_x_ = Surface::EAST;
-                if( (oct == 2) || (oct == 3) ) {
-                    upwind_x_ = Surface::EAST;
-                    downwind_x_ = Surface::WEST;
-                }
+                downwind_z_ = (ang.oz > 0.0) ? Surface::TOP : Surface::BOTTOM;
+                upwind_z_   = (ang.oz > 0.0) ? Surface::BOTTOM : Surface::TOP;
 
-                upwind_y_ = Surface::SOUTH;
-                downwind_y_ = Surface::NORTH;
-                if( (oct == 3) || (oct == 4) ) {
-                    upwind_y_ = Surface::NORTH;
-                    downwind_y_ = Surface::SOUTH;
-                }
+                // Figure out which partial current to contribute
+                part_x_ = (ang.ox > 0.0) ? 0 : 1;
+                part_y_ = (ang.oy > 0.0) ? 0 : 1;
+                part_z_ = (ang.oz > 0.0) ? 0 : 1;
 
                 return;
             }
-
 
         private:
             CoarseData *data_;
@@ -284,6 +291,10 @@ namespace mocc {
             Surface downwind_y_;
             Surface downwind_z_;
 
+            // Index to access for partial current for the current angle
+            int part_x_;
+            int part_y_;
+            int part_z_;
         };
 
         /**
@@ -299,31 +310,32 @@ namespace mocc {
                 return;
             }
 
-            inline void upwind_work( const real_t *x, const real_t *y,
-                    const real_t *z, const Angle &ang, int group )
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x,
+                    const real_t *y, const real_t *z, const Angle &ang,
+                    int group )
             {
                 return;
             }
 
-            inline void upwind_work( const real_t *x, const real_t *y,
-                    const Angle &ang, int group )
+            MOCC_FORCE_INLINE void upwind_work( const real_t *x,
+                    const real_t *y, const Angle &ang, int group )
             {
                 return;
             }
 
-            inline void current_work( real_t psi_x, real_t psi_y, real_t psi_z,
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
+                    real_t psi_z, size_t i, const Angle &ang, int group )
+            {
+                return;
+            }
+
+            MOCC_FORCE_INLINE void current_work( real_t psi_x, real_t psi_y,
                     size_t i, const Angle &ang, int group )
             {
                 return;
             }
 
-            inline void current_work( real_t psi_x, real_t psi_y,
-                    size_t i, const Angle &ang, int group )
-            {
-                return;
-            }
-
-            inline void set_octant( int oct ) {
+            MOCC_FORCE_INLINE void set_octant( Angle ang ) {
                 return;
             }
         };

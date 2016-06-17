@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include "core/angular_quadrature.hpp"
@@ -16,7 +32,6 @@
 namespace mocc {
     namespace cmdo {
         /**
-         *
          * See documentation for \ref moc::NoCurrent for canonical documentation
          * for each of the methods.
          */
@@ -38,7 +53,7 @@ namespace mocc {
                 vol_norm_( mesh_->n_cell_plane() ),
                 sigt_sum_( mesh_->n_cell_plane()*2 ),
                 surf_norm_( mesh_->n_surf_plane()*2 ),
-				rays_( rays )
+                rays_( rays )
             {
                 return;
             }
@@ -60,10 +75,10 @@ namespace mocc {
                     const ArrayB1 &e_tau, const moc::Ray &ray, int first_reg ) {
 #pragma omp critical
             {
-                ArrayB1 current =
-                        coarse_data_->current(blitz::Range::all(), group_);
-                ArrayB1 surface_flux =
-                        coarse_data_->surface_flux(blitz::Range::all(), group_);
+                auto all = blitz::Range::all();
+                auto current = coarse_data_->current(all, group_);
+                auto surface_flux = coarse_data_->surface_flux(all, group_);
+
                 size_t cell_fw = ray.cm_cell_fw();
                 size_t cell_bw = ray.cm_cell_bw();
                 int surf_fw = ray.cm_surf_fw();
@@ -73,16 +88,16 @@ namespace mocc {
 
                 // Use an offset for the current contributions, but NOT for the
                 // correction factors, which use plane-by-plane indexing
-                Normal norm_fw = mesh_->surface_normal( surf_fw );
-                Normal norm_bw = mesh_->surface_normal( surf_bw );
+                int norm_fw = (int)mesh_->surface_normal( surf_fw );
+                int norm_bw = (int)mesh_->surface_normal( surf_bw );
                 current( surf_fw+surf_offset_ ) +=
-                    psi1(iseg_fw) * current_weights_[(int)norm_fw];
+                    psi1(iseg_fw) * current_weights_[norm_fw];
                 current( surf_bw+surf_offset_ ) -=
-                    psi2(iseg_bw) * current_weights_[(int)norm_bw];
+                    psi2(iseg_bw) * current_weights_[norm_bw];
                 surface_flux( surf_fw+surf_offset_ ) +=
-                    psi1(iseg_fw) * flux_weights_[(int)norm_fw];
+                    psi1(iseg_fw) * flux_weights_[norm_fw];
                 surface_flux( surf_bw+surf_offset_ ) -=
-                    psi2(iseg_bw) * flux_weights_[(int)norm_bw];
+                    psi2(iseg_bw) * flux_weights_[norm_bw];
 
                 surf_sum_(surf_fw*2+0) += psi1(iseg_fw);
                 surf_sum_(surf_bw*2+1) += psi2(iseg_bw);
@@ -107,12 +122,12 @@ namespace mocc {
                             iseg_fw++;
                         }
                         // Store FW surface stuff
-                        norm_fw = surface_to_normal( crd->fw );
+                        norm_fw = (int)surface_to_normal( crd->fw );
                         surf_fw = mesh_->coarse_surf( cell_fw, crd->fw );
                         current( surf_fw+surf_offset_ ) +=
-                            psi1(iseg_fw) * current_weights_[(int)norm_fw];
+                            psi1(iseg_fw) * current_weights_[norm_fw];
                         surface_flux( surf_fw+surf_offset_ ) +=
-                            psi1(iseg_fw) * flux_weights_[(int)norm_fw];
+                            psi1(iseg_fw) * flux_weights_[norm_fw];
                         surf_sum_(surf_fw*2+0) += psi1(iseg_fw);
                         surf_norm_(surf_fw*2+0) += 1.0;
                     }
@@ -130,12 +145,12 @@ namespace mocc {
                             sigt_sum_(cell_bw*2+1) += xstr*fluxvol;
                         }
                         // Store BW surface stuff
-                        norm_bw = surface_to_normal( crd->bw );
+                        norm_bw = (int)surface_to_normal( crd->bw );
                         surf_bw = mesh_->coarse_surf( cell_bw, crd->bw );
                         current( surf_bw+surf_offset_ ) -=
-                            psi2(iseg_bw) * current_weights_[(int)norm_bw];
+                            psi2(iseg_bw) * current_weights_[norm_bw];
                         surface_flux( surf_bw+surf_offset_ ) -=
-                            psi2(iseg_bw) * flux_weights_[(int)norm_bw];
+                            psi2(iseg_bw) * flux_weights_[norm_bw];
                         surf_sum_(surf_bw*2+1) += psi2(iseg_bw);
                         surf_norm_(surf_bw*2+1) += 1.0;
                     }
@@ -165,6 +180,9 @@ namespace mocc {
             void post_angle( int iang ) {
 #pragma omp single
             {
+                // Do the stock area normailzation
+                moc::Current::post_angle( iang );
+
                 // Normalize the flux and sigt values and calculate
                 // correction factors for the current angle/energy
                 for( size_t i=0; i<vol_norm_.size(); i++ ) {
@@ -198,7 +216,7 @@ namespace mocc {
 
             Angle ang_;
 
-			const moc::RayData &rays_;
+            const moc::RayData &rays_;
 
             std::array<real_t, 3> residual_;
 
@@ -209,5 +227,3 @@ namespace mocc {
         };
     }
 }
-
-

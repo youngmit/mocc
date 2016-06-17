@@ -1,6 +1,25 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "source.hpp"
 
 #include <algorithm>
+#include <iostream>
+
+#include "pugixml.hpp"
 
 #include "core/error.hpp"
 #include "core/constants.hpp"
@@ -9,13 +28,12 @@ namespace mocc {
     Source::Source( int nreg, const XSMesh *xs_mesh, const ArrayB2& flux ):
         xs_mesh_( xs_mesh ),
         n_group_( xs_mesh->n_group() ),
+        n_reg_( flux.size()/n_group_ ),
         has_external_( false ),
-        scale_transport_( false ),
         source_1g_( nreg ),
-        flux_( flux ),
-        n_reg_( flux.size()/n_group_ )
+        flux_( flux )
     {
-        assert( nreg*n_group_ == flux_.size() );
+        assert( nreg*n_group_ == (int)flux_.size() );
         source_1g_.fill(0.0);
         state_.reset();
         return;
@@ -34,11 +52,16 @@ namespace mocc {
         return;
     }
 
+    std::ostream& operator<<(std::ostream &os, const Source &src) {
+        std::cout << src.source_1g_ << std::endl;
+        return os;
+    }
+
     // Multiply the group-independent fission source by \c chi[ig] to get the
     // fission source into the current group. If an external source is defines,
     // start with that.
     void Source::fission( const ArrayB1& fs, int ig ) {
-        assert(fs.size() == n_reg_);
+        assert((int)fs.size() == n_reg_);
         assert(!state_.has_fission);
         assert(!state_.is_scaled);
 

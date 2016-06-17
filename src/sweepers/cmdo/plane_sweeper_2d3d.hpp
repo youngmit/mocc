@@ -1,11 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include "pugixml.hpp"
 #include <blitz/array.h>
 
 #include "core/angular_quadrature.hpp"
 #include "core/global_config.hpp"
 #include "core/output_interface.hpp"
+#include "core/pugifwd.hpp"
 
 #include "sn/sn_sweeper_variant.hpp"
 
@@ -28,6 +44,20 @@ namespace mocc { namespace cmdo {
         void sweep( int group );
 
         void initialize();
+
+        /**
+         * \brief \copybrief mocc::TransportSweeper::update_incoming_flux()
+         *
+         * This delegates to both contained sweepers.
+         */
+        void update_incoming_flux() {
+            Warn("Incoming flux updates are not supported yet for 2D3D");
+            
+            //moc_sweeper_.update_incoming_flux();
+            //sn_sweeper_->update_incoming_flux();
+
+            return;
+        }
 
         /**
          * \brief \copybrief TransportSweeper::get_pin_flux_1g()
@@ -73,14 +103,30 @@ namespace mocc { namespace cmdo {
          * \brief \copybrief TransportSweeper::create_source()
          *
          * Create a Source_2D3D object instead of the standard Source class.
+         *
+         * \todo This doesnt play nice with the existing source factory. This is
+         * mostly because the source factory does a little too much setup
+         * based on the input to the \<source /\> tag, which is better done by
+         * the Source constructor. Clean this up
          */
         UP_Source_t create_source( const pugi::xml_node &input ) const {
             std::cout << "creating 2d3d source" << std::endl;
-            return UP_Source_t( new Source_2D3D( moc_sweeper_, *sn_sweeper_ ) );
+
+            auto source = UP_Source_t( new Source_2D3D( moc_sweeper_,
+                        *sn_sweeper_ ) );
+            return source;
         }
 
         SP_XSMeshHomogenized_t get_homogenized_xsmesh() {
             return sn_sweeper_->get_homogenized_xsmesh();
+        }
+
+        int n_reg() const {
+            if( expose_sn_ ) {
+                return sn_sweeper_->n_reg();
+            } else {
+                return moc_sweeper_.n_reg();
+            }
         }
 
         /**
@@ -90,7 +136,11 @@ namespace mocc { namespace cmdo {
          * method on one of the sub-sweepers.
          */
         void calc_fission_source( real_t k, ArrayB1 &fission_source ) const {
-            moc_sweeper_.calc_fission_source( k, fission_source );
+            if( expose_sn_ ) {
+                sn_sweeper_->calc_fission_source( k, fission_source );
+            } else {
+                moc_sweeper_.calc_fission_source( k, fission_source );
+            }
             return;
         }
 
@@ -102,7 +152,11 @@ namespace mocc { namespace cmdo {
          * implementation, since it's the finer mesh, generally speaking
          */
         real_t total_fission( bool old ) const {
-            return moc_sweeper_.total_fission( old );
+            if( expose_sn_ ) {
+                return sn_sweeper_->total_fission( old );
+            } else {
+                return moc_sweeper_.total_fission( old );
+            }
         }
 
         /**
@@ -146,12 +200,33 @@ namespace mocc { namespace cmdo {
         // Sn-MoC residuals by group sweep
         std::vector<VecF> sn_resid_;
 
-        // Options! Buttons and knobs!!!
-        bool expose_sn_; // When asking the sweeper for pin flux, which one?
-        bool do_snproject_;
-        bool do_tl_;
-        int n_inactive_moc_;
+        // Pre-Sn projection moc flux. Useful for keeping track of MoC-Sn
+        // residual
+        ArrayB2 prev_moc_flux_;
+
+        // Outer iteration index. Starts at -1 and is incremented whenever group
+        // 0 is swept. This is kind of brittle.
         int i_outer_;
+
+        // Options! Buttons and knobs!!!
+        // When asking the sweeper for pin flux, which one?
+        bool expose_sn_;
+        // Project Sn flux to fine mesh after Sn sweeps? This is important when
+        // no CMFD acceleration is used.
+        bool do_snproject_;
+        // Project MoC flux to Sn after MoC inners?
+        bool do_mocproject_;
+        // Whether we should replace the sn angular quadrature with the
+        // modularized quadrature from MoC. Technically we need to do this
+        // always, but turning this off sometimes is useful for debugging
+        bool keep_sn_quad_;
+        // Enable transverse leakage? In most cases this will prevent
+        // convergence.
+        bool do_tl_;
+        // Number of outer iterations to skip MoC. Super experimental
+        int n_inactive_moc_;
         int moc_modulo_;
+        // Relaxation factor for the flux updates
+        real_t relax_;
     };
 } } // Namespace mocc::cmdo

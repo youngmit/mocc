@@ -1,18 +1,32 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <cassert>
 #include <memory>
 
-#include "pugixml.hpp"
-
-#include "blitz_typedefs.hpp"
-#include "constants.hpp"
-#include "global_config.hpp"
-#include "mesh.hpp"
-#include "output_interface.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/constants.hpp"
+#include "core/global_config.hpp"
+#include "core/mesh.hpp"
+#include "core/output_interface.hpp"
+#include "core/pugifwd.hpp"
 
 namespace mocc {
-
     /**
      * This class provides a storage scheme for the correction factors needed to
      * perform corrected diamond difference. The CDD Sn and MoC sweepers must be
@@ -33,7 +47,7 @@ namespace mocc {
             return;
         }
 
-        CorrectionData( Mesh mesh, size_t nang, size_t ngroup ):
+        CorrectionData( const Mesh &mesh, size_t nang, size_t ngroup ):
             mesh_( &mesh ),
             nreg_( mesh.n_pin() ),
             nx_( mesh.nx() ),
@@ -68,7 +82,7 @@ namespace mocc {
             return alpha_( group, ang, reg, (int)norm );
         }
 
-        inline const real_t alpha( int reg, int ang, int group, 
+        inline const real_t alpha( int reg, int ang, int group,
                 Normal norm ) const
         {
             return alpha_( group, ang, reg, (int)norm );

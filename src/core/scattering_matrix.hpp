@@ -1,6 +1,22 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 
 #include "blitz_typedefs.hpp"
 #include "global_config.hpp"
@@ -21,7 +37,9 @@ namespace mocc {
         int max_g;
         real_t const * const from;
 
-        real_t operator[]( size_t g ) const {
+        real_t operator[]( int g ) const {
+            assert(g >= min_g);
+            assert(g <= max_g);
             return from[g-min_g];
         }
 
@@ -76,7 +94,7 @@ namespace mocc {
          * Indexing should be [to group][from group]
          */
         ScatteringMatrix( const std::vector<VecF> &scat);
-        
+
         /**
          * Construct a scattering matrix using a 2-dimensional Blitz++ array.
          * This full, dense representation of the scattering matrix will be
@@ -87,10 +105,6 @@ namespace mocc {
          */
         ScatteringMatrix( const ArrayB2 &scat);
 
-
-        const ScatteringRow& to( int ig ) const {
-            return rows_[ig];
-        }
 
         /**
          * Copy constructor. Need this in order to produce valid raw pointers to
@@ -131,6 +145,10 @@ namespace mocc {
             return *this;
         }
 
+        const ScatteringRow& to( int ig ) const {
+            return rows_[ig];
+        }
+
         /**
          * \brief Return the self-scattering cross section for the indicated
          * group.
@@ -149,10 +167,32 @@ namespace mocc {
 
         /**
          * Return the total out-scattering cross section for group ig
+         *
+         * This includes self-scatter, and is equivalent to a column sum of the
+         * full scattering matrix.
          */
         real_t out( unsigned int ig ) const {
             return out_[ig];
         };
+
+        /**
+         * \brief Return a CDF of the outscatter probabilities for group \p ig
+         */
+        VecF out_cdf( int ig ) const {
+            VecF cdf;
+            cdf.reserve(ng_);
+
+            real_t scale = 1.0/this->out(ig);
+            real_t prev = 0.0;
+            for( int igg=0; igg<ng_; igg++ ) {
+                real_t xssc = ((ig >= this->to(igg).min_g) &&
+                               (ig <= this->to(igg).max_g)) ? this->to(igg)[ig]
+                    : 0.0;
+                cdf.push_back(prev + xssc*scale);
+                prev = cdf.back();
+            }
+            return cdf;
+        }
 
         /**
          * Return iterator to the first scattering row.

@@ -1,3 +1,19 @@
+#
+#  Copyright 2016 Mitchell Young
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
 project(MOCC)
 cmake_minimum_required(VERSION 3.2)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -21,7 +37,6 @@ CONFIGURE_FILE("${CMAKE_MODULE_PATH}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTe
 include(CTest)
 
 MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
-    message("Copying file: ${in_file} to: ${out_file}")
     IF(${in_file} IS_NEWER_THAN ${out_file})    
         ADD_CUSTOM_COMMAND (
             TARGET     ${target}
@@ -32,12 +47,17 @@ MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
     ENDIF(${in_file} IS_NEWER_THAN ${out_file})
 ENDMACRO(COPY_FILE_IF_CHANGED)
 
+# use a vanilla inline for force inline (doesn't force inline, unless the
+# compiler family supports it)
+set(mocc_force_inline "inline")
 
 message("Compiler ID: '${CMAKE_CXX_COMPILER_ID}'")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     message("Using GNU")
     set(warnings "-Wall")
     set(options "-std=c++14 -fopenmp")
+    set(mocc_force_inline "__attribute__((always_inline)) inline")
+
     if (${PROFILE})
         MESSAGE(STATUS "Release flags were: ${CMAKE_CXX_FLAGS_RELEASE}")
         SET(CMAKE_CXX_FLAGS_RELEASE " -O1 -DNDEBUG")
@@ -50,9 +70,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /XW /EHsc")
+    set(mocc_force_inline "__forceinline")
 else()
     set(warnings "-Wall")
     set(options "-std=c++14")
+    set(mocc_force_inline "__attribute__((always_inline)) inline")
 endif()
 
 message("Flags: ${warnings} ${options}")
@@ -60,8 +82,34 @@ message("Flags: ${warnings} ${options}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}" )
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}")
 
-
-find_package(HDF5)
+# What a shame...
+if(WIN32)
+    # windows cmake internal lookups are broken for now
+    # will lookup for headers and shared libs given HDF_DIR env
+    find_path(HDF5_INCLUDE_DIRS hdf5.h HINTS "$ENV{HDF5_DIR}\\..\\include")
+    find_library(HDF5_ZLIB_LIBRARY NAMES libzlib HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    find_library(HDF5_SZIP_LIBRARY NAMES libszip HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    find_library(HDF5_C_LIBRARY NAMES libhdf5 HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    find_library(HDF5_CXX_LIBRARY NAMES libhdf5_cpp HINTS "$ENV{HDF5_DIR}\\..\\lib")
+    if(HDF5_INCLUDE_DIRS AND HDF5_C_LIBRARY)
+        MESSAGE(STATUS "Found HDF5!")
+        set(HDF5_FOUND "YES")
+        set(HDF5_LIBRARIES ${HDF5_SZIP_LIBRARY}
+                           ${HDF5_ZLIB_LIBRARY}
+                           ${HDF5_C_LIBRARY}
+                           ${HDF5_CXX_LIBRARY})
+        mark_as_advanced(HDF5_LIBRARIES)
+        include_directories(${HDF5_INCLUDE_DIRS})
+    else()
+        message(STATUS "Could not find HDF5")
+        set(HDF5_FOUND "NO")
+    endif()
+    message(STATUS "HDF5_INCLUDE_DIRS: ${HDF5_INCLUDE_DIRS}")
+    message(STATUS "HDF5_C_LIBRARY: ${HDF5_C_LIBRARY}")
+    message(STATUS "HDF5_LIBRARIES: ${HDF5_LIBRARIES}")
+else()
+        find_package(HDF5 COMPONENTS CXX)
+endif()
 
 find_package(Blitz REQUIRED)
 

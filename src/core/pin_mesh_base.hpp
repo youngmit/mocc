@@ -1,12 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
-#include <iostream>
 #include <string>
 
-#include "pugixml.hpp"
-
 #include "global_config.hpp"
-#include "geom.hpp"
+#include "geometry/geom.hpp"
+#include "position.hpp"
+#include "pugifwd.hpp"
 
 namespace mocc {
     /**
@@ -83,7 +98,24 @@ namespace mocc {
          * Given a point in pin-local coordinates, return the mesh region index
          * in which the point resides
         */
-        virtual int find_reg( Point2 p ) const =0;
+        virtual int find_reg(Point2 p)const=0;
+
+        /**
+         * \brief Find a pin-local region index corresponding to the \ref Point2
+         * and \ref Direction provided
+         *
+         * \param p a \ref Point2 containing the pin-local coordinates to look
+         * up a region for.
+         * \param dir a \ref Direction of travel, used to establish sense w.r.t.
+         * internal surfaces.
+         *
+         * This is similar to PinMeshBase::find_reg(Point2), except that it
+         * handles the case where the point \p p lies directly on one of the
+         * surfaces in a well-defined manner. In such cases, the returned region
+         * index should refer to the region on the side of the surface pointed
+         * to by \p dir.
+         */
+        virtual int find_reg(Point2 p, Direction dir) const=0;
 
         /**
          * Return the number of flat source regions corresponding to an XS
@@ -100,6 +132,26 @@ namespace mocc {
         virtual void print( std::ostream &os ) const;
 
         /**
+         * \brief Return the distance to the nearest surface in the pin mesh,
+         * and the boundary of the pin if that surface is at the edge of the
+         * pin.
+         *
+         * \param p a Point2 containing the location from which to measure
+         * \param dir a Direction containing the direction in which to measure
+         */
+        virtual std::pair<real_t, Surface> distance_to_surface(Point2 p,
+                Direction dir)const =0;
+
+        /**
+         * This essentially wraps the \ref Point2 version
+         */
+        std::pair<real_t, Surface> distance_to_surface(Point3 p,
+                                                       Direction dir)const
+        {
+            return this->distance_to_surface(p.to_2d(), dir);
+        }
+
+        /**
          * \brief Return a string containing PyCairo commands to draw the \ref
          * PinMesh.
          */
@@ -111,10 +163,7 @@ namespace mocc {
          * Calls the \ref PinMesh::print() routine, which is virtual, allowing
          * for polymorphism.
          */
-        friend std::ostream& operator<<( std::ostream &os, const PinMesh& pm ) {
-            pm.print( os );
-            return os;
-        }
+        friend std::ostream& operator<<( std::ostream &os, const PinMesh& pm );
 
     protected:
         int id_;

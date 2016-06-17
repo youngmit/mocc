@@ -1,0 +1,269 @@
+/**
+\page input_file Input File Specification
+First and foremost, the MOCC input file shall be a well-formed XML document.
+Beyond that, the structure of the file can be quite general. The only required
+tags are a \<core\> tag, with all relevant constituent components (lattices,
+pins, and the like) properly defined elsewhere, and a single \<solver\> tag. Due
+to the hierarchical nature of MOCC, each of these tags will tend to require
+child tags in order to be well defined. Each tag and its various possible
+attributes and children are described on this page.
+
+\section amendment Amending the XML tree
+It is possible to alter the XML tree from the command line when executing MOCC.
+This can be very useful when running multiple slight permutations to the same
+input file, without having to actually alter the file for each run.
+
+Presently, it is only possible to modify existing attributes of existing tags.
+This is done by issuing any number of <tt>-a</tt> flags, each followed by a
+<tt>/</tt>-delimited path to the desired attribute from the root of the tree, an
+equal sign (<tt>=</tt>), and the desired new value.
+
+For example, to disable CMFD for a given run, MOCC can be executed like this:
+\verbatim
+mocc -a solver/cmfd/enabled=f input.xml
+\endverbatim
+
+\note No leading or trailing <tt>/</tt> are needed or supported in the path, and
+don't get too creative with whitespace (read: no whitespace). Why? Because
+ - I have better things to do than write command line parsers, and
+ - shut up.
+
+\section geom Problem Geometry
+See \subpage geom_input for detail about how the geometry is specified.
+
+\section materials Material Specification
+Example:
+\code{xml}
+<material_lib path="c5g7.xsl">
+    <material id="1" name="UO2-3.3" />
+    <material id="2" name="MOX-4.3" />
+    <material id="3" name="MOX-7.0" />
+    <material id="4" name="MOX-8.7" />
+    <material id="5" name="FissCham" />
+    <material id="6" name="Moderator" />
+    <material id="7" name="GuideTube" />
+    <material id="8" name="CRod" />
+</material_lib>
+\endcode
+
+\todo More detail
+
+\section solver <solver> Tag
+
+The \c \<solver\> tag specifies the top level solver to use for the problem.
+All \c \<solver\> tags must supply at least a \c type attribute to specify
+the actual solver type, while each type may require further attributes to
+fully specify the solver. Currently supported solver types are:
+ - <tt>eigenvalue</tt>: A k-eigenvalue solver
+ - <tt>fixed_source</tt>: A fixed-source solver
+
+
+\subsection eigen_solver Eigenvalue Solver
+The eigenvalue solver solves the k-eigenvalue form of the transport equation.
+Currently, this uses a pretty naive power iteration approach, with optional CMFD
+acceleration, though more advanced solvers could be implemented in the furure.
+The following attributes are supported:
+ - <tt>k_tol</tt>: The convergence tolerance for the system eigenvalue,
+   \f$k_{\mathrm{eff}}\f$ residual between iterations. Required.
+ - <tt>psi_tol</tt>: The convergence tolerance for the L-2 norm of the fission
+   source residual between iterations. Required.
+ - <tt>max_iter</tt>: Maximum number of "outer" iterations allowed. Required.
+ - <tt>min_iter</tt>: Minimum number of "outer" iterations allowed. Required.
+ - <tt>cmfd</tt>: Whether or not to enable CMFD acceleration. Optional (default:
+   true)
+
+Optionally, a <tt>\<cmfd\></tt> tag may be specified within an eigenvalue
+<tt>\<solver\></tt> tag, allowing various options to be set for the CMFD solver.
+
+Example:
+\code{xml}
+<solver type="eigenvalue" k_tol="1.0e-8" psi_tol="1.0e-6" max_iter="20" cmfd="t">
+    <cmfd enabled="t" />
+    <source scattering="P0"/>
+    <sweeper type="moc" n_inner="5">
+        <rays spacing="0.01" modularity="core" />
+        <ang_quad type="ls" order="6" />
+    </sweeper>
+</solver>
+\endcode
+
+\subsection fixed_source_solver Fixed-Source Solver
+This \ref mocc::Solver attempts to solve the fixed source problem. For now, the
+fixed source must be provided by some solver above the FSS, in the form
+of a \ref mocc::Source object, however in the future it might be useful to be
+able to supply a user-defined Source for non-eigenvalue problems.
+
+Right now, the FSS is used by the \ref mocc::EigenSolver to converge the flux
+solution for intermediate "fixed" sources for each eigenvalue step.
+
+\todo Provide more complete documentation once the stand-alone FSS is fully
+implemented
+
+
+\section sweeper \<sweeper\> Tag
+This tag is used to specify a sweeper to be used for a \ref mocc::Solver. A
+<tt>\<sweeper\></tt> tag should be a child of the <tt>\<solver\></tt> tag in
+which it is to be used.
+Currently supported sweeper types are:
+ - <tt>moc</tt>: Method of Characteristics (2-D)
+ - <tt>sn</tt>: Sn (2-D or 3-D)
+ - <tt>2d3d</tt>: The 2-D/3-D method (2-D or 3-D)
+Examples of each can be found below.
+
+\subsection ang_quad \<ang_quad\> Tag
+All transport sweepers require an \c \<ang_quad\> tag to define the angular
+quadrature to be used. The types of quadrature currently supported are:
+ - <tt>ls|level-symmetric</tt>: The canonical Sn level-symmetric quadrature
+ - <tt>cg|chebychev-gauss</tt>: A product quadrature, using the Chebychev 
+ (evenly-spaced) quadrature for the azimuthal angles, and the Gauss-Legendre
+ quadrature for the polar angles
+ - <tt>cy|chebychev-yamamoto</tt>: A product quadrature, using Chebychev for the
+ azimuthal angles and the Yamamoto quadrature for the polar angles.
+ - <tt>user</tt>: User-specified angles. A number of <tt>\<angle /\></tt> tags may
+   be specified by hand, each specifying a direction in the first octant and
+   corresponding weight. Direction may be specified be either the direction
+   cosines or by polar and azimuthal angles, but not both. Angles may not lie
+   directly on any of the axes, but may be arbitrarily close (in case you are
+   trying to model a beam or something).
+
+Examples of each are given below:
+
+\code{xml}
+<!-- Level-symmetric quadrature of order 8 (10 angles per octant) -->
+<ang_quad type="ls" order="8" />
+
+<!-- Chebychev-Gauss quadrature with 12 azimuthal angles and 3 polar angles per 
+octant -->
+<ang_quad type="cg" n_azimuthal="12" n_polar="3" />
+
+<!-- Chebychev-Yamamoto quadrature with 12 azimuthal angles and 3 polar angles
+per octant -->
+<ang_quad type="cy" n_azimuthal="12" n_polar="3" />
+
+<!-- User-defined quadrature -->
+<ang_quad type="user">
+    <angle ox="0.800808" oy="0.159291" oz="0.57735" weight="0.3125" />
+    <angle alpha="0.78539816" theta="0.95531644"  weight="0.375" />
+    <angle ox="0.159291" oy="0.800808" oz="0.57735" weight="0.3125" />
+</ang_quad>
+\endcode
+
+\note The angular quadrature tag is nominally specified as a
+child of a \c \<sweeper\> tag, however it may also be specified in any parent of
+that \c \<sweeper\> tag. This allows a single \c \<ang_quad\> definition for
+compound sweeper types, such as the 2-D/3-D sweeper, which would otherwise need
+multiple definitions of the same angular quadrature.  See \ref cmdo_sweeper for
+an example of an angular quadrature being specified above the internal Sn and
+MoC sweepers, resulting in both sweepers using the same quadrature. When looking
+for an angular quadrature tag, the parser will first look at the child tags of
+the corresponding transport sweeper tag. If none is found it will look in
+successively higher levels in the XML tree until if finds one.
+
+\subsection rays \<rays\>
+Some sweepers require a <tt>\<rays\></tt> tag to specify ray data to use. The
+only required attribute for the rays is the nominal <tt>ray_spacing</tt>, which
+specifies the upper bound of the spacing between rays for each angle. In
+practice, due to modularization, the actual spacing for each angle will be less
+than the spacing specified. Other options include the <tt>modularity</tt> of the
+rays (pin-modular or core-modular), and the nature of the
+<tt>volume_correction</tt> to be used for each flat source region.
+
+The following volume corrections are supported:
+ - <tt>flat</tt>: For each individual angle and flat-source region, the ray
+   segment lengths are adjusted uniformly to preserve the volume of the
+   flat-source region.
+ - <tt>angle</tt>: Ray segments in a given flat-source region are adjusted
+   uniformly over <b>all</b> angles to preserve the angular integral of the
+   flat-source region volume.
+ - <tt>none</tt>: No volume correction is performed. Only do this if you know
+   what you are doing, as it does not preserve the total amount of material.
+
+By default, <tt>core</tt> modularity and <tt>flat</tt> volume corrections are
+used.
+
+Examples:
+\code{xml}
+<rays spacing="0.01" />
+<rays spacing="0.01" modularity="core" volume_correction="angle" />
+\endcode
+
+\subsection moc_sweeper MoC Sweeper
+MoC sweepers may optionally specify a <tt>dump_rays</tt> attribute. If
+true, this will result in a file called "rays.py," which contains a python list
+of points for each ray for all angles. This file can be used in conjunction with
+the output from the <tt>geometry_output</tt> tag to plot rays on top of the
+problem geometry.
+
+Example:
+\code{xml}
+<sweeper type="moc" n_inner="5">
+    <rays spacing="0.01" modularity="core" />
+    <ang_quad type="ls" order="6" />
+</sweeper>
+\endcode
+
+\subsection sn_sweeper Sn Sweeper
+Example:
+\code{xml}
+<sweeper type="sn" equation="dd" axial="dd" n_inner="15">
+    <ang_quad type="ls" order="6" />
+</sweeper>
+\endcode
+
+\subsection cmdo_sweeper 2-D/3-D Sweeper
+Example:
+\code{xml}
+<sweeper type="2d3d">
+    <ang_quad type="chebychev-gauss" n_azimuthal="16" n_polar="3" />
+    <moc_sweeper n_inner="10">
+        <rays spacing="0.01" modularity="pin" />
+    </moc_sweeper>
+    <sn_sweeper equation="cdd" axial="sc" />
+</sweeper>
+\endcode
+
+\section miscellaneous_tags Miscellaneous Tags
+There are several tags that are not directly related to the problem
+specification, but are useful for controlling the execution of the program.
+Typically these are specified at the root of the XML document.
+
+\subsection case_name \<case_name\>
+The <tt>\<case_name\></tt> tag may be used to provide an informative name of the
+case being run. By default, MOCC will use the filename of the XML document
+(without the ".xml" extension) as the case name, but any value wrapped by the
+<tt>\<case_name\></tt> tag will override this value.
+
+Example:
+\code{xml}
+<case_name>My_Fancypants_Reactor</case_name>
+\endcode
+
+\subsection parallel \<parallel\>
+The <tt>\<parallel\></tt> tag can be used to specify how the problem should be
+decomposed to run in parallel. For now, since OpenMP threading is the only
+supported parallelism method, this is a pretty simple tag. The
+<tt>num_threads</tt> attribute can be used to specify the number of threads to
+use. By default, MOCC will use the number speicified by the
+<tt>OMP_NUM_THREADS</tt> environment variable, however any value specified here
+will be used instead.
+
+Example:
+\code{xml}
+<parallel num_threads="4" />
+\endcode
+
+\subsection geom_output \<geometry_output\>
+This tag may be used to tell MOCC to generate extra output for visualizing the
+problem geometry. If included, several python scripts will be emitted, which
+when executed will produce a PDF file depicting the mesh for the geometry
+plane indicated by the <tt>plane</tt> attribute. The <tt>file</tt> attribute may
+be used to specify the name of the file to generate (defaults to "geom.py").
+Plotting of the individual rays may be controlled by modifying the produced
+python script, indicating which angle for which to plot rays.
+
+Example:
+\code{xml}
+<geometry_output plane="0" file="plane_0_geom.py" />
+\endcode
+
+*/

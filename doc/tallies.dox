@@ -1,0 +1,15 @@
+/**
+\page tally_page Monte Carlo Tallies
+
+Tallies are a pretty long pole in the Monte Carlo tent, and deserve a lot more
+design attention than I am paying them for the time being. For now, I am
+interested in some pretty basic quantities (system eigenvalue, group-wise scalar
+flux, pin powers, etc.), and have designed not only the \ref
+mocc::mc::TallyScalar and \ref mocc::mc::TallySpatial classes, but their clients
+to deal explicitly with quantities such as these. I have plenty of ideas about
+how to make the concept of tallies far more general and powerful, which I may
+come back to at some point, but for now I just want to graduate. The irony in
+that statement coming from a dude implementing a MG monte carlo capability for
+practically no reason is not lost on me.
+
+*/

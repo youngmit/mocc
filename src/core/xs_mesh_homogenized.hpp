@@ -1,13 +1,28 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <memory>
 
-#include "pugixml.hpp"
-
-#include "blitz_typedefs.hpp"
-#include "eigen_interface.hpp"
-#include "h5file.hpp"
-#include "xs_mesh.hpp"
+#include "core/blitz_typedefs.hpp"
+#include "core/eigen_interface.hpp"
+#include "core/h5file.hpp"
+#include "core/pugifwd.hpp"
+#include "core/xs_mesh.hpp"
 
 namespace mocc {
     /**
@@ -19,7 +34,7 @@ namespace mocc {
      */
     class XSMeshHomogenized: public XSMesh {
     public:
-        /** 
+        /**
          * Construct a homogenized \ref XSMesh from only a \ref CoreMesh object.
          * Following construction, the cross sections in the mesh will be
          * volume-weighted.
@@ -30,7 +45,7 @@ namespace mocc {
          * Construct a homogenized \ref XSMesh from a \ref CoreMesh and external
          * data. Following construction, the cross sections will be those
          * specified by the auxiliary data files specified by the \p input XML.
-         * 
+         *
          * \param mesh a \ref CoreMesh with which the \ref XSMeshHomogenized
          * should conform.
          * \param input an XML node containing at least one \<data\> child
@@ -38,7 +53,10 @@ namespace mocc {
         XSMeshHomogenized( const CoreMesh& mesh, const pugi::xml_node &input );
 
         /**
-         * Update homogenized cross sections using the passed flux array
+         * \brief \copybrief XSMesh::update()
+         *
+         * Update homogenized cross sections using the internally-stored
+         * reference to the scalar flux.
          */
         void update();
 
@@ -72,7 +90,7 @@ namespace mocc {
         * from a pin cell. No flux wieghting is performed, only volume
         * weighting.
         */
-        void homogenize_region( int i, const Pin& pin, 
+        void homogenize_region( int i, const Pin& pin,
                 XSMeshRegion &xsr ) const;
 
         /**
@@ -95,7 +113,7 @@ namespace mocc {
         * sections in the passed \ref Pin object and returns an \ref
         * XSMeshRegion object containing the homogenized cross sections.
         */
-        void homogenize_region_flux( int i, int first_reg, const Pin& pin, 
+        void homogenize_region_flux( int i, int first_reg, const Pin& pin,
                 XSMeshRegion &xsr ) const;
     };
 

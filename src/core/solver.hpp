@@ -1,21 +1,25 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <memory>
 
 #include "core/output_interface.hpp"
 #include "core/transport_sweeper.hpp"
-
-/**
- * \page input Input Specification
- * \section solver <solver> Tag
- *
- * The \c \<solver\> tag specifies the top level solver to use for the problem.
- * All \c \<solver\> tags must supply at least a \c type attribute to specify
- * the actual solver type, while each type may require further attributes to
- * fully specify the solver. Currently supported solver types are:
- *  - \c eigenvalue An eigenvalue solver
- *  - \c fixed_source A fixed-source solver
- */
 
 namespace mocc {
     /**

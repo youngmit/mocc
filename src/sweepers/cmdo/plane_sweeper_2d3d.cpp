@@ -1,10 +1,28 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "plane_sweeper_2d3d.hpp"
 
 #include <cmath>
 #include <iostream>
 #include <iomanip>
 
-#include "error.hpp"
+#include "util/range.hpp"
+
+#include "core/error.hpp"
 
 using mocc::sn::SnSweeper;
 
@@ -28,6 +46,7 @@ namespace mocc { namespace cmdo {
         ang_quad_(moc_sweeper_.get_ang_quad()),
         tl_( sn_sweeper_->n_group(), mesh_.n_pin() ),
         sn_resid_( sn_sweeper_->n_group() ),
+        prev_moc_flux_( sn_sweeper_->n_group(), mesh_.n_pin()),
         i_outer_( -1 )
     {
         this->parse_options( input );
@@ -39,13 +58,16 @@ namespace mocc { namespace cmdo {
 
         n_reg_ = moc_sweeper_.n_reg();
         n_group_ = xs_mesh_->n_group();
+        groups_ = Range(n_group_);
 
         auto sn_xs_mesh =
             sn_sweeper_->get_homogenized_xsmesh();
         assert( corrections_ );
         moc_sweeper_.set_coupling( corrections_, sn_xs_mesh );
 
-        sn_sweeper_->set_ang_quad(ang_quad_);
+        if( !keep_sn_quad_ ) {
+            sn_sweeper_->set_ang_quad(ang_quad_);
+        }
 
         sn_sweeper_->get_homogenized_xsmesh()->set_flux( moc_sweeper_.flux() );
 
@@ -59,12 +81,11 @@ namespace mocc { namespace cmdo {
         if( !coarse_data_ ) {
             throw EXCEPT("CMFD must be enabled to do 2D3D.");
         }
-        
+
         /// \todo do something less brittle
         if( group == 0 ) {
             i_outer_++;
         }
-
 
         // Calculate transverse leakage source
         if( do_tl_ ) {
@@ -76,18 +97,30 @@ namespace mocc { namespace cmdo {
             ((i_outer_ % moc_modulo_) == 0);
         if( do_moc ) {
             moc_sweeper_.sweep( group );
-        }
-        ArrayB1 moc_flux( mesh_.n_pin() );
-        moc_sweeper_.get_pin_flux_1g( group, moc_flux );
 
+            int n_negative = 0;
+            const auto flux = moc_sweeper_.flux()( blitz::Range::all(), group );
+            for( const auto &v: flux ) {
+                if( v < 0.0 ) {
+                    n_negative++;
+                }
+            }
+            if( n_negative > 0 ) {
+                cout << n_negative << " negative fluxes in group " << group <<
+                    endl;
+            }
+        }
+
+        ArrayB1 prev_moc_flux = prev_moc_flux_( group,
+                blitz::Range::all() );
+        prev_moc_flux(0) = 0.0;
+        moc_sweeper_.get_pin_flux_1g( group, prev_moc_flux );
+
+        if( do_mocproject_ ) {
+            sn_sweeper_->set_pin_flux_1g( group, prev_moc_flux );
+        }
 
         // Sn sweeper
-        // For now, we are assuming that the Sn cross sections are being updated
-        // in the last inner iteration of the MoC. We should come up with
-        // something better, since that actually ignores the change to the fine
-        // mesh flux in the last MoC inner. For low numbers of MoC inners, this
-        // essentially constitutes an outer-iteration lag of the updated cross
-        // sections :-/
         sn_sweeper_->sweep( group );
 
         if( do_snproject_ ) {
@@ -98,15 +131,15 @@ namespace mocc { namespace cmdo {
 
         // Compute Sn-MoC residual
         real_t residual = 0.0;
-        for( size_t i=0; i<moc_flux.size(); i++ ) {
-            residual += (moc_flux(i) - sn_sweeper_->flux( group, i )) *
-                        (moc_flux(i) - sn_sweeper_->flux( group, i ));
+        for( size_t i=0; i<prev_moc_flux.size(); i++ ) {
+            residual += (prev_moc_flux(i) - sn_sweeper_->flux( group, i )) *
+                        (prev_moc_flux(i) - sn_sweeper_->flux( group, i ));
         }
         residual = sqrt(residual)/mesh_.n_pin();
 
         cout << "MoC/Sn residual: " << residual;
         if( sn_resid_[group].size() > 0 ) {
-             cout << "   \t" << residual-sn_resid_[group].back();
+             cout << "   \t" << residual/sn_resid_[group].back();
         }
         cout << endl;
         sn_resid_[group].push_back(residual);
@@ -151,13 +184,15 @@ namespace mocc { namespace cmdo {
             for( int ir=0; ir<pin->n_reg(); ir++ ) {
                 tl_fsr( ir+ireg_pin ) = tl_g(ipin);
             }
+
             ipin++;
             ireg_pin += pin->n_reg();
         }
 
-        // Can add the TL as an auxiliary source directly to the Source_2D3D,
-        // since it extends the MoC source in the first place
-        source_->auxiliary( tl_fsr );
+
+        // Hand the transverse leakage to the MoC sweeper.
+        moc_sweeper_.apply_transverse_leakage( group, tl_fsr );
+
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +223,17 @@ namespace mocc { namespace cmdo {
             file.write( setname.str(), sn_resid_[g], niter );
         }
 
+        {
+            auto flux = prev_moc_flux_.copy();
+            Normalize( flux.begin(), flux.end());
+            auto h5g = file.create_group("moc_flux");
+            for( const auto &ig: groups_ ) {
+                std::stringstream setname;
+                setname << setfill('0') << setw(3) << ig+1;
+                h5g.write( setname.str(), flux(ig, blitz::Range::all()), dims );
+            }
+        }
+
         // Write out the transverse leakages
         {
             auto group = file.create_group("/transverse_leakage");
@@ -204,7 +250,6 @@ namespace mocc { namespace cmdo {
 
         // Write out the correction factors
         corrections_->output(file);
-        
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,9 +260,12 @@ namespace mocc { namespace cmdo {
         // Set defaults for everything
         expose_sn_ = false;
         do_snproject_ = false;
+        do_mocproject_ = false;
+        keep_sn_quad_ = false;
         do_tl_ = true;
         n_inactive_moc_ = 0;
         moc_modulo_ = 1;
+        relax_ = 1.0;
 
         // Override with entries in the input node
         if( !input.attribute("expose_sn").empty() ) {
@@ -225,6 +273,9 @@ namespace mocc { namespace cmdo {
         }
         if( !input.attribute("sn_project").empty() ) {
             do_snproject_ = input.attribute("sn_project").as_bool();
+        }
+        if( !input.attribute("moc_project").empty() ) {
+            do_mocproject_ = input.attribute("moc_project").as_bool();
         }
         if( !input.attribute("tl").empty() ) {
             do_tl_ = input.attribute("tl").as_bool();
@@ -235,11 +286,37 @@ namespace mocc { namespace cmdo {
         if( !input.attribute("moc_modulo").empty() ) {
             moc_modulo_ = input.attribute("moc_modulo").as_int();
         }
+        if( !input.attribute("preserve_sn_quadrature").empty() ) {
+            keep_sn_quad_ = input.attribute("preserve_sn_quadrature").as_bool();
+        }
+        if( !input.attribute("relax").empty() ) {
+            relax_ = input.attribute("relax").as_bool();
+        }
+
+        // Throw a warning if TL is disabled
+        if( !do_tl_ ) {
+            Warn("Transverse leakage is disabled. Are you sure that's what you "
+                    "want?");
+        }
+
+        // Make sure that if we are doing expose_sn, we arent also trying to do
+        // MoC. Doesnt work right now.
+        if( expose_sn_ ) {
+            // Cheat and peek into the MoC tag
+            int n_inner = input.child("moc_sweeper").attribute("n_inner").
+                as_int(0);
+            if( n_inner > 0 ) {
+                throw EXCEPT("Probably shouldn't expose the Sn sweeper while "
+                        "doing MoC sweeps");
+            }
+        }
 
         LogFile << "2D3D Sweeper options:" << std::endl;
         LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
+        LogFile << "    MoC Projection: " << do_mocproject_ << std::endl;
         LogFile << "    Expose Sn pin flux: " << expose_sn_ << std::endl;
-        LogFile << "    Transverse Leakage: " << do_snproject_ << std::endl;
+        LogFile << "    Keep original Sn quadrature: " << keep_sn_quad_ << std::endl;
+        LogFile << "    Transverse Leakage: " << do_tl_ << std::endl;
         LogFile << "    Inactive MoC Outer Iterations: "
             << n_inactive_moc_ << std::endl;
         LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;

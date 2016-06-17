@@ -1,52 +1,43 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <vector>
 #include <valarray>
-#include <iostream>
+#include <iosfwd>
 
-namespace mocc{
+namespace mocc {
 
 #ifdef FORCE_SINGLE
-typedef float real_t;
-#define FLOAT_EPS 1e-5
+    typedef float real_t;
 #else
-typedef double real_t;
-#define FLOAT_EPS 1e-12
+    typedef double real_t;
 #endif
 
-// General purpose vector of floats, ints, etc
-typedef std::vector<real_t> VecF;
-typedef std::vector<int> VecI;
-typedef std::vector<int> VecSI;
+    // General purpose vector of floats, ints, etc
+    typedef std::vector<real_t> VecF;
+    typedef std::vector<int> VecI;
+    typedef std::vector<int> VecSI;
 
-// valarray of floats
-typedef std::valarray<real_t> ArrayF;
-typedef std::slice_array<real_t> SliceF;
-
-
-struct Position {
-    Position():
-        x( 0 ),
-        y( 0 ),
-        z( 0 )
-    { }
-
-    Position( unsigned int x, unsigned int y, unsigned int z):
-        x( x ),
-        y( y ),
-        z( z )
-    { }
-    int x;
-    int y;
-    int z;
-
-    friend std::ostream& operator<<(std::ostream& os, const Position &pos ) {
-        os << pos.x << " " << pos.y << " " << pos.z;
-        return os;
-    }
-};
-
+    // valarray of floats
+    typedef std::valarray<real_t> ArrayF;
+    typedef std::slice_array<real_t> SliceF;
 }
 
 #define PROG_NAME "MOCC"

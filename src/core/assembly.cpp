@@ -1,9 +1,27 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "assembly.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "pugixml.hpp"
 
 #include "error.hpp"
 #include "string_utils.hpp"
@@ -111,6 +129,12 @@ namespace mocc {
                 asy = asy.next_sibling("assembly") )
         {
             UP_Assembly_t asy_p( new Assembly( asy, lattices ) );
+            int id = asy_p->id();
+            if( assemblies.find(id) != assemblies.end() ) {
+                std::stringstream msg;
+                msg << "Duplicate assembly ID (" << id << ")";
+                throw EXCEPT(msg.str());
+            }
             assemblies.emplace( asy_p->id(), std::move(asy_p) );
         }
 

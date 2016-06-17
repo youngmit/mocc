@@ -1,6 +1,22 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 #include "sn_sweeper.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "pugixml.hpp"
@@ -19,14 +35,13 @@ namespace {
     }
 }
 
-
-namespace mocc {
-namespace sn {
+namespace mocc { namespace sn {
     SnSweeper::SnSweeper( const pugi::xml_node &input, const CoreMesh& mesh ):
             TransportSweeper( input ),
             timer_( RootTimer.new_timer("Sn Sweeper", true) ),
             timer_init_( timer_.new_timer("Initialization", true) ),
             timer_sweep_( timer_.new_timer("Sweep", false) ),
+            timer_xsupdate_( timer_.new_timer("XS Update", false) ),
             mesh_( mesh ),
             bc_type_( mesh.boundary() ),
             flux_1g_( ),
@@ -58,6 +73,7 @@ namespace sn {
         flux_.resize( n_reg_, n_group_ );
         flux_old_.resize( n_reg_, n_group_ );
         vol_.resize( n_reg_ );
+        groups_ = Range(n_group_);
 
         // Set the mesh volumes. Same as the pin volumes
         int ipin = 0;
@@ -101,14 +117,66 @@ namespace sn {
         LogScreen << omp_get_max_threads() << " " << gs_boundary_ << std::endl;
         if( (omp_get_max_threads() > 1) && gs_boundary_ ) {
             gs_boundary_ = false;
-            LogScreen << "WARNING: Disabling Gauss-Seidel boundary update "
-                "in parallel Sn" << std::endl;
+            Warn( "Disabling Gauss-Seidel boundary update "
+                "in parallel Sn" );
         }
 
         timer_.toc();
         timer_init_.toc();
 
         return;
+    } // SnSweeper::SnSweeper( input, mesh )
+
+    /**
+     * This just decides what method should be used to update the incoming flux
+     * and instantiates an appropriate lambda function to carry out the update
+     * for a single face. The lambda is then used to specialize the \ref
+     * update_incoming_generic funcion template, which does most of the real
+     * work.
+     */
+    void SnSweeper::update_incoming_flux() {
+        // This should only be called in situations where coarse data should be
+        // available
+        assert(coarse_data_);
+
+        // Short circuit if incoming flux update is desabled explicitly
+        if( !do_incoming_update_ ) {
+            return;
+        }
+
+        if( coarse_data_->has_old_partial() ) {
+            // There are old partial currents on the coarse data object, update
+            // incomming flux based on the ratio of new to old
+            auto update =
+                [&]( real_t in, int is, int g, int i ) {
+                    real_t part =
+                        2.0 * ( coarse_data_->partial_current(is, g)[0] +
+                                coarse_data_->partial_current(is, g)[1]);
+                    real_t part_old =
+                        2.0 * ( coarse_data_->partial_current_old(is, g)[0] +
+                                coarse_data_->partial_current_old(is, g)[1]);
+
+                    if( part_old > 0.0 ) {
+                        real_t r = part/part_old;
+                        return in * r;
+                    } else {
+                        return in;
+                    }
+                };
+            update_incoming_generic<decltype(update)>( update );
+        } else {
+            // We dont have old partial currents to work with (probably because
+            // this is the first iteration). Set the incomming flux to reflect
+            // the partial current directly
+            auto update =
+                [&]( real_t in, int is, int g, int i ) {
+                    return (2.0*RFPI *
+                            (coarse_data_->partial_current(is, g)[i] +
+                             coarse_data_->partial_current(is, g)[i] ));
+                };
+
+            update_incoming_generic<decltype(update)>( update );
+        }
     }
 
     /**
@@ -127,16 +195,16 @@ namespace sn {
             assert(xsr.reg().size() == 1);
             assert(xsr.reg()[0] == ireg);
             for( int ig=0; ig<n_group_; ig++ ) {
-                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmackf(ig);
+                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
                 powers(pos.z, pos.y, pos.x) += p;
                 tot_pow += p;
             }
         }
-        
+
         tot_pow = powers.size()/tot_pow;
 
         powers *= tot_pow;
-        
+
         return powers;
     }
 

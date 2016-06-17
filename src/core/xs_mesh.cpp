@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "xs_mesh.hpp"
 
 #include <iostream>
@@ -14,7 +30,7 @@ using std::endl;
 namespace mocc {
     XSMesh::XSMesh( const CoreMesh& mesh ) {
 
-        LogFile << "Initializing XS Mesh... "; 
+        LogFile << "Initializing XS Mesh... ";
 
         const MaterialLib& mat_lib = mesh.mat_lib();
 
@@ -43,7 +59,7 @@ namespace mocc {
 
         int n_xsreg = fsrs.size();
 
-        
+
         this->allocate_xs(n_xsreg, ng_);
 
         VecI mat_ids(n_xsreg);
@@ -54,13 +70,13 @@ namespace mocc {
             xstr_(imat, blitz::Range::all()) = mat.xstr();
             xsnf_(imat, blitz::Range::all()) = mat.xsnf();
             xsch_(imat, blitz::Range::all()) = mat.xsch();
-            xskf_(imat, blitz::Range::all()) = mat.xskf();
+            xsf_(imat, blitz::Range::all()) = mat.xsf();
             // Don't calculate removal XS here. Let the XSMeshRegion do that in
             // its constructor
-            
+
             imat++;
         }
-        
+
         // Preallocate space for the regions. Saves on lots of copies for large
         // xsmeshes.
         regions_.reserve(fsrs.size());
@@ -71,7 +87,7 @@ namespace mocc {
                     &xstr_(imat, 0),
                     &xsnf_(imat, 0),
                     &xsch_(imat, 0),
-                    &xskf_(imat, 0),
+                    &xsf_(imat, 0),
                     &xsrm_(imat, 0),
                     mat.xssc() );
             imat++;

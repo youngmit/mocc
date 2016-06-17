@@ -1,14 +1,29 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <cassert>
-#include <iostream>
+#include <iosfwd>
 #include <vector>
 
-#include "pugixml.hpp"
-
-#include "angle.hpp"
+#include "core/geometry/angle.hpp"
 #include "global_config.hpp"
 #include "output_interface.hpp"
+#include "pugifwd.hpp"
 
 namespace mocc {
 
@@ -16,7 +31,8 @@ namespace mocc {
         LS, // Level-symmetric
         CHEB_GAUSS, // Chebyshev for azimuthal and Gaussian for polar
         CHEB_YAMAMOTO, // Chebyshev for azimuthal and Yamamoto for polar
-        MANUAL // User-defined
+        IMPORT, // Imported from a file
+        USER // User-defined
     };
 
     /**
@@ -191,7 +207,7 @@ namespace mocc {
          * azimuthal angles. The weight update simply chops the unit circle into
          * differently-sized wedges based on the spacing of the modularized
          * angles and assigns angle weights based on the size of the wedges.
-         * 
+         *
          * Imagine a unit circle, upon which are drawn all of the azimuthal
          * angles in the quadrature as solid lines. Now, draw dotted lines
          * between each of the solid lines, equidistant from the solid lines on

@@ -1,4 +1,22 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "constants.hpp"
+
+#include <iostream>
 
 #include <error.hpp>
 
@@ -34,6 +52,9 @@ namespace mocc {
             case Surface::BOTTOM:
                 os << "bottom";
                 break;
+            case Surface::INTERNAL:
+                os << "internal";
+                break;
             case Surface::INVALID:
                 os << "inv";
                 break;
@@ -42,39 +63,39 @@ namespace mocc {
     }
 
 
-    std::ostream& operator<<(std::ostream& os, const Direction d ) {
+    std::ostream& operator<<(std::ostream& os, const Cardinal d ) {
         switch( d ) {
-            case Direction::EAST:
+            case Cardinal::EAST:
                 os << "east";
                 break;
-            case Direction::WEST:
+            case Cardinal::WEST:
                 os << "west";
                 break;
-            case Direction::NORTH:
+            case Cardinal::NORTH:
                 os << "north";
                 break;
-            case Direction::SOUTH:
+            case Cardinal::SOUTH:
                 os << "south";
                 break;
-            case Direction::TOP:
+            case Cardinal::TOP:
                 os << "top";
                 break;
-            case Direction::BOTTOM:
+            case Cardinal::BOTTOM:
                 os << "bottom";
                 break;
-            case Direction::NE:
+            case Cardinal::NE:
                 os << "ne";
                 break;
-            case Direction::NW:
+            case Cardinal::NW:
                 os << "nw";
                 break;
-            case Direction::SW:
+            case Cardinal::SW:
                 os << "sw";
                 break;
-            case Direction::SE:
+            case Cardinal::SE:
                 os << "se";
                 break;
-            case Direction::INVALID:
+            case Cardinal::INVALID:
                 os << "inv";
                 break;
         }
@@ -110,6 +131,9 @@ namespace mocc {
             case Boundary::PERIODIC:
                 os << "PERIODIC";
                 break;
+            case Boundary::PRESCRIBED:
+                os << "PRESCRIBED";
+                break;
             default:
                 os << "Unknown: " << (int)b;
         }
@@ -133,7 +157,6 @@ namespace mocc {
             case Surface::TOP:
                 return Normal::Z_NORM;
             default:
-                std::cout << (int)s << std::endl;
                 throw EXCEPT("Unsupported surface.");
         }
     }

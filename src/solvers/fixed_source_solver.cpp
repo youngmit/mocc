@@ -1,4 +1,24 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "fixed_source_solver.hpp"
+
+#include <iostream>
+
+#include "pugixml.hpp"
 
 #include "transport_sweeper_factory.hpp"
 
@@ -66,16 +86,27 @@ namespace mocc {
 
     // Perform source iteration
     void FixedSourceSolver::solve() {
+        this->initialize();
         for( size_t iouter=0; iouter<max_iter_; iouter++ ) {
             this->step();
 
             real_t resid = sweeper_->flux_residual();
-            cout << iouter << " " << resid << endl;
+            LogScreen << iouter << " " << std::setprecision(15) << resid << endl;
 
             if( resid < flux_tol_ ) {
+                LogFile << "Logging multi-group  scalar flux grouped by energy"
+                   " group index from Group 1 to group G." << endl;
+                for( int ig=0; ig<sweeper_->n_group(); ig++ ) {
+                    LogFile << "Scalar flux for energy group " << ig+1 << " :"
+                        << endl;
+                    LogFile << (sweeper_->flux())(blitz::Range::all(), ig);
+                    LogFile << endl;
+                }
+                /// return flux_( ireg, ig );
                 break;
             }
         }
+
     }
 
     // Perform a single group sweep

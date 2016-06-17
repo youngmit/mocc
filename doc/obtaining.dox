@@ -5,7 +5,7 @@ Cloning the Repository
 ======================
 The MOCC repository can be cloned using the following command:
 \verbatim
-git clone [user]@abacus.engin.umich.edu/git-root/mocc.git
+git clone https://github.com/youngmit/mocc.git
 \endverbatim
 Once the repository is cloned, it is still necessary to initialize and update
 the various submodules that MOCC needs. To do so, \c cd into the repository and
@@ -19,14 +19,16 @@ dependencies.
 
 Handling Dependencies
 =====================
+
 MOCC relies on a few dependencies to build and run. Below are instructions on
-how to obtain and build them, as well as how to make them available to the MOCC
-build system. The Eigen and pugixml libraries are fully integrated into the MOCC
-git repository, and aside from synchronizing the git submodules, nothing should
-need to be done for them to work. On most systems, Boost and HDF5 can and maybe
-will be installed system-wide using a package manager. Blitz++ is a more niche
-library, and may not be available through regular means; it must therefore be
-built manually (see below).
+how to obtain and build them, as well as how to make them available to the
+MOCC build system. The Eigen, UnitTest++, and pugixml libraries are fully
+integrated into the MOCC git repository, and aside from synchronizing the git
+submodules, nothing should need to be done for them to work. On most systems,
+HDF5 can and maybe will be installed system-wide using a package manager.
+Blitz++ is a more niche library, and may not be available through regular
+means; it must therefore be built manually under most circumstances (see
+below).
 
 Eigen
 -----
@@ -50,12 +52,18 @@ To build MOCC, it is necessary to first have a built version of the Blitz++
 library. The source and directions for building Blitz can be found on their
 website, linked above. Once Blitz++ is built, define an environment variable, \c
 Blitz, which stores the path to the directory where the Blitz++ installation can
-be found. For most Unix systems/shells, this can be accomplished with the
+be found.
+
+Linux and the like
+For most Unix systems/shells, this can be accomplished with the
 command:
 \verbatim
 export Blitz=/path/to/blitz/installation
 \endverbatim
 Add the above to your shell startup script to make it stick.
+
+Building Blitz++ in Windows is possible, but a bit of a mess and beyond the
+scope of this document.
 
 For more information about how we use Blitz++ and how to build it, refer to:
 \ref blitz.

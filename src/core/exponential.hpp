@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <algorithm>
@@ -6,8 +22,6 @@
 #include <cmath>
 
 #include "core/global_config.hpp"
-
-const int N = 10000;
 
 namespace mocc {
     /**
@@ -18,20 +32,16 @@ namespace mocc {
      */
     class Exponential {
     public:
-        Exponential():
-            max_error_( 0.0 )
+        Exponential()
         { }
 
         inline real_t exp( real_t v ) {
             return std::exp(v);
         }
 
-        real_t max_error() {
-            return max_error_;
+        virtual real_t max_error() {
+            return 0.0;
         }
-
-    protected:
-        real_t max_error_;
     };
 
     /*
@@ -40,39 +50,47 @@ namespace mocc {
      * the domain of the table, it will fall back to the result of the standard
      * library \c exp() function.
      */
+    template< int N >
     class Exponential_Linear: public Exponential {
     public:
-        Exponential_Linear():
+        Exponential_Linear( real_t min=-10.0, real_t max=0.0 ):
             min_( -10.0 ),
-            space_( -min_/(real_t)(N-1)),
+            max_( max ),
+            space_( (max-min_)/(real_t)(N)),
             rspace_( 1.0/space_ )
         {
-            for( int i=0; i<N; i++ ) {
+            for( int i=0; i<=N; i++ ) {
                 d_[i] = std::exp(min_+i*space_);
-            }
-
-            for( int i=0; i<N-1; i++ ) {
-                real_t x = min_+space_*(0.5+i);
-                real_t err = std::abs(this->exp(x) - std::exp(x));
-                max_error_ = std::max( max_error_, err );
             }
         }
 
         inline real_t exp( real_t v ) {
-            assert((v < 0.0));
-            if( v < min_ ) {
-                std::cout << "Big exponential argument: " << v << std::endl;
+            if( v < min_ || v > max_ ) {
+                std::cout << "Out-of-bounds exponential argument: "
+                    << v << std::endl;
                 return std::exp(v);
             }
             int i = (v-min_)*rspace_;
             v -= space_*i+min_;
             return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
         }
+
+        real_t max_error() {
+            real_t max_error = 0.0;
+            for( int i=0; i<N; i++ ) {
+                real_t x = min_+space_*(0.5+i);
+                real_t e = std::exp(x);
+                real_t err = std::abs((this->exp(x) - e)/e);
+                max_error = std::max( max_error, err );
+            }
+            return max_error;
+        }
     protected:
         real_t min_;
+        real_t max_;
         real_t space_;
         real_t rspace_;
-        std::array<real_t, N> d_;
+        std::array<real_t, N+1> d_;
     };
 
     /**
@@ -83,17 +101,18 @@ namespace mocc {
      * to shave a little more time off of the \ref exp() evaluations over \ref
      * Exponential_Linear.
      */
-    class Exponential_UnsafeLinear : public Exponential_Linear {
-        Exponential_UnsafeLinear():
-            Exponential_Linear()
+    template< int N >
+    class Exponential_UnsafeLinear : public Exponential_Linear<N> {
+        Exponential_UnsafeLinear( real_t min=-10.0, real_t max=0.0 ):
+            Exponential_Linear<N>( min, max )
         {
             return;
         }
 
         inline real_t exp( real_t v ) {
-            int i = (v-min_)*rspace_;
-            v -= space_*i+min_;
-            return d_[i] + (d_[i+1] - d_[i])*v*rspace_;
+            int i = (v-this->min_)*this->rspace_;
+            v -= this->space_*i+this->min_;
+            return this->d_[i] + (this->d_[i+1] - this->d_[i])*v*this->rspace_;
         }
 
     };

@@ -1,3 +1,19 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include "pugixml.hpp"
@@ -44,7 +60,13 @@ namespace mocc { namespace sn {
         void sweep( int group ) {
             assert(source_);
             timer_.tic();
+
+            timer_xsupdate_.tic();
+            xs_mesh_->update();
+            timer_xsupdate_.toc();
+
             timer_sweep_.tic();
+
             /// \todo add an is_ready() method to the worker, and make sure that
             /// it's ready before continuing.
 
@@ -121,7 +143,7 @@ namespace mocc { namespace sn {
             for( int iang=0; iang<ang_quad_.ndir(); iang++ ) {
                 Angle ang = ang_quad_[iang];
                 // Configure the current worker for this angle
-                cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+                cw.set_octant( ang );
 
                 // Get the source for this angle
                 auto& q = source_->get_transport( iang );
@@ -170,7 +192,7 @@ namespace mocc { namespace sn {
                 x_flux = xf.second;
                 auto yf = bc_out_.get_face( 0, iang, Normal::Y_NORM );
                 y_flux = yf.second;
-                auto zf = bc_out_.get_face( 0, iang, Normal::Z_NORM ); 
+                auto zf = bc_out_.get_face( 0, iang, Normal::Z_NORM );
                 z_flux = zf.second;
                 bc_in_.copy_face( group, iang, Normal::X_NORM, x_flux );
                 bc_in_.copy_face( group, iang, Normal::Y_NORM, y_flux );
@@ -212,7 +234,7 @@ namespace mocc { namespace sn {
                 if( gs_boundary_ ) {
                     bc_in_.update( group, iang, bc_out_ );
                 }
-            }
+            } // Angles
             // Update the boundary condition
 #pragma omp single
             if( !gs_boundary_ ) {
@@ -229,7 +251,7 @@ namespace mocc { namespace sn {
 
             return;
         }
-        
+
         /**
          * \brief Generic Sn sweep procedure for 2-D orthogonal mesh.
          *
@@ -262,7 +284,7 @@ namespace mocc { namespace sn {
             for( int iang=0; iang<ang_quad_.ndir()/2; iang++ ) {
                 Angle ang = ang_quad_[iang];
                 // Configure the current worker for this angle
-                cw.set_octant( iang / ang_quad_.ndir_oct() + 1 );
+                cw.set_octant( ang );
 
                 // Get the source for this angle
                 auto& q = source_->get_transport( iang );

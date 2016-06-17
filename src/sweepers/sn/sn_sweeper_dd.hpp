@@ -1,6 +1,24 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include "core/mesh.hpp"
+
+#include "util/force_inline.hpp"
 
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
@@ -20,7 +38,7 @@ namespace mocc { namespace sn {
         }
 
 
-        inline real_t evaluate(real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
@@ -37,8 +55,8 @@ namespace mocc { namespace sn {
             return psi;
         }
 
-        inline real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
-                real_t xstr, size_t i )
+        MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
+                real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
             real_t tx = ox_/mesh_.dx(ix);
@@ -62,7 +80,7 @@ namespace mocc { namespace sn {
         }
 
 
-        inline real_t evaluate(real_t &flux_x, real_t &flux_y,
+        MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                 real_t &flux_z, real_t q, real_t xstr, size_t i )
         {
             size_t ix = i % mesh_.nx();
@@ -83,9 +101,5 @@ namespace mocc { namespace sn {
 
             return psi;
         }
-
     };
-
-
-
 } }

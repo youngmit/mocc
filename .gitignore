@@ -1,4 +1,5 @@
 git_SHA1.cpp
+force_inline.hpp
 *~
 .*
 *.swp
@@ -9,3 +10,4 @@ build/*
 bin/*
 mocc.sublime-workspace
 *.mine
+*.log

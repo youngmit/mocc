@@ -1,8 +1,20 @@
-#include "mesh.hpp"
+/*
+   Copyright 2016 Mitchell Young
 
-using std::cout;
-using std::endl;
-using std::cin;
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+#include "mesh.hpp"
 
 namespace mocc {
     Mesh::Mesh( size_t n_reg, size_t n_xsreg,
@@ -18,7 +30,7 @@ namespace mocc {
         dx_vec_( hx.size()-1 ),
         dy_vec_( hy.size()-1 ),
         dz_vec_( hz.size()-1 ),
-        vol_( nx_*ny_*nz_ ),
+        coarse_vol_( nx_*ny_*nz_ ),
         n_surf_plane_( (nx_+1)*ny_ + (ny_+1)*nx_ + nx_*ny_ )
     {
         assert( std::is_sorted( x_vec_.begin(), x_vec_.end() ) );
@@ -52,7 +64,7 @@ namespace mocc {
 
         for( size_t i=0; i<this->n_pin(); i++ ) {
             auto pos = this->coarse_position( i );
-            vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
+            coarse_vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
         }
 
         assert( nx_ == (int)hx.size()-1 );
@@ -199,18 +211,18 @@ namespace mocc {
             assert(corner_x != Surface::INVALID);
             assert(corner_y != Surface::INVALID);
 
-            Direction corner = Direction::INVALID;
+            Cardinal corner = Cardinal::INVALID;
             if( corner_x == Surface::WEST ) {
                 if( corner_y == Surface::NORTH ) {
-                    corner = Direction::NW;
+                    corner = Cardinal::NW;
                 } else {
-                    corner = Direction::SW;
+                    corner = Cardinal::SW;
                 }
             } else {
                 if( corner_y == Surface::NORTH ) {
-                    corner = Direction::NE;
+                    corner = Cardinal::NE;
                 } else {
-                    corner = Direction::SE;
+                    corner = Cardinal::SE;
                 }
             }
 
@@ -227,11 +239,11 @@ namespace mocc {
             if( ix == 0 ) {
                 int neighbor = this->coarse_neighbor( cell, corner_y );
                 switch( corner ) {
-                    case Direction::SW:
+                    case Cardinal::SW:
                         s[0] = this->coarse_surf( neighbor, corner_x );
                         s[1] = this->coarse_surf( cell, corner_y );
                         return 2;
-                    case Direction::NW:
+                    case Cardinal::NW:
                         s[0] = this->coarse_surf( cell, corner_x );
                         return 1;
                     default:
@@ -241,11 +253,11 @@ namespace mocc {
             if( ix == nx_ ) {
                 int neighbor = this->coarse_neighbor( cell, corner_y );
                 switch( corner ) {
-                    case Direction::SE:
+                    case Cardinal::SE:
                         s[0] = this->coarse_surf( neighbor, corner_x );
                         s[1] = this->coarse_surf( cell, corner_y );
                         return 2;
-                    case Direction::NE:
+                    case Cardinal::NE:
                         s[0] = this->coarse_surf( cell, corner_x );
                         return 1;
                     default:
@@ -255,11 +267,11 @@ namespace mocc {
             if( iy == 0 ) {
                 int neighbor = this->coarse_neighbor( cell, corner_x );
                 switch( corner ) {
-                    case Direction::SW:
+                    case Cardinal::SW:
                         s[0] = this->coarse_surf( neighbor, corner_y );
                         s[1] = this->coarse_surf( cell, corner_x );
                         return 2;
-                    case Direction::SE:
+                    case Cardinal::SE:
                         s[0] = this->coarse_surf( cell, corner_y );
                         return 1;
                     default:
@@ -269,11 +281,11 @@ namespace mocc {
             if( iy == ny_ ) {
                 int neighbor = this->coarse_neighbor( cell, Surface::EAST );
                 switch( corner ) {
-                    case Direction::NE:
+                    case Cardinal::NE:
                         s[0] = this->coarse_surf( neighbor, Surface::NORTH );
                         s[1] = this->coarse_surf( cell, Surface::EAST );
                         return 2;
-                    case Direction::NW:
+                    case Cardinal::NW:
                         s[0] = this->coarse_surf( cell, Surface::NORTH );
                         return 1;
                     default:
@@ -331,6 +343,19 @@ namespace mocc {
         /// \todo add z support
         return this->coarse_cell( Position(ix, iy, 0) );
     }
+
+    int Mesh::coarse_cell_point( Point3 p ) const {
+        auto ix = std::lower_bound( x_vec_.begin(), x_vec_.end(), p.x ) -
+            x_vec_.begin() - 1;
+        auto iy = std::distance( y_vec_.begin(),
+                std::lower_bound( y_vec_.begin(), y_vec_.end(), p.y ) ) - 1;
+        auto iz = std::distance( z_vec_.begin(),
+                std::lower_bound( z_vec_.begin(), z_vec_.end(), p.z ) ) - 1;
+
+        /// \todo add z support
+        return this->coarse_cell( Position(ix, iy, iz) );
+    }
+
 
     size_t Mesh::coarse_norm_point( Point2 p, int octant, Surface (&s)[2] )
             const {

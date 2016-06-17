@@ -1,8 +1,26 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #pragma once
 
 #include <map>
 #include <memory>
 #include <string>
+
+#include "pugixml.hpp"
 
 #include "core/core_mesh.hpp"
 #include "core/timers.hpp"
@@ -15,13 +33,13 @@ namespace mocc{
     * top-level Solver. Following construction, the "driver" can extract the
     * top-level Solver and call its Solver::solve() method.
     */
-    class InputProc {
+    class InputProcessor {
     public:
         /**
         * Given the filename of an XML document, parses the document into a tree
         * structure, then uses it to generate a CoreMesh and top-level Solver.
         */
-        InputProc(std::string filename);
+        InputProcessor( std::vector<std::string> args );
 
         /**
          * \brief Actually process the contents of the file and construct
@@ -70,6 +88,8 @@ namespace mocc{
 
         // XML document
         pugi::xml_document doc_;
+
+        std::vector<std::string> args_;
 
         std::string case_name_;
 

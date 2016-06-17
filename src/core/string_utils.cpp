@@ -1,15 +1,28 @@
+/*
+   Copyright 2016 Mitchell Young
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 #include "string_utils.hpp"
 
-#include <sstream>
 #include <ctype.h>
+#include <sstream>
 
 #include "core/global_config.hpp"
 #include "core/error.hpp"
 
 using mocc::Exception;
-
-using std::cout;
-using std::endl;
 
 std::string print_range( const std::vector<bool> &input ) {
     std::stringstream output;
@@ -52,7 +65,7 @@ std::vector<T> explode_string(std::string data) {
     };
 
     // first, make sure there are no non-[numerals|whitespace]
-    bool good = std::find_if(data.begin(), data.end(), is_invalid_char) 
+    bool good = std::find_if(data.begin(), data.end(), is_invalid_char)
         == data.end();
     if(!good) {
         throw EXCEPT("Malformed data");
@@ -60,7 +73,7 @@ std::vector<T> explode_string(std::string data) {
 
 
     std::vector<T> out;
-    
+
     // Store the string as a stream and try to read all entries
     std::stringstream inBuf(data);
     T i;
