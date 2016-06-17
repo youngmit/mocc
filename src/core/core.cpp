@@ -13,6 +13,8 @@ namespace mocc {
             return Boundary::VACUUM;
         } else if ( in == "reflect" ) {
             return Boundary::REFLECT;
+        } else if ( in == "prescribed" ) {
+            return Boundary::PRESCRIBED;
         } else {
             return Boundary::INVALID;
         }
