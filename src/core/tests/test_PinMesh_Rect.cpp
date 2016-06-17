@@ -24,7 +24,8 @@
 
 using namespace mocc;
 
-TEST(test_rect) {
+TEST(test_rect)
+{
     std::string xml_input =
         "<mesh type=\"rect\" id=\"1\"  pitch=\"1.26\"><sub_x>5</sub_x><sub_y>"
         "4</sub_y>";
@@ -58,6 +59,30 @@ TEST(test_rect) {
                                 Direction(5.0 * PI / 4.0, HPI)));
     CHECK_EQUAL(1, pm->find_reg(Point2(-0.378, -0.315),
                                 Direction(7.0 * PI / 4.0, HPI)));
+
+    // Check along the edges
+    // on top edge, pointing out
+    CHECK_EQUAL(-1, pm->find_reg(Point2(0.0, 0.63), Direction()));
+    // on top edge, pointing in
+    CHECK_EQUAL(
+        17, pm->find_reg(Point2(0.0, 0.63), Direction(5.0 * PI / 4.0, HPI)));
+
+    // on bottom edge, pointing in
+    CHECK_EQUAL(3, pm->find_reg(Point2(0.252, -0.63), Direction()));
+    // on bottom edge, pointing out
+    CHECK_EQUAL(
+        -1, pm->find_reg(Point2(0.252, -0.63), Direction(5.0 * PI / 4.0, HPI)));
+
+    // on right edge, pointing out
+    CHECK_EQUAL(-1, pm->find_reg(Point2(0.63, 0.0), Direction()));
+    // on bottom edge, pointing in
+    CHECK_EQUAL(
+        14, pm->find_reg(Point2(0.63, 0.0), Direction(3.0 * PI / 4.0, HPI)));
+    CHECK_EQUAL(
+        9, pm->find_reg(Point2(0.63, 0.0), Direction(5.0 * PI / 4.0, HPI)));
 }
 
-int main() { return UnitTest::RunAllTests(); }
+int main()
+{
+    return UnitTest::RunAllTests();
+}

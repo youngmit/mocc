@@ -19,23 +19,19 @@
 #include <iosfwd>
 
 namespace mocc {
-    struct Position {
-        Position():
-            x( 0 ),
-            y( 0 ),
-            z( 0 )
-        { }
+struct Position {
+    Position() : x(0), y(0), z(0)
+    {
+    }
 
-        Position( unsigned int x, unsigned int y, unsigned int z):
-            x( x ),
-            y( y ),
-            z( z )
-        { }
+    Position(unsigned int x, unsigned int y, unsigned int z) : x(x), y(y), z(z)
+    {
+    }
 
-        int x;
-        int y;
-        int z;
+    int x;
+    int y;
+    int z;
 
-        friend std::ostream& operator<<(std::ostream& os, const Position &pos );
-    };
+    friend std::ostream &operator<<(std::ostream &os, const Position &pos);
+};
 }

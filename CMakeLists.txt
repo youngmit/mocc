@@ -113,10 +113,13 @@ endif()
 
 find_package(Blitz REQUIRED)
 
+find_package(MPI REQUIRED)
+
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/pugixml/src")
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/unittest-cpp")
 include_directories(SYSTEM "${CMAKE_CURRENT_SOURCE_DIR}/lib/eigen")
 include_directories(SYSTEM ${Blitz_INCLUDE_DIR})
+include_directories(SYSTEM ${HDF5_INCLUDE_DIR})
 
 add_subdirectory(lib)
 

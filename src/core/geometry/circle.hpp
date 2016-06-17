@@ -16,14 +16,15 @@
 
 #pragma once
 
-#include "core/global_config.hpp"
-
+#include "util/global_config.hpp"
 #include "direction.hpp"
 #include "points.hpp"
 
 namespace mocc {
 struct Circle {
-    Circle(Point2 c, real_t r) : c(c), r(r) {}
+    Circle(Point2 c, real_t r) : c(c), r(r)
+    {
+    }
 
     Point2 c;
     real_t r;

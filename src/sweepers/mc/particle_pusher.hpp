@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "core/core_mesh.hpp"
+#include "core/output_interface.hpp"
 #include "core/xs_mesh.hpp"
 
 #include "fission_bank.hpp"
@@ -34,7 +35,7 @@ namespace mc {
  * death and the death of all of its progeny (which would arise from
  * variance reduction techniques such as russian roulette/splitting).
  */
-class ParticlePusher {
+class ParticlePusher : public HasOutput {
 public:
     ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh);
 
@@ -58,7 +59,7 @@ public:
      * \brief Perform an interaction of a particle with its underlying
      * medium
      */
-    void collide(Particle &p, int ixsreg);
+    void collide(Particle &p);
 
     /**
      * \brief Return a reference to the internal \ref FissionBank
@@ -73,28 +74,75 @@ public:
      */
     const TallyScalar &k_tally() const
     {
-        return k_tally_;
+        return k_tally_collision_;
     }
 
     /**
      * \brief Reset all tallies
      */
-    void reset_tallies()
+    void reset_tallies(bool clear_persistent = false)
     {
         k_tally_.reset();
-        for (auto &flux_tally : scalar_flux_tally_) {
-            flux_tally.reset();
+        k_tally_collision_.reset();
+
+        if (clear_persistent) {
+            for (auto &flux_tally : scalar_flux_tally_) {
+                flux_tally.reset();
+            }
+
+            for (auto &flux_tally : fine_flux_tally_) {
+                flux_tally.reset();
+            }
+
+            for (auto &tally : fine_flux_col_tally_) {
+                tally.reset();
+            }
+            pin_power_tally_.reset();
         }
         return;
     }
 
-    const auto &flux_tallies() const {
+    void commit_tallies()
+    {
+        for (auto &t : scalar_flux_tally_) {
+            t.commit_realization();
+        }
+        for (auto &t : fine_flux_tally_) {
+            t.commit_realization();
+        }
+        for (auto &t : fine_flux_col_tally_) {
+            t.commit_realization();
+        }
+
+        pin_power_tally_.commit_realization();
+
+        return;
+    }
+
+    /**
+     * \brief Assign a new seed to the RNG
+     */
+    void set_seed(unsigned long seed)
+    {
+        seed_ = seed;
+    }
+
+    const auto &flux_tallies() const
+    {
         return scalar_flux_tally_;
     }
+
+    const auto &fine_flux_tallies() const
+    {
+        return fine_flux_tally_;
+    }
+
+    void output(H5Node &node) const override;
 
 private:
     const CoreMesh &mesh_;
     const XSMesh &xs_mesh_;
+
     int n_group_;
 
     // This fission bank stores new fission sites generated as the result of
@@ -111,16 +159,29 @@ private:
     // Do implicit capture?
     bool do_implicit_capture_;
 
+    unsigned long seed_;
+
     // Eigenvalue tally
     TallyScalar k_tally_;
+    TallyScalar k_tally_collision_;
     // Guess to use for scaling fission neutron production. Warning: Don't
     // try to use this as the actual system eigenvalue, since it is not tied
     // directly to a specific tally
     real_t k_eff_;
 
-    // Scalar flux tally
+    // Scalar flux tallies
     std::vector<TallySpatial> scalar_flux_tally_;
+    std::vector<TallySpatial> fine_flux_tally_;
+    std::vector<TallySpatial> fine_flux_col_tally_;
 
+    // Pin power tally
+    TallySpatial pin_power_tally_;
+
+    // Used to generate unique particle IDs
+    unsigned id_offset_;
+
+    unsigned n_cycles_;
+    bool print_particles_;
 };
 } // namespace mc
 } // namespace mocc

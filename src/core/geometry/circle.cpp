@@ -21,7 +21,8 @@
 #include <limits>
 
 namespace mocc {
-real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
+real_t Circle::distance_to_surface(Point2 p, Direction dir) const
+{
     std::numeric_limits<real_t> lim;
 
     real_t a = 1.0 - dir.oz * dir.oz;
@@ -33,8 +34,8 @@ real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
     real_t x = p.x - c.x;
     real_t y = p.y - c.y;
 
-    real_t k = x * dir.ox + y * dir.oy;
-    real_t c = x * x + y * y - r * r;
+    real_t k   = x * dir.ox + y * dir.oy;
+    real_t c   = x * x + y * y - r * r;
     real_t det = k * k - a * c;
 
     if (det < 0.0) {
@@ -47,7 +48,8 @@ real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
     if (std::abs(c) < REAL_FUZZ) {
         if (k >= 0.0) {
             return lim.max();
-        } else {
+        }
+        else {
             return (-k + std::sqrt(det)) / a;
         }
     }
@@ -55,7 +57,8 @@ real_t Circle::distance_to_surface(Point2 p, Direction dir) const {
     if (c < 0.0) {
         // inside the circle
         return (-k + std::sqrt(det)) / a;
-    } else {
+    }
+    else {
         // outside the circle
         real_t d = (-k - std::sqrt(det)) / a;
         return d >= 0.0 ? d : lim.max();

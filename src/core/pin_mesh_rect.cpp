@@ -21,29 +21,29 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "error.hpp"
+#include "util/error.hpp"
 
 namespace mocc {
-PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input) {
+PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input)
+{
     // Parse the number of x and y divisions
     int ndiv_x = input.child("sub_x").text().as_int(0);
     if (ndiv_x < 1) {
-        throw EXCEPT(
-            "Failed to read valid number of X divisions in rect "
-            "pin mesh.");
+        throw EXCEPT("Failed to read valid number of X divisions in rect "
+                     "pin mesh.");
     }
     int ndiv_y = input.child("sub_y").text().as_int(0);
     if (ndiv_y < 1) {
-        throw EXCEPT(
-            "Failed to read valid number of Y divisions in rect "
-            "pin mesh.");
+        throw EXCEPT("Failed to read valid number of Y divisions in rect "
+                     "pin mesh.");
     }
 
     n_xsreg_ = ndiv_x * ndiv_y;
-    n_reg_ = ndiv_x * ndiv_y;
+    n_reg_   = ndiv_x * ndiv_y;
+
+    nx_ = ndiv_x;
+    ny_ = ndiv_y;
 
     real_t dx = pitch_x_ / ndiv_x;
     real_t dy = pitch_y_ / ndiv_y;
@@ -51,18 +51,20 @@ PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input) {
     real_t h_pitch_x = 0.5 * pitch_x_;
     real_t h_pitch_y = 0.5 * pitch_y_;
 
-    for (int i = 1; i < ndiv_x; i++) {
+    for (int i = 0; i <= ndiv_x; i++) {
         hx_.push_back(i * dx - h_pitch_x);
     }
-    for (int i = 1; i < ndiv_y; i++) {
+    for (int i = 0; i <= ndiv_y; i++) {
         hy_.push_back(i * dy - h_pitch_y);
     }
 
     // Form lines representing the mesh boundaries
-    for (auto &xi : hx_) {
+    for (unsigned ix = 1; ix < hx_.size() - 1; ix++) {
+        real_t xi = hx_[ix];
         lines_.push_back(Line(Point2(xi, -h_pitch_y), Point2(xi, h_pitch_y)));
     }
-    for (auto &yi : hy_) {
+    for (unsigned iy = 1; iy < hy_.size() - 1; iy++) {
+        real_t yi = hy_[iy];
         lines_.push_back(Line(Point2(-h_pitch_x, yi), Point2(h_pitch_x, yi)));
     }
 
@@ -72,13 +74,14 @@ PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input) {
     return;
 }
 
-std::pair<real_t, Surface> PinMesh_Rect::distance_to_surface(Point2 p,
-                                                          Direction dir) const {
+std::pair<real_t, Surface>
+PinMesh_Rect::distance_to_surface(Point2 p, Direction dir) const
+{
     std::pair<real_t, Surface> ret;
     ret.second = Surface::INTERNAL;
-    ret.first = std::numeric_limits<real_t>::max();
+    ret.first  = std::numeric_limits<real_t>::max();
     for (const auto &l : lines_) {
-        real_t d = l.distance_to_surface(p, dir);
+        real_t d  = l.distance_to_surface(p, dir);
         ret.first = (d < ret.first) ? d : ret.first;
     }
 
@@ -86,7 +89,7 @@ std::pair<real_t, Surface> PinMesh_Rect::distance_to_surface(Point2 p,
               Point2(0.5 * pitch_x_, 0.5 * pitch_y_));
     auto bound_d = bound.distance_to_surface(p, dir);
     if (bound_d.first < ret.first) {
-        ret.first = bound_d.first;
+        ret.first  = bound_d.first;
         ret.second = bound_d.second;
     }
 
@@ -94,7 +97,8 @@ std::pair<real_t, Surface> PinMesh_Rect::distance_to_surface(Point2 p,
 }
 
 int PinMesh_Rect::trace(Point2 p1, Point2 p2, int first_reg, VecF &s,
-                        VecI &reg) const {
+                        VecI &reg) const
+{
     // Make a vector to store the collision points and add the start and end
     // points to it
     std::vector<Point2> ps;
@@ -131,7 +135,8 @@ int PinMesh_Rect::trace(Point2 p1, Point2 p2, int first_reg, VecF &s,
  * region is in the lower left, the last in the upper right, proceeding
  * first in the x direction, then in the y. nothing too fancy.
  */
-int PinMesh_Rect::find_reg(Point2 p) const {
+int PinMesh_Rect::find_reg(Point2 p) const
+{
     // Make sure the point is inside the pin
     if (fabs(p.x) > 0.5 * pitch_x_) {
         return -1;
@@ -140,45 +145,25 @@ int PinMesh_Rect::find_reg(Point2 p) const {
         return -1;
     }
 
-    int ix;
-    for (ix = 0; ix < (int)hx_.size(); ix++) {
-        if (hx_[ix] > p.x) {
-            break;
-        }
-    }
-    int iy;
-    for (iy = 0; iy < (int)hy_.size(); iy++) {
-        if (hy_[iy] > p.y) {
-            break;
-        }
-    }
+    int ix = std::distance(
+        hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
+    int iy = std::distance(
+        hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
+    ix--;
+    iy--;
 
-    int ireg = (hx_.size() + 1) * iy + ix;
+    int ireg = nx_ * iy + ix;
     assert(ireg < n_reg_);
     return ireg;
 }
 
-void PinMesh_Rect::print(std::ostream &os) const {
-    PinMesh::print(os);
-    os << std::endl;
-    os << "Type: Rectangular" << std::endl;
-    os << "X Divisions: " << std::endl;
-    for( const auto &xi: hx_ ) {
-        os << "    " << xi << std::endl;
-    }
-    os << "Y Divisions: " << std::endl;
-    for( const auto &yi: hy_ ) {
-        os << "    " << yi << std::endl;
-    }
-    return;
-}
-
-int PinMesh_Rect::find_reg(Point2 p, Direction dir) const {
+int PinMesh_Rect::find_reg(Point2 p, Direction dir) const
+{
     // Make sure the point is inside the pin
-    if(((p.x < -0.5*pitch_x_) && (dir.ox<0.0)) ||
-       ((p.x > 0.5*pitch_x_) && (dir.ox>0.0)) ||
-       ((p.y < -0.5*pitch_y_) && (dir.oy<0.0)) ||
-       ((p.y > 0.5*pitch_y_) && (dir.oy>0.0))) {
+    if (((p.x < -0.5 * pitch_x_ + REAL_FUZZ) && (dir.ox < 0.0)) ||
+        ((p.x > 0.5 * pitch_x_ - REAL_FUZZ) && (dir.ox > 0.0)) ||
+        ((p.y < -0.5 * pitch_y_ + REAL_FUZZ) && (dir.oy < 0.0)) ||
+        ((p.y > 0.5 * pitch_y_ - REAL_FUZZ) && (dir.oy > 0.0))) {
         return -1;
     }
 
@@ -187,17 +172,38 @@ int PinMesh_Rect::find_reg(Point2 p, Direction dir) const {
     if (fp_equiv_abs(p.x, hx_[ix])) {
         ix = (dir.ox > 0.0) ? ix + 1 : ix;
     }
+    ix = std::max(0, std::min((int)nx_ - 1, ix - 1));
+
     int iy = std::distance(
         hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
     if (fp_equiv_abs(p.y, hy_[iy])) {
         iy = (dir.oy > 0.0) ? iy + 1 : iy;
     }
-    int ireg = (hx_.size() + 1) * iy + ix;
+    iy = std::max(0, std::min((int)ny_ - 1, iy - 1));
+
+    int ireg = nx_ * iy + ix;
     assert(ireg < n_reg_);
     return ireg;
 }
 
-std::string PinMesh_Rect::draw() const {
+void PinMesh_Rect::print(std::ostream &os) const
+{
+    PinMesh::print(os);
+    os << std::endl;
+    os << "Type: Rectangular" << std::endl;
+    os << "X Divisions: " << std::endl;
+    for (const auto &xi : hx_) {
+        os << "    " << xi << std::endl;
+    }
+    os << "Y Divisions: " << std::endl;
+    for (const auto &yi : hy_) {
+        os << "    " << yi << std::endl;
+    }
+    return;
+}
+
+std::string PinMesh_Rect::draw() const
+{
     std::stringstream buf;
 
     for (auto l : lines_) {

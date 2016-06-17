@@ -24,7 +24,8 @@
 
 using namespace mocc;
 
-TEST(testCircle) {
+TEST(testCircle)
+{
     std::numeric_limits<real_t> lim;
     Circle c(Point2(0.5, 0.5), 0.75);
 
@@ -68,4 +69,7 @@ TEST(testCircle) {
         REAL_FUZZ);
 }
 
-int main() { return UnitTest::RunAllTests(); }
+int main()
+{
+    return UnitTest::RunAllTests();
+}

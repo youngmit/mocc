@@ -16,14 +16,15 @@
 
 #pragma once
 
-#include "core/global_config.hpp"
-
+#include "util/global_config.hpp"
 #include "direction.hpp"
 #include "points.hpp"
 
 namespace mocc {
 struct Line {
-    Line(Point2 p1, Point2 p2) : p1(p1), p2(p2) {}
+    Line(Point2 p1, Point2 p2) : p1(p1), p2(p2)
+    {
+    }
 
     Point2 p1;
     Point2 p2;

@@ -16,20 +16,18 @@
 
 #include "pin_mesh_cyl.hpp"
 
-#include <math.h>
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <math.h>
 #include <sstream>
 #include <string>
-
 #include "pugixml.hpp"
-
+#include "util/error.hpp"
+#include "util/files.hpp"
+#include "util/global_config.hpp"
+#include "util/string_utils.hpp"
 #include "constants.hpp"
-#include "error.hpp"
-#include "files.hpp"
-#include "global_config.hpp"
-#include "string_utils.hpp"
 
 using std::string;
 using std::stringstream;
@@ -38,7 +36,8 @@ using std::cout;
 using std::endl;
 
 namespace mocc {
-PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input) {
+PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input)
+{
     // Extract the radii and check for sanity
     {
         stringstream radiiIn(input.child("radii").child_value());
@@ -96,9 +95,8 @@ PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input) {
         // these days, ill solve the more general problem of any number of
         // azis.
         if ((sub_azi_[0] % 2 != 0) | (sub_azi_[0] > 8)) {
-            throw EXCEPT(
-                "Only supporting even azimuthal subdivisions "
-                "<=8.");
+            throw EXCEPT("Only supporting even azimuthal subdivisions "
+                         "<=8.");
         }
     }
 
@@ -119,7 +117,7 @@ PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input) {
     // Calculate actual mesh radii. They should have equal volume within each
     // XS ring.
     double rxsi = 0.0;
-    double ri = 0.0;
+    double ri   = 0.0;
     for (int ixs = 0; ixs < n_xsreg_ - 1; ixs++) {
         double vn =
             (xs_radii_[ixs] * xs_radii_[ixs] - rxsi * rxsi) / sub_rad_[ixs];
@@ -141,7 +139,7 @@ PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input) {
     // Construct Line objects corresponding to each azimuthal subdivision
     real_t h_pitch_x = 0.5 * pitch_x_;
     real_t h_pitch_y = 0.5 * pitch_y_;
-    int n_azi = sub_azi_[0];
+    int n_azi        = sub_azi_[0];
     Box pin_box(Point2(-h_pitch_x, -h_pitch_y), Point2(h_pitch_x, h_pitch_y));
     real_t ang_sep = TWOPI / n_azi;
     for (int iazi = 0; iazi < n_azi; iazi++) {
@@ -175,10 +173,13 @@ PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input) {
     return;
 }
 
-PinMesh_Cyl::~PinMesh_Cyl() {}
+PinMesh_Cyl::~PinMesh_Cyl()
+{
+}
 
 int PinMesh_Cyl::trace(Point2 p1, Point2 p2, int first_reg, VecF &s,
-                       VecI &reg) const {
+                       VecI &reg) const
+{
     Line l(p1, p2);
 
     std::vector<Point2> ps;
@@ -226,14 +227,15 @@ int PinMesh_Cyl::trace(Point2 p1, Point2 p2, int first_reg, VecF &s,
  * At some point, I might look into other indexing schemes to try and
  * achieve better locality and cache performance, but for now KISS.
  */
-int PinMesh_Cyl::find_reg(Point2 p) const {
+int PinMesh_Cyl::find_reg(Point2 p) const
+{
     // Test that the point is inside the pin mesh
     if ((fabs(p.x) > 0.5 * pitch_x_) || (fabs(p.y) > 0.5 * pitch_y_)) {
         return -1;
     }
 
     // Find the radial division of the point
-    real_t r = sqrt(p.x * p.x + p.y * p.y);
+    real_t r        = sqrt(p.x * p.x + p.y * p.y);
     unsigned int ir = 0;
     for (ir = 0; ir < radii_.size(); ir++) {
         if (r < radii_[ir]) {
@@ -248,26 +250,27 @@ int PinMesh_Cyl::find_reg(Point2 p) const {
 
     // Find the azimuthal subdivision that the point is in.
     real_t azi = p.alpha();
-    int ia = azi / (TWOPI / sub_azi_[0]);
-    int ireg = ir * sub_azi_[0] + ia;
+    int ia     = azi / (TWOPI / sub_azi_[0]);
+    int ireg   = ir * sub_azi_[0] + ia;
 
     assert((0 <= ireg) && (ireg < n_reg_));
 
     return ireg;
 }
 
-int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
+int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const
+{
     // Test that the point is inside the pin mesh
-    if(((p.x < -0.5*pitch_x_) && (dir.ox<0.0)) ||
-       ((p.x > 0.5*pitch_x_) && (dir.ox>0.0)) ||
-       ((p.y < -0.5*pitch_y_) && (dir.oy<0.0)) ||
-       ((p.y > 0.5*pitch_y_) && (dir.oy>0.0))) {
+    if (((p.x < -0.5 * pitch_x_) && (dir.ox < 0.0)) ||
+        ((p.x > 0.5 * pitch_x_) && (dir.ox > 0.0)) ||
+        ((p.y < -0.5 * pitch_y_) && (dir.oy < 0.0)) ||
+        ((p.y > 0.5 * pitch_y_) && (dir.oy > 0.0))) {
         return -1;
     }
 
     // Find the radial division of the point
     real_t r = sqrt(p.x * p.x + p.y * p.y);
-    int ir = std::distance(
+    int ir   = std::distance(
         radii_.begin(),
         std::lower_bound(radii_.begin(), radii_.end(), r, fuzzy_lt));
     // The result of the above should be the index of the radius that the point
@@ -278,7 +281,7 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
     if (ir < (int)radii_.size() && fp_equiv_ulp(r, radii_[ir])) {
         // Use a "dot product" of dir's direction cosines and the point. If its
         // negative, bump to the next smallest ring
-        real_t dot = p.x*dir.ox + p.y*dir.oy;
+        real_t dot = p.x * dir.ox + p.y * dir.oy;
         if (dot > 0.0) {
             ir++;
         }
@@ -286,22 +289,22 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
 
     // Find the azimuthal subdivision that the point is in.
     real_t azi = p.alpha();
-    if(fp_equiv_ulp(azi, TWOPI)) {
+    if (fp_equiv_ulp(azi, TWOPI)) {
         azi = (dir.alpha > PI) ? TWOPI : 0.0;
     }
     real_t azi_space = (TWOPI / sub_azi_[0]);
-    real_t azi_div = azi / azi_space;
-    int closest_azi = std::round(azi_div);
+    real_t azi_div   = azi / azi_space;
+    int closest_azi  = std::round(azi_div);
 
     int ia = -1;
 
-    if(fp_equiv_abs(closest_azi*azi_space, azi)) {
-        ia = (azi < dir.alpha) ? closest_azi : closest_azi-1;
-    } else {
+    if (fp_equiv_abs(closest_azi * azi_space, azi)) {
+        ia = (azi < dir.alpha) ? closest_azi : closest_azi - 1;
+    }
+    else {
         ia = (int)azi_div;
     }
     ia = ia % sub_azi_[0];
-
 
     // Determine the actual region index
     int ireg = ir * sub_azi_[0] + ia;
@@ -312,7 +315,8 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const {
 }
 
 std::pair<real_t, Surface> PinMesh_Cyl::distance_to_surface(Point2 p,
-                                                         Direction dir) const {
+                                                            Direction dir) const
+{
     std::pair<real_t, Surface> ret;
 
     // start with a resonable max distance
@@ -340,7 +344,7 @@ std::pair<real_t, Surface> PinMesh_Cyl::distance_to_surface(Point2 p,
 
     auto d_boundary = pin_boundary.distance_to_surface(p, dir);
     if (d_boundary.first < dist) {
-        dist = d_boundary.first;
+        dist       = d_boundary.first;
         ret.second = d_boundary.second;
     }
 
@@ -349,18 +353,20 @@ std::pair<real_t, Surface> PinMesh_Cyl::distance_to_surface(Point2 p,
     return ret;
 }
 
-void PinMesh_Cyl::print(std::ostream &os) const {
+void PinMesh_Cyl::print(std::ostream &os) const
+{
     PinMesh::print(os);
     os << std::endl;
     os << "Type: Cylindrical" << std::endl;
     os << "Radii:" << std::endl;
-    for( const auto &r: radii_ ){
+    for (const auto &r : radii_) {
         os << "    " << r << std::endl;
     }
     return;
 }
 
-std::string PinMesh_Cyl::draw() const {
+std::string PinMesh_Cyl::draw() const
+{
     std::stringstream buf;
 
     buf << "ctx.move_to(0, 0)" << std::endl;

@@ -16,16 +16,16 @@
 
 #include "UnitTest++/UnitTest++.h"
 
-#include "blitz_typedefs.hpp"
-#include "error.hpp"
-#include "h5file.hpp"
+#include "util/blitz_typedefs.hpp"
+#include "util/error.hpp"
+#include "util/h5file.hpp"
 
 using std::cout;
 using std::endl;
 
 using namespace mocc;
 
-TEST( test_write )
+TEST(test_write)
 {
     // Make an HDF5 file
     H5Node h5test("test_file.h5", H5Access::WRITE);
@@ -39,11 +39,11 @@ TEST( test_write )
 
     H5Node g = h5test.create_group("group_a");
 
-    data(2,2,6) = 11.32;
+    data(2, 2, 6) = 11.32;
     g.write("d", data);
 
     ArrayB1 d1(10);
-    d1 = 1.0;
+    d1    = 1.0;
     d1(3) = 5.32;
     g.write("one_d", d1);
 
@@ -54,7 +54,7 @@ TEST( test_write )
     g.create_group("/foo");
 }
 
-TEST( test_read )
+TEST(test_read)
 {
     H5Node h5test("test_file.h5", H5Access::READ);
 
@@ -71,9 +71,10 @@ TEST( test_read )
 
     // make sure we arent allowing write-like operations
     CHECK_THROW(h5test.create_group("falala"), Exception);
-    //CHECK_THROW(h5test.write, Exception);
+    // CHECK_THROW(h5test.write, Exception);
 }
 
-int main(int, const char*[]) {
+int main(int, const char *[])
+{
     return UnitTest::RunAllTests();
 }

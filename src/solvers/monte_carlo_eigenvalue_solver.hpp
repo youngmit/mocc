@@ -17,11 +17,9 @@
 #pragma once
 
 #include <utility>
-
-#include "core_mesh.hpp"
-#include "pugifwd.hpp"
-#include "solver.hpp"
-
+#include "util/pugifwd.hpp"
+#include "core/core_mesh.hpp"
+#include "core/solver.hpp"
 #include "mc/fission_bank.hpp"
 #include "mc/particle_pusher.hpp"
 
@@ -46,6 +44,10 @@ private:
     int n_inactive_cycles_;
     int particles_per_cycle_;
 
+    unsigned long seed_;
+
+    RNG_LCG rng_;
+
     FissionBank source_bank_;
 
     // Cycle-by-cycle k history
@@ -61,8 +63,10 @@ private:
 
     std::pair<real_t, real_t> k_eff_;
 
-    // Tally of results from the pusher_ tally
+    // Tally of results from the pusher_ tally, for computing batch statistics
     TallyScalar k_tally_;
+
+    int cycle_;
 };
 } // namespace mc
 } // namespace mocc

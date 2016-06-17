@@ -17,12 +17,9 @@
 #include "solver_factory.hpp"
 
 #include <string>
-
 #include "pugixml.hpp"
-
-#include "core/error.hpp"
-#include "core/files.hpp"
-
+#include "util/error.hpp"
+#include "util/files.hpp"
 #include "eigen_solver.hpp"
 #include "fixed_source_solver.hpp"
 #include "monte_carlo_eigenvalue_solver.hpp"

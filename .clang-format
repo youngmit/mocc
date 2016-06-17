@@ -20,7 +20,7 @@ AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: false
 BinPackArguments: true
 BinPackParameters: true
-BraceWrapping:   
+BraceWrapping:
   AfterClass:      false
   AfterControlStatement: false
   AfterEnum:       false
@@ -46,14 +46,21 @@ DerivePointerAlignment: false
 DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
-# At some point, 
-IncludeCategories: 
-  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority:        2
-  - Regex:           '^(<|"(gtest|isl|json)/)'
-    Priority:        3
-  - Regex:           '.*'
+IncludeCategories:
+  - Regex:           '^(<.+>)'
     Priority:        1
+  - Regex:           '^"Eigen/'
+    Priority:        2
+  - Regex:           '^"pugixml\.hpp"'
+    Priority:        3
+  - Regex:           '^("util/)'
+    Priority:        4
+  - Regex:           '^("core/)'
+    Priority:        5
+  - Regex:           '^("[^/]+/.+)'
+    Priority:        6
+  - Regex:           '.*'
+    Priority:        7
 IndentCaseLabels: false
 IndentWidth:     4
 IndentWrappedFunctionNames: false

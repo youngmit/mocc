@@ -22,7 +22,8 @@
 
 using namespace mocc;
 
-TEST(test_line) {
+TEST(test_line)
+{
     std::numeric_limits<real_t> lim;
     {
         Line l(Point2(0.0, -10.0), Point2(0.0, 10.0));
@@ -66,4 +67,7 @@ TEST(test_line) {
     }
 }
 
-int main() { return UnitTest::RunAllTests(); }
+int main()
+{
+    return UnitTest::RunAllTests();
+}

@@ -22,6 +22,6 @@
  */
 
 namespace pugi {
-    class xml_node;
-    class xml_document;
+class xml_node;
+class xml_document;
 }

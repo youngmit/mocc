@@ -17,8 +17,8 @@
 #include "files.hpp"
 
 #include <iostream>
-#include <string>
 #include <string.h>
+#include <string>
 
 std::fstream LogFile;
 std::fstream OutFile;
@@ -29,7 +29,8 @@ TeeStream LogScreen(std::cout, NullStream);
 
 // A utility function for stripping the extension from the end of the command
 // line argument and replacing with '.log'
-void StartLogFile(std::string arg) {
+void StartLogFile(std::string arg)
+{
     std::string logname = arg;
     logname.append(".log");
 
@@ -41,6 +42,7 @@ void StartLogFile(std::string arg) {
     return;
 }
 
-void StopLogFile() {
+void StopLogFile()
+{
     LogFile.close();
 }

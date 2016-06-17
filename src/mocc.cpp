@@ -15,8 +15,9 @@
 */
 
 #include "driver.hpp"
-#include "error.hpp"
+#include "util/error.hpp"
 
-int main( int argc, char* argv[] ) {
-    return run( argc, argv );
+int main(int argc, char *argv[])
+{
+    return run(argc, argv);
 }

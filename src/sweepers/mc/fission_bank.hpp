@@ -20,100 +20,118 @@
 #include <iosfwd>
 #include <vector>
 
-#include "global_config.hpp"
-#include "pugifwd.hpp"
-
+#include "util/global_config.hpp"
+#include "util/pugifwd.hpp"
+#include "util/rng_lcg.hpp"
 #include "core/core_mesh.hpp"
 #include "core/geometry/geom.hpp"
 #include "core/xs_mesh.hpp"
-
 #include "particle.hpp"
-#include "rng.hpp"
 
 namespace mocc {
+namespace mc {
+/**
+ * A FissionBank stores a sequence of fission sites. Nothing fancy
+ */
+class FissionBank {
+public:
+    FissionBank(const CoreMesh &mesh);
+
+    FissionBank(const pugi::xml_node &input, int n, const CoreMesh &mesh,
+                const XSMesh &xs_mesh, RNG_LCG &rng);
+
+    auto begin()
+    {
+        return sites_.begin();
+    }
+
+    const auto begin() const
+    {
+        return sites_.cbegin();
+    }
+
+    auto end()
+    {
+        return sites_.end();
+    }
+
+    const auto end() const
+    {
+        return sites_.cend();
+    }
+
+    int size() const
+    {
+        return sites_.size();
+    }
+
     /**
-     * A FissionBank stores a sequence of fission sites. Nothing fancy
+     * \brief Add a new fission site to the \ref FissionBank
+     *
+     * \param p a \ref Point3 for the location of the fission site
+     *
+     * This method adds a new fission site to the fission bank, and makes a
+     * contribution to the total number of neutrons that were generated into
+     * the bank.
      */
-    class FissionBank {
-    public:
-        FissionBank( const CoreMesh &mesh);
-
-        FissionBank( const pugi::xml_node &input, int n, const CoreMesh &mesh,
-                const XSMesh &xs_mesh);
-
-        auto begin() {
-            return sites_.begin();
-        }
-
-        const auto begin() const {
-            return sites_.cbegin();
-        }
-
-        auto end() {
-            return sites_.end();
-        }
-
-        const auto end() const {
-            return sites_.cend();
-        }
-
-        int size() const {
-            return sites_.size();
-        }
-
-        /**
-         * \brief Add a new fission site to the \ref FissionBank
-         *
-         * \param p a \ref Point3 for the location of the fission site
-         *
-         * This method adds a new fission site to the fission bank, and makes a
-         * contribution to the total number of neutrons that were generated into
-         * the bank.
-         */
-        void push_back( Particle &p ) {
+    void push_back(Particle &p)
+    {
+#pragma omp critical
+        {
             sites_.push_back(p);
             total_fission_ += p.weight;
-            return;
         }
+        return;
+    }
 
-        /**
-         * \brief Return the Shannon entropy of the fission bank.
-         *
-         * This is used to estimate the change in the spatial distribution of
-         * fission sites from generation to generation. Observing little
-         * variation in this metric throughout the active cycles lends some
-         * confidence that the fission source distribution was well converged
-         * before beginning active cycles.
-         */
-        real_t shannon_entropy() const;
+    /**
+     * \brief Return the Shannon entropy of the fission bank.
+     *
+     * This is used to estimate the change in the spatial distribution of
+     * fission sites from generation to generation. Observing little
+     * variation in this metric throughout the active cycles lends some
+     * confidence that the fission source distribution was well converged
+     * before beginning active cycles.
+     */
+    real_t shannon_entropy() const;
 
-        /**
-         * \brief Swap contents with another \ref FissionBank
-         *
-         * \param other the other \ref FissionBank to swap with
-         */
-        void swap( FissionBank &other );
+    /**
+     * \brief Swap contents with another \ref FissionBank
+     *
+     * \param other the other \ref FissionBank to swap with
+     */
+    void swap(FissionBank &other);
 
-        /**
-         * \brief Clear the \ref FissionBank of all fission sites
-         */
-        void clear() {
+    const auto &operator[](unsigned i) const
+    {
+        return sites_[i];
+    }
+
+    /**
+     * \brief Clear the \ref FissionBank of all fission sites
+     */
+    void clear()
+    {
+#pragma omp single
+        {
             sites_.clear();
             total_fission_ = 0.0;
         }
+    }
 
-        void resize( unsigned int n );
+    void resize(unsigned int n, RNG_LCG &rng);
 
-        real_t total_fission() const {
-            return total_fission_;
-        }
+    real_t total_fission() const
+    {
+        return total_fission_;
+    }
 
-        friend std::ostream &operator<<(std::ostream &os,
-                const FissionBank &bank);
+    friend std::ostream &operator<<(std::ostream &os, const FissionBank &bank);
 
-    private:
-        const CoreMesh &mesh_;
-        std::vector<Particle> sites_;
-        real_t total_fission_;
-    };
+private:
+    const CoreMesh &mesh_;
+    std::vector<Particle> sites_;
+    real_t total_fission_;
+};
+} // namespace mc
 } // namespace mocc

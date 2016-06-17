@@ -29,27 +29,28 @@ using namespace mocc;
 
 /// \todo this test is practically nonexistent
 
-TEST( testCMFD ) {
+TEST(testCMFD)
+{
     auto mesh_xml = inline_xml_file("3x5.xml");
     CoreMesh mesh(*mesh_xml);
 
     auto cmfd_xml = inline_xml("<cmfd k_tol=\"1e-10\" "
-            "psi_tol=\"1e-8\" "
-            "max_iter=\"100\" "
-            "enabled=\"t\" "
-            "negative_fixup=\"f\" />");
+                               "psi_tol=\"1e-8\" "
+                               "max_iter=\"100\" "
+                               "enabled=\"t\" "
+                               "negative_fixup=\"f\" />");
 
     std::shared_ptr<XSMeshHomogenized> xsmesh(
-            std::make_shared<XSMeshHomogenized>( mesh ) );
+        std::make_shared<XSMeshHomogenized>(mesh));
 
     CMFD cmfd(*cmfd_xml, &mesh, xsmesh);
 
     real_t k = 1.0;
-    cmfd.solve( k );
+    cmfd.solve(k);
     std::cout << k << std::endl;
 }
 
-
-int main() {
+int main()
+{
     return UnitTest::RunAllTests();
 }

@@ -17,271 +17,249 @@
 #pragma once
 
 #include <memory>
-
+#include "util/files.hpp"
+#include "util/force_inline.hpp"
+#include "util/pugifwd.hpp"
 #include "core/core_mesh.hpp"
 #include "core/exponential.hpp"
-#include "core/files.hpp"
-#include "core/pugifwd.hpp"
-
-#include "util/force_inline.hpp"
-
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
 #include "sn/sn_sweeper_variant.hpp"
-
 #include "correction_data.hpp"
 
-namespace mocc { namespace cmdo {
-    using namespace sn;
-    typedef std::pair<std::unique_ptr<SnSweeper>,
-            std::shared_ptr<CorrectionData>> CDDPair_t;
+namespace mocc {
+namespace cmdo {
+using namespace sn;
+typedef std::pair<std::unique_ptr<SnSweeper>, std::shared_ptr<CorrectionData>>
+    CDDPair_t;
+
+/**
+ * An extension of \ref sn::CellWorker to propagate flux through an
+ * orthogonal mesh region with the corrected diamond difference (CDD)
+ * scheme. This class is still virtual, as the
+ * sn::CellWorker::evaluate() method can be tailored for different axial
+ * treatments.
+ */
+class CellWorker_CDD : public sn::CellWorker {
+public:
+    CellWorker_CDD(const Mesh &mesh, const AngularQuadrature &ang_quad)
+        : CellWorker(mesh, ang_quad), ang_quad_(ang_quad), corrections_(nullptr)
+    {
+        return;
+    }
+
+    void set_group(size_t group)
+    {
+        group_ = group;
+    }
+
+    MOCC_FORCE_INLINE void set_angle(size_t iang, Angle angle)
+    {
+        sn::CellWorker::set_angle(iang, angle);
+        iang_alpha_ = iang % (ang_quad_.ndir() / 2);
+    }
 
     /**
-     * An extension of \ref sn::CellWorker to propagate flux through an
-     * orthogonal mesh region with the corrected diamond difference (CDD)
-     * scheme. This class is still virtual, as the
-     * sn::CellWorker::evaluate() method can be tailored for different axial
-     * treatments.
+     * \brief Associate the internal reference to correction data.
+     *
+     * Any existing data will get kicked off. Since this uses
+     * std::shared_ptr, if the sweeper has the only reference to any data
+     * that gets replaced, we should expect the old data to be destroyed.
+     * Usually what we want, but be careful.
      */
-    class CellWorker_CDD: public sn::CellWorker {
-    public:
-        CellWorker_CDD( const Mesh &mesh,
-                const AngularQuadrature &ang_quad ):
-            CellWorker( mesh, ang_quad ),
-            ang_quad_( ang_quad ),
-            corrections_( nullptr )
-        {
-            return;
-        }
-
-        void set_group( size_t group ) {
-            group_ = group;
-        }
-
-        MOCC_FORCE_INLINE void set_angle( size_t iang, Angle angle ) {
-            sn::CellWorker::set_angle( iang, angle );
-            iang_alpha_ = iang % (ang_quad_.ndir() / 2);
-        }
-
-        /**
-         * \brief Associate the internal reference to correction data.
-         *
-         * Any existing data will get kicked off. Since this uses
-         * std::shared_ptr, if the sweeper has the only reference to any data
-         * that gets replaced, we should expect the old data to be destroyed.
-         * Usually what we want, but be careful.
-         */
-        void set_corrections( std::shared_ptr<const CorrectionData> data ) {
-            corrections_ = data;
-        }
-
-        /**
-         * \copydoc sn::CellWorker::evaluate_2d()
-         *
-         * Since the variants of the CDD worker are all for different axial
-         * treatments, the 2-D version of \ref sn::CellWorker::evaluate() can
-         * live here.
-         */
-        MOCC_FORCE_INLINE real_t evaluate_2d( real_t &flux_x, real_t &flux_y,
-                real_t q, real_t xstr, size_t i )
-        {
-            size_t ix = i % mesh_.nx();
-            real_t tx = ox_/mesh_.dx(ix);
-
-            real_t ax = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::X_NORM);
-            real_t ay = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::Y_NORM);
-            real_t b = corrections_->beta( i, iang_alpha_, group_ );
-
-            real_t gx = ax*b;
-            real_t gy = ay*b;
-
-            real_t psi = q + 2.0*(tx * flux_x +
-                                  ty_* flux_y );
-            psi /= tx/gx + ty_/gy + xstr;
-
-            flux_x = (psi - gx*flux_x) / gx;
-            flux_y = (psi - gy*flux_y) / gy;
-
-            return psi;
-        }
-
-    protected:
-        const AngularQuadrature &ang_quad_;
-
-        std::shared_ptr<const CorrectionData> corrections_;
-
-        size_t iang_alpha_;
-
-        size_t group_;
-    };
+    void set_corrections(std::shared_ptr<const CorrectionData> data)
+    {
+        corrections_ = data;
+    }
 
     /**
-     * An extension of \ref CellWorker_CDD to propagate flux through an
-     * orthogonal mesh region with the corrected diamond difference (CDD)
-     * in X and Y, with diamond difference in Z.
+     * \copydoc sn::CellWorker::evaluate_2d()
+     *
+     * Since the variants of the CDD worker are all for different axial
+     * treatments, the 2-D version of \ref sn::CellWorker::evaluate() can
+     * live here.
      */
-    class CellWorker_CDD_DD: public CellWorker_CDD {
-    public:
-        CellWorker_CDD_DD( const Mesh &mesh,
-                const AngularQuadrature &ang_quad ):
-            CellWorker_CDD( mesh, ang_quad )
-        {
-            return;
-        }
+    MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
+                                         real_t q, real_t xstr, size_t i)
+    {
+        size_t ix = i % mesh_.nx();
+        real_t tx = ox_ / mesh_.dx(ix);
 
-        MOCC_FORCE_INLINE real_t evaluate( real_t &flux_x, real_t &flux_y,
-                real_t &flux_z, real_t q, real_t xstr, size_t i )
-        {
-            size_t ix = i % mesh_.nx();
-            real_t tx = ox_/mesh_.dx(ix);
+        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b  = corrections_->beta(i, iang_alpha_, group_);
 
-            real_t ax = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::X_NORM);
-            real_t ay = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::Y_NORM);
-            real_t b = corrections_->beta( i, iang_alpha_, group_ );
+        real_t gx = ax * b;
+        real_t gy = ay * b;
 
-            real_t gx = ax*b;
-            real_t gy = ay*b;
+        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y);
+        psi /= tx / gx + ty_ / gy + xstr;
 
-            real_t psi = q + 2.0*(tx * flux_x +
-                                  ty_* flux_y +
-                                  tz_* flux_z );
-            psi /= tx/gx + ty_/gy + 2.0*tz_ + xstr;
+        flux_x = (psi - gx * flux_x) / gx;
+        flux_y = (psi - gy * flux_y) / gy;
 
-            flux_x = (psi - gx*flux_x) / gx;
-            flux_y = (psi - gy*flux_y) / gy;
-            flux_z = 2.0*psi - flux_z;
+        return psi;
+    }
 
-            return psi;
-        }
-    };
+protected:
+    const AngularQuadrature &ang_quad_;
 
-    /**
-     * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
-     * mesh region with the corrected diamond difference (CDD) scheme in X and
-     * Y, with FW difference in Z.
-     */
-    class CellWorker_CDD_FW: public CellWorker_CDD {
-    public:
-        CellWorker_CDD_FW( const Mesh &mesh,
-                const AngularQuadrature &ang_quad ):
-            CellWorker_CDD( mesh, ang_quad )
-        {
-            return;
-        }
+    std::shared_ptr<const CorrectionData> corrections_;
 
-        MOCC_FORCE_INLINE real_t evaluate( real_t &flux_x, real_t &flux_y,
-                real_t &flux_z, real_t q, real_t xstr, size_t i )
-        {
-            size_t ix = i % mesh_.nx();
-            real_t tx = ox_/mesh_.dx(ix);
+    size_t iang_alpha_;
 
-            real_t ax = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::X_NORM);
-            real_t ay = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::Y_NORM);
-            real_t b = corrections_->beta( i, iang_alpha_, group_ );
+    size_t group_;
+};
 
-            real_t gx = ax*b;
-            real_t gy = ay*b;
+/**
+ * An extension of \ref CellWorker_CDD to propagate flux through an
+ * orthogonal mesh region with the corrected diamond difference (CDD)
+ * in X and Y, with diamond difference in Z.
+ */
+class CellWorker_CDD_DD : public CellWorker_CDD {
+public:
+    CellWorker_CDD_DD(const Mesh &mesh, const AngularQuadrature &ang_quad)
+        : CellWorker_CDD(mesh, ang_quad)
+    {
+        return;
+    }
 
-            real_t psi = q + 2.0*(tx * flux_x +
-                                  ty_* flux_y ) +
-                                  tz_* flux_z ;
-            psi /= tx/gx + ty_/gy + tz_ + xstr;
+    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
+                                      real_t &flux_z, real_t q, real_t xstr,
+                                      size_t i)
+    {
+        size_t ix = i % mesh_.nx();
+        real_t tx = ox_ / mesh_.dx(ix);
 
-            flux_x = (psi - gx*flux_x) / gx;
-            flux_y = (psi - gy*flux_y) / gy;
-            flux_z = psi;
+        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b  = corrections_->beta(i, iang_alpha_, group_);
 
-            return psi;
-        }
-    };
+        real_t gx = ax * b;
+        real_t gy = ay * b;
 
+        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y + tz_ * flux_z);
+        psi /= tx / gx + ty_ / gy + 2.0 * tz_ + xstr;
 
-    /**
-     * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
-     * mesh region with the corrected diamond difference (CDD) scheme in X and
-     * Y, with step characteristics in Z.
-     */
-    class CellWorker_CDD_SC: public CellWorker_CDD {
-    public:
-        CellWorker_CDD_SC( const Mesh &mesh,
-                const AngularQuadrature &ang_quad ):
-            CellWorker_CDD( mesh, ang_quad ),
-            exponential_()
-        {
-            return;
-        }
+        flux_x = (psi - gx * flux_x) / gx;
+        flux_y = (psi - gy * flux_y) / gy;
+        flux_z = 2.0 * psi - flux_z;
 
-        MOCC_FORCE_INLINE real_t evaluate( real_t &flux_x, real_t &flux_y,
-                real_t &flux_z, real_t q, real_t xstr, size_t i )
-        {
-            size_t ix = i % mesh_.nx();
-            real_t tx = ox_/mesh_.dx(ix);
+        return psi;
+    }
+};
 
-            real_t ax = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::X_NORM);
-            real_t ay = corrections_->alpha( i, iang_alpha_, group_,
-                    Normal::Y_NORM);
-            real_t b = corrections_->beta( i, iang_alpha_, group_ );
+/**
+ * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
+ * mesh region with the corrected diamond difference (CDD) scheme in X and
+ * Y, with FW difference in Z.
+ */
+class CellWorker_CDD_FW : public CellWorker_CDD {
+public:
+    CellWorker_CDD_FW(const Mesh &mesh, const AngularQuadrature &ang_quad)
+        : CellWorker_CDD(mesh, ang_quad)
+    {
+        return;
+    }
 
-            real_t gx = ax*b;
-            real_t gy = ay*b;
+    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
+                                      real_t &flux_z, real_t q, real_t xstr,
+                                      size_t i)
+    {
+        size_t ix = i % mesh_.nx();
+        real_t tx = ox_ / mesh_.dx(ix);
 
-            real_t tau = xstr/tz_;
-            real_t rho = 1.0/tau - 1.0/(exponential_.exp(tau) - 1.0);
-            real_t rhofac= rho/(1.0 - rho);
+        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b  = corrections_->beta(i, iang_alpha_, group_);
 
-            real_t psi = q + 2.0*(tx  * flux_x +
-                                  ty_ * flux_y ) +
-                                  tz_*(rhofac+1.0)*flux_z ;
-            psi /= tx/gx + ty_/gy + tz_/(1.0-rho) + xstr;
+        real_t gx = ax * b;
+        real_t gy = ay * b;
 
-            flux_x = (psi - gx*flux_x) / gx;
-            flux_y = (psi - gy*flux_y) / gy;
-            flux_z = (psi - rho*flux_z)/(1.0-rho);
+        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y) + tz_ * flux_z;
+        psi /= tx / gx + ty_ / gy + tz_ + xstr;
 
-            return psi;
-        }
+        flux_x = (psi - gx * flux_x) / gx;
+        flux_y = (psi - gy * flux_y) / gy;
+        flux_z = psi;
 
-    private:
-        Exponential exponential_;
-    };
+        return psi;
+    }
+};
 
-    template <class T>
-    class SnSweeper_CDD : public sn::SnSweeperVariant<T> {
-    public:
-        SnSweeper_CDD( const pugi::xml_node &input, const CoreMesh &mesh ):
-            sn::SnSweeperVariant<T>( input, mesh ),
-            correction_data_(nullptr)
-        {
-            // Look for data to set the angular quadrature
-            if( !input.child("data").empty() ) {
-                std::string fname =
-                    input.child("data").attribute("file").value();
-                H5Node file( fname, H5Access::READ );
-                this->ang_quad_ = AngularQuadrature( file );
-                real_t wsum = 0.0;
-                for( auto a: this->ang_quad_ ) {
-                    wsum += a.weight;
-                }
-                std::cout << "Weight sum: " << wsum << std::endl;
+/**
+ * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
+ * mesh region with the corrected diamond difference (CDD) scheme in X and
+ * Y, with step characteristics in Z.
+ */
+class CellWorker_CDD_SC : public CellWorker_CDD {
+public:
+    CellWorker_CDD_SC(const Mesh &mesh, const AngularQuadrature &ang_quad)
+        : CellWorker_CDD(mesh, ang_quad), exponential_()
+    {
+        return;
+    }
+
+    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
+                                      real_t &flux_z, real_t q, real_t xstr,
+                                      size_t i)
+    {
+        size_t ix = i % mesh_.nx();
+        real_t tx = ox_ / mesh_.dx(ix);
+
+        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b  = corrections_->beta(i, iang_alpha_, group_);
+
+        real_t gx = ax * b;
+        real_t gy = ay * b;
+
+        real_t tau    = xstr / tz_;
+        real_t rho    = 1.0 / tau - 1.0 / (exponential_.exp(tau) - 1.0);
+        real_t rhofac = rho / (1.0 - rho);
+
+        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y) +
+                     tz_ * (rhofac + 1.0) * flux_z;
+        psi /= tx / gx + ty_ / gy + tz_ / (1.0 - rho) + xstr;
+
+        flux_x = (psi - gx * flux_x) / gx;
+        flux_y = (psi - gy * flux_y) / gy;
+        flux_z = (psi - rho * flux_z) / (1.0 - rho);
+
+        return psi;
+    }
+
+private:
+    Exponential exponential_;
+};
+
+template <class T> class SnSweeper_CDD : public sn::SnSweeperVariant<T> {
+public:
+    SnSweeper_CDD(const pugi::xml_node &input, const CoreMesh &mesh)
+        : sn::SnSweeperVariant<T>(input, mesh), correction_data_(nullptr)
+    {
+        // Look for data to set the angular quadrature
+        if (!input.child("data").empty()) {
+            std::string fname = input.child("data").attribute("file").value();
+            H5Node file(fname, H5Access::READ);
+            this->ang_quad_ = AngularQuadrature(file);
+            real_t wsum     = 0.0;
+            for (auto a : this->ang_quad_) {
+                wsum += a.weight;
             }
-            return;
+            std::cout << "Weight sum: " << wsum << std::endl;
         }
+        return;
+    }
 
-        void set_corrections( std::shared_ptr<const CorrectionData> data ) {
-            correction_data_ = data;
-            this->cell_worker_.set_corrections( data );
-        }
+    void set_corrections(std::shared_ptr<const CorrectionData> data)
+    {
+        correction_data_ = data;
+        this->cell_worker_.set_corrections(data);
+    }
 
-    private:
-        std::shared_ptr<const CorrectionData> correction_data_;
-    };
-
-
-} }
+private:
+    std::shared_ptr<const CorrectionData> correction_data_;
+};
+}
+}

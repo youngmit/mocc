@@ -17,31 +17,49 @@
 #pragma once
 
 #include <cassert>
+#include <iostream>
+#include <random>
 
-#include "global_config.hpp"
 #include "util/force_inline.hpp"
+#include "global_config.hpp"
 
 namespace mocc {
 /**
  * \brief A linear congruential random number generator
  *
- * Most of the parameters are from OpenMC. Thanks, dudes!
+ * Most of the parameters are from OpenMC/MCNP random number generators
  */
 class RNG_LCG {
 public:
-    RNG_LCG(unsigned long seed = 1ul) : seed_(seed), current_seed_(seed)
+    RNG_LCG(unsigned long seed = 1ul) : current_seed_(seed)
     {
         return;
+    }
+
+    RNG_LCG &operator=(const RNG_LCG &other)
+    {
+        // Skip self-assignment check, since we only have POD data members
+        current_seed_ = other.current_seed_;
+        return *this;
+    }
+
+    void set_seed(unsigned long seed)
+    {
+        current_seed_ = seed;
+    }
+
+    unsigned long operator()()
+    {
+        current_seed_ = (current_seed_ * m_ + b_) & mask_;
+        return current_seed_;
     }
 
     /**
      * \brief Generate a uniformly-distributed random number on [0,1)
      */
-    MOCC_FORCE_INLINE real_t random()
+    real_t random()
     {
-        current_seed_ = current_seed_ * m_ + increment_;
-
-        return float_scale_ * current_seed_;
+        return float_scale_ * (*this)();
     }
 
     /**
@@ -51,9 +69,8 @@ public:
     MOCC_FORCE_INLINE real_t random(real_t ubound)
     {
         assert(ubound > 0.0);
-        current_seed_ = current_seed_ * m_ + increment_;
 
-        real_t v = float_scale_ * current_seed_;
+        real_t v = float_scale_ * (*this)();
         return v * ubound;
     }
 
@@ -64,10 +81,10 @@ public:
     MOCC_FORCE_INLINE real_t random(real_t lbound, real_t ubound)
     {
         assert(ubound > lbound);
-        current_seed_ = current_seed_ * m_ + increment_;
 
-        real_t v = float_scale_ * current_seed_;
-        return lbound + (ubound - lbound) * v;
+        real_t v = this->random();
+        v        = lbound + (ubound - lbound) * v;
+        return v;
     }
 
     /**
@@ -99,14 +116,50 @@ public:
                              std::lower_bound(cdf.begin(), cdf.end(), v));
     }
 
+    /**
+     * \brief Move the state of the generator forward in the sequence
+     *
+     * \param n the number of elements in the sequence to jump ahead by
+     *
+     */
+    void jump_ahead(int n)
+    {
+        long int nskip = n;
+
+        while (nskip < 0l) {
+            nskip += mod_;
+        }
+
+        unsigned long g     = m_;
+        unsigned long b     = b_;
+        unsigned long g_new = 1;
+        unsigned long b_new = 0;
+        while (nskip > 0l) {
+            if (nskip & 1ul) {
+                g_new = g_new * g & mask_;
+                b_new = (b_new * g + b) & mask_;
+            }
+
+            b = ((g + 1) * b) & mask_;
+            g = (g * g) & mask_;
+
+            // Shift bits left
+            nskip = nskip >> 1;
+        }
+
+        current_seed_ = (g_new * current_seed_ + b_new) & mask_;
+        return;
+    }
+
 private:
-    const unsigned long seed_;
     unsigned long current_seed_;
-    const int bits_                = 64;
-    const unsigned long m_         = 2806196910506780709ul;
-    const unsigned long mod_       = -1;
-    const unsigned long increment_ = 1;
-    const real_t float_scale_      = 1.0 / (std::pow(2.0, bits_));
+    static const unsigned long m_ = 2806196910506780709ul;
+    static const unsigned long b_ = 1ul;
+    // The mask performs the equivalent of a modulo (%) when ANDed with
+    // left-hand operand.
+    static const unsigned long mask_     = ~(1ul << 63);
+    static const unsigned long mod_      = 1ul << 63;
+    static constexpr real_t float_scale_ = 1.0 / (1ul << 63);
 };
 
 } // namespace mocc

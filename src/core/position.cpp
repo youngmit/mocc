@@ -19,8 +19,9 @@
 #include <iostream>
 
 namespace mocc {
-    std::ostream& operator<<(std::ostream& os, const Position &pos ) {
-        os << pos.x << " " << pos.y << " " << pos.z;
-        return os;
-    }
+std::ostream &operator<<(std::ostream &os, const Position &pos)
+{
+    os << pos.x << " " << pos.y << " " << pos.z;
+    return os;
+}
 }

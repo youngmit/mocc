@@ -18,8 +18,7 @@
 
 #include <iostream>
 #include <utility>
-
-#include "core/global_config.hpp"
+#include "util/global_config.hpp"
 
 namespace mocc {
 namespace mc {
@@ -44,7 +43,9 @@ public:
      */
     void score(real_t value)
     {
+#pragma omp atomic
         mean_ += value;
+#pragma omp atomic
         mean_square_ += value * value;
 
         return;
@@ -55,6 +56,7 @@ public:
      */
     void add_weight(real_t w)
     {
+#pragma omp atomic
         weight_ += w;
     }
 
@@ -63,25 +65,31 @@ public:
      */
     void reset()
     {
-        mean_        = 0.0;
-        mean_square_ = 0.0;
-        weight_      = 0.0;
+#pragma omp single
+        {
+            mean_        = 0.0;
+            mean_square_ = 0.0;
+            weight_      = 0.0;
+        }
+
         return;
     }
 
     /**
-     * \brief Return the estimates for the tally mean and standard deviation
+     * \brief Return the estimates for the tally mean and relative standard
+     * deviation
      */
     std::pair<real_t, real_t> get() const
     {
+        // Plenty of room for optimization in here
         std::pair<real_t, real_t> val;
-        real_t mean = mean_ / weight_;
-        real_t mean_of_square = mean_square_/weight_;
-        real_t square_of_mean = mean * mean;
-        real_t variance = (mean_of_square - square_of_mean)/(weight_ - 1.0 );
+        real_t mean           = mean_ / weight_;
+        real_t mean_of_square = mean_square_ / (weight_ - 1.0);
+        real_t square_of_mean = mean_ * mean_ / (weight_ * (weight_ - 1.0));
+        real_t variance       = mean_of_square - square_of_mean;
 
-        val.first = mean;
-        val.second = std::sqrt(variance);
+        val.first  = mean;
+        val.second = std::sqrt(variance) / mean;
         return val;
     }
 

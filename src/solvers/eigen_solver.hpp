@@ -17,103 +17,97 @@
 #pragma once
 
 #include <iosfwd>
-
-#include "core/eigen_interface.hpp"
 #include "core/cmfd.hpp"
 #include "core/core_mesh.hpp"
-#include "core/h5file.hpp"
-#include "core/pugifwd.hpp"
+#include "core/eigen_interface.hpp"
+#include "util/h5file.hpp"
+#include "util/pugifwd.hpp"
 #include "core/transport_sweeper.hpp"
-
 #include "fixed_source_solver.hpp"
 #include "solver.hpp"
 
-namespace mocc{
-    enum class CMFDConvergence {
-        FIXED, // Converge the cmfd to a fixed set of convergence criteria
-        FLOAT
-    };
+namespace mocc {
+enum class CMFDConvergence {
+    FIXED, // Converge the cmfd to a fixed set of convergence criteria
+    FLOAT
+};
 
+struct ConvergenceCriteria {
+    ConvergenceCriteria(real_t k, real_t error_k, real_t error_psi)
+        : k(k), error_k(error_k), error_psi(error_psi)
+    {
+    }
+    real_t k;
+    real_t error_k;
+    real_t error_psi;
 
-    struct ConvergenceCriteria {
-        ConvergenceCriteria( real_t k, real_t error_k, real_t error_psi ):
-            k(k),
-            error_k(error_k),
-            error_psi(error_psi) { }
-        real_t k;
-        real_t error_k;
-        real_t error_psi;
+    // Stream insertion
+    friend std::ostream &operator<<(std::ostream &os, ConvergenceCriteria conv);
+};
 
-        // Stream insertion
-        friend std::ostream& operator<<( std::ostream& os,
-                ConvergenceCriteria conv);
-    };
+class EigenSolver : public Solver {
+public:
+    EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh);
+    void solve();
+    void step();
 
+    const TransportSweeper *sweeper() const
+    {
+        return fss_.sweeper();
+    }
 
-    class EigenSolver: public Solver {
-    public:
-        EigenSolver( const pugi::xml_node &input, const CoreMesh &mesh );
-        void solve();
-        void step();
+    // Implement the output interface
+    void output(H5Node &file) const;
 
-        const TransportSweeper* sweeper() const {
-            return fss_.sweeper();
-        }
+private:
+    // Data
+    FixedSourceSolver fss_;
 
-        // Implement the output interface
-        void output( H5Node &file ) const;
+    // Fission source, and previous iterate
+    ArrayB1 fission_source_;
+    ArrayB1 fission_source_prev_;
 
-    private:
-        // Data
-        FixedSourceSolver fss_;
+    // Current guess for k
+    real_t keff_;
 
-        // Fission source, and previous iterate
-        ArrayB1 fission_source_;
-        ArrayB1 fission_source_prev_;
+    // Previous guess for k
+    real_t keff_prev_;
 
-        // Current guess for k
-        real_t keff_;
+    // Convergence criterion for the system eigenvalue
+    real_t tolerance_k_;
 
-        // Previous guess for k
-        real_t keff_prev_;
+    // Convergence criterion for the fission source distribution (L-2 norm)
+    real_t tolerance_psi_;
 
-        // Convergence criterion for the system eigenvalue
-        real_t tolerance_k_;
+    real_t error_k_;
+    real_t error_psi_;
 
-        // Convergence criterion for the fission source distribution (L-2 norm)
-        real_t tolerance_psi_;
+    // Maximum allowable outer iterations
+    unsigned int max_iterations_;
+    unsigned int min_iterations_;
 
-        real_t error_k_;
-        real_t error_psi_;
+    // Number of fissile regions in the problem. We will use this to scale
+    // the volumetric convergence criteria
+    int n_fissile_regions_;
 
-        // Maximum allowable outer iterations
-        unsigned int max_iterations_;
-        unsigned int min_iterations_;
+    // Vector of the convergence criteria. We will export these to the HDF5
+    // file at the end of the run for posterity
+    std::vector<ConvergenceCriteria> convergence_;
 
-        // Number of fissile regions in the problem. We will use this to scale
-        // the volumetric convergence criteria
-        int n_fissile_regions_;
+    // CMFD accelerator
+    UP_CMFD_t cmfd_;
 
-        // Vector of the convergence criteria. We will export these to the HDF5
-        // file at the end of the run for posterity
-        std::vector<ConvergenceCriteria> convergence_;
+    // Methods
+    // Print the current state of the eigenvalue solver
+    void print(int iter, ConvergenceCriteria conv);
 
-        // CMFD accelerator
-        UP_CMFD_t cmfd_;
+    /**
+     * \brief Perform a CMFD accelerator solve
+     */
+    void do_cmfd();
 
-
-        // Methods
-        // Print the current state of the eigenvalue solver
-        void print( int iter, ConvergenceCriteria conv );
-
-        /**
-         * \brief Perform a CMFD accelerator solve
-         */
-        void do_cmfd();
-
-        // Vector containing the time that each eigenvalue iteration completed
-        // at. Make useful absiccae for convergence plots and the like
-        VecF iteration_times_;
-
-    };
+    // Vector containing the time that each eigenvalue iteration completed
+    // at. Make useful absiccae for convergence plots and the like
+    VecF iteration_times_;
+};
 }
