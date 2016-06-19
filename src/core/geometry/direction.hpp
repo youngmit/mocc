@@ -124,6 +124,13 @@ public:
         }
     }
 
+    static Direction Isotropic(real_t r1, real_t r2)
+    {
+        assert((r1 >= 0.0) && (r1 < 1.0));
+        assert((r2 >= 0.0) && (r2 < 1.0));
+        return Direction(r1 * TWOPI, std::acos(r2 * 2.0 - 1.0));
+    }
+
     /**
      * \brief Provide operator==
      *
