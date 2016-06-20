@@ -43,8 +43,11 @@ public:
      * \brief Simulate a particle history
      *
      * \param p the \ref Particle to simulate
+     * \param tally whether to treat the passed particle as a realization. This
+     * should be true for history-based statistics, false for something else
+     * like batch statistics.
      */
-    void simulate(Particle p);
+    void simulate(Particle p, bool tally=false);
 
     /**
      * \brief Simulate all particles in a \ref FissionBank

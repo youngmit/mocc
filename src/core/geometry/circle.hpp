@@ -18,8 +18,8 @@
 
 #include "util/global_config.hpp"
 #include "direction.hpp"
-#include "points.hpp"
 #include "geom_surface.hpp"
+#include "points.hpp"
 
 namespace mocc {
 struct Circle : public GeomSurface {
@@ -31,7 +31,8 @@ struct Circle : public GeomSurface {
     real_t r;
 
     /// \todo document this
-    real_t distance_to_surface(Point2 p, Direction dir) const override final;
+    real_t distance_to_surface(Point2 p, Direction dir,
+                               bool coincident=false) const override final;
 };
 
 } // namespace mocc

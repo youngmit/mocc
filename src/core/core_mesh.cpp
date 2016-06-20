@@ -118,8 +118,7 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
             n_fuel_2d_ = std::max(n_fuel_2d_, planes_.back().n_fuel());
             unique_plane_.push_back(planes_.size() - 1);
             first_unique_.push_back(iz);
-        }
-        else {
+        } else {
             // We did find a match to a previous plane. Push that ID
             unique_plane_.push_back(match_plane);
         }
@@ -257,20 +256,12 @@ CoreMesh::LocationInfo CoreMesh::get_location_info(Point3 p,
     LocationInfo info;
 
     // Locate the pin Position
-    int ix = std::distance(
-        x_vec_.begin(),
-        std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x, fuzzy_lt));
-    if (fp_equiv(ix, x_vec_[ix])) {
-        ix = (dir.ox > 0.0) ? ix + 1 : ix;
-    }
+    int ix = std::distance(x_vec_.begin(),
+                           std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x));
     info.pos.x = ix - 1;
 
-    int iy = std::distance(
-        y_vec_.begin(),
-        std::lower_bound(y_vec_.begin(), y_vec_.end(), p.y, fuzzy_lt));
-    if (fp_equiv(iy, y_vec_[iy])) {
-        iy = (dir.oy > 0.0) ? iy + 1 : iy;
-    }
+    int iy = std::distance(y_vec_.begin(),
+                           std::lower_bound(y_vec_.begin(), y_vec_.end(), p.y));
     info.pos.y = iy - 1;
 
     info.pos.z = this->plane_index(p.z, dir.oz);
@@ -285,6 +276,11 @@ CoreMesh::LocationInfo CoreMesh::get_location_info(Point3 p,
     info.pm =
         planes_[plane_index].get_pinmesh(pin_origin, info.reg_offset, dir);
     info.local_point -= pin_origin;
+
+    info.pin_boundary = {
+        Point3(x_vec_[info.pos.x], y_vec_[info.pos.y], z_vec_[info.pos.z]),
+        Point3(x_vec_[info.pos.x + 1], y_vec_[info.pos.y + 1],
+               z_vec_[info.pos.z + 1])};
 
     return info;
 }

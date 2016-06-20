@@ -18,8 +18,8 @@
 
 #include "util/global_config.hpp"
 #include "direction.hpp"
-#include "points.hpp"
 #include "geom_surface.hpp"
+#include "points.hpp"
 
 namespace mocc {
 struct Line : public GeomSurface {
@@ -36,10 +36,13 @@ struct Line : public GeomSurface {
      *
      * \param p a Point2 from which to measure distance.
      * \param dir a Direction along which to measure distance
+     * \param coincident whether the given point is to be considered coincident
+     * with the line.
      *
      * \todo once things stabilize, document all of the eccentricities
      */
-    real_t distance_to_surface(Point2 p, Direction dir) const final override;
+    real_t distance_to_surface(Point2 p, Direction dir,
+                               bool coincident=false) const final override;
 
     friend std::ostream &operator<<(std::ostream &os, Line &l);
 };

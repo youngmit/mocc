@@ -32,12 +32,19 @@ TEST(testCircle)
     // Check coincident point pointing out. Should be max()
     CHECK_EQUAL(lim.max(), c.distance_to_surface(Point2(-0.25, 0.5),
                                                  Direction(-1.0, 0.0, 0.0)));
+    CHECK_EQUAL(lim.max(),
+                c.distance_to_surface(Point2(-0.25, 0.5),
+                                      Direction(-1.0, 0.0, 0.0), true));
 
     // Check coincident point pointing in and straight across. Should be the
     // diameter
     CHECK_CLOSE(1.5, c.distance_to_surface(Point2(-0.25, 0.5),
                                            Direction(1.0, 0.0, 0.0)),
                 REAL_FUZZ);
+    // similar to above, but slightly outside
+    CHECK_CLOSE(1.5, c.distance_to_surface(Point2(-0.25-0.00000005, 0.5),
+                                           Direction(1.0, 0.0, 0.0), false),
+                1e-12);
 
     // Interior point pointing anywhere in the plane
     CHECK_CLOSE(0.75,

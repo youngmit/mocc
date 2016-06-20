@@ -115,6 +115,7 @@ public:
         Point2 local_point;
         int reg_offset;
         Position pos;
+        std::array<Point3, 2> pin_boundary;
     };
 
     LocationInfo get_location_info(Point3 p, Direction dir) const;

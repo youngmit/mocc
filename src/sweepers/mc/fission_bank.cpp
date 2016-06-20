@@ -78,7 +78,7 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
         for (int i = 0; i < n; i++) {
             Point3 p(rng.random(x_min, x_max), rng.random(y_min, y_max),
                      rng.random(z_min, z_max));
-            Direction dir(rng.random(TWOPI), rng.random(-HPI, HPI));
+            Direction dir = Direction::Isotropic(rng.random(), rng.random());
             int ig = rng.random_int(ng);
             sites_.emplace_back(p, dir, ig, i);
         }
@@ -88,7 +88,7 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
         for (int i = 0; i < n; i++) {
             Point3 p(rng.random(x_min, x_max), rng.random(y_min, y_max),
                      rng.random(z_min, z_max));
-            Direction dir(rng.random(TWOPI), rng.random(-HPI, HPI));
+            Direction dir = Direction::Isotropic(rng.random(), rng.random());
             int ig = rng.random_int(ng);
             sites_.emplace_back(p, dir, ig, i);
         }
@@ -153,6 +153,7 @@ void FissionBank::resize(unsigned int n, RNG_LCG &rng)
             sites_.pop_back();
         }
     }
+    assert(sites_.size() == n);
 
     return;
 }

@@ -79,7 +79,7 @@ std::pair<real_t, bool> PinMesh_Rect::distance_to_surface(Point2 p,
                                                           int &coincident) const
 {
     std::pair<real_t, bool> ret;
-    int coinc;
+    int coinc = coincident;
 
     if ((std::abs(p.x) > 0.5 * pitch_x_) || (std::abs(p.y) > 0.5 * pitch_y_)) {
         ret.first  = 0.0;
@@ -90,21 +90,13 @@ std::pair<real_t, bool> PinMesh_Rect::distance_to_surface(Point2 p,
     ret.second = false;
     ret.first  = std::numeric_limits<real_t>::max();
     for (const auto &l : lines_) {
-        real_t d  = l.distance_to_surface(p, dir);
-        if((d < ret.first) && (coincident != l.surf_id)) {
+        real_t d  = l.distance_to_surface(p, dir, (coincident == l.surf_id));
+        if((d < ret.first)) {
             ret.first = d;
             coinc = l.surf_id;
         }
     }
     coincident = coinc;
-
-    Box bound(Point2(-0.5 * pitch_x_, -0.5 * pitch_y_),
-              Point2(0.5 * pitch_x_, 0.5 * pitch_y_));
-    auto bound_d = bound.distance_to_surface(p, dir);
-    if (bound_d.first < ret.first) {
-        ret.first  = bound_d.first;
-        ret.second = true;
-    }
 
     return ret;
 }

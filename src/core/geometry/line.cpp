@@ -19,9 +19,15 @@
 #include <iostream>
 
 namespace mocc {
-real_t Line::distance_to_surface(Point2 p, Direction dir) const
+real_t Line::distance_to_surface(Point2 p, Direction dir, bool coincident) const
 {
     const std::numeric_limits<real_t> lim;
+
+    // There can be only one intersection with a line, so if we are already
+    // coincident, return infinity
+    if (coincident) {
+        return lim.max();
+    }
 
     // Cast the line into the general form. This might be worth doing ahead of
     // time in the Line struct itself

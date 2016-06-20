@@ -28,9 +28,11 @@ public:
         return;
     }
 
-    virtual real_t distance_to_surface(Point2 p, Direction dir) const=0;
+    virtual real_t distance_to_surface(Point2 p, Direction dir,
+                                       bool coincident=false) const = 0;
 
     int surf_id;
+
 private:
     static int last_id_;
 };

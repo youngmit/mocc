@@ -25,7 +25,7 @@ std::pair<real_t, Surface> Box::distance_to_surface(Point2 p,
 
     int il = 0;
     for (const auto &l : lines_) {
-        real_t d = l.distance_to_surface(p, dir);
+        real_t d = l.distance_to_surface(p, dir, false);
         if (d < dist) {
             dist = d;
             surf = (Surface)il;
