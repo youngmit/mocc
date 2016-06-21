@@ -167,9 +167,7 @@ void ParticlePusher::collide(Particle &p)
 
 void ParticlePusher::simulate(Particle p, bool tally)
 {
-    Particle p_orig = p;
     bool print      = print_particles_;
-    // print           = true;
 
     // Register this particle with the tallies
     k_tally_tl_.add_weight(p.weight);
