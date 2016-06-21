@@ -47,7 +47,7 @@ public:
      * should be true for history-based statistics, false for something else
      * like batch statistics.
      */
-    void simulate(Particle p, bool tally=false);
+    void simulate(Particle p, bool tally = false);
 
     /**
      * \brief Simulate all particles in a \ref FissionBank
@@ -73,11 +73,29 @@ public:
     }
 
     /**
+     * \brief Return a reference to the internal track lenth-based eigenvalue
+     * tally
+     */
+    const TallyScalar &k_tally_tl() const
+    {
+        return k_tally_tl_;
+    }
+
+    /**
+     * \brief Return a reference to the internal collision-based eigenvalue
+     * tally
+     */
+    const TallyScalar &k_tally_col() const
+    {
+        return k_tally_col_;
+    }
+    
+    /**
      * \brief Return a reference to the internal eigenvalue tally
      */
-    const TallyScalar &k_tally() const
+    const TallyScalar &k_tally_analog() const
     {
-        return k_tally_collision_;
+        return k_tally_analog_;
     }
 
     /**
@@ -85,8 +103,9 @@ public:
      */
     void reset_tallies(bool clear_persistent = false)
     {
-        k_tally_.reset();
-        k_tally_collision_.reset();
+        k_tally_tl_.reset();
+        k_tally_col_.reset();
+        k_tally_analog_.reset();
 
         if (clear_persistent) {
             for (auto &flux_tally : scalar_flux_tally_) {
@@ -165,8 +184,9 @@ private:
     unsigned long seed_;
 
     // Eigenvalue tally
-    TallyScalar k_tally_;
-    TallyScalar k_tally_collision_;
+    TallyScalar k_tally_tl_;
+    TallyScalar k_tally_col_;
+    TallyScalar k_tally_analog_;
     // Guess to use for scaling fission neutron production. Warning: Don't
     // try to use this as the actual system eigenvalue, since it is not tied
     // directly to a specific tally

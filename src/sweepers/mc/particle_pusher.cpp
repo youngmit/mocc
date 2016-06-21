@@ -115,7 +115,7 @@ void ParticlePusher::collide(Particle &p)
     }
     Reaction reaction = (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
     real_t k_score = p.weight * xsreg.xsmacnf(p.group) / xsreg.xsmactr(p.group);
-    k_tally_collision_.score(k_score);
+    k_tally_col_.score(k_score);
     fine_flux_col_tally_[p.group].score(p.ireg,
                                         p.weight / xsreg.xsmactr(p.group));
 
@@ -143,8 +143,7 @@ void ParticlePusher::collide(Particle &p)
         // fission
         // sample number of new particles to generate
         real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
-        assert(k_eff_ > 0.0);
-        int n_fis = p.weight * nu / k_eff_ + RNG.random();
+        int n_fis = (p.weight * nu) + RNG.random();
 
         // Make new particles and push them onto the fission bank
         for (int i = 0; i < n_fis; i++) {
@@ -173,8 +172,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
     // print           = true;
 
     // Register this particle with the tallies
-    k_tally_.add_weight(p.weight);
-    k_tally_collision_.add_weight(p.weight);
+    k_tally_tl_.add_weight(p.weight);
+    k_tally_col_.add_weight(p.weight);
     for (auto &tally : scalar_flux_tally_) {
         tally.add_weight(p.weight);
     }
@@ -240,7 +239,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
         // Contribute to track length-based tallies
-        k_tally_.score(tl * p.weight * xsreg.xsmacnf(p.group));
+        k_tally_tl_.score(tl * p.weight * xsreg.xsmacnf(p.group));
         pin_power_tally_.score(ipin_coarse,
                                tl * p.weight * xsreg.xsmacf(p.group));
         scalar_flux_tally_[p.group].score(ipin_coarse, tl * p.weight);
@@ -298,8 +297,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
                         switch (bc) {
                         case Boundary::REFLECT:
                             // Move the particle back into the domain so it's
-                            // not
-                            // floating in limbo
+                            // not floating in limbo
                             reflected = true;
                             p.direction.reflect(b);
                             break;
@@ -380,10 +378,14 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
             this->simulate(bank[ip]);
         }
 
-        this->commit_tallies();
-
-        n_cycles_++;
     } // OMP Parallel
+
+    k_tally_analog_.score((double)fission_bank_.size() / bank.size());
+    k_tally_analog_.add_weight(1.0);
+
+    this->commit_tallies();
+
+    n_cycles_++;
 
     id_offset_ += bank.size();
     return;

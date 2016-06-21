@@ -51,11 +51,17 @@ private:
     FissionBank source_bank_;
 
     // Cycle-by-cycle k history
-    VecF k_history_;
+    VecF k_history_tl_;
+    VecF k_history_col_;
+    VecF k_history_analog_;
     // Averaged k history
-    VecF k_mean_history_;
+    VecF k_mean_history_tl_;
+    VecF k_mean_history_col_;
+    VecF k_mean_history_analog_;
     // K standard deviation history
-    VecF k_stdev_history_;
+    VecF k_stdev_history_tl_;
+    VecF k_stdev_history_col_;
+    VecF k_stdev_history_analog_;
     // Source bank Shannon entropy
     VecF h_history_;
 
@@ -64,9 +70,12 @@ private:
     std::pair<real_t, real_t> k_eff_;
 
     // Tally of results from the pusher_ tally, for computing batch statistics
-    TallyScalar k_tally_;
+    TallyScalar k_tally_tl_;
+    TallyScalar k_tally_col_;
+    TallyScalar k_tally_analog_;
 
     int cycle_;
+    bool dump_sites_;
 };
 } // namespace mc
 } // namespace mocc

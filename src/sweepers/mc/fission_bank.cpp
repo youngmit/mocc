@@ -168,9 +168,8 @@ void FissionBank::swap(FissionBank &other)
 
 std::ostream &operator<<(std::ostream &os, const FissionBank &bank)
 {
-    os << bank.sites_.size() << " fission sites:" << std::endl;
     for (const auto &p : bank.sites_) {
-        os << p << std::endl;
+        os << p.location_global.x << ", " << p.location_global.y << std::endl;
     }
     return os;
 }
