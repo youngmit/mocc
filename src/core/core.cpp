@@ -28,14 +28,11 @@ Boundary bc_parse(const pugi::xml_node &input, const char *surf)
     std::string in = input.attribute(surf).value();
     if (in == "vacuum") {
         return Boundary::VACUUM;
-    }
-    else if (in == "reflect") {
+    } else if (in == "reflect") {
         return Boundary::REFLECT;
-    }
-    else if (in == "prescribed") {
+    } else if (in == "prescribed") {
         return Boundary::PRESCRIBED;
-    }
-    else {
+    } else {
         return Boundary::INVALID;
     }
 }
@@ -71,7 +68,14 @@ Core::Core(const pugi::xml_node &input,
 
     // Read in the assembly IDs
     std::string asy_str = input.child_value();
-    auto asy_vec        = explode_string<int>(asy_str);
+
+    VecI asy_vec;
+    try {
+        asy_vec = explode_string<int>(asy_str);
+    } catch (Exception e) {
+        std::cerr << e.what() << std::endl;
+        throw EXCEPT("Failed to read assembly IDs");
+    }
 
     if (asy_vec.size() != nx_ * ny_) {
         throw EXCEPT("Wrong number of assemblies specified for core.");
@@ -90,8 +94,7 @@ Core::Core(const pugi::xml_node &input,
             try {
                 Assembly *asy_p              = assemblies.at(asy_id).get();
                 assemblies_[row * nx_ + col] = asy_p;
-            }
-            catch (std::out_of_range) {
+            } catch (std::out_of_range) {
                 throw EXCEPT("Failed to locate assembly in core "
                              "specification.");
             }
