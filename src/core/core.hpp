@@ -33,6 +33,10 @@ public:
          const std::map<int, UP_Assembly_t> &assemblies);
     ~Core();
 
+    const Assembly &front() const {
+        return *(assemblies_.front());
+    }
+
     const Assembly &at(unsigned int i) const
     {
         assert((0 <= i) & (i < assemblies_.size()));
