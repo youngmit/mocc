@@ -89,11 +89,6 @@ Ray::Ray(Point2 p1, Point2 p2, std::array<int, 2> bc, int iplane,
 
     // Figure out the coarse mesh data for the ray. Start with the starting
     // cells and surfaces.
-    /** \todo Think about moving some of this logic into the Mesh itself.
-     * Have the \ref Mesh::trace() method also insert instances of the
-     * \ref RayCoarseData struct into a passed vector. Not sure if the best
-     * idea, but might be really neat.
-     */
     size_t ns = 0;
     Surface s[2];
     // All of the forward stuff

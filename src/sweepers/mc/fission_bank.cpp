@@ -78,7 +78,7 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
         for (int i = 0; i < n; i++) {
             Point3 p(rng.random(x_min, x_max), rng.random(y_min, y_max),
                      rng.random(z_min, z_max));
-            Direction dir(rng.random(TWOPI), rng.random(-HPI, HPI));
+            Direction dir = Direction::Isotropic(rng.random(), rng.random());
             int ig = rng.random_int(ng);
             sites_.emplace_back(p, dir, ig, i);
         }
@@ -88,7 +88,7 @@ FissionBank::FissionBank(const pugi::xml_node &input, int n,
         for (int i = 0; i < n; i++) {
             Point3 p(rng.random(x_min, x_max), rng.random(y_min, y_max),
                      rng.random(z_min, z_max));
-            Direction dir(rng.random(TWOPI), rng.random(-HPI, HPI));
+            Direction dir = Direction::Isotropic(rng.random(), rng.random());
             int ig = rng.random_int(ng);
             sites_.emplace_back(p, dir, ig, i);
         }
@@ -106,7 +106,9 @@ real_t FissionBank::shannon_entropy() const
     for (const auto &p : sites_) {
         int icell = mesh_.coarse_cell_point(p.location_global);
         if (icell < 0 || icell > (int)mesh_.n_pin()) {
-            Warn("ga");
+            std::stringstream msg;
+            msg << "Couldnt locate particle: " << p << std::endl;
+            throw EXCEPT(msg.str());
         }
         populations[icell] += p.weight;
     }
@@ -151,6 +153,7 @@ void FissionBank::resize(unsigned int n, RNG_LCG &rng)
             sites_.pop_back();
         }
     }
+    assert(sites_.size() == n);
 
     return;
 }

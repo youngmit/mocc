@@ -100,13 +100,13 @@ const PinMesh *Plane::get_pinmesh(Point2 &p, int &first_reg,
     // Locate the lattice
     unsigned ix = std::distance(
         hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
-    if (fp_equiv_abs(p.x, hx_[ix])) {
+    if (fp_equiv(p.x, hx_[ix])) {
         ix = (dir.ox > 0.0) ? ix + 1 : ix;
     }
     ix--;
     unsigned iy = std::distance(
         hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
-    if (fp_equiv_abs(p.y, hy_[iy])) {
+    if (fp_equiv(p.y, hy_[iy])) {
         iy = (dir.oy > 0.0) ? iy + 1 : iy;
     }
     iy--;

@@ -27,8 +27,10 @@ std::ostream &operator<<(std::ostream &os, const Particle &p)
        << p.location_global.y << " " << p.location_global.z << std::endl;
     os << "\tPin-local position: " << p.location.x << " " << p.location.y
        << std::endl;
+    os << "\tPin location: " << p.pin_position << std::endl;
     os << "\tDirection: " << p.direction << std::endl;
     os << "\tGroup: " << p.group << std::endl;
+    os << "\tCoincident surf: " << p.coincident << std::endl;
     os << "}";
     return os;
 }

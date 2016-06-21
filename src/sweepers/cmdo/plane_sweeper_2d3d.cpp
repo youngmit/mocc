@@ -250,7 +250,9 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
     }
 
     // Write out the correction factors
-    corrections_->output(file);
+    if( dump_corrections_ ) {
+        corrections_->output(file);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -269,6 +271,7 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
     moc_modulo_             = 1;
     relax_                  = 1.0;
     discrepant_flux_update_ = false;
+    dump_corrections_       = false;
 
     // Override with entries in the input node
     if (!input.attribute("expose_sn").empty()) {
@@ -299,6 +302,7 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
         discrepant_flux_update_ =
             input.attribute("discrepant_flux_update").as_bool();
     }
+    dump_corrections_ = input.attribute("dump_corrections").as_bool(false);
 
     // Throw a warning if TL is disabled
     if (!do_tl_) {

@@ -18,21 +18,22 @@
 
 #include "util/global_config.hpp"
 #include "direction.hpp"
-#include "geom_surface.hpp"
 #include "points.hpp"
 
 namespace mocc {
-struct Circle : public GeomSurface {
-    Circle(Point2 c, real_t r) : c(c), r(r)
+class GeomSurface {
+public:
+    GeomSurface() : surf_id(last_id_++)
     {
+        return;
     }
 
-    Point2 c;
-    real_t r;
+    virtual real_t distance_to_surface(Point2 p, Direction dir,
+                                       bool coincident=false) const = 0;
 
-    /// \todo document this
-    real_t distance_to_surface(Point2 p, Direction dir,
-                               bool coincident=false) const override final;
+    int surf_id;
+
+private:
+    static int last_id_;
 };
-
-} // namespace mocc
+}

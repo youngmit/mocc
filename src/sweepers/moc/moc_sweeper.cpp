@@ -447,8 +447,7 @@ void MoCSweeper::output(H5Node &node) const
     }
 
     // Pin powers
-    auto pow = this->pin_powers();
-    node.write("pin_powers", pow);
+    node.write("pin_powers", this->pin_powers());
 
     ang_quad_.output(node);
 

@@ -146,6 +146,28 @@ TEST(test_irregular)
     CHECK_EQUAL(mesh.coarse_area(32), 1.25);
 }
 
+TEST(test_largegeom) {
+    // Make a large-ish mesh, which might threaten some FP weirdness
+    VecF dx, dy;
+    VecF dz = {0.0, 1.0};
+    for( int i=0; i<51; i++) {
+        dx.push_back(i*1.26);
+        dy.push_back(i*1.26);
+    }
+    std::array<Boundary, 6> bc = {Boundary::REFLECT, Boundary::REFLECT,
+                                  Boundary::REFLECT, Boundary::REFLECT,
+                                  Boundary::REFLECT, Boundary::REFLECT};
+    Mesh mesh(2601, 2601, dx, dy, dz, bc);
+
+    // try tracing some rays, make sure the points make sense
+    std::vector<Point2> ps;
+    ps.push_back(Point2(64.050000000000011, 0));
+    ps.push_back(Point2(64.260000000000019, 0.024230769230770152));
+
+    mesh.trace(ps);
+    CHECK_EQUAL(2, ps.size());
+}
+
 int main()
 {
     return UnitTest::RunAllTests();

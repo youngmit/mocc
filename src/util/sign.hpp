@@ -16,23 +16,11 @@
 
 #pragma once
 
-#include "util/global_config.hpp"
-#include "direction.hpp"
-#include "geom_surface.hpp"
-#include "points.hpp"
-
-namespace mocc {
-struct Circle : public GeomSurface {
-    Circle(Point2 c, real_t r) : c(c), r(r)
-    {
-    }
-
-    Point2 c;
-    real_t r;
-
-    /// \todo document this
-    real_t distance_to_surface(Point2 p, Direction dir,
-                               bool coincident=false) const override final;
-};
-
-} // namespace mocc
+namespace mocc{
+//template <typename T> int sgn(T val) {
+//    return (T(0) < val) - (val < T(0));
+//}
+inline int sgn(real_t val) {
+    return (0.0 < val) - (val < 0.0);
+}
+}

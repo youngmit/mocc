@@ -21,7 +21,8 @@
 #include <limits>
 
 namespace mocc {
-real_t Circle::distance_to_surface(Point2 p, Direction dir) const
+real_t Circle::distance_to_surface(Point2 p, Direction dir,
+                                   bool coincident) const
 {
     std::numeric_limits<real_t> lim;
 
@@ -45,11 +46,10 @@ real_t Circle::distance_to_surface(Point2 p, Direction dir) const
     // if c ~= 0.0, we are on the surface of the circle. On surfaces, we
     // determine sense w.r.t. direction of travel; the particle is assumed
     // on the side in the direction of travel.
-    if (std::abs(c) < REAL_FUZZ) {
+    if (coincident || (std::abs(c) < REAL_FUZZ)) {
         if (k >= 0.0) {
             return lim.max();
-        }
-        else {
+        } else {
             return (-k + std::sqrt(det)) / a;
         }
     }
@@ -57,8 +57,7 @@ real_t Circle::distance_to_surface(Point2 p, Direction dir) const
     if (c < 0.0) {
         // inside the circle
         return (-k + std::sqrt(det)) / a;
-    }
-    else {
+    } else {
         // outside the circle
         real_t d = (-k - std::sqrt(det)) / a;
         return d >= 0.0 ? d : lim.max();

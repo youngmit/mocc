@@ -26,6 +26,15 @@ namespace mocc {
 class Box {
 public:
     /**
+     * \brief Default constructor creates an invalid \ref Box with all corners
+     *  at (0, 0).
+     */
+    Box() : Box(Point2(0.0, 0.0), Point2(0.0, 0.0))
+    {
+        return;
+    }
+
+    /**
      * \note The Lines should be ordered in the same way as the \ref Surface
      * enumeration in \ref constants.hpp
      */

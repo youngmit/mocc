@@ -74,24 +74,29 @@ PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input)
     return;
 }
 
-std::pair<real_t, Surface>
-PinMesh_Rect::distance_to_surface(Point2 p, Direction dir) const
+std::pair<real_t, bool> PinMesh_Rect::distance_to_surface(Point2 p,
+                                                          Direction dir,
+                                                          int &coincident) const
 {
-    std::pair<real_t, Surface> ret;
-    ret.second = Surface::INTERNAL;
-    ret.first  = std::numeric_limits<real_t>::max();
-    for (const auto &l : lines_) {
-        real_t d  = l.distance_to_surface(p, dir);
-        ret.first = (d < ret.first) ? d : ret.first;
+    std::pair<real_t, bool> ret;
+    int coinc = coincident;
+
+    if ((std::abs(p.x) > 0.5 * pitch_x_) || (std::abs(p.y) > 0.5 * pitch_y_)) {
+        ret.first  = 0.0;
+        ret.second = true;
+        return ret;
     }
 
-    Box bound(Point2(-0.5 * pitch_x_, -0.5 * pitch_y_),
-              Point2(0.5 * pitch_x_, 0.5 * pitch_y_));
-    auto bound_d = bound.distance_to_surface(p, dir);
-    if (bound_d.first < ret.first) {
-        ret.first  = bound_d.first;
-        ret.second = bound_d.second;
+    ret.second = false;
+    ret.first  = std::numeric_limits<real_t>::max();
+    for (const auto &l : lines_) {
+        real_t d  = l.distance_to_surface(p, dir, (coincident == l.surf_id));
+        if((d < ret.first)) {
+            ret.first = d;
+            coinc = l.surf_id;
+        }
     }
+    coincident = coinc;
 
     return ret;
 }
@@ -169,17 +174,16 @@ int PinMesh_Rect::find_reg(Point2 p, Direction dir) const
 
     int ix = std::distance(
         hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
-    if (fp_equiv_abs(p.x, hx_[ix])) {
+    if (fp_equiv(p.x, hx_[ix])) {
         ix = (dir.ox > 0.0) ? ix + 1 : ix;
     }
-    ix = std::max(0, std::min((int)nx_ - 1, ix - 1));
-
+    ix = std::max(0, std::min((int)nx_ - 1, ix-1));
     int iy = std::distance(
         hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
-    if (fp_equiv_abs(p.y, hy_[iy])) {
+    if (fp_equiv(p.y, hy_[iy])) {
         iy = (dir.oy > 0.0) ? iy + 1 : iy;
     }
-    iy = std::max(0, std::min((int)ny_ - 1, iy - 1));
+    iy = std::max(0, std::min((int)ny_ - 1, iy-1));
 
     int ireg = nx_ * iy + ix;
     assert(ireg < n_reg_);

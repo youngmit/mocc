@@ -38,8 +38,8 @@ public:
         return 1;
     }
 
-    virtual std::pair<real_t, Surface> distance_to_surface(Point2 p,
-                                                           Direction dir) const;
+    virtual std::pair<real_t, bool> distance_to_surface(Point2 p, Direction dir,
+                                                        int &coincident) const;
 
     void print(std::ostream &os) const;
 

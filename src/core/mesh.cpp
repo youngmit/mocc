@@ -15,6 +15,8 @@
 */
 
 #include "mesh.hpp"
+#include <iostream>
+#include <sstream>
 
 namespace mocc {
 Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
@@ -31,6 +33,7 @@ Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
       dy_vec_(hy.size() - 1),
       dz_vec_(hz.size() - 1),
       coarse_vol_(nx_ * ny_ * nz_),
+      bounding_box_(Point2(0.0, 0.0), Point2(hx.back(), hy.back())),
       n_surf_plane_((nx_ + 1) * ny_ + (ny_ + 1) * nx_ + nx_ * ny_)
 {
     assert(std::is_sorted(x_vec_.begin(), x_vec_.end()));
@@ -40,14 +43,17 @@ Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
     bc_ = bc;
 
     hx_ = x_vec_.back();
-    for (auto &xi : x_vec_) {
-        lines_.push_back(Line(Point2(xi, 0.0), Point2(xi, hx_)));
+    for (auto xi = x_vec_.cbegin() + 1; xi != x_vec_.cend() - 1; ++xi) {
+        lines_.push_back(Line(Point2(*xi, 0.0), Point2(*xi, hx_)));
     }
     hy_ = y_vec_.back();
-    for (auto &yi : y_vec_) {
-        lines_.push_back(Line(Point2(0.0, yi), Point2(hx_, yi)));
+    for (auto yi = y_vec_.cbegin() + 1; yi != y_vec_.cend() - 1; ++yi) {
+        lines_.push_back(Line(Point2(0.0, *yi), Point2(hx_, *yi)));
     }
     hz_ = z_vec_.back();
+
+    bounding_box_ =
+        Box(Point2(x_vec_[0], y_vec_[0]), Point2(x_vec_.back(), y_vec_.back()));
 
     for (size_t i = 1; i < x_vec_.size(); i++) {
         dx_vec_[i - 1] = x_vec_[i] - x_vec_[i - 1];
@@ -128,7 +134,7 @@ int Mesh::coarse_surf_point(Point2 p, int cell, std::array<int, 2> &s) const
 
     int ix = 0;
     for (auto &xi : x_vec_) {
-        if (fp_equiv_abs(p.x, xi)) {
+        if (fp_equiv(p.x, xi)) {
             on_x = true;
             break;
         }
@@ -141,7 +147,7 @@ int Mesh::coarse_surf_point(Point2 p, int cell, std::array<int, 2> &s) const
 
     int iy = 0;
     for (auto &yi : y_vec_) {
-        if (fp_equiv_abs(p.y, yi)) {
+        if (fp_equiv(p.y, yi)) {
             on_y = true;
             break;
         }
@@ -326,6 +332,9 @@ void Mesh::trace(std::vector<Point2> &ps) const
         }
     }
 
+    // Since the original points passed in are already on the domain boundary,
+    // skip intersections with the bounding box.
+
     // Sort the points and remove duplicates
     std::sort(ps.begin(), ps.end());
     ps.erase(std::unique(ps.begin(), ps.end()), ps.end());
@@ -384,7 +393,7 @@ size_t Mesh::coarse_norm_point(Point2 p, int octant, Surface (&s)[2]) const
 
     int ix = 0;
     for (auto &xi : x_vec_) {
-        if (fp_equiv_abs(p.x, xi)) {
+        if (fp_equiv(p.x, xi)) {
             on_x = true;
             break;
         }
@@ -397,7 +406,7 @@ size_t Mesh::coarse_norm_point(Point2 p, int octant, Surface (&s)[2]) const
 
     int iy = 0;
     for (auto &yi : y_vec_) {
-        if (fp_equiv_abs(p.y, yi)) {
+        if (fp_equiv(p.y, yi)) {
             on_y = true;
             break;
         }
@@ -569,7 +578,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
 
     int ix = 0;
     for (auto &xi : x_vec_) {
-        if (fp_equiv_abs(p.x, xi)) {
+        if (fp_equiv(p.x, xi)) {
             on_x = true;
             break;
         }
@@ -582,7 +591,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
 
     int iy = 0;
     for (auto &yi : y_vec_) {
-        if (fp_equiv_abs(p.y, yi)) {
+        if (fp_equiv(p.y, yi)) {
             on_y = true;
             break;
         }
@@ -610,7 +619,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
             }
         }
     }
-    else if (fp_equiv_abs(p.x, hx_)) {
+    else if (fp_equiv(p.x, hx_)) {
         // On the east side
         ix--;
         assert((octant == 2) || (octant == 3));
@@ -637,7 +646,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
             }
         }
     }
-    else if (fp_equiv_abs(p.y, hy_)) {
+    else if (fp_equiv(p.y, hy_)) {
         // On the north side
         iy--;
         assert((octant == 3) || (octant == 4));
@@ -656,6 +665,13 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
     }
 
     size_t cell = this->coarse_cell(Position(ix, iy, 0));
+
+    if ((cell < 0) || (cell >= this->n_pin())) {
+        std::stringstream msg;
+        msg << cell << " " << ix << " " << iy << std::endl;
+        msg << p.x << " " << p.y;
+        throw EXCEPT(msg.str());
+    }
 
     return cell;
 }

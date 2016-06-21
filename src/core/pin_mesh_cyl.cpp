@@ -300,8 +300,7 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const
 
     if (fp_equiv_abs(closest_azi * azi_space, azi)) {
         ia = (azi < dir.alpha) ? closest_azi : closest_azi - 1;
-    }
-    else {
+    } else {
         ia = (int)azi_div;
     }
     ia = ia % sub_azi_[0];
@@ -314,39 +313,40 @@ int PinMesh_Cyl::find_reg(Point2 p, Direction dir) const
     return ireg;
 }
 
-std::pair<real_t, Surface> PinMesh_Cyl::distance_to_surface(Point2 p,
-                                                            Direction dir) const
+std::pair<real_t, bool>
+PinMesh_Cyl::distance_to_surface(Point2 p, Direction dir, int &coincident) const
 {
-    std::pair<real_t, Surface> ret;
+    std::pair<real_t, bool> ret = {std::numeric_limits<real_t>::max(), true};
+    int coinc = coincident;
+
+    if ((std::abs(p.x) > 0.5 * pitch_x_) || (std::abs(p.y) > 0.5 * pitch_y_)) {
+        ret.first  = 0.0;
+        ret.second = true;
+        return ret;
+    }
 
     // start with a resonable max distance
     real_t dist = std::numeric_limits<real_t>::max();
 
-    ret.second = Surface::INTERNAL;
+    ret.second = false;
 
     for (const auto &c : circles_) {
-        real_t d = c.distance_to_surface(p, dir);
-        if (d < dist) {
-            dist = d;
+        real_t d = c.distance_to_surface(p, dir, (coincident == c.surf_id));
+        if ((d < dist)) {
+            coinc = c.surf_id;
+            dist  = d;
         }
     }
 
     for (const auto &l : lines_) {
-        real_t d = l.distance_to_surface(p, dir);
-        if (d < dist) {
-            dist = d;
+        real_t d = l.distance_to_surface(p, dir, (coincident == l.surf_id));
+        if ((d < dist)) {
+            coinc = l.surf_id;
+            dist  = d;
         }
     }
 
-    // Check for intersections with the pin boundaries
-    Box pin_boundary(Point2(-0.5 * pitch_x_, -0.5 * pitch_y_),
-                     Point2(0.5 * pitch_x_, 0.5 * pitch_y_));
-
-    auto d_boundary = pin_boundary.distance_to_surface(p, dir);
-    if (d_boundary.first < dist) {
-        dist       = d_boundary.first;
-        ret.second = d_boundary.second;
-    }
+    coincident = coinc;
 
     ret.first = dist;
 

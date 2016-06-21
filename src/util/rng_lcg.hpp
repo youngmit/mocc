@@ -22,6 +22,7 @@
 
 #include "util/force_inline.hpp"
 #include "global_config.hpp"
+#include "fp_utils.hpp"
 
 namespace mocc {
 /**
@@ -111,6 +112,7 @@ public:
      */
     MOCC_FORCE_INLINE int sample_cdf(const std::vector<real_t> &cdf)
     {
+        assert(fp_equiv_ulp(cdf.back(), 1.0));
         real_t v = this->random();
         return std::distance(cdf.begin(),
                              std::lower_bound(cdf.begin(), cdf.end(), v));
