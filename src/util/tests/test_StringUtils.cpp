@@ -16,6 +16,7 @@
 
 #include "UnitTest++/UnitTest++.h"
 
+#include <iostream>
 #include "util/error.hpp"
 #include "util/string_utils.hpp"
 
@@ -39,23 +40,50 @@ TEST(explode_string)
     return;
 }
 
-TEST(explode_brackets)
+TEST(explode_braces)
 {
     std::string test_string = "{1 1 1 1 1}{2 2 2  } { 3 3 3 } ";
-    auto test_vec = explode_brackets(test_string);
+    auto test_vec = explode_braces(test_string);
 
     CHECK_EQUAL(3, test_vec.size());
 
-    CHECK_EQUAL("1 1 1 1 1", test_vec[0]);
-    CHECK_EQUAL("2 2 2  ", test_vec[1]);
-    CHECK_EQUAL(" 3 3 3 ", test_vec[2]);
+    std::vector<int> tv = {1, 1, 1, 1, 1};
+    CHECK_ARRAY_EQUAL(tv, test_vec[0], 5);
+    tv = {2, 2, 2};
+    CHECK_ARRAY_EQUAL(tv, test_vec[1], 3);
+    tv = {3, 3, 3};
+    CHECK_ARRAY_EQUAL(tv, test_vec[2], 3);
 
     test_string = "{ 34 5 2";
-    CHECK_THROW(explode_brackets(test_string), mocc::Exception);
+    CHECK_THROW(explode_braces(test_string), mocc::Exception);
+
+    test_string = "1 {3 5 1}1 2 3 { 34 5 2} 3";
+    test_vec = explode_braces(test_string);
+    for(const auto &l: test_vec) {
+        for(const auto &v: l) {
+            std::cout << v << " ";
+        }
+        std::cout << std::endl;
+    }
+    CHECK_EQUAL(1, test_vec[0].size());
+    CHECK_EQUAL(1, test_vec[0][0]);
+    CHECK_EQUAL(3, test_vec[1].size());
+    CHECK_EQUAL(5, test_vec[1][1]);
+    CHECK_EQUAL(1, test_vec[2].size());
+    CHECK_EQUAL(1, test_vec[3].size());
 
 
-    test_string = " { 34 5 2} 3";
-    CHECK_THROW(explode_brackets(test_string), mocc::Exception);
+    test_string   = " 1 2   3 45 4   \n2 \r7\t 49 ";
+    test_vec = explode_braces(test_string);
+    std::vector<int> flat_vec;
+    for(const auto &block: test_vec) {
+        for(const auto &v: block){
+            flat_vec.push_back(v);
+        }
+    }
+    std::vector<int> ref_vec  = {1, 2, 3, 45, 4, 2, 7, 49};
+    CHECK_ARRAY_EQUAL(ref_vec, flat_vec, 8);
+
     return;
 }
 

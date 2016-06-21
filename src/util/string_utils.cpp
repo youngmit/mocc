@@ -61,13 +61,9 @@ std::string print_range(const std::vector<bool> &input)
 template <typename T> std::vector<T> explode_string(std::string data)
 {
     sanitize(data);
-    auto is_invalid_char = [](char c) { return !(isspace(c) || isdigit(c)); };
 
-    // first, make sure there are no non-[numerals|whitespace]
-    bool good =
-        std::find_if(data.begin(), data.end(), is_invalid_char) == data.end();
-    if (!good) {
-        throw EXCEPT("Malformed data");
+    if (data.size() == 0) {
+        return std::vector<T>();
     }
 
     std::vector<T> out;
@@ -77,7 +73,13 @@ template <typename T> std::vector<T> explode_string(std::string data)
     T i;
     while (!inBuf.eof()) {
         inBuf >> i;
-        out.push_back(i);
+        if (!inBuf.fail()) {
+            out.push_back(i);
+        } else {
+            std::stringstream msg;
+            msg << "Malformed data: " << data;
+            throw EXCEPT(msg.str());
+        }
     }
 
     // Make sure everything went okay
@@ -92,12 +94,17 @@ template <typename T> std::vector<T> explode_string(std::string data)
  * \brief Break a string with matched curly braces ({ }).
  *
  * Return a vector of strings containing the substrings enclosed in each pair of
- * braces.
+ * braces. Any value
  *
- * Throws an exception if there are non-whitespace characters that are not
- * enclosed in a brace pair.
+ * Throws an exception under the following circumstances:
+ *  - If there are any characters that are not whitespace, numerals, or braces
+ *  - If there are non-whitespace characters that are not enclosed in a brace
+ * pair
+ *  - If there are un-matched braces
+ *  - If the brace depth exceeds one
+ *
  */
-std::vector<std::string> explode_brackets(std::string data)
+std::vector<std::vector<int>> explode_braces(std::string data)
 {
     auto is_invalid_char = [](char c) {
         return !(isspace(c) || isdigit(c) || (c == '{') || (c == '}'));
@@ -110,10 +117,8 @@ std::vector<std::string> explode_brackets(std::string data)
         throw EXCEPT("Malformed data");
     }
 
-    // Make sure all non-whitespace characters are enclosed in braces, and that
-    // all of the braces match.
+    // Make sure that all of the braces match.
     int brace_depth = 0;
-    bool naked_data = false;
     for (const auto &c : data) {
         if (c == '{') {
             brace_depth++;
@@ -126,31 +131,38 @@ std::vector<std::string> explode_brackets(std::string data)
             brace_depth--;
             continue;
         }
-        if ((brace_depth < 1) && (!isspace(c))) {
-            naked_data = true;
-            break;
-        }
-    }
-    if (naked_data) {
-        throw EXCEPT(
-            "There are non-whitespace characters outside of a brace pair");
     }
     if (brace_depth != 0) {
         throw EXCEPT("Brace mismatch");
     }
 
     // Read the actual data
-    std::vector<std::string> out;
+    std::vector<std::vector<int>> out;
     size_t pos_stt = 0;
     size_t pos_stp = 0;
+    size_t pos     = 0;
     while (true) {
-        pos_stt = data.find('{', pos_stp);
+        pos_stt = data.find('{', pos);
         pos_stp = data.find('}', pos_stt);
-        if(pos_stt == std::string::npos) {
+        if (pos_stt - pos > 0) {
+            std::vector<int> naked_ints =
+                explode_string<int>(data.substr(pos, pos_stt - pos - 1));
+            if (naked_ints.size() > 0) {
+                for (const auto &v : naked_ints) {
+                    out.push_back(std::vector<int>(1, v));
+                }
+            }
+        }
+        if (pos_stt != std::string::npos) {
+            out.push_back(explode_string<int>(
+                data.substr(pos_stt + 1, pos_stp - pos_stt - 1)));
+            if (out.back().size() == 0) {
+                throw EXCEPT("Empty brackets");
+            }
+        } else {
             break;
         }
-        out.push_back(data.substr(pos_stt + 1, pos_stp - pos_stt - 1));
-        pos_stt = pos_stp;
+        pos = pos_stp + 1;
     }
 
     return out;
