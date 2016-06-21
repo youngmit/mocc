@@ -80,3 +80,6 @@ inline std::string &sanitize(std::string &s)
  * whitespace.
  */
 template <typename T> std::vector<T> explode_string(std::string data);
+
+
+std::vector<std::string> explode_brackets(std::string data);
