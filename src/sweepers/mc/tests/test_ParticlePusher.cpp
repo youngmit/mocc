@@ -29,7 +29,7 @@ using namespace mocc;
 TEST(test_point)
 {
     pugi::xml_document geom_xml;
-    pugi::xml_parse_result result = geom_xml.load_file("square.xml");
+    geom_xml.load_file("square.xml");
 
     CoreMesh mesh(geom_xml);
 
@@ -60,7 +60,7 @@ TEST(test_point)
 TEST(test_beam)
 {
     pugi::xml_document geom_xml;
-    pugi::xml_parse_result result = geom_xml.load_file("tunnel.xml");
+    geom_xml.load_file("tunnel.xml");
 
     CoreMesh mesh(geom_xml);
 

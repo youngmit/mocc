@@ -80,6 +80,8 @@ public:
      * dimension. Starts at 0.0, ends at the farthest extent of the mesh
      * \param hz a vector containing the inter-pin boundaries for the Z
      * dimension. Starts at 0.0, ends at the farthest extent of the mesh
+     * \param bc an array containing the boundary conditions to be imposed on
+     * each surface of the global domain
      */
     Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
          std::array<Boundary, 6> bc);
