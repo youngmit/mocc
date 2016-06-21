@@ -42,8 +42,8 @@ TEST(testCircle)
                                            Direction(1.0, 0.0, 0.0)),
                 REAL_FUZZ);
     // similar to above, but slightly outside
-    CHECK_CLOSE(1.5, c.distance_to_surface(Point2(-0.25-0.00000005, 0.5),
-                                           Direction(1.0, 0.0, 0.0), false),
+    CHECK_CLOSE(1.5, c.distance_to_surface(Point2(-0.25-0.0000000000005, 0.5),
+                                           Direction(1.0, 0.0, 0.0), true),
                 1e-12);
 
     // Interior point pointing anywhere in the plane
