@@ -47,7 +47,7 @@ Assembly::Assembly(const pugi::xml_node &input,
 
     // Parse plane heights (scalar form)
     bool scalar_hz = false;
-    real_t hz      = input.attribute("hz").as_float(0.0f);
+    real_t hz      = input.attribute("hz").as_double(0.0f);
     if (hz > 0.0f) {
         scalar_hz = true;
         // Fill the hz vector with all entries the same.
@@ -74,14 +74,24 @@ Assembly::Assembly(const pugi::xml_node &input,
     }
     {
         string lat_str   = input.child("lattices").child_value();
-        auto lattice_ids = explode_string<int>(lat_str);
+        auto lattice_ids = explode_braces(lat_str);
 
-        for (int lat_id : lattice_ids) {
-            if (lattices.count(lat_id) > 0) {
-                lattices_.push_back(lattices.at(lat_id).get());
-            }
-            else {
-                throw EXCEPT("Unrecognized lattice ID in assembly.");
+        // Lattices are read from the top down, but we want to store them from
+        // the bottom up. Loop through and flip the input values
+        std::reverse(lattice_ids.begin(), lattice_ids.end());
+        for (auto &block : lattice_ids) {
+            std::reverse(block.begin(), block.end());
+        }
+
+        subplane_.reserve(lattice_ids.size());
+        for (const auto &block : lattice_ids) {
+            subplane_.push_back(block.size());
+            for (const auto &lat_id : block) {
+                if (lattices.count(lat_id) > 0) {
+                    lattices_.push_back(lattices.at(lat_id).get());
+                } else {
+                    throw EXCEPT("Unrecognized lattice ID in assembly.");
+                }
             }
         }
         if (lattices_.size() != nz_) {
@@ -89,9 +99,6 @@ Assembly::Assembly(const pugi::xml_node &input,
                          "assembly.");
         }
     }
-    // Lattice IDs are read from the top down, but are stored from the
-    // bottom up. Reverse the vector we just populated.
-    std::reverse(lattices_.begin(), lattices_.end());
 
     // Store lattice dimensions
     hx_ = lattices_[0]->hx();
@@ -118,6 +125,28 @@ Assembly::Assembly(const pugi::xml_node &input,
 Assembly::~Assembly()
 {
     return;
+}
+
+bool Assembly::compatible(const Assembly &other) const
+{
+    if (lattices_.size() != other.lattices_.size()) {
+        return false;
+    }
+    if (subplane_.size() != other.subplane_.size()) {
+        return false;
+    }
+    for (unsigned i = 0; i < lattices_.size(); ++i) {
+        if (!fp_equiv_ulp(dz_[i], other.dz_[i])) {
+            return false;
+        }
+    }
+
+    for (unsigned i = 0; i < subplane_.size(); ++i) {
+        if (subplane_[i] != other.subplane_[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 std::map<int, UP_Assembly_t>
