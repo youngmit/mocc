@@ -31,7 +31,8 @@ namespace {
 using namespace mocc;
 // Given an array of two points and a Particle, determine the distance from the
 // particle to the box formed by the
-real_t inline distance_to_pin(std::array<Point3, 2> bounds, const Particle &p)
+real_t inline distance_to_pin(std::array<Point3, 2> bounds,
+                              const mc::Particle &p)
 {
     real_t dist  = std::numeric_limits<real_t>::max();
     real_t other = 0.0;
@@ -167,7 +168,7 @@ void ParticlePusher::collide(Particle &p)
 
 void ParticlePusher::simulate(Particle p, bool tally)
 {
-    bool print      = print_particles_;
+    bool print = print_particles_;
 
     // Register this particle with the tallies
     k_tally_tl_.add_weight(p.weight);

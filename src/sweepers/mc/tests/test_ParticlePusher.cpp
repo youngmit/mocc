@@ -25,6 +25,7 @@
 #include "util/rng_lcg.hpp"
 
 using namespace mocc;
+using namespace mocc::mc;
 
 TEST(test_point)
 {
@@ -35,7 +36,7 @@ TEST(test_point)
 
     XSMesh xs_mesh(mesh);
 
-    mc::ParticlePusher pusher(mesh, xs_mesh);
+    ParticlePusher pusher(mesh, xs_mesh);
 
     int N = 10000;
     int pc = N/100;
@@ -66,7 +67,7 @@ TEST(test_beam)
 
     XSMesh xs_mesh(mesh);
 
-    mc::ParticlePusher pusher(mesh, xs_mesh);
+    ParticlePusher pusher(mesh, xs_mesh);
 
     int N = 10000;
     int pc = N/100;

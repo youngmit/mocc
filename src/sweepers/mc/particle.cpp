@@ -19,6 +19,7 @@
 #include "particle.hpp"
 
 namespace mocc {
+namespace mc {
 std::ostream &operator<<(std::ostream &os, const Particle &p)
 {
     os << "{" << std::endl;
@@ -33,5 +34,6 @@ std::ostream &operator<<(std::ostream &os, const Particle &p)
     os << "\tCoincident surf: " << p.coincident << std::endl;
     os << "}";
     return os;
+}
 }
 }

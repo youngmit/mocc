@@ -26,7 +26,7 @@
 #include "position.hpp"
 
 
-namespace mocc {
+namespace mocc { namespace mc {
 const real_t BUMP   = 1.0e-11;
 
 /**
@@ -125,4 +125,5 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Particle &p);
 };
 
+} // namespace mc
 } // namespace mocc
