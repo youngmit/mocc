@@ -170,6 +170,9 @@ void ParticlePusher::simulate(Particle p, bool tally)
 {
     bool print = print_particles_;
 
+    RNG.set_seed(seed_);
+    RNG.jump_ahead((p.id + id_offset_) * 10000);
+
     // Register this particle with the tallies
     k_tally_tl_.add_weight(p.weight);
     k_tally_col_.add_weight(p.weight);
@@ -353,9 +356,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
 }
 
 /**
- * This method operates by generating a full-blown Particle for each fission
- * site in the \ref FissionBank and calling \c this->simulate() for that
- * particle.
+ * \brief Simulate all particles in a \ref FissionBank, stashing statistics at
+ * the end.
  */
 void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
 {
@@ -363,6 +365,8 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     // cycle
     fission_bank_.clear();
 
+    // not even used for now. Just letting the fission bank grow, then resizing
+    // at the end
     k_eff_ = k_eff;
 
     print_particles_ = false;
@@ -372,8 +376,6 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
         unsigned np = bank.size();
 #pragma omp for
         for (unsigned ip = 0; ip < np; ip++) {
-            RNG.set_seed(seed_);
-            RNG.jump_ahead((bank[ip].id + id_offset_) * 10000);
             this->simulate(bank[ip]);
         }
 

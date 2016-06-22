@@ -90,20 +90,30 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
 
     return;
 }
-
+/**
+ * The is pretty simple: 
+ *  - Loop over inactive cycles, calling step(),
+ *  - clear the tally data on pusher_, then
+ *  - loop over active cycles, calling step()
+ */
 void MonteCarloEigenvalueSolver::solve()
 {
     cycle_ = -n_inactive_cycles_;
     LogScreen << "Performing inactive cycles:" << std::endl;
     LogScreen << std::setw(10) << "Cycle";
-    LogScreen << std::setw(15) << "Cycle K-eff";
-    LogScreen << std::setw(15) << "Avg. K-eff";
-    LogScreen << std::setw(15) << "Std. Dev.";
+    LogScreen << std::setw(15) << "K-eff (TL)";
+    LogScreen << std::setw(15) << "Mean (TL)";
+    LogScreen << std::setw(15) << "Std. Dev. (TL)";
+    LogScreen << std::setw(15) << "Mean (col)";
+    LogScreen << std::setw(15) << "Mean (analog)";
     LogScreen << std::endl;
     active_cycle_ = false;
     for (int i = 0; i < n_inactive_cycles_; i++) {
         this->step();
     }
+
+    // Reset the tallies following inactive cycles, here we want to reset ALL
+    // tallies on the pusher_, scalar and spatial
     pusher_.reset_tallies(true);
 
     LogScreen << "Starting active cycles:" << std::endl;
@@ -117,6 +127,13 @@ void MonteCarloEigenvalueSolver::solve()
     return;
 } // MonteCarloEigenvalueSolver::solve()
 
+/**
+ * Simulate all of the particles in the source bank using pusher_. After
+ * simulating the batch of particles, extract eigenvalue estimates, and if in
+ * active cycles, contribute to their tallies. At the end, swap storage between
+ * the pusher_ fission bank and source_bank_, then resize source_bank_ to the
+ * desired number of particles per cycle.
+ */
 void MonteCarloEigenvalueSolver::step()
 {
     cycle_++;
@@ -125,9 +142,9 @@ void MonteCarloEigenvalueSolver::step()
     pusher_.simulate(source_bank_, 1.0);
 
     // Log data
-    k_eff_ = pusher_.k_tally_tl().get();
-    auto k_tl = pusher_.k_tally_tl().get();
-    auto k_col = pusher_.k_tally_col().get();
+    k_eff_        = pusher_.k_tally_tl().get();
+    auto k_tl     = pusher_.k_tally_tl().get();
+    auto k_col    = pusher_.k_tally_col().get();
     auto k_analog = pusher_.k_tally_analog().get();
 
     k_history_tl_.push_back(k_tl.first);
@@ -158,7 +175,6 @@ void MonteCarloEigenvalueSolver::step()
         LogScreen << std::setw(15) << k_tally_tl_.get().second;
         LogScreen << std::setw(15) << k_tally_col_.get().first;
         LogScreen << std::setw(15) << k_tally_analog_.get().first;
-        
     }
     LogScreen << std::endl;
 
@@ -175,15 +191,12 @@ void MonteCarloEigenvalueSolver::step()
         p.id = i++;
     }
 
-    
-    if(dump_sites_){
+    if (dump_sites_) {
         std::stringstream fname;
         fname << "sites_" << cycle_;
         std::ofstream f(fname.str());
         f << source_bank_;
     }
-
-
 
     // Reset the tallies on the Pusher. This should only reset the k-effective
     // tally, since all others are managed internally

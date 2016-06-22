@@ -25,12 +25,30 @@
 
 namespace mocc {
 namespace mc {
+/**
+ * \brief Monte Carlo Eigenvalue solver
+ *
+ * This is essentially a driver for \ref mc::ParticlePusher, which performs
+ * power iteration on fission banks. This class manages the particles in the
+ * source/fission bank and maintains tallies for k-effective. Spatial tallies,
+ * such as scalar flux and pin power are maintained within the \ref
+ * mc::ParticlePusher. These tallies maintain batch statistics for each cycle,
+ * which get reset at the end of the inactive cycles.
+ */
 class MonteCarloEigenvalueSolver : public Solver {
 public:
     MonteCarloEigenvalueSolver(const pugi::xml_node &input,
                                const CoreMesh &mesh);
 
+    /**
+     * \brief Solve the eigenvalue problem
+     *
+          */
     void solve();
+
+    /**
+     * \brief Perform a single power iteration cycle
+     */
     void step();
 
     void output(H5Node &node) const override;

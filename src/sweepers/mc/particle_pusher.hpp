@@ -30,10 +30,40 @@
 namespace mocc {
 namespace mc {
 /**
- * This class manages the simulation of particle histories. Each call to
+ * \brief Monte Carlo particle simulator
+ *
+ * This class handles the simulation of particle histories. Each call to
  * \ref simulate() will track the entire history of a particle until its
- * death and the death of all of its progeny (which would arise from
- * variance reduction techniques such as russian roulette/splitting).
+ * death and the death of all of its progeny. There are two versions of
+ * simulate(), one that accepts a single particle and one that accepts a
+ * reference to a source \ref FissionBank. The \ref FissionBank version just
+ * loops over each particle in the bank and calls simulate() for that particle
+ * (with \c tally=false, see the documenation for \ref simulate(Particle,
+ * bool)), and contributing to tallies at the end of the batch.
+ *
+ * For now there is an underlying assumption that this is being used mostly for
+ * eigenvalue problems, so any fission neutrons generated are stored in a \ref
+ * FissionBank and killed.
+ *
+ * This class maintains tallies for k-effective (track-length, collision and
+ * analog), and some spatial quantities (scalar flux, pin power). The eigenvalue
+ * tallies, while stored in \ref TallyScalar objects, ought not to use the
+ * statistical calculations provided by that class. Instead their mean should be
+ * extracted and reset by the client code (\ref MonteCarloEigenvalueSolver) with
+ * each cycle. This is to make it easy for \ref MonteCarloEigenvalueSolver to
+ * have access to each iteration's k-effective while also maintaining the
+ * running average and its own statistics.
+ *
+ * The spatial tallies on the other hand are not needed by the \ref
+ * MonteCarloEigenvalueSolver, and are managed by this class directly. The
+ * completion of each cycle will see a contribution to these tallies through the
+ * TallySpatial::commit_realization() method. The only thing to keep in mind is
+ * that these tallies must be reset by the client at the end of the inactive
+ * cycles.
+ *
+ * There is also support for use in fixed-source solvers through repeated calls
+ * to simulate(Particle, bool) with \c tally=true, which will contribute to
+ * tallies at the end of each particle.
  */
 class ParticlePusher : public HasOutput {
 public:
@@ -89,7 +119,7 @@ public:
     {
         return k_tally_col_;
     }
-    
+
     /**
      * \brief Return a reference to the internal eigenvalue tally
      */
@@ -99,7 +129,16 @@ public:
     }
 
     /**
-     * \brief Reset all tallies
+     * \brief Reset tallies
+     *
+     * \param clear_persistent whether we should clear internally-managed
+     * tallies
+     *
+     * We consider internally-managed tallies those which maintain their own
+     * statistics within the \ref ParticlePusher class. This excludes the
+     * k-effective tallies, which only exist to accumulate the mean for each
+     * cycle, and therefore will be reset more often. The internally-managed
+     * tallies should only be reset at the end of inactive cycles.
      */
     void reset_tallies(bool clear_persistent = false)
     {
@@ -124,6 +163,13 @@ public:
         return;
     }
 
+    /**
+     * \brief Store buffered tally contributions as a realization of our random
+     * variables
+     *
+     * This calls \ref TallySpatial::commit_realization() for each of our
+     * internally-managed tallies.
+     */
     void commit_tallies()
     {
         for (auto &t : scalar_flux_tally_) {
