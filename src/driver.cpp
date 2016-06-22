@@ -31,8 +31,8 @@
 #include "util/h5file.hpp"
 #include "util/timers.hpp"
 #include "core/core_mesh.hpp"
+#include "core/solver.hpp"
 #include "core/transport_sweeper.hpp"
-#include "solvers/solver.hpp"
 #include "git_SHA1.hpp"
 #include "input_proc.hpp"
 
