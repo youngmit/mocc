@@ -18,8 +18,8 @@
 
 #include <cmath>
 #include <iostream>
-#include <omp.h>
 #include "util/blitz_typedefs.hpp"
+#include "util/omp_guard.h"
 #include "util/utils.hpp"
 #include "particle.hpp"
 
