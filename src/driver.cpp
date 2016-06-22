@@ -31,8 +31,8 @@
 #include "util/h5file.hpp"
 #include "util/timers.hpp"
 #include "core/core_mesh.hpp"
-#include "core/solver.hpp"
 #include "core/transport_sweeper.hpp"
+#include "solvers/solver.hpp"
 #include "git_SHA1.hpp"
 #include "input_proc.hpp"
 
@@ -72,15 +72,13 @@ void generate_output()
     if (Warnings.size() > 0) {
         if (Warnings.size() == 1) {
             std::cout << "There was ";
-        }
-        else {
+        } else {
             std::cout << "There were ";
         }
         std::cout << Warnings.size();
         if (Warnings.size() == 1) {
             std::cout << " warning:" << std::endl;
-        }
-        else {
+        } else {
             std::cout << " warnings:" << std::endl;
         }
         for (const auto &warning : Warnings) {
