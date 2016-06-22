@@ -44,12 +44,12 @@ public:
      * \brief Solve the eigenvalue problem
      *
           */
-    void solve();
+    void solve() override;
 
     /**
      * \brief Perform a single power iteration cycle
      */
-    void step();
+    void step() override;
 
     void output(H5Node &node) const override;
 

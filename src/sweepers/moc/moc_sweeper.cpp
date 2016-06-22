@@ -47,8 +47,8 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
         int iang2      = rays.ang_quad().reverse(iang);
         int nx         = rays.ny(iang);
         int ny         = rays.nx(iang);
-        bc_dims[iang1] = {nx, ny, 0};
-        bc_dims[iang2] = {nx, ny, 0};
+        bc_dims[iang1] = {{nx, ny, 0}};
+        bc_dims[iang2] = {{nx, ny, 0}};
     }
 
     assert(bc_dims.size() == bc_dims.capacity());

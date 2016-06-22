@@ -489,24 +489,21 @@ public:
      */
     std::array<Surface, 3> boundary_surface(Point3 p, Direction dir) const
     {
-        std::array<Surface, 3> surf = {Surface::INTERNAL, Surface::INTERNAL,
-                                       Surface::INTERNAL};
+        std::array<Surface, 3> surf = {
+            {Surface::INTERNAL, Surface::INTERNAL, Surface::INTERNAL}};
         if ((p.x < REAL_FUZZ) && (dir.ox < 0.0)) {
             surf[0] = Surface::WEST;
-        }
-        else if ((p.y < REAL_FUZZ) && (dir.oy < 0.0)) {
+        } else if ((p.y < REAL_FUZZ) && (dir.oy < 0.0)) {
             surf[0] = Surface::SOUTH;
         }
         if ((p.z < REAL_FUZZ) && (dir.oz < 0.0)) {
             surf[1] = Surface::BOTTOM;
-        }
-        else if ((p.x / hx_ > 1.0 - REAL_FUZZ) && (dir.ox > 0.0)) {
+        } else if ((p.x / hx_ > 1.0 - REAL_FUZZ) && (dir.ox > 0.0)) {
             surf[1] = Surface::EAST;
         }
         if ((p.y / hy_ > 1.0 - REAL_FUZZ) && (dir.oy > 0.0)) {
             surf[2] = Surface::NORTH;
-        }
-        else if ((p.z / hz_ > 1.0 - REAL_FUZZ) && (dir.oz > 0.0)) {
+        } else if ((p.z / hz_ > 1.0 - REAL_FUZZ) && (dir.oz > 0.0)) {
             surf[2] = Surface::TOP;
         }
         return surf;
@@ -541,14 +538,12 @@ public:
 
             if (ix > 0) {
                 cells.first = this->coarse_cell(Position(ix - 1, iy, iz));
-            }
-            else {
+            } else {
                 cells.first = -1;
             }
             if (ix < nx_) {
                 cells.second = this->coarse_cell(Position(ix, iy, iz));
-            }
-            else {
+            } else {
                 cells.second = -1;
             }
         } break;
@@ -563,14 +558,12 @@ public:
 
             if (iy > 0) {
                 cells.first = this->coarse_cell(Position(ix, iy - 1, iz));
-            }
-            else {
+            } else {
                 cells.first = -1;
             }
             if (iy < ny_) {
                 cells.second = this->coarse_cell(Position(ix, iy, iz));
-            }
-            else {
+            } else {
                 cells.second = -1;
             }
         } break;
@@ -584,14 +577,12 @@ public:
 
             if (iz > 0) {
                 cells.first = this->coarse_cell(Position(ix, iy, iz - 1));
-            }
-            else {
+            } else {
                 cells.first = -1;
             }
             if (iz < nz_) {
                 cells.second = this->coarse_cell(Position(ix, iy, iz));
-            }
-            else {
+            } else {
                 cells.second = -1;
             }
         } break;
@@ -737,43 +728,37 @@ public:
         case Surface::NORTH:
             if (pos.y < ny_ - 1) {
                 return cell + nx_;
-            }
-            else {
+            } else {
                 return -1;
             }
         case Surface::SOUTH:
             if (pos.y > 0) {
                 return cell - nx_;
-            }
-            else {
+            } else {
                 return -1;
             }
         case Surface::EAST:
             if (pos.x < nx_ - 1) {
                 return cell + 1;
-            }
-            else {
+            } else {
                 return -1;
             }
         case Surface::WEST:
             if (pos.x > 0) {
                 return cell - 1;
-            }
-            else {
+            } else {
                 return -1;
             }
         case Surface::TOP:
             if (pos.z < nz_ - 1) {
                 return cell + nx_ * ny_;
-            }
-            else {
+            } else {
                 return -1;
             }
         case Surface::BOTTOM:
             if (pos.z > 0) {
                 return cell - nx_ * ny_;
-            }
-            else {
+            } else {
                 return -1;
             }
         default:
@@ -804,8 +789,7 @@ public:
             if (oz == 0.0) {
                 throw EXCEPT("Ambiguous plane index, without valid "
                              "z-direction.");
-            }
-            else {
+            } else {
                 iz = (oz > 0.0) ? iz + 1 : iz;
             }
         }

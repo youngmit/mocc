@@ -35,8 +35,8 @@ public:
     int find_reg(Point2 p, Direction dir) const final override;
 
     // If i ever get more general with the azimuthal subdivision, i will
-    // have to generalize this as well. make sure not to forget.
-    size_t n_fsrs(unsigned int xsreg) const
+    // have to generalize this as well.
+    size_t n_fsrs(unsigned int xsreg) const override
     {
         int n = 0;
         if (xsreg < xs_radii_.size()) {
@@ -49,11 +49,11 @@ public:
     }
 
     std::pair<real_t, bool> distance_to_surface(Point2 p, Direction dir,
-                                                int &coincident) const;
+                                                int &coincident) const override;
 
-    void print(std::ostream &os) const;
+    void print(std::ostream &os) const override;
 
-    std::string draw() const;
+    std::string draw() const override;
 
 private:
     // Radii of material rings

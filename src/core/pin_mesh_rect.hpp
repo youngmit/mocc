@@ -33,17 +33,18 @@ public:
     int find_reg(Point2 p) const override final;
     int find_reg(Point2 p, Direction dir) const override final;
 
-    size_t n_fsrs(unsigned int xsreg) const
+    size_t n_fsrs(unsigned int xsreg) const override
     {
         return 1;
     }
 
-    virtual std::pair<real_t, bool> distance_to_surface(Point2 p, Direction dir,
-                                                        int &coincident) const;
+    virtual std::pair<real_t, bool>
+    distance_to_surface(Point2 p, Direction dir,
+                        int &coincident) const override;
 
-    void print(std::ostream &os) const;
+    void print(std::ostream &os) const override;
 
-    std::string draw() const;
+    std::string draw() const override;
 
 private:
     unsigned nx_;

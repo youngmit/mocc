@@ -19,7 +19,6 @@
 // These inclusions are unnecesary, and only provided so Doxygen can chase
 // references.
 
-
 /**
  * \file
  * This contains the actual MoC sweeper kernel, and --fortune willing--

@@ -58,7 +58,7 @@ public:
     inline void set_group(int group)
     {
         group_    = group;
-        residual_ = {0.0, 0.0, 0.0};
+        residual_ = {{0.0, 0.0, 0.0}};
     }
 
     std::array<real_t, 3> residual() const

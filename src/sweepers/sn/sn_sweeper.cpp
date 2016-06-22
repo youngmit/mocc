@@ -27,9 +27,9 @@ namespace {
 using namespace mocc;
 BC_Size_t boundary_helper(const Mesh &mesh)
 {
-    BC_Size_t bc_size = {(int)mesh.ny() * (int)mesh.nz(),
-                         (int)mesh.nx() * (int)mesh.nz(),
-                         (int)mesh.nx() * (int)mesh.ny()};
+    BC_Size_t bc_size = {{(int)mesh.ny() * (int)mesh.nz(),
+                          (int)mesh.nx() * (int)mesh.nz(),
+                          (int)mesh.nx() * (int)mesh.ny()}};
     return bc_size;
 }
 }

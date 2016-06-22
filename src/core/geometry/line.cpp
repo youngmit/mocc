@@ -21,12 +21,11 @@
 namespace mocc {
 real_t Line::distance_to_surface(Point2 p, Direction dir, bool coincident) const
 {
-    const std::numeric_limits<real_t> lim;
 
     // There can be only one intersection with a line, so if we are already
     // coincident, return infinity
     if (coincident) {
-        return lim.max();
+        return std::numeric_limits<real_t>::max();
     }
 
     // Cast the line into the general form. This might be worth doing ahead of
@@ -43,7 +42,7 @@ real_t Line::distance_to_surface(Point2 p, Direction dir, bool coincident) const
 
     // Check for point laying on line
     if (std::abs(proj) < REAL_FUZZ) {
-        return lim.max();
+        return std::numeric_limits<real_t>::max();
     }
 
     real_t d = -f / proj;
@@ -51,7 +50,7 @@ real_t Line::distance_to_surface(Point2 p, Direction dir, bool coincident) const
         return d;
     }
 
-    return lim.max();
+    return std::numeric_limits<real_t>::max();
 
 } // Line::distance_to_surface()
 } // namespace mocc

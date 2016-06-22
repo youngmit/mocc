@@ -34,7 +34,7 @@ CoarseData::CoarseData(const Mesh &mesh, size_t ngroup)
     surface_flux = 0.0;
     flux         = 1.0;
     old_flux     = 1.0;
-    std::array<real_t, 2> zero = {0.0, 0.0};
+    std::array<real_t, 2> zero = {{0.0, 0.0}};
     partial_current     = zero;
     partial_current_old = zero;
 
@@ -51,7 +51,7 @@ void CoarseData::zero_data(int group, bool zero_partial)
 {
     assert(group < n_group_);
     // need this to disambiguate the operator= for partial currents.
-    const std::array<real_t, 2> zero = {0.0, 0.0};
+    const std::array<real_t, 2> zero = {{0.0, 0.0}};
 
     current(blitz::Range::all(), group)      = 0.0;
     surface_flux(blitz::Range::all(), group) = 0.0;
@@ -65,7 +65,7 @@ void CoarseData::zero_data_radial(int group, bool zero_partial)
 {
     assert(group < n_group_);
     // need this to disambiguate the operator= for partial currents.
-    const std::array<real_t, 2> zero = {0.0, 0.0};
+    const std::array<real_t, 2> zero = {{0.0, 0.0}};
 
     auto current_g      = current(blitz::Range::all(), group);
     auto surface_flux_g = surface_flux(blitz::Range::all(), group);

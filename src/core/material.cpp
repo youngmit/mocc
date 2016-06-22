@@ -26,7 +26,9 @@ Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
       xsnf_(xsab.size()),
       xsf_(xsab.size()),
       xsch_(xsab.size()),
-      xssc_(scat)
+      xssc_(scat),
+      is_fissile_(std::any_of(xsnf_.begin(), xsnf_.end(),
+                              [](real_t v) { return v > 0.0; }))
 {
     assert(xsab.size() == xsnf.size());
     assert(xsab.size() == xsf.size());
