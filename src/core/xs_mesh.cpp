@@ -23,9 +23,6 @@
 #include "util/files.hpp"
 #include "util/global_config.hpp"
 
-using std::cout;
-using std::endl;
-
 namespace mocc {
 XSMesh::XSMesh(const CoreMesh &mesh)
 {

@@ -28,9 +28,6 @@
 using namespace mocc;
 using namespace mocc::moc;
 
-using std::cout;
-using std::endl;
-
 TEST(big_ray)
 {
     pugi::xml_document geom_xml;

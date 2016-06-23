@@ -24,9 +24,6 @@
 
 using mocc::sn::SnSweeper;
 
-using std::cout;
-using std::endl;
-using std::cin;
 using std::setfill;
 using std::setw;
 
@@ -106,7 +103,7 @@ void PlaneSweeper_2D3D::sweep(int group)
             }
         }
         if (n_negative > 0) {
-            cout << n_negative << " negative fluxes in group " << group << endl;
+            std::cout << n_negative << " negative fluxes in group " << group << std::endl;
         }
     }
 
@@ -137,11 +134,11 @@ void PlaneSweeper_2D3D::sweep(int group)
     }
     residual = sqrt(residual) / mesh_.n_pin();
 
-    cout << "MoC/Sn residual: " << residual;
+    std::cout << "MoC/Sn residual: " << residual;
     if (sn_resid_norm_[group].size() > 0) {
-        cout << "   \t" << residual / sn_resid_norm_[group].back();
+        std::cout << "   \t" << residual / sn_resid_norm_[group].back();
     }
-    cout << endl;
+    std::cout << std::endl;
     sn_resid_norm_[group].push_back(residual);
 }
 

@@ -20,9 +20,6 @@
 #include <utility>
 #include "util/global_config.hpp"
 
-using std::cout;
-using std::endl;
-
 namespace mocc {
 namespace mc {
 

@@ -21,9 +21,6 @@
 
 #include "error.hpp"
 
-using std::cout;
-using std::endl;
-
 unsigned int convert_access(mocc::H5Access access)
 {
     switch (access) {

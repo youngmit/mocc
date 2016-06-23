@@ -25,9 +25,6 @@
 
 #include "angular_quadrature.hpp"
 
-using std::cout;
-using std::endl;
-
 using namespace mocc;
 
 class AngQuadFixture {
@@ -40,7 +37,7 @@ public:
         pugi::xml_parse_result result = doc.load_string(inp_quad.c_str());
 
         if (!result) {
-            cout << "failed to parse xml" << endl;
+            std::cout << "failed to parse xml" << std::endl;
         }
 
         ang_quad = AngularQuadrature(doc.child("ang_quad"));
@@ -252,7 +249,7 @@ TEST_FIXTURE(ChebyshevGauss_3_1, gc_update_wgt)
 
     ang_quad.update_weights();
 
-    cout << ang_quad << endl;
+    std::cout << ang_quad << std::endl;
 
     CHECK_CLOSE(0.3125, ang_quad[0].weight, 0.00000000000001);
     CHECK_CLOSE(0.375, ang_quad[1].weight, 0.00000000000001);

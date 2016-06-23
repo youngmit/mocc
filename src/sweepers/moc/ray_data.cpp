@@ -28,10 +28,6 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 
-using std::cout;
-using std::endl;
-using std::cin;
-
 namespace mocc {
 namespace moc {
 /**
@@ -308,7 +304,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 Warn("No rays passed through at least one FSR. Try finer "
                      "ray spacing or larger regions.");
                 for (size_t ifsr = 0; ifsr < nrayfsr.size(); ifsr++) {
-                    cout << ifsr << " " << nrayfsr[ifsr] << endl;
+                    std::cout << ifsr << " " << nrayfsr[ifsr] << std::endl;
                 }
             }
 
@@ -475,29 +471,29 @@ std::ostream &operator<<(std::ostream &os, const RayData &rays)
     // output for one plane.
 
     // spit out some boilerplate python to make these easy to draw
-    os << "import cairo" << endl;
-    os << "def draw_rays( ctx, angle):" << endl;
-    os << "    angle_rays = rays[angle]" << endl;
+    os << "import cairo" << std::endl;
+    os << "def draw_rays( ctx, angle):" << std::endl;
+    os << "    angle_rays = rays[angle]" << std::endl;
 
-    os << "    for r in angle_rays:" << endl;
-    os << "        p1 = r[0]" << endl;
-    os << "        p2 = r[1]" << endl;
-    os << "        ctx.move_to(p1[0], p1[1])" << endl;
-    os << "        ctx.line_to(p2[0], p2[1])" << endl;
-    os << "        ctx.close_path()" << endl;
-    os << "    ctx.stroke()" << endl;
-    os << "    return" << endl;
+    os << "    for r in angle_rays:" << std::endl;
+    os << "        p1 = r[0]" << std::endl;
+    os << "        p2 = r[1]" << std::endl;
+    os << "        ctx.move_to(p1[0], p1[1])" << std::endl;
+    os << "        ctx.line_to(p2[0], p2[1])" << std::endl;
+    os << "        ctx.close_path()" << std::endl;
+    os << "    ctx.stroke()" << std::endl;
+    os << "    return" << std::endl;
 
     const auto &plane_rays = rays.begin();
     os << "rays = [ ";
     auto angle_pos = os.tellp();
     for (auto &ang_rays : *plane_rays) {
         auto ray_pos = os.tellp();
-        os << "[ " << endl;
+        os << "[ " << std::endl;
         for (auto &r : ang_rays) {
             os << r;
             ray_pos = os.tellp();
-            os << ",    # " << r.bc(0) << " " << r.bc(1) << endl;
+            os << ",    # " << r.bc(0) << " " << r.bc(1) << std::endl;
         }
         // store the location before the comma
         auto end_pos = os.tellp();
@@ -505,11 +501,11 @@ std::ostream &operator<<(std::ostream &os, const RayData &rays)
         os << " ]";
         os.seekp(end_pos);
         angle_pos = os.tellp();
-        os << "," << endl;
+        os << "," << std::endl;
     }
     // go back to before the last comma and overwrite with close ]
     os.seekp(angle_pos);
-    os << " ]" << endl;
+    os << " ]" << std::endl;
 
     return os;
 }

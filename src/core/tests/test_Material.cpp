@@ -25,8 +25,6 @@
 #include "material.hpp"
 #include "material_lib.hpp"
 
-using std::cout;
-using std::endl;
 using namespace mocc;
 
 TEST(material)

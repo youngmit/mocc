@@ -27,9 +27,6 @@
 #include "sweepers/moc/moc_sweeper.hpp"
 
 using namespace mocc;
-using std::cout;
-using std::endl;
-using std::cin;
 using moc::MoCSweeper;
 
 // This unit test makes sure that the MoC sweeper is capable of solving an
@@ -104,9 +101,9 @@ TEST(moc_ihm)
     auto result = xml_doc.load_string(ihm_xml.c_str());
     CHECK(result);
     if (!result) {
-        cout << result.description() << endl;
-        cout << result.offset << endl;
-        cout << "\"" << ihm_xml.substr(result.offset - 10, 20) << "\"" << endl;
+        std::cout << result.description() << std::endl;
+        std::cout << result.offset << std::endl;
+        std::cout << "\"" << ihm_xml.substr(result.offset - 10, 20) << "\"" << std::endl;
     }
 
     int ng = 7;
@@ -114,8 +111,8 @@ TEST(moc_ihm)
     ArrayB1 psi_ref(ng);
     real_t k_ref;
     reference_solution(k_ref, flux_ref, psi_ref);
-    cout << "reference k-inf: " << k_ref << endl;
-    cout << "reference flux: " << flux_ref << endl;
+    std::cout << "reference k-inf: " << k_ref << std::endl;
+    std::cout << "reference flux: " << flux_ref << std::endl;
 
     CoreMesh core_mesh(xml_doc);
 
@@ -136,8 +133,8 @@ TEST(moc_ihm)
     }
 
     for (int ig = 0; ig < ng; ig++) {
-        cout << "pre sweep: " << sweeper.flux()(blitz::Range::all(), ig)
-             << endl;
+        std::cout << "pre sweep: " << sweeper.flux()(blitz::Range::all(), ig)
+             << std::endl;
         source->initialize_group(ig);
         source->fission(fission_source, ig);
         source->in_scatter(ig);
@@ -147,7 +144,7 @@ TEST(moc_ihm)
             CHECK_CLOSE(flux_ref(ig), sweeper.flux(ig, ireg),
                         0.005 * flux_ref(ig));
         }
-        cout << sweeper.flux()(blitz::Range::all(), ig) << endl;
+        std::cout << sweeper.flux()(blitz::Range::all(), ig) << std::endl;
     }
 }
 
@@ -170,7 +167,7 @@ void reference_solution(real_t &k_eff, ArrayB1 &flux, ArrayB1 &psi)
         chi(ig, 0) = mat.xsch(ig);
         nf(0, ig)  = mat.xsnf(ig);
     }
-    cout << "M: " << M << endl;
+    std::cout << "M: " << M << std::endl;
 
     Eigen::Matrix<real_t, 7, 1> phi = M.inverse() * chi;
     k_eff = nf * phi;

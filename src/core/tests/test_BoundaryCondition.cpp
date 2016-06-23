@@ -22,8 +22,6 @@
 #include "boundary_condition.hpp"
 
 using namespace mocc;
-using std::cout;
-using std::endl;
 
 // This is a fixture that provides an in and out boundary condition that look a
 // lot like you would expect for an MoC sweeper. there are only boundary values

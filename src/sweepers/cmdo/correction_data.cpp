@@ -23,8 +23,6 @@
 
 using std::setfill;
 using std::setw;
-using std::cout;
-using std::endl;
 
 namespace mocc {
 void CorrectionData::from_data(const pugi::xml_node &input)
