@@ -137,6 +137,7 @@ protected:
     Exponential_Linear<10000> exp_;
 
     bool dump_rays_;
+    bool dump_fsr_flux_;
     bool gauss_seidel_boundary_;
     bool allow_splitting_;
 
