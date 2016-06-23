@@ -23,10 +23,6 @@
 #include "util/h5file.hpp"
 #include "transport_sweeper_factory.hpp"
 
-using std::cout;
-using std::endl;
-using std::cin;
-
 namespace mocc {
 FixedSourceSolver::FixedSourceSolver(const pugi::xml_node &input,
                                      const CoreMesh &mesh) try
@@ -84,26 +80,23 @@ catch (Exception e) {
 void FixedSourceSolver::solve()
 {
     this->initialize();
+    real_t resid = 0.0;
     for (size_t iouter = 0; iouter < max_iter_; iouter++) {
         this->step();
 
-        real_t resid = sweeper_->flux_residual();
-        LogScreen << iouter << " " << std::setprecision(15) << resid << endl;
+        resid = sweeper_->flux_residual();
+        LogScreen << iouter << " " << std::setprecision(15) << resid << std::endl;
 
         if (resid < flux_tol_) {
-            LogFile << "Logging multi-group  scalar flux grouped by energy"
-                       " group index from Group 1 to group G."
-                    << endl;
-            for (int ig = 0; ig < sweeper_->n_group(); ig++) {
-                LogFile << "Scalar flux for energy group " << ig + 1 << " :"
-                        << endl;
-                LogFile << (sweeper_->flux())(blitz::Range::all(), ig);
-                LogFile << endl;
-            }
-            /// return flux_( ireg, ig );
             break;
         }
     }
+    
+    if (resid >= flux_tol_ ) {
+        LogScreen << "Maximum number (" << max_iter_ << ") of iterations "
+            "performed before convergence!" << std::endl;
+    }
+    return;
 }
 
 // Perform a single group sweep
@@ -131,7 +124,8 @@ void FixedSourceSolver::output(H5Node &node) const
     // sweepers colliding.
     node.write("ng", (int)sweeper_->n_group());
     node.write("eubounds", sweeper_->xs_mesh().eubounds(), VecI(1, ng_));
-    sweeper_->output(node);
+    
+    sweeper_->output(node);                  
     return;
 }
 }

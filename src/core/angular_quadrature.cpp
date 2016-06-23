@@ -86,7 +86,7 @@ AngularQuadrature::AngularQuadrature(const pugi::xml_node &input)
         }
         type_ = QuadratureType::CHEB_YAMAMOTO;
 
-        // Generate angles from octant 1
+        // Generate angles for octant 1
         angles_ = GenProduct(GenChebyshev(n_azimuthal_), GenYamamoto(n_polar_));
     } else if (type_str == "user") {
         validate_input(input, recognized_attributes_user);

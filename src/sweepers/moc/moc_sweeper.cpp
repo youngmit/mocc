@@ -81,6 +81,7 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
       subplane_(mesh.core().front().subplane()),
       bc_type_(mesh_.boundary()),
       dump_rays_(false),
+      dump_fsr_flux_(false),
       gauss_seidel_boundary_(true),
       allow_splitting_(false)
 {
@@ -103,6 +104,7 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
 
     // Parse the output options
     dump_rays_ = input.attribute("dump_rays").as_bool(false);
+    dump_fsr_flux_ = input.attribute("dump_fsr_flux").as_bool(false);
 
     // Determine boundary update technique
     gauss_seidel_boundary_ = true;
@@ -154,7 +156,7 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
 
     if (dump_rays_) {
         std::ofstream rayfile("rays.py");
-        rayfile << rays_ << endl;
+        rayfile << rays_ << std::endl;
     }
 
     // Replace the angular quadrature with the modularized version
@@ -430,9 +432,9 @@ void MoCSweeper::check_balance(int group) const
         ipin++;
     }
 
-    cout << "MoC cell balance:" << endl;
+    std::cout << "MoC cell balance:" << std::endl;
     for (auto v : b) {
-        cout << v << endl;
+        std::cout << v << std::endl;
     }
 
     return;
@@ -449,6 +451,23 @@ void MoCSweeper::output(H5Node &node) const
 
     ArrayB2 flux = this->get_pin_flux();
     Normalize(flux.begin(), flux.end());
+
+    // Make a group in the file to store the fsr_flux if dump_fsr_flux is trur
+    if (dump_fsr_flux_) {
+        VecI dims = {1,(int)(mesh_.n_reg())};
+        std::reverse(dims.begin(), dims.end());
+        
+        node.create_group("fsr_flux");
+
+        for (int ig=0; ig < n_group_; ig++) {
+            std::stringstream setname;
+            setname << "fsr_flux/" << std::setfill('0') <<std::setw(3) << ig + 1;
+
+            ArrayB1 flux_1g = flux_(blitz::Range::all(), ig);
+
+            node.write(setname.str(), flux_1g.begin(), flux_1g.end(), dims);
+        }
+    }
 
     LogFile << "Boundary update: ";
     if (gauss_seidel_boundary_) {
