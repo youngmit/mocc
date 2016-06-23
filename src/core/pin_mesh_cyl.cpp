@@ -32,9 +32,6 @@
 using std::string;
 using std::stringstream;
 
-using std::cout;
-using std::endl;
-
 namespace mocc {
 PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input)
 {

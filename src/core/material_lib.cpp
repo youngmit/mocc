@@ -28,9 +28,6 @@
 
 using std::stringstream;
 using std::string;
-using std::cout;
-using std::cin;
-using std::endl;
 
 using std::regex;
 using std::smatch;

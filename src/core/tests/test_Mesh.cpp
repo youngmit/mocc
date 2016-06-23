@@ -25,9 +25,6 @@
 #include "core/geometry/geom.hpp"
 #include "core/mesh.hpp"
 
-using std::cout;
-using std::endl;
-
 using namespace mocc;
 
 TEST(mesh)

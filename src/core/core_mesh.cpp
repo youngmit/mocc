@@ -24,9 +24,6 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 
-using std::cout;
-using std::endl;
-
 namespace mocc {
 CoreMesh::CoreMesh(const pugi::xml_node &input)
 {
@@ -313,7 +310,7 @@ std::ostream &operator<<(std::ostream &os, const CoreMesh &mesh)
 
     os << "Pin Meshes: " << std::endl;
     for (const auto &pm : mesh.pin_meshes_) {
-        os << "Mesh ID: " << pm.first << endl;
+        os << "Mesh ID: " << pm.first << std::endl;
         os << *(pm.second) << std::endl;
         os << std::endl;
     }

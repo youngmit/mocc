@@ -23,9 +23,6 @@
 #include "util/global_config.hpp"
 #include "scattering_matrix.hpp"
 
-using std::cout;
-using std::endl;
-
 using namespace mocc;
 
 const std::vector<VecF> sc{
@@ -134,13 +131,13 @@ TEST(scat_matrix_vecorVecF)
 
     // Check the outscatter CDF
     VecF out_cdf = scat_matrix.out_cdf(3);
-    cout << scat_matrix.out(3) << endl;
+    std::cout << scat_matrix.out(3) << std::endl;
     ;
     CHECK_CLOSE(1.0, out_cdf.back(), REAL_FUZZ);
     CHECK_EQUAL(NG, out_cdf.size());
     CHECK_CLOSE(1.0 / 1.2, out_cdf[4], REAL_FUZZ);
     for (const auto c : out_cdf) {
-        cout << c << endl;
+        std::cout << c << std::endl;
     }
 }
 

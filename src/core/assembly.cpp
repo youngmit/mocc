@@ -25,8 +25,6 @@
 #include "util/string_utils.hpp"
 
 using std::string;
-using std::endl;
-using std::cout;
 
 namespace mocc {
 Assembly::Assembly(const pugi::xml_node &input,

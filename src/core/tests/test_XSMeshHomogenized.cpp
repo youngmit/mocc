@@ -21,8 +21,6 @@
 #include "xs_mesh_homogenized.hpp"
 
 using namespace mocc;
-using std::cout;
-using std::endl;
 
 TEST(xsmeshhom)
 {
@@ -67,7 +65,7 @@ TEST(fromdata_fail)
 
     // Test error checks on the XML input
     {
-        cout << "invalid" << endl;
+        std::cout << "invalid" << std::endl;
         pugi::xml_document xsmesh_xml;
         std::string xml = "<data file=\"xsmesh_1.h5\" top_plane=\"-1\"/>";
         xsmesh_xml.load_string(xml.c_str());
@@ -75,7 +73,7 @@ TEST(fromdata_fail)
         CHECK_THROW(XSMeshHomogenized xs_mesh(mesh, xsmesh_xml), Exception);
     }
     {
-        cout << "out of order" << endl;
+        std::cout << "out of order" << std::endl;
         pugi::xml_document xsmesh_xml;
         std::string xml = "<data file=\"xsmesh_1.h5\" top_plane=\"5\"/>"
                           "<data file=\"xsmesh_2.h5\" top_plane=\"1\"/>";

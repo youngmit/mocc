@@ -24,10 +24,6 @@
 #include "util/h5file.hpp"
 #include "util/string_utils.hpp"
 
-using std::cout;
-using std::cin;
-using std::endl;
-
 namespace mocc {
 XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
     : mesh_(mesh), flux_(nullptr)

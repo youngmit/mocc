@@ -22,9 +22,6 @@
 #include <fstream>
 #include <iostream>
 
-using std::cout;
-using std::endl;
-
 using namespace mocc;
 
 TEST(test_RNG_LCG)
@@ -45,7 +42,7 @@ TEST(test_RNG_LCG)
             fout << rng.random() << " " << rng.random() << std::endl;
         }
         real_t v = rng.random();
-        cout << "current random value: " << v << endl;
+        std::cout << "current random value: " << v << std::endl;
         // reset and skip ahead
         rng.set_seed(1);
         rng.jump_ahead(20000);
@@ -83,7 +80,7 @@ TEST(uniformity_custom_bounds)
     std::vector<int> histogram(100, 0);
     int N = 1000000;
     for (int i = 0; i < N; i++) {
-        // cout << rng.random(-5.0, 1.0) << endl;
+        // std::cout << rng.random(-5.0, 1.0) << std::endl;
         // std::cin.ignore();
         //        histogram[int(rng.random() * 100)]++;
     }

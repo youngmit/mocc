@@ -36,10 +36,6 @@
 #include "git_SHA1.hpp"
 #include "input_proc.hpp"
 
-using std::cout;
-using std::cin;
-using std::endl;
-
 using namespace mocc;
 
 // The global top-level solver
@@ -159,7 +155,7 @@ int run(const std::vector<std::string> &args)
 
         // Get an SP to the core mesh
         mesh = input_proc->core_mesh();
-        LogFile << *mesh << endl;
+        LogFile << *mesh << std::endl;
 
         // Pull a shared pointer to the top-level solver and make it go
         solver = input_proc->solver();
@@ -176,8 +172,8 @@ int run(const std::vector<std::string> &args)
     }
 
     catch (Exception e) {
-        cout << "Error:" << endl;
-        cout << e.what();
+        std::cout << "Error:" << std::endl;
+        std::cout << e.what();
         return 1;
     }
     return 0;

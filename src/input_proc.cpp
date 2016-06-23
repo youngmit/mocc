@@ -32,8 +32,6 @@
 #include "core/pin_mesh.hpp"
 #include "auxiliary/geometry_output.hpp"
 
-using std::cout;
-using std::endl;
 using std::shared_ptr;
 
 namespace {
@@ -115,7 +113,7 @@ InputProcessor::InputProcessor(std::vector<std::string> args)
     Timer &xml_timer = timer_.new_timer("XML parsing");
     xml_timer.tic();
 
-    LogScreen << "Parsing: " << filename << endl;
+    LogScreen << "Parsing: " << filename << std::endl;
 
     pugi::xml_parse_result result = doc_.load_file(filename.c_str());
 
@@ -219,7 +217,7 @@ void InputProcessor::process()
         aux::output_geometry(doc_.child("geometry_output"), *core_mesh_.get());
     }
 
-    LogFile << endl;
+    LogFile << std::endl;
 
     solver_timer.toc();
     timer_.toc();

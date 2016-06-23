@@ -19,9 +19,6 @@
 #include <cmath>
 #include <iomanip>
 
-using std::cout;
-using std::endl;
-
 namespace mocc {
 namespace cmdo {
 /**

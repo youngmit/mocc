@@ -24,8 +24,6 @@
 
 #include "util/stacktrace.hpp"
 
-using std::cout;
-using std::endl;
 using std::string;
 
 namespace mocc {
@@ -34,7 +32,7 @@ std::unordered_map<std::string, Warning> Warnings;
 
 void Error(const char *msg)
 {
-    cout << "ERROR: " << msg << endl;
+    std::cout << "ERROR: " << msg << std::endl;
     exit(EXIT_FAILURE);
 }
 
@@ -43,7 +41,7 @@ void Warn(const std::string &msg)
     auto it = Warnings.find(msg);
     if (it == Warnings.end()) {
         Warnings.emplace(msg, msg);
-        LogScreen << "WARNING: " << msg << endl;
+        LogScreen << "WARNING: " << msg << std::endl;
     }
     else {
         it->second.count++;
@@ -61,7 +59,7 @@ Exception::Exception(const char *file, int line, const char *func,
     : file_(file), line_(line), func_(func), message_(msg)
 {
     std::stringstream ret;
-    ret << file_ << ":" << line_ << " in " << func_ << endl;
+    ret << file_ << ":" << line_ << " in " << func_ << std::endl;
     ret << message_ << std::endl;
     print_message_ = ret.str();
 
@@ -73,7 +71,7 @@ Exception::Exception(const char *file, int line, const char *func,
     : file_(file), line_(line), func_(func), message_(msg)
 {
     std::stringstream ret;
-    ret << file_ << ":" << line_ << " in " << func_ << endl;
+    ret << file_ << ":" << line_ << " in " << func_ << std::endl;
     ret << message_ << std::endl;
     print_message_ = ret.str();
 

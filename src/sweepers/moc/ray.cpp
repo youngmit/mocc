@@ -18,9 +18,6 @@
 
 #include <cassert>
 
-using std::cout;
-using std::endl;
-
 // Assuming that p1 is the "origin" return the quadrant of the angle formed by
 // p1. Since we assume that p1 is below p2 in y, only octants 1 or 2 can be
 // returned.

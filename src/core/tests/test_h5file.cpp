@@ -20,9 +20,6 @@
 #include "util/error.hpp"
 #include "util/h5file.hpp"
 
-using std::cout;
-using std::endl;
-
 using namespace mocc;
 
 TEST(test_write)

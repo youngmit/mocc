@@ -21,7 +21,6 @@
 #include "util/error.hpp"
 
 using std::ofstream;
-using std::endl;
 using std::string;
 
 namespace mocc {
@@ -49,73 +48,73 @@ void output_geometry(const pugi::xml_node &input, const CoreMesh &mesh)
     ofstream out(file);
 
     // boilerplate
-    out << "import cairo as cr" << endl;
-    out << "import math" << endl;
-    out << "import rays" << endl;
-    out << endl;
-    out << "twopi = math.pi*2" << endl;
-    out << endl;
+    out << "import cairo as cr" << std::endl;
+    out << "import math" << std::endl;
+    out << "import rays" << std::endl;
+    out << std::endl;
+    out << "twopi = math.pi*2" << std::endl;
+    out << std::endl;
     out << "# set this to whichever angle of ray you want to show."
            " Negative value to disable."
-        << endl;
-    out << "angle = -1" << endl;
-    out << endl;
-    out << "mesh_lines = []" << endl;
-    out << endl;
+        << std::endl;
+    out << "angle = -1" << std::endl;
+    out << std::endl;
+    out << "mesh_lines = []" << std::endl;
+    out << std::endl;
     out << "core_dims = [" << mesh.hx_core() << ", " << mesh.hy_core() << "]"
-        << endl;
-    out << "" << endl;
-    out << "surface = cr.PDFSurface(\"geometry.pdf\", 720, 720)" << endl;
-    out << "ctx = cr.Context(surface)" << endl;
-    out << "ctx.scale(720/core_dims[0], -720/core_dims[1])" << endl;
-    out << "ctx.translate(0, -core_dims[1])" << endl;
-    out << "" << endl;
+        << std::endl;
+    out << "" << std::endl;
+    out << "surface = cr.PDFSurface(\"geometry.pdf\", 720, 720)" << std::endl;
+    out << "ctx = cr.Context(surface)" << std::endl;
+    out << "ctx.scale(720/core_dims[0], -720/core_dims[1])" << std::endl;
+    out << "ctx.translate(0, -core_dims[1])" << std::endl;
+    out << "" << std::endl;
 
     // do all of the mesh stuff
-    out << "ctx.set_line_width(0.001)" << endl;
-    out << "" << endl;
-    out << "ctx.set_source_rgb(0, 0, 0)" << endl;
-    out << "" << endl;
+    out << "ctx.set_line_width(0.001)" << std::endl;
+    out << "" << std::endl;
+    out << "ctx.set_source_rgb(0, 0, 0)" << std::endl;
+    out << "" << std::endl;
 
     for (auto l : mesh.lines()) {
-        out << "mesh_lines.append(" << l << ")" << endl;
+        out << "mesh_lines.append(" << l << ")" << std::endl;
     }
 
     // Draw the core lines
-    out << "" << endl;
-    out << "for l in mesh_lines:" << endl;
-    out << "    p1 = l[0]" << endl;
-    out << "    p2 = l[1]" << endl;
-    out << "    ctx.move_to(p1[0], p1[1])" << endl;
-    out << "    ctx.line_to(p2[0], p2[1])" << endl;
+    out << "" << std::endl;
+    out << "for l in mesh_lines:" << std::endl;
+    out << "    p1 = l[0]" << std::endl;
+    out << "    p2 = l[1]" << std::endl;
+    out << "    ctx.move_to(p1[0], p1[1])" << std::endl;
+    out << "    ctx.line_to(p2[0], p2[1])" << std::endl;
 
-    out << endl;
+    out << std::endl;
 
     // Draw the pin meshes
     int ipin = 0;
     for (auto pin = mesh.begin(plane); pin != mesh.end(plane); ++pin) {
-        out << "print \"drawing pin \" + str(" << ipin << ")" << endl;
+        out << "print \"drawing pin \" + str(" << ipin << ")" << std::endl;
         const PinMesh &pm = (*pin)->mesh();
         Point2 origin     = mesh.pin_origin(ipin);
 
-        out << "ctx.translate(" << origin.x << ", " << origin.y << ")" << endl;
+        out << "ctx.translate(" << origin.x << ", " << origin.y << ")" << std::endl;
 
-        out << pm.draw() << endl;
-        out << "ctx.translate(" << -origin.x << ", " << -origin.y << ")" << endl
-            << endl;
+        out << pm.draw() << std::endl;
+        out << "ctx.translate(" << -origin.x << ", " << -origin.y << ")" << std::endl
+            << std::endl;
         ipin++;
     }
 
-    out << endl;
+    out << std::endl;
 
     // Do ray output
-    out << "if angle >= 0:" << endl;
-    out << "    ctx.set_source_rgb(0, 0, 1)" << endl;
-    out << "    rays.draw_rays(ctx, angle)" << endl;
-    out << "" << endl;
+    out << "if angle >= 0:" << std::endl;
+    out << "    ctx.set_source_rgb(0, 0, 1)" << std::endl;
+    out << "    rays.draw_rays(ctx, angle)" << std::endl;
+    out << "" << std::endl;
 
-    out << "surface.finish()" << endl;
-    out << "" << endl;
+    out << "surface.finish()" << std::endl;
+    out << "" << std::endl;
 
     return;
 }

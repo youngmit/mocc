@@ -26,8 +26,6 @@
 #include "pin.hpp"
 
 using std::string;
-using std::cout;
-using std::endl;
 
 namespace mocc {
 Lattice::Lattice(const pugi::xml_node &input,
@@ -185,30 +183,30 @@ std::map<int, UP_Lattice_t> ParseLattices(const pugi::xml_node &input,
 bool Lattice::compatible(const Lattice &other) const
 {
     if (hx_ != other.hx_) {
-        cout << "hx " << hx_ << " " << other.hx_ << endl;
+        std::cout << "hx " << hx_ << " " << other.hx_ << std::endl;
         return false;
     }
     if (hy_ != other.hy_) {
-        cout << "hy" << endl;
+        std::cout << "hy" << std::endl;
         return false;
     }
 
     if (nx_ != other.nx_) {
-        cout << "nx" << endl;
+        std::cout << "nx" << std::endl;
         return false;
     }
     if (ny_ != other.ny_) {
-        cout << "ny" << endl;
+        std::cout << "ny" << std::endl;
         return false;
     }
 
     if (!std::equal(hx_vec_.begin(), hx_vec_.end(), other.hx_vec_.begin())) {
-        cout << "hx_vec" << endl;
+        std::cout << "hx_vec" << std::endl;
         return false;
     }
 
     if (!std::equal(hy_vec_.begin(), hy_vec_.end(), other.hy_vec_.begin())) {
-        cout << "hy_vec" << endl;
+        std::cout << "hy_vec" << std::endl;
         return false;
     }
     return true;

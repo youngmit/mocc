@@ -23,10 +23,6 @@
 #include "util/utils.hpp"
 #include "particle.hpp"
 
-using std::cout;
-using std::endl;
-using std::cin;
-
 namespace {
 using namespace mocc;
 // Given an array of two points and a Particle, determine the distance from the
@@ -105,14 +101,14 @@ void ParticlePusher::collide(Particle &p)
     // Sample the type of interaction;
     const auto &xsreg = xs_mesh_[p.ixsreg];
     if (print) {
-        cout << "COLLISION" << endl;
-        cout << p << endl;
-        cout << "xsregion: " << p.ixsreg << endl;
-        cout << "reaction chance: ";
+        std::cout << "COLLISION" << std::endl;
+        std::cout << p << std::endl;
+        std::cout << "xsregion: " << p.ixsreg << std::endl;
+        std::cout << "reaction chance: ";
         for (const auto &v : xsreg.reaction_cdf(p.group)) {
-            cout << v << " ";
+            std::cout << v << " ";
         }
-        cout << endl;
+        std::cout << std::endl;
     }
     Reaction reaction = (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
     real_t k_score = p.weight * xsreg.xsmacnf(p.group) / xsreg.xsmactr(p.group);
@@ -122,24 +118,24 @@ void ParticlePusher::collide(Particle &p)
 
     if (reaction == Reaction::SCATTER) {
         if (print) {
-            cout << "scatter from group " << p.group << endl;
+            std::cout << "scatter from group " << p.group << std::endl;
         }
         // scatter. only isotropic for now
         // sample new energy
         p.group = RNG.sample_cdf(xsreg.xsmacsc().out_cdf(p.group));
         if (print) {
-            cout << "New group: " << p.group << endl;
+            std::cout << "New group: " << p.group << std::endl;
         }
 
         // sample new angle
         p.direction = Direction::Isotropic(RNG.random(), RNG.random());
         if (print) {
-            cout << "New angle: " << p.direction << endl;
+            std::cout << "New angle: " << p.direction << std::endl;
         }
     } else if (reaction == Reaction::FISSION) {
         if (print) {
-            cout << "fission at " << p.location_global.x << " "
-                 << p.location_global.y << " " << p.location_global.z << endl;
+            std::cout << "fission at " << p.location_global.x << " "
+                 << p.location_global.y << " " << p.location_global.z << std::endl;
         }
         // fission
         // sample number of new particles to generate
@@ -157,7 +153,7 @@ void ParticlePusher::collide(Particle &p)
         p.alive = false;
     } else {
         if (print) {
-            cout << "capture" << endl;
+            std::cout << "capture" << std::endl;
         }
         // capture
         p.alive = false;
@@ -196,8 +192,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
     p.pin_position  = location_info.pos;
     int ipin_coarse = mesh_.coarse_cell(location_info.pos);
     if (print) {
-        cout << endl << "NEW PARTICLE:" << endl;
-        cout << p << std::endl;
+        std::cout << std::endl << "NEW PARTICLE:" << std::endl;
+        std::cout << p << std::endl;
     }
     assert(ipin_coarse >= 0);
     assert(ipin_coarse < (int)mesh_.n_pin());
@@ -218,10 +214,10 @@ void ParticlePusher::simulate(Particle p, bool tally)
         auto d_to_surf = location_info.pm->distance_to_surface(
             p.location, p.direction, p.coincident);
         if (print) {
-            cout << "Where we are now:" << endl;
-            cout << p << endl;
-            cout << "ireg/xsreg: " << p.ireg << " " << p.ixsreg << endl;
-            cout << "Distance to internal pin surf: " << d_to_surf.first << " "
+            std::cout << "Where we are now:" << std::endl;
+            std::cout << p << std::endl;
+            std::cout << "ireg/xsreg: " << p.ireg << " " << p.ixsreg << std::endl;
+            std::cout << "Distance to internal pin surf: " << d_to_surf.first << " "
                  << d_to_surf.second << std::endl;
         }
         // Determine distance to plane boundaries. If it is less than the
@@ -234,8 +230,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
         }
 
         if (print) {
-            cout << "distance to surface/collision: " << d_to_surf.first << " "
-                 << d_to_surf.second << " " << d_to_collision << endl;
+            std::cout << "distance to surface/collision: " << d_to_surf.first << " "
+                 << d_to_surf.second << " " << d_to_collision << std::endl;
         }
 
         real_t tl = std::min(d_to_collision, d_to_surf.first);
@@ -253,8 +249,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
             p.move(d_to_collision);
             p.coincident = -1;
             if (print) {
-                cout << "particle at collision site:" << std::endl;
-                cout << p << std::endl;
+                std::cout << "particle at collision site:" << std::endl;
+                std::cout << p << std::endl;
             }
             this->collide(p);
         } else {
@@ -280,8 +276,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
                 p.move(d_to_surf.first);
 
                 if (print) {
-                    cout << "particle after move to surf:" << endl;
-                    cout << p << endl;
+                    std::cout << "particle after move to surf:" << std::endl;
+                    std::cout << p << std::endl;
                 }
 
                 // Check for domain boundary crossing
@@ -290,7 +286,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
                 bool reflected = false;
                 for (const auto &b : bound_surf) {
                     if (print) {
-                        cout << b << endl;
+                        std::cout << b << std::endl;
                     }
                     if ((b != Surface::INTERNAL) && (p.alive)) {
                         // We are exiting a domain boundary. Handle the boundary
@@ -316,9 +312,9 @@ void ParticlePusher::simulate(Particle p, bool tally)
                 if (reflected) {
                     p.move(BUMP);
                     if (print) {
-                        cout << "Particle after reflection and move back:"
-                             << endl;
-                        cout << p << endl;
+                        std::cout << "Particle after reflection and move back:"
+                             << std::endl;
+                        std::cout << p << std::endl;
                     }
                 }
 

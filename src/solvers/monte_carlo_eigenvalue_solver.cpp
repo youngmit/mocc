@@ -23,9 +23,9 @@
 #include "util/utils.hpp"
 #include "mc/fission_bank.hpp"
 
-using std::cout;
-using std::endl;
-using std::cin;
+namespace {
+const int WIDTH = 15;
+}
 
 namespace mocc {
 namespace mc {

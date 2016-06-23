@@ -24,10 +24,6 @@
 #include "util/files.hpp"
 #include "correction_worker.hpp"
 
-using std::cout;
-using std::cin;
-using std::endl;
-
 namespace mocc {
 namespace cmdo {
 MoCSweeper_2D3D::MoCSweeper_2D3D(const pugi::xml_node &input,

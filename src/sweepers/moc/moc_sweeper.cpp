@@ -27,10 +27,6 @@
 #include "util/validate_input.hpp"
 #include "moc_current_worker.hpp"
 
-using std::endl;
-using std::cout;
-using std::cin;
-
 mocc::VecF temp;
 
 namespace {
