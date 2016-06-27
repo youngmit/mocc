@@ -34,6 +34,12 @@ public:
     CMFD(const pugi::xml_node &input, const Mesh *mesh,
          SP_XSMeshHomogenized_t xsmesh);
 
+    /**
+     * \brief Solve the CMFD system
+     *
+     * \param [in,out] k the initial guess to use for the system eigenvalue.
+     * Updated byt the solve.
+     */
     void solve(real_t &k);
 
     /**
