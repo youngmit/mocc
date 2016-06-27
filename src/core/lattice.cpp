@@ -213,4 +213,22 @@ bool Lattice::compatible(const Lattice &other) const
     }
     return true;
 }
+
+bool Lattice::geometrically_equivalent(const Lattice &other) const
+{
+    if ((nx_ != other.nx_) || (ny_ != other.ny_)) {
+        return false;
+    }
+    if ((n_reg_ != other.n_reg_) || (n_xsreg_ != other.n_xsreg_)) {
+        return false;
+    }
+
+    for(int ip=0; ip<pins_.size(); ip++) {
+        if(pins_[ip]->mesh().id() != other.pins_[ip]->mesh().id()) {
+            return false;
+        }
+    }
+    return true;
 }
+
+} // namespace mocc
