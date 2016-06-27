@@ -104,9 +104,9 @@ public:
     /**
      * Return a reference to the indexed \ref Lattice.
      */
-    const Lattice &operator[](unsigned int iz) const
+    const Lattice &operator[](int iz) const
     {
-        assert((iz >= 0) & (iz < lattices_.size()));
+        assert((iz >= 0) & (iz < (int)lattices_.size()));
         return *lattices_[iz];
     }
 
