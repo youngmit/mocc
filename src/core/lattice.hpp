@@ -166,6 +166,15 @@ public:
      */
     bool compatible(const Lattice &other) const;
 
+    /**
+     * \brief Return whether another Lattice is geometrically equivalent to this
+     * one.
+     *
+     * This compares \ref PinMesh IDs only; identical pin meshes with different
+     * IDs will not be considered equivalent here.
+     */
+    bool geometrically_equivalent(const Lattice &other) const;
+
 private:
     int id_;
     unsigned nx_;
