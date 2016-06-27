@@ -24,6 +24,7 @@
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
+#include "util/string_utils.hpp"
 #include "material.hpp"
 
 using std::stringstream;
@@ -55,8 +56,7 @@ MaterialLib::MaterialLib(const pugi::xml_node &input) : n_material_(0)
 
     try {
         matLibFile = FileScrubber(matLibName.c_str(), "!");
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
         std::stringstream msg;
         std::cerr << e.what() << std::endl;
         msg << "Failed to open the cross-section library at: " << matLibName;
@@ -105,36 +105,29 @@ MaterialLib::MaterialLib(const pugi::xml_node &input) : n_material_(0)
         string materialName = results[1].str();
 
         // Read in the non-scattering stuff
-        VecF abs;
-        VecF nuFiss;
-        VecF fiss;
-        VecF chi;
+        VecF abs(n_grp_, 0.0);
+        VecF nuFiss(n_grp_, 0.0);
+        VecF fiss(n_grp_, 0.0);
+        VecF chi(n_grp_, 0.0);
         for (size_t ig = 0; ig < n_grp_; ig++) {
             stringstream inBuf(matLibFile.getline());
-            double val;
-
-            inBuf >> val;
-            abs.push_back(val);
-            inBuf >> val;
-            nuFiss.push_back(val);
-            inBuf >> val;
-            fiss.push_back(val);
-            inBuf >> val;
-            chi.push_back(val);
-            if (inBuf.fail()) {
+            VecF xsvals = explode_string<real_t>(inBuf.str());
+            if (xsvals.size() != 4) {
                 throw EXCEPT("Trouble reading XS data from library!");
             }
+            abs[ig]    = xsvals[0];
+            nuFiss[ig] = xsvals[1];
+            fiss[ig]   = xsvals[2];
+            chi[ig]    = xsvals[3];
         }
 
         // Read in the scattering table
         std::vector<VecF> scatTable;
         for (size_t ig = 0; ig < n_grp_; ig++) {
             stringstream inBuf(matLibFile.getline());
-            VecF scatRow;
-            for (size_t igg = 0; igg < n_grp_; igg++) {
-                double val;
-                inBuf >> val;
-                scatRow.push_back(val);
+            VecF scatRow = explode_string<real_t>(inBuf.str());
+            if (scatRow.size() != n_grp_) {
+                throw EXCEPT("Trouble reading scattering row");
             }
             scatTable.push_back(scatRow);
         }
@@ -143,8 +136,7 @@ MaterialLib::MaterialLib(const pugi::xml_node &input) : n_material_(0)
         lib_materials_.push_back(Material(abs, nuFiss, fiss, chi, scatTable));
         try {
             material_names_[materialName] = imat;
-        }
-        catch (...) {
+        } catch (...) {
             throw EXCEPT("Failed to add material from library. Duplicate "
                          "name?");
         }
@@ -241,8 +233,7 @@ MaterialLib::MaterialLib(FileScrubber &input) : n_material_(0)
         lib_materials_.push_back(Material(abs, nuFiss, fiss, chi, scatTable));
         try {
             material_names_[materialName] = imat;
-        }
-        catch (...) {
+        } catch (...) {
             throw EXCEPT("Failed to add material from library. Duplicate "
                          "name?");
         }
@@ -259,8 +250,7 @@ void MaterialLib::assignID(int id, std::string name)
         material_dense_index_[id] = n_material_;
         material_ids_[id]         = mat_index;
         n_material_++;
-    }
-    catch (std::out_of_range) {
+    } catch (std::out_of_range) {
         throw EXCEPT("Failed to map material to ID. Are you sure you "
                      "spelled it right?");
     }

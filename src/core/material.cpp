@@ -26,9 +26,7 @@ Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
       xsnf_(xsab.size()),
       xsf_(xsab.size()),
       xsch_(xsab.size()),
-      xssc_(scat),
-      is_fissile_(std::any_of(xsnf_.begin(), xsnf_.end(),
-                              [](real_t v) { return v > 0.0; }))
+      xssc_(scat)
 {
     assert(xsab.size() == xsnf.size());
     assert(xsab.size() == xsf.size());
@@ -40,6 +38,9 @@ Material::Material(VecF xsab, VecF xsnf, VecF xsf, VecF xsch,
         xsf_(ig)  = xsf[ig];
         xsch_(ig) = xsch[ig];
     }
+
+    is_fissile_ = std::any_of(xsnf_.begin(), xsnf_.end(),
+                              [](real_t v) { return v > 0.0; });
 
     // Normalize chi. Wow. Very precision. Much digits.
     if (std::any_of(xsch_.begin(), xsch_.end(),
