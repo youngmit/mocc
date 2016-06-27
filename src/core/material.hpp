@@ -85,8 +85,9 @@ public:
      */
     bool is_fissile() const
     {
-        return std::any_of(xsnf_.begin(), xsnf_.end(),
-                           [](real_t v) { return v > 0.0; });
+        bool is_fissile = std::any_of(xsnf_.begin(), xsnf_.end(),
+                                      [](real_t v) { return v > 0.0; });
+        return is_fissile;
     }
 
 private:
