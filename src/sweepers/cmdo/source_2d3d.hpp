@@ -65,16 +65,16 @@ public:
     }
 
     /**
-     * Replaces the standard fission source calculation with a delegation to
-     * the base \ref Source::fission() routine for MoC, a possible
-     * homogenization of the FM fission source to the Sn mesh, and a call to
-     * \ref Source::fission() on the Sn source object with the homogenized
-     * fissions source.
+     * Replaces the standard fission source calculation with a delegation to the
+     * base \ref Source::fission() routine for MoC, a possible homogenization of
+     * the FM fission source to the Sn mesh, and a call to \ref
+     * Source::fission() on the Sn source object with the homogenized fission
+     * source.
      *
-     * There are two possibilities for how the fission source might be
-     * defined: either on the fine mesh or coarse, Sn mesh. For now it
-     * should be sufficient to use the size of the \p fs array to decide
-     * which we are getting.
+     * There are two possibilities for how the fission source might be defined:
+     * either on the fine mesh or coarse, Sn mesh. For now it should be
+     * sufficient to use the size of the \p fs array to decide which we are
+     * getting.
      */
     void fission(const ArrayB1 &fs, int ig)
     {
@@ -92,19 +92,19 @@ public:
             for (const auto &pin : mesh_) {
                 auto pos = mesh_.pin_position(ipin);
                 int ireg = mesh_.coarse_cell(pos);
-                for (const auto v : pin->vols()) {
-                    sn_fs(ireg) += v * fs(ireg_fsr);
+                for (const auto a : pin->areas()) {
+                    sn_fs(ireg) += a * fs(ireg_fsr);
                     ireg_fsr++;
                 }
-                sn_fs(ireg) /= pin->vol();
+                sn_fs(ireg) /= pin->area();
                 ipin++;
             }
 
             sn_source_.fission(sn_fs, ig);
         }
         else {
-            // Let's assume the fission source is defined on the Sn mesh,
-            // and set it directly
+            // Let's assume the fission source is defined on the Sn mesh, and
+            // set it directly
             sn_source_.fission(fs, ig);
         }
     }
@@ -124,5 +124,5 @@ private:
     const CoreMesh &mesh_;
     SourceIsotropic sn_source_;
 };
-}
-} // Namespace mocc::cmdo
+} // namespace cmdo
+} // namespace mocc

@@ -56,11 +56,36 @@ public:
     ~CoreMesh();
 
     /**
+     * \brief Return the number of regions to consider for the given
+     * MeshTreatment
+     */
+    size_t n_reg(MeshTreatment treatment) const override final
+    {
+        int n_reg = 0;
+        switch (treatment) {
+        case MeshTreatment::TRUE:
+            n_reg = n_reg_;
+            break;
+        case MeshTreatment::PLANE: {
+            int iz = 0;
+            for (const auto np : subplane_) {
+                n_reg += planes_[unique_plane_ids_[iz]].n_reg();
+                iz += np;
+            }
+        } break;
+        case MeshTreatment::PIN:
+            n_reg = this->n_pin();
+            break;
+        }
+        return n_reg;
+    }
+
+    /**
     * Return the number of geometrically-unique planes
     */
     size_t n_unique_planes() const
     {
-        return first_unique_.size();
+        return planes_.size();
     }
 
     /**
@@ -78,8 +103,8 @@ public:
     * \param[inout] p a \ref Point2 residing in the desired \ref Pin. The
     * location of the point will be updated to the location of the \ref
     * PinMesh origin. See the note below.
-    * \param[in] iz the index of the \ref Plane in which to search for the
-    * \ref PinMesh.
+    * \param[in] iplane the unique plane index of the \ref Plane in which to
+    * search for the \ref PinMesh.
     * \param[inout] first_reg the index offset to start with. This will be
     * incremented by thie index of the first mesh region in the resultant
     * \ref PinMesh. This parameter will typically be passed in as zero, or
@@ -107,7 +132,8 @@ public:
     * can simply offset the ray points by the new location of \p p to get
     * into pin-local coordinates.
     */
-    const PinMeshTuple get_pinmesh(Point2 &p, size_t iz, int &first_reg) const;
+    const PinMeshTuple get_pinmesh(Point2 &p, size_t iplane,
+                                   int &first_reg) const;
 
     struct LocationInfo {
     public:
@@ -121,15 +147,32 @@ public:
     LocationInfo get_location_info(Point3 p, Direction dir) const;
 
     /**
-    * \brief Return a const reference to the indexed plane.
+    * \brief Return a const reference to the \ref Plane located at the indicated
+    * axial position.
     *
-    * These planes are not considered "unique;" it returns actual Plane that
-    * fills the indezed axial region.
+    * \param ip The unique index for the \ref Plane to fetch
     */
-    const Plane &plane(unsigned int iz) const
+    const Plane &unique_plane(int ip) const
     {
-        assert((0 <= iz) & (iz < planes_.size()));
-        return planes_[iz];
+        assert((0 <= ip) & (ip < (int)planes_.size()));
+        return planes_[ip];
+    }
+    
+    /**
+     * \brief Return a const reference to the \ref Plane that fills the passed
+     * axial region
+     */
+    const Plane &get_plane_by_axial_index(int iz) const
+    {
+        assert((0 <= iz) & (iz < nz_));
+        return planes_[unique_plane_ids_[iz]];
+    }
+
+    /**
+     * \brief Return a reference to the vector of macroplane heights
+     */
+    const VecF &macroplane_heights() const {
+        return macroplane_heights_;
     }
 
     /**
@@ -153,24 +196,6 @@ public:
     * \brief Return a const iterator to the first \ref Pin in the \ref
     * CoreMesh.
     */
-    std::vector<const Pin *>::const_iterator begin_pin() const
-    {
-        return core_pins_.cbegin();
-    }
-
-    /**
-    * \brief Return a const iterator past the last \ref Pin in the \ref
-    * CoreMesh.
-    */
-    std::vector<const Pin *>::const_iterator end_pin() const
-    {
-        return core_pins_.cend();
-    }
-
-    /**
-    * \brief Return a const iterator to the first \ref Pin in the \ref
-    * CoreMesh.
-    */
     std::vector<const Pin *>::const_iterator begin() const
     {
         return core_pins_.cbegin();
@@ -187,7 +212,7 @@ public:
 
     /**
     * \brief Return a const iterator to the first \ref Pin in the \ref
-    * CoreMesh.
+    * CoreMesh in plane iz.
     */
     std::vector<const Pin *>::const_iterator begin(int iz) const
     {
@@ -196,7 +221,7 @@ public:
 
     /**
     * \brief Return a const iterator past the last \ref Pin in the \ref
-    * CoreMesh.
+    * CoreMesh in plane iz.
     */
     std::vector<const Pin *>::const_iterator end(int iz) const
     {
@@ -237,21 +262,21 @@ public:
 
     /**
      * \brief Return a const reference to the vector of plane IDs
+     *
+     * The returned array is of size nz_, each entry being the index of the
+     * unique plane that occupies that axial region.
      */
-    const VecI &unique_planes() const
+    const VecI &unique_plane_ids() const
     {
-        return unique_plane_;
+        return unique_plane_ids_;
     }
 
     /**
-     * \brief Return the number of fuel pins in the plane.
-     *
-     * Practically speaking, this is the maximum number of pins in all of
-     * the Planes of the core.
+     * \brief Return the unique plane index correponding to an actual mesh plane
      */
-    int n_fuel_2d() const
+    int unique_plane_id(int iz) const
     {
-        return n_fuel_2d_;
+        return unique_plane_ids_[iz];
     }
 
     /**
@@ -281,11 +306,11 @@ public:
      */
     int region_at_point(Point3 p) const
     {
-        int plane_index   = this->plane_index(p.z);
-        const auto &plane = planes_[unique_plane_[plane_index]];
+        int iz            = this->plane_index(p.z);
+        const auto &plane = planes_[unique_plane_ids_[iz]];
 
         // Start with the first region for the plane
-        int ireg = first_reg_plane_[plane_index];
+        int ireg = first_reg_plane_[iz];
 
         // Get a pointer to the appropriate pin mesh, set ireg to the
         // beginning of that instance of the mesh.
@@ -297,17 +322,71 @@ public:
         return ireg;
     }
 
-    const VecF &volumes() const
+    const VecF volumes(MeshTreatment treatment) const
     {
-        return volumes_;
+        switch (treatment) {
+        case MeshTreatment::TRUE: {
+            VecF volumes;
+            volumes.reserve(this->n_reg(treatment));
+            int ipin = 0;
+            for (const auto &pin : *this) {
+                real_t hz     = dz_vec_[ipin / (nx_ * ny_)];
+                auto &pinmesh = pin->mesh();
+                for (const auto &a : pinmesh.areas()) {
+                    volumes.push_back(a * hz);
+                }
+                ipin++;
+            }
+            return volumes;
+        }
+        case MeshTreatment::PLANE: {
+            VecF volumes;
+            volumes.reserve(this->n_reg(treatment));
+
+            int iz     = 0;
+            int imacro = 0;
+            for (const auto np : subplane_) {
+                real_t hz = macroplane_heights_[imacro];
+
+                auto stt = this->begin() + nx_ * ny_ * iz;
+                auto stp = stt + nx_ * ny_;
+                for (auto it = stt; it != stp; ++it) {
+                    auto &pinmesh = (*it)->mesh();
+                    for (const auto &a : pinmesh.areas()) {
+                        volumes.push_back(a * hz);
+                    }
+                }
+
+                iz += np;
+                imacro++;
+            }
+            return volumes;
+        }
+        case MeshTreatment::PIN:
+            // Fall through and return coarse volume. Putting the last return in
+            // here causes warnings on some compilers
+            break;
+        }
+
+        return this->coarse_volume();
     }
 
     /**
-     * \brief Return a const reference to the underlying \ref Core object that
-     * was used to construct this \ref CoreMesh.
+     * \brief Return a reference to the subplane parameters
      */
-    const Core &core() const {
+    const VecI subplane() const
+    {
+        return subplane_;
+    }
+
+    const Core &core() const
+    {
         return core_;
+    }
+
+    int n_fuel_2d() const
+    {
+        return n_fuel_2d_;
     }
 
 private:
@@ -339,24 +418,28 @@ private:
     // Core object (essentially a 2D array of Assemblies)
     Core core_;
 
+    // Subplane factors
+    VecI subplane_;
+
+    // The height of each macroplane
+    VecF macroplane_heights_;
+
     // Number of assemblies
     size_t nasy_;
+
+    // Number of pins to consider "fuel." Useful for normalization
+    int n_fuel_2d_;
 
     // List of geometrically-unique planes. Each entry in the list
     // corresponds to the unique plane index that is geometrically valid for
     // the actual plane.
-    VecI unique_plane_;
+    VecI unique_plane_ids_;
 
     // Plane index of the first occurance of each geometrically-unique plane
     VecI first_unique_;
 
     // Index of the first flat source region on each plane
     VecI first_reg_plane_;
-
-    // Vector of fine-mesh volumes
-    VecF volumes_;
-
-    int n_fuel_2d_;
 };
 
 typedef std::shared_ptr<CoreMesh> SP_CoreMesh_t;

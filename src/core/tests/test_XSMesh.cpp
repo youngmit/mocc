@@ -33,7 +33,7 @@ TEST(test)
 
     CoreMesh mesh(geom_xml);
 
-    XSMesh xs_mesh(mesh);
+    XSMesh xs_mesh(mesh, MeshTreatment::PLANE);
 
     cout << "Sig-t: " << xs_mesh[0].xsmactr(0) << endl;
 

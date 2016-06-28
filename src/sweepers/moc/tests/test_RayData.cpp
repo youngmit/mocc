@@ -51,7 +51,7 @@ TEST(raydata)
     for (auto &plane_rays : ray_data) {
         int iang    = 0;
         double wsum = 0.0;
-        VecF vol(mesh.n_reg(), 0.0);
+        VecF vol(mesh.n_reg(MeshTreatment::PLANE), 0.0);
         for (auto &angle_rays : plane_rays) {
 
             wsum += ang_quad[iang].weight * 2.0 * PI;

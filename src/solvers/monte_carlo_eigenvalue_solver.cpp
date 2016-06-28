@@ -32,7 +32,7 @@ namespace mc {
 MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
     const pugi::xml_node &input, const CoreMesh &mesh)
     : mesh_(mesh),
-      xs_mesh_(mesh),
+      xs_mesh_(mesh, MeshTreatment::TRUE),
       pusher_(mesh_, xs_mesh_),
       n_cycles_(input.attribute("cycles").as_int(-1)),
       n_inactive_cycles_(input.attribute("inactive_cycles").as_int(-1)),

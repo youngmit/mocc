@@ -57,14 +57,26 @@ public:
         return pin_mesh_->id();
     }
 
-    real_t vol() const
+    /**
+     * \brief Return the total surface area of the Pin
+     *
+     * \note Pins possess no concept of axial height, so their "volume" is
+     * really surface area
+     */
+    real_t area() const
     {
-        return pin_mesh_->vol();
+        return pin_mesh_->area();
     }
 
-    const VecF &vols() const
+     /**
+     * \brief Return a vector of the areas of each mesh region
+     *
+     * \note Pins possess no concept of axial height, so their "volume" is
+     * really surface area
+     */
+    const VecF &areas() const
     {
-        return pin_mesh_->vols();
+        return pin_mesh_->areas();
     }
 
     const VecI &mat_ids() const

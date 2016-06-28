@@ -248,8 +248,8 @@ void EigenSolver::do_cmfd()
     cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();
 
     // Set the convergence criteria for this solve, there are a few ways we
-    // can do this
-
+    // can do this. This needs some work. Should probably be converging the
+    // CMFD-transport sweeper residual, rather than the actual CMFD solution.
     CMFDConvergence conv = CMFDConvergence::FIXED;
     switch (conv) {
     case CMFDConvergence::FIXED:

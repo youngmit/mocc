@@ -211,6 +211,9 @@ private:
     const CoreMesh &mesh_;
     const XSMesh &xs_mesh_;
 
+    // Explicit storage of mesh volumes. This is so the tallies can share
+    VecF volumes_;
+
     int n_group_;
 
     // This fission bank stores new fission sites generated as the result of

@@ -72,7 +72,8 @@ public:
      */
     void set_flux(const ArrayB2 &flux)
     {
-        assert(flux.extent(0) == (int)mesh_.n_reg());
+        // Make the assumption that the provided flux is using a PLANE treatment
+        assert(flux.extent(0) == (int)mesh_.n_reg(MeshTreatment::PLANE));
         flux_ = &flux;
     }
 

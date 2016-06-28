@@ -26,12 +26,7 @@
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
-#include "util/validate_input.hpp"
 #include "core/constants.hpp"
-
-using std::cout;
-using std::endl;
-using std::cin;
 
 namespace {
 const std::vector<std::string> recognized_attributes = {"modularity", "spacing",
@@ -202,7 +197,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
         // generate rays for each angle in octants 1 and 2
         int iang = 0;
         std::vector<std::vector<Ray>> angle_rays;
-        int nreg_plane = mesh.plane(iplane).n_reg();
+        int nreg_plane = mesh.unique_plane(iplane).n_reg();
         for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
              ++ang) {
             VecI nrayfsr(nreg_plane, 0);
@@ -303,7 +298,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 Warn("No rays passed through at least one FSR. Try finer "
                      "ray spacing or larger regions.");
                 for (size_t ifsr = 0; ifsr < nrayfsr.size(); ifsr++) {
-                    cout << ifsr << " " << nrayfsr[ifsr] << endl;
+                    std::cout << ifsr << " " << nrayfsr[ifsr] << std::endl;
                 }
             }
 
@@ -340,13 +335,13 @@ void RayData::correct_volume(const CoreMesh &mesh)
             // each angle
             VecF flat_cf_max(ang_quad_.ndir() / 4, 0.0);
             VecF flat_cf_rms(ang_quad_.ndir() / 4, 0.0);
-            const VecF &true_vol = mesh.plane(iplane).vols();
+            const VecF &true_vol = mesh.unique_plane(iplane).areas();
             int iang             = 0;
 
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
                  ++ang) {
-                VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
-                VecF flat_cf(mesh.plane(iplane).n_reg(), 0.0);
+                VecF fsr_vol(mesh.unique_plane(iplane).n_reg(), 0.0);
+                VecF flat_cf(mesh.unique_plane(iplane).n_reg(), 0.0);
                 std::vector<Ray> &rays = rays_[iplane][iang];
                 real_t space           = spacing_[iang];
                 for (auto &ray : rays) {
@@ -356,7 +351,7 @@ void RayData::correct_volume(const CoreMesh &mesh)
                     }
                 }
 
-                for (size_t ireg = 0; ireg < mesh.plane(iplane).n_reg();
+                for (size_t ireg = 0; ireg < mesh.unique_plane(iplane).n_reg();
                      ireg++) {
                     flat_cf[ireg] = true_vol[ireg] / fsr_vol[ireg];
                     if (flat_cf_max[iang] < flat_cf[ireg]) {
@@ -365,7 +360,7 @@ void RayData::correct_volume(const CoreMesh &mesh)
                     flat_cf_rms[iang] += flat_cf[ireg] * flat_cf[ireg];
                 }
                 flat_cf_rms[iang] =
-                    sqrt(flat_cf_rms[iang] / mesh.plane(iplane).n_reg());
+                    sqrt(flat_cf_rms[iang] / mesh.unique_plane(iplane).n_reg());
 
                 // Correct
                 for (auto &ray : rays) {
@@ -405,8 +400,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
             // angle_cf_rms to log the rms of correction factor
             real_t angle_cf_max  = 0.0;
             real_t angle_cf_rms  = 0.0;
-            const VecF &true_vol = mesh.plane(iplane).vols();
-            VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
+            const VecF &true_vol = mesh.unique_plane(iplane).areas();
+            VecF fsr_vol(mesh.unique_plane(iplane).n_reg(), 0.0);
             int iang = 0;
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
                  ++ang) {
@@ -423,7 +418,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 ++iang;
             }
             // Convert fsr_vol into a correction factor
-            for (int ireg = 0; ireg < (int)mesh.plane(iplane).n_reg(); ireg++) {
+            for (int ireg = 0; ireg < (int)mesh.unique_plane(iplane).n_reg();
+                 ireg++) {
                 fsr_vol[ireg] = true_vol[ireg] / fsr_vol[ireg];
                 if (angle_cf_max < fsr_vol[ireg]) {
                     angle_cf_max = fsr_vol[ireg];
@@ -431,7 +427,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 angle_cf_rms += fsr_vol[ireg] * fsr_vol[ireg];
             }
 
-            angle_cf_rms = sqrt(angle_cf_rms / (int)mesh.plane(iplane).n_reg());
+            angle_cf_rms =
+                sqrt(angle_cf_rms / mesh.unique_plane(iplane).n_reg());
 
             // Correct ray lengths to enforce proper FSR volumes
             iang = 0;
@@ -470,29 +467,29 @@ std::ostream &operator<<(std::ostream &os, const RayData &rays)
     // output for one plane.
 
     // spit out some boilerplate python to make these easy to draw
-    os << "import cairo" << endl;
-    os << "def draw_rays( ctx, angle):" << endl;
-    os << "    angle_rays = rays[angle]" << endl;
+    os << "import cairo" << std::endl;
+    os << "def draw_rays( ctx, angle):" << std::endl;
+    os << "    angle_rays = rays[angle]" << std::endl;
 
-    os << "    for r in angle_rays:" << endl;
-    os << "        p1 = r[0]" << endl;
-    os << "        p2 = r[1]" << endl;
-    os << "        ctx.move_to(p1[0], p1[1])" << endl;
-    os << "        ctx.line_to(p2[0], p2[1])" << endl;
-    os << "        ctx.close_path()" << endl;
-    os << "    ctx.stroke()" << endl;
-    os << "    return" << endl;
+    os << "    for r in angle_rays:" << std::endl;
+    os << "        p1 = r[0]" << std::endl;
+    os << "        p2 = r[1]" << std::endl;
+    os << "        ctx.move_to(p1[0], p1[1])" << std::endl;
+    os << "        ctx.line_to(p2[0], p2[1])" << std::endl;
+    os << "        ctx.close_path()" << std::endl;
+    os << "    ctx.stroke()" << std::endl;
+    os << "    return" << std::endl;
 
     const auto &plane_rays = rays.begin();
     os << "rays = [ ";
     auto angle_pos = os.tellp();
     for (auto &ang_rays : *plane_rays) {
         auto ray_pos = os.tellp();
-        os << "[ " << endl;
+        os << "[ " << std::endl;
         for (auto &r : ang_rays) {
             os << r;
             ray_pos = os.tellp();
-            os << ",    # " << r.bc(0) << " " << r.bc(1) << endl;
+            os << ",    # " << r.bc(0) << " " << r.bc(1) << std::endl;
         }
         // store the location before the comma
         auto end_pos = os.tellp();
@@ -500,11 +497,11 @@ std::ostream &operator<<(std::ostream &os, const RayData &rays)
         os << " ]";
         os.seekp(end_pos);
         angle_pos = os.tellp();
-        os << "," << endl;
+        os << "," << std::endl;
     }
     // go back to before the last comma and overwrite with close ]
     os.seekp(angle_pos);
-    os << " ]" << endl;
+    os << " ]" << std::endl;
 
     return os;
 }

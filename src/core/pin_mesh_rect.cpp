@@ -69,7 +69,7 @@ PinMesh_Rect::PinMesh_Rect(const pugi::xml_node &input) : PinMesh(input)
     }
 
     // Determine FSR volumes
-    vol_ = VecF(n_reg_, dx * dy);
+    areas_ = VecF(n_reg_, dx * dy);
 
     return;
 }

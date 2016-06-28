@@ -72,6 +72,7 @@ Pin::Pin(const pugi::xml_node &input, const PinMesh_Map_t &meshes,
         const auto &mat = mat_lib[mid];
         if (mat.is_fissile()) {
             is_fuel_ = true;
+            break;
         }
     }
 
@@ -79,6 +80,8 @@ Pin::Pin(const pugi::xml_node &input, const PinMesh_Map_t &meshes,
     if (!input.attribute("fuel").empty()) {
         is_fuel_ = input.attribute("fuel").as_bool();
     }
+
+    return;
 }
 
 std::map<int, UP_Pin_t> ParsePins(const pugi::xml_node &input,

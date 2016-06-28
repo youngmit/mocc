@@ -62,14 +62,14 @@ public:
         return pitch_y_;
     }
 
-    real_t vol() const
+    real_t area() const
     {
         return pitch_x_ * pitch_y_;
     }
 
-    const VecF &vols() const
+    const VecF &areas() const
     {
-        return vol_;
+        return areas_;
     }
 
     /**
@@ -182,7 +182,7 @@ protected:
     int n_xsreg_;
     real_t pitch_x_;
     real_t pitch_y_;
-    VecF vol_;
+    VecF areas_;
 };
 
 /**

@@ -16,8 +16,8 @@
 
 #include "plane.hpp"
 
+#include <algorithm>
 #include <iostream>
-
 #include "util/error.hpp"
 #include "util/fp_utils.hpp"
 
@@ -72,6 +72,7 @@ Plane::Plane(const std::vector<const Lattice *> &lattices, size_t nx, size_t ny)
     n_reg_   = 0;
     n_xsreg_ = 0;
     n_fuel_  = 0;
+    n_pin_   = 0;
     for (auto &l : lattices_) {
         n_reg_ += l->n_reg();
         n_xsreg_ += l->n_xsreg();
@@ -79,6 +80,7 @@ Plane::Plane(const std::vector<const Lattice *> &lattices, size_t nx, size_t ny)
             if (pin->is_fuel()) {
                 n_fuel_++;
             }
+            n_pin_++;
         }
     }
 
@@ -136,6 +138,7 @@ const PinMesh *Plane::get_pinmesh(Point2 &p, int &first_reg,
 
 Position Plane::pin_position(size_t ipin) const
 {
+    ipin = ipin % n_pin_;
     int ilat = 0;
     for (auto &lattice : lattices_) {
         if (ipin < lattice->n_pin()) {
@@ -164,4 +167,23 @@ Position Plane::pin_position(size_t ipin) const
 
     return pos;
 }
+
+bool Plane::geometrically_equivalent(const Plane &other) const
+{
+    if ((nx_ != other.nx_) || (ny_ != other.ny_)) {
+        return false;
+    }
+
+    if ((n_reg_ != other.n_reg_) || (n_xsreg_ != other.n_xsreg_)) {
+        return false;
+    }
+
+    for (int ilat = 0; ilat < lattices_.size(); ilat++) {
+        if (!lattices_[ilat]->geometrically_equivalent(
+                *(other.lattices_[ilat]))) {
+            return false;
+        }
+    }
+    return true;
 }
+} // namespace mocc

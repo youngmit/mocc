@@ -37,7 +37,7 @@ BC_Size_t boundary_helper(const Mesh &mesh)
 namespace mocc {
 namespace sn {
 SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
-    : TransportSweeper(input),
+    : TransportSweeper(input, mesh, MeshTreatment::PIN),
       timer_(RootTimer.new_timer("Sn Sweeper", true)),
       timer_init_(timer_.new_timer("Initialization", true)),
       timer_sweep_(timer_.new_timer("Sweep", false)),
@@ -53,8 +53,22 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
 {
     LogFile << "Constructing a base Sn sweeper" << std::endl;
 
-    // Set up the cross-section mesh. If there is <data> specified, try to
-    // use that, otherwise generate volume-weighted cross sections
+    // Make sure we have input from the XML
+    if (input.empty()) {
+        throw EXCEPT("No input specified to initialize Sn sweeper.");
+    }
+
+    // The transport sweeper constructor will have tried to make us an XS mesh,
+    // but we want a different type, so scrap that one (don't worry, the
+    // mesh treatment argument to the constructor should have short circuited
+    // the bulk of the XS mesh construction) and replace it with a homogenized
+    // xs mesh
+    /**
+     * \todo Merge the XS mesh types so we don't have to do this. Will take some
+     * legwork so setting it aside for now.
+     */
+    // If there is <data> specified, try to use that, otherwise generate
+    // volume-weighted cross sections
     if (input.child("data").empty()) {
         xs_mesh_ = SP_XSMesh_t(new XSMeshHomogenized(mesh));
     } else {
@@ -64,27 +78,6 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
             std::cerr << e.what() << std::endl;
             throw EXCEPT("Failed to create XSMesh for Sn Sweeper.");
         }
-    }
-
-    core_mesh_ = &mesh;
-    n_reg_     = mesh.n_pin();
-    n_group_   = xs_mesh_->n_group();
-    flux_.resize(n_reg_, n_group_);
-    flux_old_.resize(n_reg_, n_group_);
-    vol_.resize(n_reg_);
-    groups_ = Range(n_group_);
-
-    // Set the mesh volumes. Same as the pin volumes
-    int ipin = 0;
-    for (auto &pin : mesh_) {
-        int i   = mesh_.coarse_cell(mesh_.pin_position(ipin));
-        vol_[i] = pin->vol();
-        ipin++;
-    }
-
-    // Make sure we have input from the XML
-    if (input.empty()) {
-        throw EXCEPT("No input specified to initialize Sn sweeper.");
     }
 
     // Parse the number of inner iterations
@@ -203,7 +196,7 @@ void SnSweeper::check_balance(int group) const
     if (!coarse_data_) {
         throw EXCEPT("No coarse data. Need it to look at currents.");
     }
-    for (size_t icell = 0; icell < mesh_.n_pin(); icell++) {
+    for (int icell = 0; icell < mesh_.n_pin(); icell++) {
         real_t b = 0.0;
 
         // Current

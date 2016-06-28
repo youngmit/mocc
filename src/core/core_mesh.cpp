@@ -24,43 +24,22 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 
-using std::cout;
-using std::endl;
-
 namespace mocc {
 CoreMesh::CoreMesh(const pugi::xml_node &input)
+    : pin_meshes_(ParsePinMeshes(input)),
+      mat_lib_(input.child("material_lib")),
+      pins_(ParsePins(input, pin_meshes_, mat_lib_)),
+      lattices_(ParseLattices(input, pins_)),
+      assemblies_(ParseAssemblies(input, lattices_)),
+      core_(ParseCore(input, assemblies_)),
+      subplane_(core_.front().subplane())
 {
-    LogScreen << " Building core mesh... " << std::endl;
-    // Parse meshes
-    pin_meshes_ = ParsePinMeshes(input);
-    LogFile << "Pin meshes done" << std::endl;
-
-    // Parse Material Library
-    mat_lib_ = MaterialLib(input.child("material_lib"));
-    LogFile << "Material library done" << std::endl;
-
-    // Parse pins
-    pins_ = ParsePins(input, pin_meshes_, mat_lib_);
-    LogFile << "Pins done" << std::endl;
-
-    // Parse lattices
-    lattices_ = ParseLattices(input, pins_);
-    LogFile << "Lattices done" << std::endl;
-
-    // Parse assemblies
-    assemblies_ = ParseAssemblies(input, lattices_);
-    LogFile << "Assemblies done" << std::endl;
-
-    // Parse core
-    core_ = ParseCore(input, assemblies_);
-    LogFile << "Core done" << std::endl;
-
     nx_           = core_.npin_x();
     ny_           = core_.npin_y();
     nz_           = core_.nz();
     n_surf_plane_ = (nx_ + 1) * ny_ + (ny_ + 1) * nx_ + nx_ * ny_;
-    nasy_         = core_.nasy();
-    bc_           = core_.boundary();
+    nasy_ = core_.nasy();
+    bc_                   = core_.boundary();
 
     // Calculate the total core dimensions
     hx_ = 0.0;
@@ -72,57 +51,45 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
         hy_ += core_.at(0, iy).hy();
     }
 
-    // Determine the set of geometrically-unique axial planes
-    std::vector<VecI> unique;
-    VecI plane_pins;
-    n_fuel_2d_    = 0;
+    // Determine the set of geometrically-unique axial planes and plane region
+    // offsets
+    std::vector<const Lattice *> plane_lattices;
+    plane_lattices.reserve(core_.nx() * core_.ny());
     int plane_reg = 0;
+    n_fuel_2d_ = 0;
     for (int iz = 0; iz < nz_; iz++) {
         first_reg_plane_.push_back(plane_reg);
-        // Form a list of all pin meshes in the core plane iz
-        for (unsigned int iasy = 0; iasy < nasy_; iasy++) {
-            const Assembly &asy = core_.at(iasy);
-            for (auto &pin : asy[iz]) {
-                plane_pins.push_back(pin->mesh_id());
+        // Construct a temporary Plane object to test against the list of known
+        // unique planes, or to insert if its new
+        for (const auto &assembly : core_) {
+            const Lattice &lattice = (*assembly)[iz];
+            plane_lattices.push_back(&lattice);
+            plane_reg += assembly[iz].n_reg();
+            // add the contained pins to the overall list of pins in the
+            // CoreMesh
+            for (const auto &pin : lattice) {
                 core_pins_.push_back(pin);
-                plane_reg += pin->n_reg();
             }
         }
+        Plane temp_plane(plane_lattices, core_.nx(), core_.ny());
+        n_fuel_2d_ = std::max(n_fuel_2d_, temp_plane.n_fuel());
+
         // Check against current list of unique planes
-        int match_plane = -1;
-        for (unsigned int iiz = 0; iiz < unique.size(); iiz++) {
-            for (unsigned int ip = 0; ip < plane_pins.size(); ip++) {
-                if (plane_pins[ip] != unique[iiz][ip]) {
-                    // we dont have a match
-                    break;
-                }
-                if (ip == plane_pins.size() - 1) {
-                    // Looks like all of the pins matched!
-                    match_plane = iiz;
-                }
-            }
-            if (match_plane != -1) {
-                break;
-            }
-        }
-        if (match_plane == -1) {
-            // This plane is thus far unique.
-            unique.push_back(plane_pins);
-            // Create a Plane instance for this collection of Lattices
-            std::vector<const Lattice *> lattices;
-            for (int ilat = 0; ilat < core_.nx() * core_.ny(); ilat++) {
-                const Lattice *lat = &core_.at(ilat)[iz];
-                lattices.push_back(lat);
-            }
-            planes_.emplace_back(lattices, core_.nx(), core_.ny());
-            n_fuel_2d_ = std::max(n_fuel_2d_, planes_.back().n_fuel());
-            unique_plane_.push_back(planes_.size() - 1);
+        auto match_plane =
+            std::find_if(planes_.begin(), planes_.end(), [&](const Plane &p) {
+                return p.geometrically_equivalent(temp_plane);
+            });
+        int unique_id = std::distance(planes_.begin(), match_plane);
+        if( match_plane == planes_.end() ) {
+            // This plane is thus far unique. Add it to planes_
+            planes_.push_back(temp_plane);
             first_unique_.push_back(iz);
         } else {
-            // We did find a match to a previous plane. Push that ID
-            unique_plane_.push_back(match_plane);
+            // This plane is geometrically identical to another plane we have
+            // already visited. do nothing
         }
-        plane_pins.clear();
+        unique_plane_ids_.push_back(unique_id);
+        plane_lattices.clear();
     } // Unique plane search
     LogFile << "Unique plane search done" << std::endl;
 
@@ -178,7 +145,7 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
      * core first. Going to have to come up with something.
      */
     coarse_vol_ = VecF(this->n_pin());
-    for (size_t i = 0; i < this->n_pin(); i++) {
+    for (int i = 0; i < this->n_pin(); i++) {
         auto pos       = this->coarse_position(i);
         coarse_vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
     }
@@ -192,16 +159,16 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
         n_xsreg_ += a->n_xsreg();
     }
 
-    // Set up array of fine mesh volumes
-    volumes_.reserve(n_reg_);
-    int ipin = 0;
-    for (const auto &pin : *this) {
-        real_t hz = dz_vec_[ipin / (nx_ * ny_)];
-        auto &pm  = pin->mesh();
-        for (const auto &v : pm.vols()) {
-            volumes_.push_back(v * hz);
+    // Figure out the height of the macroplanes
+    macroplane_heights_ = VecF(subplane_.size(), 0.0);
+    int iz = 0;
+    int isub = 0;
+    for (const auto &np: subplane_){
+        for(int i=0; i<np; i++) {
+            macroplane_heights_[isub] += dz_vec_[iz];
+            iz++;
         }
-        ipin++;
+        isub++;
     }
 
     // calculate surface indices
@@ -217,10 +184,10 @@ CoreMesh::~CoreMesh()
     return;
 }
 
-const PinMeshTuple CoreMesh::get_pinmesh(Point2 &p, size_t iz,
+const PinMeshTuple CoreMesh::get_pinmesh(Point2 &p, size_t iplane,
                                          int &first_reg) const
 {
-    assert((iz >= 0) & (iz < planes_.size()));
+    assert((iplane >= 0) & (iplane < planes_.size()));
 
     // Locate the Position of the pin
     unsigned int ix = std::lower_bound(x_vec_.begin(), x_vec_.end(), p.x) -
@@ -228,9 +195,9 @@ const PinMeshTuple CoreMesh::get_pinmesh(Point2 &p, size_t iz,
     unsigned int iy = std::lower_bound(y_vec_.begin(), y_vec_.end(), p.y) -
                       y_vec_.begin() - 1;
 
-    Position pos(ix, iy, iz);
+    Position pos(ix, iy, 0);
 
-    return PinMeshTuple(pos, planes_[iz].get_pinmesh(p, first_reg));
+    return PinMeshTuple(pos, planes_[iplane].get_pinmesh(p, first_reg));
 }
 
 Position CoreMesh::pin_position(size_t ipin) const
@@ -272,7 +239,7 @@ CoreMesh::LocationInfo CoreMesh::get_location_info(Point3 p,
     info.reg_offset = first_reg_plane(info.pos.z);
 
     Point2 pin_origin = p.to_2d();
-    int plane_index   = unique_plane_[info.pos.z];
+    int plane_index   = unique_plane_ids_[info.pos.z];
     info.pm =
         planes_[plane_index].get_pinmesh(pin_origin, info.reg_offset, dir);
     info.local_point -= pin_origin;
@@ -313,7 +280,7 @@ std::ostream &operator<<(std::ostream &os, const CoreMesh &mesh)
 
     os << "Pin Meshes: " << std::endl;
     for (const auto &pm : mesh.pin_meshes_) {
-        os << "Mesh ID: " << pm.first << endl;
+        os << "Mesh ID: " << pm.first << std::endl;
         os << *(pm.second) << std::endl;
         os << std::endl;
     }

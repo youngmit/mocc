@@ -128,6 +128,21 @@ protected:
     // together into each macroplane
     VecI subplane_;
 
+    // The upper bounds of each MoC plane. This is essentially the accumulation
+    // of the entries in subplane_. This is useful for finding an MoC plane
+    // index given a mesh z index using something like std::lower_bound().
+    VecI subplane_bounds_;
+
+    // Plane geometry IDs associated with each macroplane
+    VecI macroplane_unique_ids_;
+
+    // Vector containing the first region index in each macroplane
+    VecI first_reg_macroplane_;
+
+    // Number of FSRs in each MoC plane. These could be gleaned from the
+    // CoreMesh, but storing them is just as easy
+    VecI nreg_plane_;
+
     // The source splitting variable. This stores the degree by which to
     // alter the transport cross section for the current group
     ArrayB1 split_;
@@ -156,6 +171,16 @@ protected:
      */
     virtual void expand_xstr(int group);
 
+    /**
+     * \brief Return the MoC plane corresponding to the passed axial index
+     */
+    int moc_plane_index(int iz) const
+    {
+        return std::distance(subplane_bounds_.begin(),
+                             std::lower_bound(subplane_bounds_.begin(),
+                                              subplane_bounds_.end(), iz));
+    }
+
 #include "moc_sweeper_kernel.inc.hpp"
 
     template <class Function> void update_incoming_generic(Function f)
@@ -165,7 +190,7 @@ protected:
         // Mesh, and adjust the BC accordingly
         for (auto g : groups_) {
             int iplane = 0;
-            for (auto plane_geom_id : mesh_.unique_planes()) {
+            for (auto plane_geom_id : mesh_.unique_plane_ids()) {
                 auto &bc         = boundary_[iplane];
                 const auto &rays = rays_[plane_geom_id];
                 int iang         = 0;

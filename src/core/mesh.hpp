@@ -27,23 +27,21 @@
 
 namespace mocc {
 /**
- * \page coarseraypage Coarse Ray Tracing
- * Each ray crossing a mesh corner must deposit its information on one
- * exiting face of the current cell and one entering surface of the diagonal
- * neighbor. Consistency must be maintained between coincident rays of
- * different angle, otherwise surface quantities may end up with
- * nonsensical values. A good example is when current should be zero in
- * certain symmetric situations. If the corner crossings are not handled
- * properly, non-zero current could be calculated because a ray that crosses
- * one face in one direction is not being cancelled out by its sibling ray
- * in the direction reflected across that face (for instance if the
- * reflected ray passes instead through the neighboring coarse mesh
- * surface). This would impart an artificially non-zero current on both of
- * those faces.
-
- * \todo include discussion of coarse ray trace peculiarities and
- * conventions.
-*/
+ * \brief Enumeration of different mesh treatments.
+ *
+ * Different clients will want to interact with the mesh in different ways. For
+ * instance, MoC wants a radially fine mesh, but may wish to homogenize planes,
+ * whereas an Sn sweeper wants to operate on a pin-homogenized mesh, with finer
+ * axial treatment.
+ */
+enum class MeshTreatment : unsigned char {
+    /// Fully conformal to the mesh as described. No homogenization is made.
+    TRUE,
+    /// Pin-homogenized mesh. Planes are not homogenized.
+    PIN,
+    /// Pins are not homogenized. Planes are homogenized as desired
+    PLANE
+};
 
 /**
  * This defines a base \ref Mesh type, which provides some basic
@@ -92,9 +90,10 @@ public:
      * This is not necessarily the number of pins. For a MoC/CoreMesh this
      * is the number of flat source regions.
      */
-    size_t n_reg() const
+    virtual size_t n_reg(MeshTreatment treatment) const
     {
-        return n_reg_;
+        assert(treatment == MeshTreatment::PIN);
+        return nx_*ny_*nz_;
     }
 
     /**
@@ -258,7 +257,7 @@ public:
      * cell in the x direction.
      *
      */
-    real_t cell_thickness(size_t cell, Normal norm) const
+    real_t cell_thickness(int cell, Normal norm) const
     {
         assert(cell < this->n_pin());
         assert((norm == Normal::X_NORM) || (norm == Normal::Y_NORM) ||
@@ -282,7 +281,7 @@ public:
      * This includes plane separations. This is essentially the number of
      * coarse mesh regions.
      */
-    size_t n_pin() const
+    int n_pin() const
     {
         return nx_ * ny_ * nz_;
     }
@@ -430,7 +429,7 @@ public:
      * indexed. Move up to the next plane above you and repeat the process,
      * keeping in mind that the surfaces below you already have numbers.
     */
-    int coarse_surf(size_t i, Surface surf) const
+    int coarse_surf(int i, Surface surf) const
     {
         assert(i >= 0);
         assert(i < this->n_pin());
@@ -538,11 +537,13 @@ public:
 
             if (ix > 0) {
                 cells.first = this->coarse_cell(Position(ix - 1, iy, iz));
+                assert(cells.first < this->n_pin());
             } else {
                 cells.first = -1;
             }
             if (ix < nx_) {
                 cells.second = this->coarse_cell(Position(ix, iy, iz));
+                assert(cells.second < this->n_pin());
             } else {
                 cells.second = -1;
             }
@@ -558,11 +559,13 @@ public:
 
             if (iy > 0) {
                 cells.first = this->coarse_cell(Position(ix, iy - 1, iz));
+                assert(cells.first < this->n_pin());
             } else {
                 cells.first = -1;
             }
             if (iy < ny_) {
                 cells.second = this->coarse_cell(Position(ix, iy, iz));
+                assert(cells.second < this->n_pin());
             } else {
                 cells.second = -1;
             }
@@ -577,11 +580,13 @@ public:
 
             if (iz > 0) {
                 cells.first = this->coarse_cell(Position(ix, iy, iz - 1));
+                assert(cells.first < this->n_pin());
             } else {
                 cells.first = -1;
             }
             if (iz < nz_) {
                 cells.second = this->coarse_cell(Position(ix, iy, iz));
+                assert(cells.second < this->n_pin());
             } else {
                 cells.second = -1;
             }

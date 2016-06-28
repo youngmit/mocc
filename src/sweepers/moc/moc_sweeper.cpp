@@ -65,7 +65,7 @@ const std::vector<std::string> recognized_attributes = {
 namespace mocc {
 namespace moc {
 MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
-    : TransportSweeper(input, mesh),
+    : TransportSweeper(input, mesh, MeshTreatment::PLANE),
       timer_(RootTimer.new_timer("MoC Sweeper", true)),
       timer_init_(timer_.new_timer("Initialization", true)),
       timer_sweep_(timer_.new_timer("Sweep")),
@@ -78,7 +78,8 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
                                                  bc_size_helper(rays_))),
       xstr_(n_reg_),
       flux_1g_(),
-      subplane_(mesh.core().front().subplane()),
+      subplane_(mesh.subplane()),
+      subplane_bounds_(),
       bc_type_(mesh_.boundary()),
       dump_rays_(false),
       gauss_seidel_boundary_(true),
@@ -142,15 +143,37 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
         }
     }
 
-    // Set up the array of volumes (surface area)
-    int ireg = 0;
-    for (auto &pin : mesh_) {
-        const VecF &pin_vols = pin->vols();
-        for (auto &v : pin_vols) {
-            vol_[ireg] = v;
-            ireg++;
-        }
+    // Construct the entries in subplane_bounds_ these should be the the
+    // accumulation of the number of planes in each MoC plane, such that taking
+    // std::distance(..., std::lower_bound(..., iz)) for a given axial index iz
+    // should return the appropriate MoC plane index
+    subplane_bounds_.reserve(subplane_.size());
+    int prev = 0;
+    for (const auto np : subplane_) {
+        subplane_bounds_.push_back(prev + np);
+        prev += np;
     }
+
+    // set up the array of unique plane ids and number of FSRs per moc plane. We
+    // have already checked that all of the planes are entirely the same, so we
+    // know they must be geometrically identical as well.
+    macroplane_unique_ids_.reserve(subplane_.size());
+    first_reg_macroplane_.reserve(subplane_.size());
+    first_reg_macroplane_.push_back(0);
+    nreg_plane_.reserve(subplane_.size());
+    int iz = 0;
+    for (const auto &sub_size : subplane_) {
+        macroplane_unique_ids_.push_back(mesh_.unique_plane_ids()[iz]);
+        nreg_plane_.push_back(
+            mesh_.unique_plane(macroplane_unique_ids_.back()).n_reg());
+        iz += sub_size;
+    }
+
+    for (const auto &plane_id : macroplane_unique_ids_) {
+        first_reg_macroplane_.push_back(first_reg_macroplane_.back() +
+                                        mesh_.unique_plane(plane_id).n_reg());
+    }
+    first_reg_macroplane_.pop_back();
 
     if (dump_rays_) {
         std::ofstream rayfile("rays.py");
@@ -290,7 +313,7 @@ void MoCSweeper::expand_xstr(int group)
 
 void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux) const
 {
-    assert(flux.size() == mesh_.n_pin());
+    assert((int)flux.size() == mesh_.n_pin());
     /// \todo Put this back in when we address index ordering
     // assert(flux.isStorageContiguous());
     flux = 0.0;
@@ -315,31 +338,59 @@ void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux) const
 
 real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
 {
-    real_t resid = 0.0;
-    size_t ipin  = 0;
-    int ireg     = 0;
-    for (const auto &pin : mesh_) {
-        size_t i_coarse = mesh_.coarse_cell(mesh_.pin_position(ipin));
-        real_t fm_flux  = 0.0;
+    assert(pin_flux.size() == mesh_.n_pin());
 
-        int stop = ireg + pin->n_reg();
-        for (; ireg < stop; ireg++) {
-            fm_flux += vol_[ireg] * flux_(ireg, group);
-        }
-
-        fm_flux /= pin->vol();
-        real_t f = pin_flux(i_coarse) / fm_flux;
-
-        ireg -= pin->n_reg();
-        for (; ireg < stop; ireg++) {
-            flux_(ireg, group) = flux_(ireg, group) * f;
-        }
-
-        real_t e = fm_flux - pin_flux(i_coarse);
-        resid += e * e;
-        ipin++;
+    // homogenize the passed-in pin flux to the coarser axial mesh.
+    ArrayB1 plane_pin_flux(mesh_.nx() * mesh_.ny() * subplane_.size());
+    plane_pin_flux = 0.0;
+    for (int i = 0; i < mesh_.n_pin(); i++) {
+        Position pos = mesh_.coarse_position(i);
+        int iz       = pos.z;
+        pos.z        = this->moc_plane_index(pos.z);
+        plane_pin_flux(mesh_.coarse_cell(pos)) += pin_flux(i) * mesh_.dz(iz);
     }
-    return std::sqrt(resid);
+    // Divide MoC plane height back out
+    for (unsigned i = 0; i < plane_pin_flux.size(); i++) {
+        int iz = i / (mesh_.nx() * mesh_.ny());
+        plane_pin_flux(i) /= mesh_.macroplane_heights()[iz];
+    }
+
+    int iz       = 0;
+    int ireg     = 0;
+    int ipin     = 0;
+    int ip       = 0;
+    real_t resid = 0.0;
+    for (const auto np : subplane_) {
+        const auto &plane = mesh_.get_plane_by_axial_index(iz);
+        for (const auto &lattice : plane) {
+            for (const auto &pin : *lattice) {
+                Position pos   = plane.pin_position(ipin);
+                pos.z          = iz;
+                int i_coarse   = mesh_.coarse_cell(pos);
+                real_t fm_flux = 0.0;
+                for (const auto &area : pin->areas()) {
+                    fm_flux += flux_(ireg, group) * area;
+                    ireg++;
+                }
+                fm_flux /= pin->area();
+                real_t e = plane_pin_flux(i_coarse) - fm_flux;
+                real_t f = plane_pin_flux(i_coarse) / fm_flux;
+                ireg -= pin->n_reg();
+
+                for (int ir = 0; ir < pin->n_reg(); ir++) {
+                    flux_(ireg, group) *= f;
+                    ireg++;
+                }
+
+                resid += e * e;
+                ipin++;
+            }
+        }
+        ip++;
+        iz += np;
+    }
+
+    return std::sqrt(resid) / plane_pin_flux.size();
 } // set_pin_flux_1f( group, pin_flux )
 
 void MoCSweeper::apply_transverse_leakage(int group, const ArrayB1 &tl)
