@@ -30,6 +30,24 @@ namespace mocc {
 namespace moc {
 enum class VolumeCorrection { FLAT, ANGLE, NONE };
 std::ostream &operator<<(std::ostream &os, VolumeCorrection vc);
+/**
+ * \page coarseraypage Coarse Ray Tracing
+ * Each ray crossing a mesh corner must deposit its information on one
+ * exiting face of the current cell and one entering surface of the diagonal
+ * neighbor. Consistency must be maintained between coincident rays of
+ * different angle, otherwise surface quantities may end up with
+ * nonsensical values. A good example is when current should be zero in
+ * certain symmetric situations. If the corner crossings are not handled
+ * properly, non-zero current could be calculated because a ray that crosses
+ * one face in one direction is not being cancelled out by its sibling ray
+ * in the direction reflected across that face (for instance if the
+ * reflected ray passes instead through the neighboring coarse mesh
+ * surface). This would impart an artificially non-zero current on both of
+ * those faces.
+
+ * \todo include discussion of coarse ray trace peculiarities and
+ * conventions.
+*/
 
 /**
 * The \ref RayData class is a collection of \ref Ray objects, organized by

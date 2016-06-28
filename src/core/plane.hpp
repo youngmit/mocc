@@ -37,8 +37,27 @@ public:
         return *(lattices_[ix + nx_ * iy]);
     }
 
+    auto begin()
+    {
+        return lattices_.begin();
+    }
+
+    auto end()
+    {
+        return lattices_.end();
+    }
+
+    auto begin() const
+    {
+        return lattices_.cbegin();
+    }
+
+    auto end() const
+    {
+        return lattices_.cend();
+    }
+
     /**
-     *
      * \brief Given a \ref Point2 in core-local coordinates, return a const
      * pointer to the corresponding \ref PinMesh.
      *
@@ -75,22 +94,28 @@ public:
     }
 
     /**
-     * \brief Return a vector containing the FSR volumes
+     * \brief Return a vector containing the FSR areas
      */
-    VecF vols() const
+    VecF areas() const
     {
-        VecF vols;
+        VecF areas;
         for (auto &lat : lattices_) {
             for (auto &pin : *lat) {
-                vols.insert(vols.end(), pin->vols().begin(), pin->vols().end());
+                areas.insert(areas.end(), pin->areas().begin(),
+                             pin->areas().end());
             }
         }
 
-        return vols;
+        return areas;
     }
 
     /**
      * \brief Return the position of a pin, given its index.
+     *
+     * The passed index will be cast into the valid range for the number of pins
+     * in the plane by modulo. This allows pin indices larger than the number of
+     * pins to still work, which is convenient in multi-plane situations where
+     * the plane dimensions are identical.
      */
     Position pin_position(size_t ipin) const;
 
@@ -102,6 +127,16 @@ public:
     {
         return n_fuel_;
     }
+
+    /**
+     * \brief Return whether or not another \ref Plane is geometrically
+     * identical to this \ref Plane
+     *
+     * This only checks PinMesh IDs; if there are multiple pin meshes with
+     * different IDs but the same actual mesh structure, this method will
+     * consider them to be different.
+     */
+    bool geometrically_equivalent(const Plane &other) const;
 
 private:
     /**
@@ -133,5 +168,7 @@ private:
     VecI first_reg_lattice_;
 
     int n_fuel_;
+
+    int n_pin_;
 };
 }

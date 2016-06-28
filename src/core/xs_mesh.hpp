@@ -29,13 +29,13 @@ class XSMesh : public HasOutput {
 public:
     // Default constructor does almost nothing, and lets some other code
     // tell it what to do
-    XSMesh()
-    {
-    }
+//    XSMesh()
+//    {
+//    }
 
     // XSMesh provides its own facility to initialize itself from a \ref
     // CoreMesh
-    XSMesh(const CoreMesh &mesh);
+    XSMesh(const CoreMesh &mesh, MeshTreatment treatment);
 
     // Return the number of energy groups
     size_t n_group() const

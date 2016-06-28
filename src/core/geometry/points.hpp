@@ -59,7 +59,7 @@ public:
     // enough."
     bool operator==(const Point2 &other) const
     {
-        return(fp_equiv_saferel(x, other.x) && fp_equiv_saferel(y, other.y));
+        return(fp_equiv(x, other.x) && fp_equiv(y, other.y));
     }
 
     bool operator!=(const Point2 &other) const 

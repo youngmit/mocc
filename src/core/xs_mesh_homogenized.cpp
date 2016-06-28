@@ -26,7 +26,7 @@
 
 namespace mocc {
 XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
-    : mesh_(mesh), flux_(nullptr)
+    : XSMesh(mesh, MeshTreatment::PIN), mesh_(mesh), flux_(nullptr)
 {
     // Set up the non-xs part of the xs mesh
     eubounds_ = mesh_.mat_lib().g_bounds();
@@ -234,7 +234,8 @@ void XSMeshHomogenized::update()
         return;
     }
     else {
-        assert(flux_->extent(0) == (int)mesh_.n_reg());
+        // For now assume that the flux is coming from a PLANE-type sweeper
+        assert(flux_->extent(0) == (int)mesh_.n_reg(MeshTreatment::PLANE));
     }
     int ipin      = 0;
     int first_reg = 0;
@@ -262,12 +263,12 @@ void XSMeshHomogenized::homogenize_region(int i, const Pin &pin,
 
     auto mat_lib   = mesh_.mat_lib();
     auto &pin_mesh = pin.mesh();
-    auto vols      = pin_mesh.vols();
+    auto areas      = pin_mesh.areas();
 
     for (size_t ig = 0; ig < ng_; ig++) {
         int ireg    = 0;
         int ixsreg  = 0;
-        real_t fvol = 0.0;
+        real_t farea = 0.0;
         for (auto &mat_id : pin.mat_ids()) {
             auto mat                      = mat_lib.get_material_by_id(mat_id);
             const ScatteringRow &scat_row = mat.xssc().to(ig);
@@ -278,29 +279,29 @@ void XSMeshHomogenized::homogenize_region(int i, const Pin &pin,
                 fsrc += mat.xsnf(igg);
             }
             for (size_t i = 0; i < pin_mesh.n_fsrs(ixsreg); i++) {
-                fvol += vols[ireg] * fsrc;
-                xstr[ig] += vols[ireg] * mat.xstr(ig);
-                xsnf[ig] += vols[ireg] * mat.xsnf(ig);
-                xsf[ig] += vols[ireg] * mat.xsf(ig);
-                xsch[ig] += vols[ireg] * fsrc * mat.xsch(ig);
+                farea += areas[ireg] * fsrc;
+                xstr[ig] += areas[ireg] * mat.xstr(ig);
+                xsnf[ig] += areas[ireg] * mat.xsnf(ig);
+                xsf[ig] += areas[ireg] * mat.xsf(ig);
+                xsch[ig] += areas[ireg] * fsrc * mat.xsch(ig);
 
                 for (int igg = gmin; igg <= gmax; igg++) {
-                    scat[ig][igg] += scat_row.from[igg - gmin] * vols[ireg];
+                    scat[ig][igg] += scat_row.from[igg - gmin] * areas[ireg];
                 }
                 ireg++;
             }
             ixsreg++;
         }
 
-        xstr[ig] /= pin.vol();
-        xsnf[ig] /= pin.vol();
-        xsf[ig] /= pin.vol();
-        if (fvol > 0.0) {
-            xsch[ig] /= fvol;
+        xstr[ig] /= pin.area();
+        xsnf[ig] /= pin.area();
+        xsf[ig] /= pin.area();
+        if (farea > 0.0) {
+            xsch[ig] /= farea;
         }
 
         for (auto &s : scat[ig]) {
-            s /= pin.vol();
+            s /= pin.area();
         }
     }
 
@@ -331,7 +332,7 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
 
     auto mat_lib   = mesh_.mat_lib();
     auto &pin_mesh = pin.mesh();
-    auto vols      = pin_mesh.vols();
+    auto areas      = pin_mesh.areas();
 
     // Precompute the fission source in each region, since it is the
     // wieghting factor for chi
@@ -345,7 +346,7 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
                 int ireg_local = 0;
                 for (size_t i = 0; i < pin_mesh.n_fsrs(ixsreg); i++) {
                     fs[ireg_local] +=
-                        mat.xsnf(ig) * flux(ireg, (int)ig) * vols[ireg_local];
+                        mat.xsnf(ig) * flux(ireg, (int)ig) * areas[ireg_local];
                     ireg++;
                     ireg_local++;
                 }
@@ -371,7 +372,7 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
             size_t gmin                   = scat_row.min_g;
             size_t gmax                   = scat_row.max_g;
             for (size_t i = 0; i < pin_mesh.n_fsrs(ixsreg); i++) {
-                real_t v      = vols[ireg_local];
+                real_t v      = areas[ireg_local];
                 real_t flux_i = flux(ireg, (int)ig);
                 fluxvolsum += v * flux_i;
                 xstr[ig] += v * flux_i * mat.xstr(ig);

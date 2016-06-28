@@ -34,7 +34,7 @@ TEST(test_point)
 
     CoreMesh mesh(geom_xml);
 
-    XSMesh xs_mesh(mesh);
+    XSMesh xs_mesh(mesh, MeshTreatment::TRUE);
 
     ParticlePusher pusher(mesh, xs_mesh);
 
@@ -65,7 +65,7 @@ TEST(test_beam)
 
     CoreMesh mesh(geom_xml);
 
-    XSMesh xs_mesh(mesh);
+    XSMesh xs_mesh(mesh, MeshTreatment::TRUE);
 
     ParticlePusher pusher(mesh, xs_mesh);
 

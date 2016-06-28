@@ -24,7 +24,7 @@
 #include "util/global_config.hpp"
 
 namespace mocc {
-XSMesh::XSMesh(const CoreMesh &mesh)
+XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment)
 {
 
     LogFile << "Initializing XS Mesh... ";
@@ -37,47 +37,82 @@ XSMesh::XSMesh(const CoreMesh &mesh)
     // Get energy group bounds
     eubounds_ = mat_lib.g_bounds();
 
-    // loop over all of the pins in the CoreMesh and set up the XSMesh
-    // regions
-    std::map<int, VecI> fsrs;
-    int ireg = 0;
-    for (auto &pini : mesh) {
-        const PinMesh &pm   = pini->mesh();
-        const VecI &mat_ids = pini->mat_ids();
-        int ixsreg          = 0;
-        for (auto &mat_id : mat_ids) {
-            // post-increment pushes value, then increments
-            for (size_t reg = 0; reg < pm.n_fsrs(ixsreg); reg++) {
-                fsrs[mat_id].push_back(ireg++);
+    // Set up the XS mesh regions. This essentially boils down to generating a
+    // map from material index to the flat source region indices that are filled
+    // by the indexed material. After that, everything else should be quite
+    // similar.
+    std::map<int, VecI> fsr_map;
+
+    int nreg = mesh.n_reg(treatment);
+
+    if (treatment == MeshTreatment::TRUE) {
+        int ireg = 0;
+        for (const auto &pini : mesh) {
+            const PinMesh &pm   = pini->mesh();
+            const VecI &mat_ids = pini->mat_ids();
+            int ixsreg          = 0;
+            for (auto &mat_id : mat_ids) {
+                for (size_t reg = 0; reg < pm.n_fsrs(ixsreg); reg++) {
+                    fsr_map[mat_id].push_back(ireg);
+                    ireg++;
+                }
+                ixsreg++;
             }
-            ixsreg++;
         }
+    } else if (treatment == MeshTreatment::PLANE) {
+        int ireg = 0;
+        int iz   = 0;
+        for (const auto &block : mesh.subplane()) {
+            const Plane &plane = mesh.unique_plane(mesh.unique_plane_id(iz));
+            for (const auto &lattice : plane) {
+                for (const auto &pin : *lattice) {
+                    const VecI &mat_ids = pin->mat_ids();
+                    const PinMesh &pm = pin->mesh();
+                    int ixsreg        = 0;
+                    for (const auto &mat_id : mat_ids) {
+                        for(unsigned reg=0; reg<pm.n_fsrs(ixsreg); ++reg ){
+                            assert(ireg < nreg);
+                            fsr_map[mat_id].push_back(ireg);
+                            ireg++;
+                        }
+                        ixsreg++;
+                    }
+                }
+            }
+            iz += block;
+        }
+    } else {
+        // Should be using the homogenized class. This would be nice to merge at
+        // some point though
+        return;
     }
 
-    int n_xsreg = fsrs.size();
+    int n_xsreg = fsr_map.size();
 
     this->allocate_xs(n_xsreg, ng_);
 
+    // The ids/keys in fsr_map correspond to the user-specified IDs in the
+    // material library. We want to cast this into a contiguous, zero-based
+    // index space for internal storage and saner indexing, hence the imat
+    // counter.
     VecI mat_ids(n_xsreg);
     int imat = 0;
-    for (const auto &mat_pair : fsrs) {
+    for (const auto &mat_pair : fsr_map) {
         mat_ids[imat]   = mat_pair.first;
         const auto &mat = mat_lib[mat_pair.first];
         xstr_(imat, blitz::Range::all()) = mat.xstr();
         xsnf_(imat, blitz::Range::all()) = mat.xsnf();
         xsch_(imat, blitz::Range::all()) = mat.xsch();
         xsf_(imat, blitz::Range::all())  = mat.xsf();
-        // Don't calculate removal XS here. Let the XSMeshRegion do that in
-        // its constructor
 
         imat++;
     }
 
     // Preallocate space for the regions. Saves on lots of copies for large
     // xsmeshes.
-    regions_.reserve(fsrs.size());
+    regions_.reserve(fsr_map.size());
     imat = 0;
-    for (auto &reg_pair : fsrs) {
+    for (auto &reg_pair : fsr_map) {
         const auto &mat = mat_lib[mat_ids[imat]];
         regions_.emplace_back(reg_pair.second, &xstr_(imat, 0), &xsnf_(imat, 0),
                               &xsch_(imat, 0), &xsf_(imat, 0), &xsrm_(imat, 0),

@@ -152,9 +152,9 @@ PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input)
     // Determine FSR volumes
     real_t prev_r = 0.0;
     for (auto &ri : radii_) {
-        real_t voli = PI * (ri * ri - prev_r * prev_r) / n_azi;
+        real_t ai = PI * (ri * ri - prev_r * prev_r) / n_azi;
         for (int iazi = 0; iazi < n_azi; iazi++) {
-            vol_.push_back(voli);
+            areas_.push_back(ai);
         }
         prev_r = ri;
     }
@@ -163,9 +163,9 @@ PinMesh_Cyl::PinMesh_Cyl(const pugi::xml_node &input) : PinMesh(input)
     real_t large_r = radii_[radii_.size() - 1];
     real_t v_outer = (pitch_x_ * pitch_y_ - PI * large_r * large_r) / n_azi;
     for (int ia = 0; ia < n_azi; ia++) {
-        vol_.push_back(v_outer);
+        areas_.push_back(v_outer);
     }
-    assert((int)vol_.size() == n_reg_);
+    assert((int)areas_.size() == n_reg_);
 
     return;
 }

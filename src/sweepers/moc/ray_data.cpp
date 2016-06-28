@@ -26,12 +26,7 @@
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
-#include "util/validate_input.hpp"
 #include "core/constants.hpp"
-
-using std::cout;
-using std::endl;
-using std::cin;
 
 namespace {
 const std::vector<std::string> recognized_attributes = {"modularity", "spacing",
@@ -202,7 +197,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
         // generate rays for each angle in octants 1 and 2
         int iang = 0;
         std::vector<std::vector<Ray>> angle_rays;
-        int nreg_plane = mesh.plane(iplane).n_reg();
+        int nreg_plane = mesh.unique_plane(iplane).n_reg();
         for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
              ++ang) {
             VecI nrayfsr(nreg_plane, 0);
@@ -349,8 +344,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
 
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
                  ++ang) {
-                VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
-                VecF flat_cf(mesh.plane(iplane).n_reg(), 0.0);
+                VecF fsr_vol(mesh.unique_plane(iplane).n_reg(), 0.0);
+                VecF flat_cf(mesh.unique_plane(iplane).n_reg(), 0.0);
                 std::vector<Ray> &rays = rays_[iplane][iang];
                 real_t space           = spacing_[iang];
                 for (auto &ray : rays) {
@@ -360,7 +355,7 @@ void RayData::correct_volume(const CoreMesh &mesh)
                     }
                 }
 
-                for (size_t ireg = 0; ireg < mesh.plane(iplane).n_reg();
+                for (size_t ireg = 0; ireg < mesh.unique_plane(iplane).n_reg();
                      ireg++) {
                     flat_cf[ireg] = true_vol[ireg] / fsr_vol[ireg];
                     //jwg
@@ -428,7 +423,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 ++iang;
             }
             // Convert fsr_vol into a correction factor
-            for (int ireg = 0; ireg < (int)mesh.plane(iplane).n_reg(); ireg++) {
+            for (int ireg = 0; ireg < (int)mesh.unique_plane(iplane).n_reg();
+                 ireg++) {
                 fsr_vol[ireg] = true_vol[ireg] / fsr_vol[ireg];
                 if (flat_corr_max < std::abs(fsr_vol[ireg]-1.0)) {
                     flat_corr_max = std::abs(fsr_vol[ireg]-1.0);

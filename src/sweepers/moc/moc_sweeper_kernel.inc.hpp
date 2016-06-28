@@ -51,17 +51,18 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
         t_flux = 0.0;
 
         int iplane = 0;
-        for (const auto plane_ray_id : mesh_.unique_planes()) {
+        for (const auto plane_ray_id : macroplane_unique_ids_) {
+            int first_reg = first_reg_macroplane_[iplane];
             auto &boundary_in  = boundary_[iplane];
             auto &boundary_out = boundary_out_[iplane];
             cw.set_plane(iplane);
             const auto &plane_rays = rays_[plane_ray_id];
-            int first_reg          = mesh_.first_reg_plane(iplane);
             int iang               = 0;
             // Angles
             for (const auto &ang_rays : plane_rays) {
                 // Get the source for this angle
                 auto &qbar = source_->get_transport(iang);
+
                 int iang1  = iang;
                 int iang2  = ang_quad_.reverse(iang);
                 Angle ang  = ang_quad_[iang];

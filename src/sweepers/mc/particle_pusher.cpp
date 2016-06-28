@@ -68,21 +68,22 @@ RNG_LCG RNG;
 ParticlePusher::ParticlePusher(const CoreMesh &mesh, const XSMesh &xs_mesh)
     : mesh_(mesh),
       xs_mesh_(xs_mesh),
+      volumes_(mesh.volumes(MeshTreatment::TRUE)),
       n_group_(xs_mesh.n_group()),
       fission_bank_(mesh),
       do_implicit_capture_(false),
       seed_(1),
       scalar_flux_tally_(xs_mesh.n_group(),
                          TallySpatial(mesh_.coarse_volume())),
-      fine_flux_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
-      fine_flux_col_tally_(xs_mesh.n_group(), TallySpatial(mesh_.volumes())),
+      fine_flux_tally_(xs_mesh.n_group(), TallySpatial(volumes_)),
+      fine_flux_col_tally_(xs_mesh.n_group(), TallySpatial(volumes_)),
       pin_power_tally_(mesh_.coarse_volume()),
       id_offset_(0),
       n_cycles_(0),
       print_particles_(false)
 {
     // Build the map from mesh regions into the XS mesh
-    xsmesh_regions_.resize(mesh.n_reg(), -1);
+    xsmesh_regions_.resize(mesh.n_reg(MeshTreatment::TRUE), -1);
 
     int ixs = 0;
     for (const auto &xsreg : xs_mesh_) {
@@ -198,7 +199,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
     assert(ipin_coarse >= 0);
     assert(ipin_coarse < (int)mesh_.n_pin());
     assert(p.ireg >= 0);
-    assert(p.ireg < (int)mesh_.n_reg());
+    assert(p.ireg < (int)mesh_.n_reg(MeshTreatment::TRUE));
     p.ixsreg = xsmesh_regions_[p.ireg];
     assert(p.ixsreg >= 0);
     assert(p.ixsreg < (int)xs_mesh_.size());
@@ -263,7 +264,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
                 p.ireg = location_info.pm->find_reg(p.location, p.direction) +
                          location_info.reg_offset;
                 assert(p.ireg >= 0);
-                assert(p.ireg < (int)mesh_.n_reg());
+                assert(p.ireg < (int)mesh_.n_reg(MeshTreatment::TRUE));
                 p.ixsreg = xsmesh_regions_[p.ireg];
 
                 assert(p.ixsreg >= 0);
@@ -331,7 +332,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
                     assert(ipin_coarse >= 0);
                     assert(ipin_coarse < (int)mesh_.n_pin());
                     assert(p.ireg >= 0);
-                    assert(p.ireg < (int)mesh_.n_reg());
+                    assert(p.ireg < (int)mesh_.n_reg(MeshTreatment::TRUE));
                     p.ixsreg = xsmesh_regions_[p.ireg];
                     if (p.ixsreg >= (int)xs_mesh_.size()) {
                         std::cout << p;
@@ -427,8 +428,8 @@ void ParticlePusher::output(H5Node &node) const
 
     // Fine flux tallies (TL)
     {
-        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_reg());
-        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_reg());
+        ArrayB2 flux_mg(xs_mesh_.n_group(), mesh_.n_reg(MeshTreatment::TRUE));
+        ArrayB2 stdev_mg(xs_mesh_.n_group(), mesh_.n_reg(MeshTreatment::TRUE));
 
         auto g = node.create_group("fsr_flux");
         for (int ig = 0; ig < (int)fine_flux_tally_.size(); ig++) {
@@ -453,8 +454,8 @@ void ParticlePusher::output(H5Node &node) const
 
     // Fine flux tallies (collision)
     {
-        VecF flux_mg(mesh_.n_reg());
-        VecF stdev_mg(mesh_.n_reg());
+        VecF flux_mg(mesh_.n_reg(MeshTreatment::TRUE));
+        VecF stdev_mg(mesh_.n_reg(MeshTreatment::TRUE));
 
         auto g = node.create_group("fsr_flux_col");
         for (int ig = 0; ig < (int)fine_flux_col_tally_.size(); ig++) {

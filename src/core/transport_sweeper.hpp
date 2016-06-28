@@ -40,7 +40,8 @@ namespace mocc {
  */
 class TransportSweeper : public HasOutput {
 public:
-    TransportSweeper(const pugi::xml_node &input, const CoreMesh &mesh);
+    TransportSweeper(const pugi::xml_node &input, const CoreMesh &mesh,
+                     MeshTreatment treatment);
 
     TransportSweeper(const pugi::xml_node &input);
 
@@ -68,12 +69,6 @@ public:
     virtual void update_incoming_flux() = 0;
 
     /**
-     * \brief Return a vector containing the pin-homogenizes multi-group
-     * scalar flux. The values in the vector are ordered group-major.
-     */
-    ArrayB2 get_pin_flux() const;
-
-    /**
      * \brief Return a const reference to the Sweeper's \ref
      * AngularQuadrature
      */
@@ -81,6 +76,12 @@ public:
     {
         return ang_quad_;
     }
+
+    /**
+     * \brief Return a vector containing the pin-homogenized multi-group
+     * scalar flux. The values in the vector are ordered group-major.
+     */
+    ArrayB2 get_pin_flux() const;
 
     /**
      * \brief Produce pin-homogenized scalar flux for the specified group
@@ -145,8 +146,7 @@ public:
                 SourceFactory(input, n_reg_, xs_mesh_.get(), this->flux());
 
             return source;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             std::cerr << e.what() << std::endl;
             throw EXCEPT("Failed to create source.");
         }
@@ -246,8 +246,10 @@ public:
     virtual real_t flux_residual() const;
 
     /**
-     * \brief Compute the total fission source based on the current state of
-     * the flux
+     * \brief Compute the total fission source based on the current or previous
+     * state of the flux
+     *
+     * \param old whether to use the previous-iteration flux. Default: \c false
      */
     virtual real_t total_fission(bool old = false) const;
 
@@ -271,11 +273,8 @@ public:
     /**
      * \brief Return a const reference to the region volumes
      */
-    const ArrayF &volumes() const
+    const VecF &volumes() const
     {
-        if ((int)vol_.size() != n_reg_) {
-            throw EXCEPT("Volume array dimensions are wrong.");
-        }
         return vol_;
     }
 
@@ -296,9 +295,8 @@ protected:
     // Previous value of the MG scalar flux
     ArrayB2 flux_old_;
 
-    // Region volumes. In a 3-D sweeper this is the true volume, while in a
-    // 2-D sweeper, this is actually surface area.
-    ArrayF vol_;
+    // Region volumes
+    VecF vol_;
 
     AngularQuadrature ang_quad_;
 
