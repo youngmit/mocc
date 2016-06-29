@@ -157,8 +157,7 @@ void PlaneSweeper_2D3D::get_pin_flux_1g(int ig, ArrayB1 &flux) const
 {
     if (expose_sn_) {
         sn_sweeper_->get_pin_flux_1g(ig, flux);
-    }
-    else {
+    } else {
         moc_sweeper_.get_pin_flux_1g(ig, flux);
     }
 }
@@ -182,7 +181,8 @@ void PlaneSweeper_2D3D::add_tl(int group)
         int surf_down = mesh_.coarse_surf(icell, Surface::BOTTOM);
         real_t j_up   = coarse_data_->current(surf_up, group);
         real_t j_down = coarse_data_->current(surf_down, group);
-        tl_g(ipin)    = (j_down - j_up) / dz;
+        tl_g(ipin) =
+            tl_g(ipin) * (1.0 - relax_) + relax_ * (j_down - j_up) / dz;
 
         for (int ir = 0; ir < pin->n_reg(); ir++) {
             tl_fsr(ir + ireg_pin) = tl_g(ipin);
@@ -250,7 +250,7 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
     }
 
     // Write out the correction factors
-    if( dump_corrections_ ) {
+    if (dump_corrections_) {
         corrections_->output(file);
     }
 }
@@ -296,7 +296,7 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
         keep_sn_quad_ = input.attribute("preserve_sn_quadrature").as_bool();
     }
     if (!input.attribute("relax").empty()) {
-        relax_ = input.attribute("relax").as_bool();
+        relax_ = input.attribute("relax").as_double(1.0);
     }
     if (!input.attribute("discrepant_flux_update").empty()) {
         discrepant_flux_update_ =
