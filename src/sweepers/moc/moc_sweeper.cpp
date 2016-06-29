@@ -24,6 +24,7 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 #include "util/utils.hpp"
+#include "util/validate_input.hpp"
 #include "moc_current_worker.hpp"
 
 using std::endl;
@@ -32,6 +33,7 @@ using std::cin;
 
 mocc::VecF temp;
 
+namespace {
 /**
  * \brief Return the appropriate sizing values for construcing a \ref
  * mocc::BoundaryCondition.
@@ -53,6 +55,11 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
 
     assert(bc_dims.size() == bc_dims.capacity());
     return bc_dims;
+}
+
+const std::vector<std::string> recognized_attributes = {
+    "type",      "update_incoming", "n_inner",
+    "dump_rays", "boundary",        "tl_splitting"};
 }
 
 namespace mocc {
@@ -77,8 +84,9 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
       gauss_seidel_boundary_(true),
       allow_splitting_(false)
 {
-
     LogFile << "Constructing a base MoC sweeper" << std::endl;
+
+    validate_input(input, recognized_attributes);
 
     // Make sure we have input from the XML
     if (input.empty()) {

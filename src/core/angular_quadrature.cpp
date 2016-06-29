@@ -25,10 +25,18 @@
 #include "util/files.hpp"
 #include "util/fp_utils.hpp"
 #include "util/string_utils.hpp"
+#include "util/validate_input.hpp"
 #include "core/angular_quadrature_user.hpp"
 #include "core/constants.hpp"
 #include "core/level_symmetric.hpp"
 #include "core/product_quadrature.hpp"
+
+namespace {
+const std::vector<std::string> recognized_attributes_ls   = {"type", "order"};
+const std::vector<std::string> recognized_attributes_prod = {
+    "type", "n_azimuthal", "n_polar"};
+const std::vector<std::string> recognized_attributes_user = {"type"};
+}
 
 namespace mocc {
 const int AngularQuadrature::reflection_[3][8] = {{1, 0, 3, 2, 5, 4, 7, 6},
@@ -54,6 +62,7 @@ AngularQuadrature::AngularQuadrature(const pugi::xml_node &input)
     std::string type_str = input.attribute("type").value();
     sanitize(type_str);
     if ((type_str == "ls") || (type_str == "level-symmetric")) {
+        validate_input(input, recognized_attributes_ls);
         type_ = QuadratureType::LS;
 
         // extract the quadrature order
@@ -61,8 +70,8 @@ AngularQuadrature::AngularQuadrature(const pugi::xml_node &input)
 
         // Generate angles for octant 1
         angles_ = GenSn(order);
-    }
-    else if ((type_str == "cg") || (type_str == "chebyshev-gauss")) {
+    } else if ((type_str == "cg") || (type_str == "chebyshev-gauss")) {
+        validate_input(input, recognized_attributes_prod);
         if ((n_azimuthal_ < 1) || (n_polar_ < 1)) {
             throw EXCEPT("Number of polar or azimuthal angles is invalid");
         }
@@ -70,8 +79,8 @@ AngularQuadrature::AngularQuadrature(const pugi::xml_node &input)
 
         // Generate angles for octant 1
         angles_ = GenProduct(GenChebyshev(n_azimuthal_), GenGauss(n_polar_));
-    }
-    else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto")) {
+    } else if ((type_str == "cy") || (type_str == "chebyshev-yamamoto")) {
+        validate_input(input, recognized_attributes_prod);
         if ((n_azimuthal_ < 1) || (n_polar_ < 1)) {
             throw EXCEPT("Number of polar or azimuthal angles is invalid");
         }
@@ -79,12 +88,11 @@ AngularQuadrature::AngularQuadrature(const pugi::xml_node &input)
 
         // Generate angles from octant 1
         angles_ = GenProduct(GenChebyshev(n_azimuthal_), GenYamamoto(n_polar_));
-    }
-    else if (type_str == "user") {
+    } else if (type_str == "user") {
+        validate_input(input, recognized_attributes_user);
         type_   = QuadratureType::USER;
         angles_ = GenUserQuadrature(input);
-    }
-    else {
+    } else {
         std::cerr << "'" << type_str << "'" << std::endl;
         throw EXCEPT("Invalid angular quadrature type specified.");
     }
@@ -246,11 +254,9 @@ void AngularQuadrature::update_chebyshev_weights()
     std::vector<std::pair<real_t, real_t>> polar_angles;
     if (type_ == QuadratureType::CHEB_GAUSS) {
         polar_angles = GenGauss(n_polar_);
-    }
-    else if (type_ == QuadratureType::CHEB_YAMAMOTO) {
+    } else if (type_ == QuadratureType::CHEB_YAMAMOTO) {
         polar_angles = GenYamamoto(n_polar_);
-    }
-    else {
+    } else {
         throw EXCEPT("How did you get here?");
     }
 

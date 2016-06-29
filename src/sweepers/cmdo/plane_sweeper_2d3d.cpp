@@ -21,6 +21,7 @@
 #include <iostream>
 #include "util/error.hpp"
 #include "util/range.hpp"
+#include "util/validate_input.hpp"
 
 using mocc::sn::SnSweeper;
 
@@ -30,10 +31,24 @@ using std::cin;
 using std::setfill;
 using std::setw;
 
+namespace {
+const std::vector<std::string> recognized_attributes = {
+    "type",
+    "expose_sn",
+    "sn_project",
+    "moc_project",
+    "tl",
+    "inactive_moc",
+    "moc_modulo",
+    "preserve_sn_quadrature",
+    "relax",
+    "discrepant_flux_update",
+    "dump_corrections"};
+}
+
 namespace mocc {
 namespace cmdo {
 ////////////////////////////////////////////////////////////////////////////////
-/// \todo make sure to check the angular quadratures for conformance
 PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
                                      const CoreMesh &mesh)
     : TransportSweeper(input),
@@ -49,6 +64,7 @@ PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
       prev_moc_flux_(sn_sweeper_->n_group(), mesh_.n_pin()),
       i_outer_(-1)
 {
+    validate_input(input, recognized_attributes);
     this->parse_options(input);
     core_mesh_ = &mesh;
 

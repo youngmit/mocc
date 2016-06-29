@@ -21,9 +21,15 @@
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
+#include "util/validate_input.hpp"
 #include "globals.hpp"
 
 const static int out_w = 14;
+
+namespace {
+const std::vector<std::string> recognized_attributes = {
+    "type", "cmfd", "k_tol", "psi_tol", "max_iter", "min_iter"};
+}
 
 namespace mocc {
 EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
@@ -33,6 +39,8 @@ EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
       min_iterations_(0)
 {
     LogFile << "Initializing Eigenvalue solver..." << std::endl;
+
+    validate_input(input, recognized_attributes);
 
     if (input.empty()) {
         throw EXCEPT("No input specified for the eigenvalue solver.");
