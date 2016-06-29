@@ -26,6 +26,7 @@
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
+#include "util/validate_input.hpp"
 #include "core/constants.hpp"
 
 namespace {
