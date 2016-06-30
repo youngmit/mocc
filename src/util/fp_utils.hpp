@@ -19,22 +19,24 @@
 #include "global_config.hpp"
 
 namespace mocc {
+
+constexpr int_t ULP_FUZZ = 200;
+
 namespace fp_utils {
-union float_int {
+#ifdef FORCE_SINGLE
+union real_int {
     float f;
     int32_t i;
 };
-
-union double_int {
+#else
+union real_int {
     double f;
     int64_t i;
 };
+#endif
 }
 
-/// \todo this kind of thing is multiply-defined throughout the code. Try
-/// and settle on one value
-constexpr real_t REAL_FUZZ = 10.0 * std::numeric_limits<real_t>::epsilon();
-
+constexpr real_t REAL_FUZZ = 100 * std::numeric_limits<real_t>::epsilon();
 
 /**
  * \brief Compare two floats using ULP.
@@ -50,13 +52,13 @@ constexpr real_t REAL_FUZZ = 10.0 * std::numeric_limits<real_t>::epsilon();
  */
 inline bool fp_equiv_ulp(real_t v1, real_t v2)
 {
-    fp_utils::double_int i1;
+    fp_utils::real_int i1;
     i1.f = v1;
     if (i1.i < 0) {
         i1.i = 0x80000000 - i1.i;
     }
 
-    fp_utils::double_int i2;
+    fp_utils::real_int i2;
     i2.f = v2;
     if (i2.i < 0) {
         i2.i = 0x80000000 - i2.i;
@@ -64,7 +66,7 @@ inline bool fp_equiv_ulp(real_t v1, real_t v2)
 
     auto ulp = std::abs(i1.i - i2.i);
 
-    return ulp < 200;
+    return ulp < ULP_FUZZ;
 }
 
 inline bool fp_equiv_rel(real_t v1, real_t v2)
@@ -97,8 +99,9 @@ inline bool fp_equiv(real_t v1, real_t v2)
     return fp_equiv_ulp(v1, v2);
 }
 
-inline bool fp_equiv_saferel(real_t v1, real_t v2){
-    if(fp_equiv_abs(v1, v2)) {
+inline bool fp_equiv_saferel(real_t v1, real_t v2)
+{
+    if (fp_equiv_abs(v1, v2)) {
         return true;
     }
 
@@ -118,5 +121,7 @@ inline bool fp_equiv_saferel(real_t v1, real_t v2){
  * primary utility of such a function is for use with the \c
  * std::lower_bound() and \c std::upper_bound() algorithms.
  */
-auto fuzzy_lt = [](real_t l, real_t r) { return (l - r)/std::abs(r) < -REAL_FUZZ; };
+auto fuzzy_lt = [](real_t l, real_t r) {
+    return (l - r) / std::abs(r) < -REAL_FUZZ;
+};
 }
