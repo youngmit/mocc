@@ -73,7 +73,6 @@ TransportSweeper::TransportSweeper(const pugi::xml_node &input,
       n_sweep_inner_(0),
       do_incoming_update_(input.attribute("update_incoming").as_bool(true))
 {
-    std::cout << "N fuel " << mesh.n_fuel_2d() << std::endl;;
     return;
 }
 
