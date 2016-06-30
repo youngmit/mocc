@@ -130,7 +130,7 @@ protected:
 
     // The upper bounds of each MoC plane. This is essentially the accumulation
     // of the entries in subplane_. This is useful for finding an MoC plane
-    // index given a mesh z index using something like std::lower_bound().
+    // index given a mesh z index using something like std::upper_bound().
     VecI subplane_bounds_;
 
     // Plane geometry IDs associated with each macroplane
@@ -177,7 +177,7 @@ protected:
     int moc_plane_index(int iz) const
     {
         return std::distance(subplane_bounds_.begin(),
-                             std::lower_bound(subplane_bounds_.begin(),
+                             std::upper_bound(subplane_bounds_.begin(),
                                               subplane_bounds_.end(), iz));
     }
 
