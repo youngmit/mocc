@@ -348,7 +348,6 @@ real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
         pos.z        = this->moc_plane_index(pos.z);
         plane_pin_flux(mesh_.coarse_cell(pos)) += pin_flux(i) * mesh_.dz(iz);
     }
-    // Divide MoC plane height back out
     for (unsigned i = 0; i < plane_pin_flux.size(); i++) {
         int iz = i / (mesh_.nx() * mesh_.ny());
         plane_pin_flux(i) /= mesh_.macroplane_heights()[iz];

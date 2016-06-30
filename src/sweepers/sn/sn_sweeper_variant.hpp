@@ -248,7 +248,6 @@ protected:
             {
                 flux_1g_ += t_flux;
             }
-
         } // OMP Parallel
 
         return;
