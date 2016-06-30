@@ -26,6 +26,16 @@ namespace mc {
 /**
  * \brief Monte Carlo tally for a spatially-dependent quantity
  *
+ * Calls to \ref score() contribute to a buffer, \ref realization_scores_, which
+ * following the completion of a "sample" can then stored to the persistent
+ * tally values, \ref data_, using the \ref commit_realization() method. \ref
+ * data_ stores a sequence of \c std::pair, each containing a running sum and
+ * sum of the square of the values from each realization for a region of phase
+ * space.
+ *
+ * Calling \ref get() returns the mean and relative standard deviation for each
+ * region of phase space.
+ *
  * See \ref tally_page for more discussion about tallies
  */
 class TallySpatial {
@@ -45,14 +55,7 @@ public:
     }
 
     /**
-     * \brief Score some quantity to the tally
-     *
-     * This contributes to the running sum for the mean and the sum of squares.
-     * This is correct for collision-style estimates, but yeilds incorrect
-     * statistical estimates for track length-based elements, since the tallies
-     * for each entire history should be squared, not each individual track. For
-     * now we use batch statistics to get around this, but at some point it
-     * might be nice to do track length tallies directly.
+     * \brief Score some quantity to the tally realization buffer
      */
     void score(int i, real_t value)
     {
@@ -79,28 +82,6 @@ public:
             n_++;
             weight_ = 0.0;
         }
-    }
-
-    /**
-     * \brief Score the contents of an entire tally to this tally.
-     *
-     * This is particularly useful for computing batch statistics
-     */
-    void score(const TallySpatial &other)
-    {
-#pragma omp single
-        {
-
-            throw EXCEPT("shouldnt be using this anymore");
-            assert(data_.size() == other.data_.size());
-            real_t w = other.weight_;
-            for (unsigned i = 0; i < data_.size(); i++) {
-                real_t v = other.data_[i].first / (w);
-                data_[i].first += v;
-                data_[i].second += v * v;
-            }
-        }
-        return;
     }
 
     /**

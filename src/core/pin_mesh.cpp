@@ -45,7 +45,7 @@ PinMesh *PinMeshFactory(const pugi::xml_node &input)
         // I don't recognize the mesh type, error out.
         std::stringstream err;
         err << "Unrecognized mesh type for mesh ID: "
-            << input.attribute("id").value();
+            << input.attribute("id").as_int();
         throw EXCEPT(err.str());
     }
 

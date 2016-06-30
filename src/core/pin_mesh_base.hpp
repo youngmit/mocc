@@ -146,6 +146,9 @@ public:
      *
      * \param p a Point2 containing the location from which to measure
      * \param dir a Direction containing the direction in which to measure
+     * \param coincident whether the passed point is to be considered coincident
+     * with the surface. This is useful for preventing repeated, logically
+     * identical intersections 
      */
     virtual std::pair<real_t, bool>
     distance_to_surface(Point2 p, Direction dir, int &coincident) const = 0;

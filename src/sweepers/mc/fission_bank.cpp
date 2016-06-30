@@ -27,18 +27,6 @@ FissionBank::FissionBank(const CoreMesh &mesh) : mesh_(mesh)
     return;
 }
 
-/**
- * \brief Construct a FissionBank by uniformly sampling fission sites.
- *
- * \param input XML node containing bounds of a 3-D box within which to
- * sample initial fission sites
- * \param n the number of initial sites to sample
- * \param mesh the \ref CoreMesh to use for initial sampling
- * \param xs_mesh the \ref XSMesh to use for initial sampling
- *
- * This constructor initializes a \ref FissionBank using input specified in
- * an XML node.
- */
 FissionBank::FissionBank(const pugi::xml_node &input, int n,
                          const CoreMesh &mesh, const XSMesh &xs_mesh,
                          RNG_LCG &rng)
@@ -168,9 +156,8 @@ void FissionBank::swap(FissionBank &other)
 
 std::ostream &operator<<(std::ostream &os, const FissionBank &bank)
 {
-    os << bank.sites_.size() << " fission sites:" << std::endl;
     for (const auto &p : bank.sites_) {
-        os << p << std::endl;
+        os << p.location_global.x << ", " << p.location_global.y << std::endl;
     }
     return os;
 }

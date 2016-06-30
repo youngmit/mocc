@@ -22,13 +22,13 @@
 #include <exception>
 #include <iomanip>
 #include <iostream>
-#include <omp.h>
 #include <sstream>
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/global_config.hpp"
 #include "util/h5file.hpp"
+#include "util/omp_guard.h"
 #include "util/timers.hpp"
 #include "core/core_mesh.hpp"
 #include "core/solver.hpp"
@@ -68,15 +68,13 @@ void generate_output()
     if (Warnings.size() > 0) {
         if (Warnings.size() == 1) {
             std::cout << "There was ";
-        }
-        else {
+        } else {
             std::cout << "There were ";
         }
         std::cout << Warnings.size();
         if (Warnings.size() == 1) {
             std::cout << " warning:" << std::endl;
-        }
-        else {
+        } else {
             std::cout << " warnings:" << std::endl;
         }
         for (const auto &warning : Warnings) {

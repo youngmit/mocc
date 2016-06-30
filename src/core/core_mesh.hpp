@@ -302,6 +302,14 @@ public:
         return volumes_;
     }
 
+    /**
+     * \brief Return a const reference to the underlying \ref Core object that
+     * was used to construct this \ref CoreMesh.
+     */
+    const Core &core() const {
+        return core_;
+    }
+
 private:
     // Map for storing pin mesh objects indexed by user-specified IDs
     std::map<int, UP_PinMesh_t> pin_meshes_;

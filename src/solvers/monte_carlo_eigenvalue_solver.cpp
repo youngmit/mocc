@@ -41,10 +41,15 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
       rng_(seed_),
       source_bank_(input.child("fission_box"), particles_per_cycle_, mesh,
                    xs_mesh_, rng_),
-      k_history_(),
+      k_history_tl_(),
+      k_history_col_(),
+      k_history_analog_(),
       h_history_(),
-      k_tally_(),
-      cycle_(0)
+      k_tally_tl_(),
+      k_tally_col_(),
+      k_tally_analog_(),
+      cycle_(0),
+      dump_sites_(false)
 {
     // Check for valid input
     if (input.empty()) {
@@ -81,21 +86,30 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
 
     return;
 }
-
+/**
+ * The is pretty simple: 
+ *  - Loop over inactive cycles, calling step(),
+ *  - clear the tally data on pusher_, then
+ *  - loop over active cycles, calling step()
+ */
 void MonteCarloEigenvalueSolver::solve()
 {
     cycle_ = -n_inactive_cycles_;
     LogScreen << "Performing inactive cycles:" << std::endl;
     LogScreen << std::setw(10) << "Cycle";
-    LogScreen << std::setw(15) << "Cycle K-eff";
-    LogScreen << std::setw(15) << "Avg. K-eff";
-    LogScreen << std::setw(15) << "Std. Dev.";
+    LogScreen << std::setw(15) << "K-eff (TL)";
+    LogScreen << std::setw(15) << "Mean (TL)";
+    LogScreen << std::setw(15) << "Std. Dev. (TL)";
+    LogScreen << std::setw(15) << "Mean (col)";
+    LogScreen << std::setw(15) << "Mean (analog)";
     LogScreen << std::endl;
-    k_eff_        = {1.0, 0.0};
     active_cycle_ = false;
     for (int i = 0; i < n_inactive_cycles_; i++) {
         this->step();
     }
+
+    // Reset the tallies following inactive cycles, here we want to reset ALL
+    // tallies on the pusher_, scalar and spatial
     pusher_.reset_tallies(true);
 
     LogScreen << "Starting active cycles:" << std::endl;
@@ -109,29 +123,54 @@ void MonteCarloEigenvalueSolver::solve()
     return;
 } // MonteCarloEigenvalueSolver::solve()
 
+/**
+ * Simulate all of the particles in the source bank using pusher_. After
+ * simulating the batch of particles, extract eigenvalue estimates, and if in
+ * active cycles, contribute to their tallies. At the end, swap storage between
+ * the pusher_ fission bank and source_bank_, then resize source_bank_ to the
+ * desired number of particles per cycle.
+ */
 void MonteCarloEigenvalueSolver::step()
 {
     cycle_++;
 
     // Simulate all of the particles in the current fission bank
-    pusher_.simulate(source_bank_, k_eff_.first);
+    pusher_.simulate(source_bank_, 1.0);
 
     // Log data
-    k_eff_ = pusher_.k_tally().get();
-    k_history_.push_back(k_eff_.first);
-    h_history_.push_back(source_bank_.shannon_entropy());
-    if (active_cycle_) {
-        k_tally_.score(k_eff_.first);
-        k_tally_.add_weight(1.0);
+    k_eff_        = pusher_.k_tally_tl().get();
+    auto k_tl     = pusher_.k_tally_tl().get();
+    auto k_col    = pusher_.k_tally_col().get();
+    auto k_analog = pusher_.k_tally_analog().get();
 
-        k_mean_history_.push_back(k_tally_.get().first);
-        k_stdev_history_.push_back(k_tally_.get().second);
+    k_history_tl_.push_back(k_tl.first);
+    k_history_col_.push_back(k_col.first);
+    k_history_analog_.push_back(k_analog.first);
+
+    h_history_.push_back(source_bank_.shannon_entropy());
+
+    if (active_cycle_) {
+        k_tally_tl_.score(k_tl.first);
+        k_tally_tl_.add_weight(1.0);
+        k_tally_col_.score(k_col.first);
+        k_tally_col_.add_weight(1.0);
+        k_tally_analog_.score(k_analog.first);
+        k_tally_analog_.add_weight(1.0);
+
+        k_mean_history_tl_.push_back(k_tally_tl_.get().first);
+        k_stdev_history_tl_.push_back(k_tally_tl_.get().second);
+        k_mean_history_col_.push_back(k_tally_col_.get().first);
+        k_stdev_history_col_.push_back(k_tally_col_.get().second);
+        k_mean_history_analog_.push_back(k_tally_analog_.get().first);
+        k_stdev_history_analog_.push_back(k_tally_analog_.get().second);
     }
 
     LogScreen << std::setw(10) << cycle_ << std::setw(15) << k_eff_.first;
     if (active_cycle_) {
-        LogScreen << std::setw(15) << k_tally_.get().first;
-        LogScreen << std::setw(15) << k_tally_.get().second;
+        LogScreen << std::setw(15) << k_tally_tl_.get().first;
+        LogScreen << std::setw(15) << k_tally_tl_.get().second;
+        LogScreen << std::setw(15) << k_tally_col_.get().first;
+        LogScreen << std::setw(15) << k_tally_analog_.get().first;
     }
     LogScreen << std::endl;
 
@@ -148,6 +187,13 @@ void MonteCarloEigenvalueSolver::step()
         p.id = i++;
     }
 
+    if (dump_sites_) {
+        std::stringstream fname;
+        fname << "sites_" << cycle_;
+        std::ofstream f(fname.str());
+        f << source_bank_;
+    }
+
     // Reset the tallies on the Pusher. This should only reset the k-effective
     // tally, since all others are managed internally
     pusher_.reset_tallies();
@@ -160,10 +206,20 @@ void MonteCarloEigenvalueSolver::output(H5Node &node) const
     auto dims = mesh_.dimensions();
     std::reverse(dims.begin(), dims.end());
 
-    node.write("k_history", k_history_);
+    node.write("k_history_tl", k_history_tl_);
+    node.write("k_history_col", k_history_col_);
+    node.write("k_history_analog", k_history_analog_);
+
     node.write("h_history", h_history_);
-    node.write("k_mean_history", k_mean_history_);
-    node.write("k_stdev_history", k_stdev_history_);
+
+    node.write("k_mean_history_tl", k_mean_history_tl_);
+    node.write("k_mean_history_col", k_mean_history_col_);
+    node.write("k_mean_history_analog", k_mean_history_analog_);
+
+    node.write("k_stdev_history_tl", k_stdev_history_tl_);
+    node.write("k_stdev_history_col", k_stdev_history_col_);
+    node.write("k_stdev_history_analog", k_stdev_history_analog_);
+
     node.write("seed", seed_);
 
     pusher_.output(node);

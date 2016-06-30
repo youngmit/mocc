@@ -110,6 +110,27 @@ public:
         return *lattices_[iz];
     }
 
+    /**
+     * \brief Return whether the passed \ref Assembly is compatible with this
+     * \ref Assembly
+     *
+     * In this context, "compatible" means that the assemblies are the same
+     * height, have the same plane heights throughout, and have the same
+     * subplane parameters throughout.
+     */
+    bool compatible(const Assembly &other) const;
+
+    /**
+     * \brief Return the subplane parameters
+     *
+     * Subplane parameters are a sequence of integers, each representing the
+     * number of planes to be bound into a "macroplane," from bottom to top.
+     */
+    const VecI &subplane() const
+    {
+        return subplane_;
+    }
+
 private:
     unsigned int id_;
     unsigned int nz_;
@@ -120,6 +141,10 @@ private:
 
     size_t n_reg_;
     size_t n_xsreg_;
+
+    // Sub-plane factors. List of numbers of planes that should be bound
+    // together, from bottom to top
+    VecI subplane_;
 
     std::vector<const Lattice *> lattices_;
 };

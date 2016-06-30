@@ -17,7 +17,7 @@
 #pragma once
 
 #include <array>
-#include <omp.h>
+#include "util/omp_guard.h"
 #include "util/pugifwd.hpp"
 #include "util/timers.hpp"
 #include "core/angular_quadrature.hpp"

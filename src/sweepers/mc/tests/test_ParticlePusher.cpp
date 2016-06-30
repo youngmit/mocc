@@ -25,17 +25,18 @@
 #include "util/rng_lcg.hpp"
 
 using namespace mocc;
+using namespace mocc::mc;
 
 TEST(test_point)
 {
     pugi::xml_document geom_xml;
-    pugi::xml_parse_result result = geom_xml.load_file("square.xml");
+    geom_xml.load_file("square.xml");
 
     CoreMesh mesh(geom_xml);
 
     XSMesh xs_mesh(mesh);
 
-    mc::ParticlePusher pusher(mesh, xs_mesh);
+    ParticlePusher pusher(mesh, xs_mesh);
 
     int N = 10000;
     int pc = N/100;
@@ -60,13 +61,13 @@ TEST(test_point)
 TEST(test_beam)
 {
     pugi::xml_document geom_xml;
-    pugi::xml_parse_result result = geom_xml.load_file("tunnel.xml");
+    geom_xml.load_file("tunnel.xml");
 
     CoreMesh mesh(geom_xml);
 
     XSMesh xs_mesh(mesh);
 
-    mc::ParticlePusher pusher(mesh, xs_mesh);
+    ParticlePusher pusher(mesh, xs_mesh);
 
     int N = 10000;
     int pc = N/100;

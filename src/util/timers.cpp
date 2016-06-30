@@ -17,7 +17,7 @@
 #include "timers.hpp"
 
 #include <iostream>
-#include <omp.h>
+#include "util/omp_guard.h"
 
 namespace mocc {
 Timer RootTimer("MOCC");

@@ -18,8 +18,8 @@
 
 #include <cmath>
 #include <iostream>
-#include <omp.h>
 #include "util/blitz_typedefs.hpp"
+#include "util/omp_guard.h"
 #include "util/utils.hpp"
 #include "particle.hpp"
 
@@ -27,7 +27,8 @@ namespace {
 using namespace mocc;
 // Given an array of two points and a Particle, determine the distance from the
 // particle to the box formed by the
-real_t inline distance_to_pin(std::array<Point3, 2> bounds, const Particle &p)
+real_t inline distance_to_pin(std::array<Point3, 2> bounds,
+                              const mc::Particle &p)
 {
     real_t dist  = std::numeric_limits<real_t>::max();
     real_t other = 0.0;
@@ -111,7 +112,7 @@ void ParticlePusher::collide(Particle &p)
     }
     Reaction reaction = (Reaction)RNG.sample_cdf(xsreg.reaction_cdf(p.group));
     real_t k_score = p.weight * xsreg.xsmacnf(p.group) / xsreg.xsmactr(p.group);
-    k_tally_collision_.score(k_score);
+    k_tally_col_.score(k_score);
     fine_flux_col_tally_[p.group].score(p.ireg,
                                         p.weight / xsreg.xsmactr(p.group));
 
@@ -139,8 +140,7 @@ void ParticlePusher::collide(Particle &p)
         // fission
         // sample number of new particles to generate
         real_t nu = xsreg.xsmacnf(p.group) / xsreg.xsmacf(p.group);
-        assert(k_eff_ > 0.0);
-        int n_fis = p.weight * nu / k_eff_ + RNG.random();
+        int n_fis = (p.weight * nu) + RNG.random();
 
         // Make new particles and push them onto the fission bank
         for (int i = 0; i < n_fis; i++) {
@@ -164,13 +164,14 @@ void ParticlePusher::collide(Particle &p)
 
 void ParticlePusher::simulate(Particle p, bool tally)
 {
-    Particle p_orig = p;
-    bool print      = print_particles_;
-    // print           = true;
+    bool print = print_particles_;
+
+    RNG.set_seed(seed_);
+    RNG.jump_ahead((p.id + id_offset_) * 10000);
 
     // Register this particle with the tallies
-    k_tally_.add_weight(p.weight);
-    k_tally_collision_.add_weight(p.weight);
+    k_tally_tl_.add_weight(p.weight);
+    k_tally_col_.add_weight(p.weight);
     for (auto &tally : scalar_flux_tally_) {
         tally.add_weight(p.weight);
     }
@@ -236,7 +237,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
         real_t tl = std::min(d_to_collision, d_to_surf.first);
 
         // Contribute to track length-based tallies
-        k_tally_.score(tl * p.weight * xsreg.xsmacnf(p.group));
+        k_tally_tl_.score(tl * p.weight * xsreg.xsmacnf(p.group));
         pin_power_tally_.score(ipin_coarse,
                                tl * p.weight * xsreg.xsmacf(p.group));
         scalar_flux_tally_[p.group].score(ipin_coarse, tl * p.weight);
@@ -294,8 +295,7 @@ void ParticlePusher::simulate(Particle p, bool tally)
                         switch (bc) {
                         case Boundary::REFLECT:
                             // Move the particle back into the domain so it's
-                            // not
-                            // floating in limbo
+                            // not floating in limbo
                             reflected = true;
                             p.direction.reflect(b);
                             break;
@@ -352,9 +352,8 @@ void ParticlePusher::simulate(Particle p, bool tally)
 }
 
 /**
- * This method operates by generating a full-blown Particle for each fission
- * site in the \ref FissionBank and calling \c this->simulate() for that
- * particle.
+ * \brief Simulate all particles in a \ref FissionBank, stashing statistics at
+ * the end.
  */
 void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
 {
@@ -362,6 +361,8 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
     // cycle
     fission_bank_.clear();
 
+    // not even used for now. Just letting the fission bank grow, then resizing
+    // at the end
     k_eff_ = k_eff;
 
     print_particles_ = false;
@@ -371,15 +372,17 @@ void ParticlePusher::simulate(const FissionBank &bank, real_t k_eff)
         unsigned np = bank.size();
 #pragma omp for
         for (unsigned ip = 0; ip < np; ip++) {
-            RNG.set_seed(seed_);
-            RNG.jump_ahead((bank[ip].id + id_offset_) * 10000);
             this->simulate(bank[ip]);
         }
 
-        this->commit_tallies();
-
-        n_cycles_++;
     } // OMP Parallel
+
+    k_tally_analog_.score((double)fission_bank_.size() / bank.size());
+    k_tally_analog_.add_weight(1.0);
+
+    this->commit_tallies();
+
+    n_cycles_++;
 
     id_offset_ += bank.size();
     return;

@@ -19,12 +19,12 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <omp.h>
 #include <string>
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/file_scrubber.hpp"
 #include "util/files.hpp"
+#include "util/omp_guard.h"
 #include "util/timers.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/material_lib.hpp"
@@ -62,8 +62,7 @@ InputProcessor::InputProcessor(std::vector<std::string> args)
             // Make sure that there is a next argument
             if (iarg == args_.size() - 1) {
                 good_cmd = false;
-            }
-            else {
+            } else {
                 // Make sure that the next argument isnt another flag
                 if (args_[iarg + 1][0] == '-') {
                     good_cmd = false;
@@ -77,13 +76,11 @@ InputProcessor::InputProcessor(std::vector<std::string> args)
 
             // Read the replacement string. Pre-increment is intended
             replacements.push_back(args_[++iarg]);
-        }
-        else {
+        } else {
             // This should be the filename
             if (filename == "") {
                 filename = args_[iarg];
-            }
-            else {
+            } else {
                 // Filename already defined
                 good_cmd = false;
                 std::stringstream error;
@@ -241,8 +238,7 @@ void apply_amendment(pugi::xml_node &node, std::string path,
         if (!node.attribute(path.c_str()).set_value(value.c_str())) {
             throw EXCEPT("Failed to modify the requested attribute");
         }
-    }
-    else {
+    } else {
         // There is a slash in there. Dig deeper
         std::string new_node_name(path, 0, pos);
         if (node.child(new_node_name.c_str()).empty()) {

@@ -16,12 +16,15 @@
 
 #include "UnitTest++/UnitTest++.h"
 
+#include "pugixml.hpp"
 #include "core/assembly.hpp"
 #include "core/lattice.hpp"
 
+using namespace mocc;
+
 TEST(assembly)
 {
-    std::string test_xml = "<mesh type=\"rec\" pitch=\"1.2\">"
+    std::string test_xml = "<mesh type=\"rect\" id=\"1\" pitch=\"1.2\">"
                            "<sub_x>1</sub_x>"
                            "<sub_y>1</sub_y>"
                            "</mesh>"
@@ -41,8 +44,40 @@ TEST(assembly)
                            "   1 1 1"
                            "   1 1 1"
                            "</lattice>"
+                           "<lattice id=\"2\" nx=\"3\" ny=\"5\">"
+                           "   1 1 1"
+                           "   1 1 1"
+                           "   1 1 1"
+                           "   1 1 1"
+                           "   1 1 1"
+                           "</lattice>"
                            ""
                            "<assembly id=\"1\" np=\"5\" hz=\"3.14\">"
+                           "   <lattices>"
+                           "       1"
+                           "       2"
+                           "       1"
+                           "       2"
+                           "       2"
+                           "   </lattices>"
+                           "</assembly>"
+                           "<assembly id=\"2\" np=\"5\">"
+                           "   <hz>"
+                           "       3.14 3.14 3.14 3.14 3.14"
+                           "   </hz>"
+                           "   <lattices>"
+                           "       1"
+                           "       2"
+                           "       1"
+                           "       2"
+                           "       2"
+                           "   </lattices>"
+                           "</assembly>"
+                           ""
+                           "<assembly id=\"3\" np=\"5\">"
+                           "   <hz>"
+                           "       1.0 1.0 1.0 2.0 1.0"
+                           "   </hz>"
                            "   <lattices>"
                            "       1"
                            "       1"
@@ -51,14 +86,12 @@ TEST(assembly)
                            "       1"
                            "   </lattices>"
                            "</assembly>"
-                           ""
-                           "<assembly id=\"1\" np=\"5\" hz=\"3.14\">"
+                           "<assembly id=\"4\" np=\"20\" hz=\"1.23\">"
                            "   <lattices>"
-                           "       1"
-                           "       1"
-                           "       1"
-                           "       1"
-                           "       1"
+                           "      { 1 1 1 1 1 } "
+                           "      { 2 2 2 2 2 "
+                           "       2 2 2 2 2 }"
+                           "       1 1 2 2 2"
                            "   </lattices>"
                            "</assembly>"
                            "";
@@ -67,6 +100,19 @@ TEST(assembly)
     auto result = xml.load_string(test_xml.c_str());
 
     CHECK(result);
+
+    auto meshes = ParsePinMeshes(xml);
+    MaterialLib mat_lib(xml.child("material_lib"));
+    auto pins       = ParsePins(xml, meshes, mat_lib);
+    auto lattices   = ParseLattices(xml, pins);
+    auto assemblies = ParseAssemblies(xml, lattices);
+
+    CHECK(assemblies[1]->compatible(*assemblies[2]));
+    CHECK(!assemblies[1]->compatible(*assemblies[3]));
+
+    std::vector<int> ref_subplane = {1, 1, 1, 1, 1, 10, 5};
+    CHECK_EQUAL(7, assemblies[4]->subplane().size());
+    CHECK_ARRAY_EQUAL(ref_subplane, assemblies[4]->subplane(),7);
 }
 
 int main(int, const char *[])

@@ -3,6 +3,8 @@ if(${BUILD_TESTS})
 
     add_unit_test(test_AngularQuadrature ${HDF5_LIBRARIES} core)
     
+    add_unit_test(test_Assembly ${HDF5_LIBRARIES} core)
+    
     add_unit_test(test_PinMesh_Cyl ${HDF5_LIBRARIES} core)
     
     add_unit_test(test_PinMesh_Rect ${HDF5_LIBRARIES} core)
