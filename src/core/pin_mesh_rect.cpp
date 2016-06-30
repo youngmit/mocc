@@ -158,7 +158,7 @@ int PinMesh_Rect::find_reg(Point2 p) const
     iy--;
 
     int ireg = nx_ * iy + ix;
-    assert(ireg < n_reg_);
+    assert( (ireg >= 0) && (ireg < n_reg_));
     return ireg;
 }
 
