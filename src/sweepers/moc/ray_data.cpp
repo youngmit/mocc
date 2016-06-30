@@ -334,14 +334,15 @@ void RayData::correct_volume(const CoreMesh &mesh)
     // region for each angle
     case VolumeCorrection::FLAT:
         for (size_t iplane = 0; iplane < n_planes_; iplane++) {
-            // flat_cf_max to log the maximum correction factor for
-            // ecah angle
-            // flat_cf_rms to log the rms of correction factor for
-            // each angle
-            VecF flat_cf_max(ang_quad_.ndir() / 4, 0.0);
-            VecF flat_cf_rms(ang_quad_.ndir() / 4, 0.0);
+            // flat_corr_max to store the maximum correction for all angles and
+            // regions
+            // flat_corr_rms to store the rms of the severity of correction
+            real_t flat_corr_max = 0.0;
+            int max_ireg = 0;
+            int max_iang = 0;
+            real_t flat_corr_rms = 0.0;
             const VecF &true_vol = mesh.plane(iplane).vols();
-            int iang             = 0;
+            int iang = 0;
 
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
                  ++ang) {
@@ -359,15 +360,16 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 for (size_t ireg = 0; ireg < mesh.plane(iplane).n_reg();
                      ireg++) {
                     flat_cf[ireg] = true_vol[ireg] / fsr_vol[ireg];
-                    if (flat_cf_max[iang] < flat_cf[ireg]) {
-                        flat_cf_max[iang] = flat_cf[ireg];
+                    //jwg
+                    if (flat_corr_max < std::abs(flat_cf[ireg]-1.0)) {
+                        flat_corr_max = std::abs(flat_cf[ireg]-1.0);
+                        max_ireg = ireg;
+                        max_iang = iang;
                     }
-                    flat_cf_rms[iang] += flat_cf[ireg] * flat_cf[ireg];
+                    flat_corr_rms += (flat_cf[ireg]-1.0)*(flat_cf[ireg]-1.0);
                 }
-                flat_cf_rms[iang] =
-                    sqrt(flat_cf_rms[iang] / mesh.plane(iplane).n_reg());
 
-                // Correct
+                // Correction
                 for (auto &ray : rays) {
                     for (int iseg = 0; iseg < ray.nseg(); iseg++) {
                         int ireg          = ray.seg_index(iseg);
@@ -375,36 +377,35 @@ void RayData::correct_volume(const CoreMesh &mesh)
                     }
                 }
                 iang++;
-            }
-            LogFile << std::endl << std::endl;
-            LogFile << "For plane " << iplane
-                    << ", the maximum "
-                       "correction factor for each angle in Octant 1 and 2 is"
-                       ": "
-                    << std::endl;
-            for (auto &cf_max : flat_cf_max) {
-                LogFile << cf_max << " ";
-            }
-            LogFile << std::endl;
+            } // angle loop
+            flat_corr_rms = sqrt(flat_corr_rms /
+                (mesh.plane(iplane).n_reg() * (ang_quad_.ndir()/4)));
 
-            LogFile << "The RMS of the correction factor for each angle"
-                       " is: "
+            LogFile << std::endl << std::endl;
+            LogFile << "Using " << correction_type_ << " volume correction for "
+                    << "rays." << std::endl;
+            LogFile << "For plane " << iplane
+                    << ", the maximum correction occurs with "
+                    << "region index " << max_ireg
+                    << " and angle index " << max_iang << "."
                     << std::endl;
-            for (auto &cf_rms : flat_cf_rms) {
-                LogFile << cf_rms << " ";
-            }
-            LogFile << std::endl;
-        }
+            LogFile << "The RMS of the correction is " << flat_corr_max << "."
+                    << std::endl;
+            LogFile << std::endl << std::endl;
+
+        } // plane loop
 
         break;
     // Correct all angles at the same time, preserving the angular
     // integral of the region volumes for all angles
     case VolumeCorrection::ANGLE:
         for (size_t iplane = 0; iplane < n_planes_; iplane++) {
-            // angle_cf_max to log the maximum correction factor
-            // angle_cf_rms to log the rms of correction factor
-            real_t angle_cf_max  = 0.0;
-            real_t angle_cf_rms  = 0.0;
+            // flat_corr_max to store the maximum correction for all regions
+            // flat_corr_rms to store the rms of the severity of correction
+            real_t flat_corr_max = 0.0;
+            real_t flat_corr_rms = 0.0;
+            int max_ireg = 0;
+            
             const VecF &true_vol = mesh.plane(iplane).vols();
             VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
             int iang = 0;
@@ -425,13 +426,12 @@ void RayData::correct_volume(const CoreMesh &mesh)
             // Convert fsr_vol into a correction factor
             for (int ireg = 0; ireg < (int)mesh.plane(iplane).n_reg(); ireg++) {
                 fsr_vol[ireg] = true_vol[ireg] / fsr_vol[ireg];
-                if (angle_cf_max < fsr_vol[ireg]) {
-                    angle_cf_max = fsr_vol[ireg];
+                if (flat_corr_max < std::abs(fsr_vol[ireg]-1.0)) {
+                    flat_corr_max = std::abs(fsr_vol[ireg]-1.0);
+                    max_ireg = ireg;
                 }
-                angle_cf_rms += fsr_vol[ireg] * fsr_vol[ireg];
+                flat_corr_rms += (fsr_vol[ireg]-1.0) * (fsr_vol[ireg]-1.0);
             }
-
-            angle_cf_rms = sqrt(angle_cf_rms / (int)mesh.plane(iplane).n_reg());
 
             // Correct ray lengths to enforce proper FSR volumes
             iang = 0;
@@ -445,18 +445,23 @@ void RayData::correct_volume(const CoreMesh &mesh)
                     }
                 }
                 ++iang;
-            }
+            } // angle loop
+            
+            flat_corr_rms = sqrt(flat_corr_rms / 
+                    (int)mesh.plane(iplane).n_reg());
 
             LogFile << std::endl << std::endl;
-            LogFile << "For plane " << iplane << ", the maximum "
-                                                 "correction factor is: "
-                    << std::endl
-                    << angle_cf_max << std::endl;
+            LogFile << "Using " << correction_type_ << " volume correction for "
+                    << "rays." << std::endl;
+            LogFile << "For plane " << iplane
+                    << ", the maximum correction occurs with "
+                    << "region index " << max_ireg << "."
+                    << std::endl;
+            LogFile << "The RMS of the correction is " << flat_corr_max << "."
+                    << std::endl;
+            LogFile << std::endl << std::endl;
 
-            LogFile << "The RMS of the correction factor is: " << std::endl
-                    << angle_cf_rms << std::endl;
-
-        } // Volume correction
+        } // plane loop
         break;
     case VolumeCorrection::NONE:
         break;
