@@ -664,7 +664,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
         assert(false);
     }
 
-    size_t cell = this->coarse_cell(Position(ix, iy, 0));
+    int cell = this->coarse_cell(Position(ix, iy, 0));
 
     if ((cell < 0) || (cell >= this->n_pin())) {
         std::stringstream msg;

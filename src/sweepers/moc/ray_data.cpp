@@ -23,10 +23,16 @@
 #include <sstream>
 #include <string>
 #include "pugixml.hpp"
-#include "core/constants.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
+#include "util/validate_input.hpp"
+#include "core/constants.hpp"
+
+namespace {
+const std::vector<std::string> recognized_attributes = {"modularity", "spacing",
+                                                        "volume_correction"};
+}
 
 namespace mocc {
 namespace moc {
@@ -61,6 +67,8 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
     : ang_quad_(ang_quad)
 {
     LogScreen << "Generating ray data... " << std::endl;
+    validate_input(input, recognized_attributes);
+
     // Make sure we have reasonable input
     if (input.empty()) {
         throw EXCEPT("No input privided for ray spacing.");
@@ -79,14 +87,11 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
         sanitize(type);
         if (type == "flat") {
             correction_type_ = VolumeCorrection::FLAT;
-        }
-        else if (type == "angle") {
+        } else if (type == "angle") {
             correction_type_ = VolumeCorrection::ANGLE;
-        }
-        else if (type == "none") {
+        } else if (type == "none") {
             correction_type_ = VolumeCorrection::NONE;
-        }
-        else {
+        } else {
             throw EXCEPT("Unrecognized volume correction option in <rays>");
         }
     }
@@ -108,19 +113,16 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 throw EXCEPT("Core Mesh does not support pin modular ray "
                              "tracing.");
             }
-        }
-        else if (in_str == "core") {
+        } else if (in_str == "core") {
             core_modular = true;
-        }
-        else {
+        } else {
             throw EXCEPT("Unrecognized modularity option.");
         }
     }
 
     if (core_modular) {
         LogFile << "Ray modularity: CORE" << std::endl;
-    }
-    else {
+    } else {
         LogFile << "Ray modularity: PIN" << std::endl;
     }
 
@@ -219,8 +221,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 if (ang->ox > 0.0) {
                     // We are in octant 1, enter from the left/west
                     p1.x = 0.0;
-                }
-                else {
+                } else {
                     // We are in octant 2, enter from the right/east
                     p1.x = hx;
                 }
@@ -238,16 +239,13 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 if (fp_equiv(p2.x, hx)) {
                     // BC is on the right/east boundary of the domain
                     bc[1] = p2.y / space_y;
-                }
-                else if (fp_equiv(p2.y, hy)) {
+                } else if (fp_equiv(p2.y, hy)) {
                     // BC is on the top/north boundary of the domain
                     bc[1] = p2.x / space_x + Ny;
-                }
-                else if (fp_equiv(p2.x, 0.0)) {
+                } else if (fp_equiv(p2.x, 0.0)) {
                     // BC is on the left/west boundary of the domain
                     bc[1] = p2.y / space_y;
-                }
-                else {
+                } else {
                     throw EXCEPT("Something has gone horribly wrong in the "
                                  "ray trace.");
                 }
@@ -269,16 +267,13 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 if (fp_equiv(p2.x, hx)) {
                     // BC is on the right/east boundary of the core
                     bc[1] = p2.y / space_y;
-                }
-                else if (fp_equiv(p2.y, hy)) {
+                } else if (fp_equiv(p2.y, hy)) {
                     // BC is on the top/north boundary of the core
                     bc[1] = p2.x / space_x + Ny;
-                }
-                else if (fp_equiv(p2.x, 0.0)) {
+                } else if (fp_equiv(p2.x, 0.0)) {
                     // BC is on the left/west boundary of the core
                     bc[1] = p2.y / space_y;
-                }
-                else {
+                } else {
                     throw EXCEPT("Something has gone horribly wrong in the "
                                  "ray trace.");
                 }

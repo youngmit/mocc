@@ -275,9 +275,9 @@ CoreMesh::LocationInfo CoreMesh::get_location_info(Point3 p,
     info.local_point -= pin_origin;
 
     info.pin_boundary = {
-        Point3(x_vec_[info.pos.x], y_vec_[info.pos.y], z_vec_[info.pos.z]),
-        Point3(x_vec_[info.pos.x + 1], y_vec_[info.pos.y + 1],
-               z_vec_[info.pos.z + 1])};
+        {Point3(x_vec_[info.pos.x], y_vec_[info.pos.y], z_vec_[info.pos.z]),
+         Point3(x_vec_[info.pos.x + 1], y_vec_[info.pos.y + 1],
+                z_vec_[info.pos.z + 1])}};
 
     return info;
 }

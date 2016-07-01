@@ -24,10 +24,12 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 #include "util/utils.hpp"
+#include "util/validate_input.hpp"
 #include "moc_current_worker.hpp"
 
 mocc::VecF temp;
 
+namespace {
 /**
  * \brief Return the appropriate sizing values for construcing a \ref
  * mocc::BoundaryCondition.
@@ -43,12 +45,17 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
         int iang2      = rays.ang_quad().reverse(iang);
         int nx         = rays.ny(iang);
         int ny         = rays.nx(iang);
-        bc_dims[iang1] = {nx, ny, 0};
-        bc_dims[iang2] = {nx, ny, 0};
+        bc_dims[iang1] = {{nx, ny, 0}};
+        bc_dims[iang2] = {{nx, ny, 0}};
     }
 
     assert(bc_dims.size() == bc_dims.capacity());
     return bc_dims;
+}
+
+const std::vector<std::string> recognized_attributes = {
+    "type",      "update_incoming", "n_inner",
+    "dump_rays", "boundary",        "tl_splitting"};
 }
 
 namespace mocc {
@@ -67,14 +74,16 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
                                                  bc_size_helper(rays_))),
       xstr_(n_reg_),
       flux_1g_(),
+      subplane_(mesh.core().front().subplane()),
       bc_type_(mesh_.boundary()),
       dump_rays_(false),
       dump_fsr_flux_(false),
       gauss_seidel_boundary_(true),
       allow_splitting_(false)
 {
-
     LogFile << "Constructing a base MoC sweeper" << std::endl;
+
+    validate_input(input, recognized_attributes);
 
     // Make sure we have input from the XML
     if (input.empty()) {
@@ -100,10 +109,8 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
         sanitize(in_string);
         if (in_string == "jacobi" || in_string == "j") {
             gauss_seidel_boundary_ = false;
-        }
-        else if (in_string == "gs") {
-        }
-        else {
+        } else if (in_string == "gs") {
+        } else {
             throw EXCEPT("Unrecognized boundary update option.");
         }
     }
@@ -112,6 +119,25 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
     allow_splitting_ = input.attribute("tl_splitting").as_bool(false);
     if (allow_splitting_) {
         split_.resize(n_reg_);
+    }
+
+    // Sanity-check the subplane parameters. We will operate on the assumption
+    // for now that all planes in a macroplane are not only geometrically
+    // identical, but completely so. For anyone interested in doing de-cusping,
+    // this will need to change
+    for (const auto &assembly : mesh_.core()) {
+        int ip = 0;
+        for (const auto &mac_size : subplane_) {
+            int lat_id = (*assembly)[ip].id();
+            for (int in_mac_plane = 1; in_mac_plane < mac_size;
+                 in_mac_plane++) {
+                if ((*assembly)[ip + in_mac_plane].id() != lat_id) {
+                    throw EXCEPT(
+                        "All lattices in a macroplane must be the same.");
+                }
+            }
+            ip += mac_size;
+        }
     }
 
     // Set up the array of volumes (surface area)
@@ -165,8 +191,7 @@ void MoCSweeper::sweep(int group)
             moc::Current cw(coarse_data_, &mesh_);
             this->sweep1g(group, cw);
             coarse_data_->set_has_radial_data(true);
-        }
-        else {
+        } else {
             moc::NoCurrent cw(coarse_data_, &mesh_);
             this->sweep1g(group, cw);
         }
@@ -224,14 +249,12 @@ void MoCSweeper::update_incoming_flux()
             if (part_old > 0.0) {
                 real_t r = part / part_old;
                 return in * r;
-            }
-            else {
+            } else {
                 return in;
             }
         };
         update_incoming_generic<decltype(update)>(update);
-    }
-    else {
+    } else {
         auto update = [&](real_t in, int is, int ig) {
             real_t out =
                 (2.0 * RFPI * (coarse_data_->partial_current(is, ig)[0] +
@@ -253,8 +276,7 @@ void MoCSweeper::expand_xstr(int group)
                 xstr_(ireg) = xstr + split_(ireg);
             }
         }
-    }
-    else {
+    } else {
         for (auto &xsr : *xs_mesh_) {
             real_t xstr = xsr.xsmactr(group);
             for (auto &ireg : xsr.reg()) {
@@ -336,8 +358,7 @@ void MoCSweeper::apply_transverse_leakage(int group, const ArrayB1 &tl)
                 n_split++;
                 split_(ireg)     = -s / flux_1g_(ireg);
                 (*source_)[ireg] = 0.0;
-            }
-            else {
+            } else {
                 (*source_)[ireg] = s;
             }
         }
@@ -345,8 +366,7 @@ void MoCSweeper::apply_transverse_leakage(int group, const ArrayB1 &tl)
         if (n_split > 0) {
             LogScreen << "Split " << n_split << " region sources" << std::endl;
         }
-    }
-    else {
+    } else {
         for (int ireg = 0; ireg < n_reg_; ireg++) {
             real_t s         = (*source_)[ireg] + tl(ireg);
             (*source_)[ireg] = s;
@@ -448,8 +468,7 @@ void MoCSweeper::output(H5Node &node) const
     LogFile << "Boundary update: ";
     if (gauss_seidel_boundary_) {
         LogFile << "Gauss-Seidel" << std::endl;
-    }
-    else {
+    } else {
         LogFile << "Jacobi" << std::endl;
     }
 

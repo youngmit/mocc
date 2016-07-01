@@ -97,6 +97,13 @@ private:
     // CMFD accelerator
     UP_CMFD_t cmfd_;
 
+    // Vector in indices after which to dump the state of the solver
+    VecI dump_iterations_;
+
+    // Vector containing the time that each eigenvalue iteration completed
+    // at. Make useful absiccae for convergence plots and the like
+    VecF iteration_times_;
+
     // Methods
     // Print the current state of the eigenvalue solver
     void print(int iter, ConvergenceCriteria conv);
@@ -106,8 +113,6 @@ private:
      */
     void do_cmfd();
 
-    // Vector containing the time that each eigenvalue iteration completed
-    // at. Make useful absiccae for convergence plots and the like
-    VecF iteration_times_;
+   
 };
 }

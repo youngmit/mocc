@@ -41,10 +41,10 @@ public:
     Box(Point2 p1, Point2 p2)
         : p1_(std::min(p1.x, p2.x), std::min(p1.y, p2.y)),
           p2_(std::max(p1.x, p2.x), std::max(p1.y, p2.y)),
-          lines_({Line(Point2(p2_.x, p1_.y), p2_),
-                  Line(Point2(p1_.x, p2_.y), p2_),
-                  Line(p1_, Point2(p1_.x, p2_.y)),
-                  Line(p1_, Point2(p2_.x, p1_.y))})
+          lines_({{Line(Point2(p2_.x, p1_.y), p2_),
+                   Line(Point2(p1_.x, p2_.y), p2_),
+                   Line(p1_, Point2(p1_.x, p2_.y)),
+                   Line(p1_, Point2(p2_.x, p1_.y))}})
     {
         return;
     }

@@ -32,7 +32,7 @@ public:
 
     ~Assembly();
 
-    unsigned int id() const
+    int id() const
     {
         return id_;
     }
@@ -132,7 +132,7 @@ public:
     }
 
 private:
-    unsigned int id_;
+    int id_;
     unsigned int nz_;
     VecF dz_;
 

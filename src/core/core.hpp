@@ -37,6 +37,14 @@ public:
         return *(assemblies_.front());
     }
 
+    const auto begin() const {
+        return assemblies_.cbegin();
+    }
+
+    const auto end() const {
+        return assemblies_.cend();
+    }
+
     const Assembly &at(unsigned int i) const
     {
         assert((0 <= i) & (i < assemblies_.size()));

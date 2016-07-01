@@ -44,9 +44,9 @@ TEST(mesh)
     z.push_back(1.0);
     z.push_back(3.0);
 
-    std::array<Boundary, 6> bc = {Boundary::REFLECT, Boundary::REFLECT,
-                                  Boundary::REFLECT, Boundary::REFLECT,
-                                  Boundary::REFLECT, Boundary::REFLECT};
+    std::array<Boundary, 6> bc = {{Boundary::REFLECT, Boundary::REFLECT,
+                                   Boundary::REFLECT, Boundary::REFLECT,
+                                   Boundary::REFLECT, Boundary::REFLECT}};
 
     mocc::Mesh mesh(30, 30, x, y, z, bc);
 
@@ -122,9 +122,9 @@ TEST(test_irregular)
     z.push_back(1.0);
     z.push_back(3.0);
 
-    std::array<Boundary, 6> bc = {Boundary::REFLECT, Boundary::REFLECT,
-                                  Boundary::REFLECT, Boundary::REFLECT,
-                                  Boundary::REFLECT, Boundary::REFLECT};
+    std::array<Boundary, 6> bc = {{Boundary::REFLECT, Boundary::REFLECT,
+                                   Boundary::REFLECT, Boundary::REFLECT,
+                                   Boundary::REFLECT, Boundary::REFLECT}};
 
     mocc::Mesh mesh(30, 30, x, y, z, bc);
 
@@ -143,17 +143,18 @@ TEST(test_irregular)
     CHECK_EQUAL(mesh.coarse_area(32), 1.25);
 }
 
-TEST(test_largegeom) {
+TEST(test_largegeom)
+{
     // Make a large-ish mesh, which might threaten some FP weirdness
     VecF dx, dy;
     VecF dz = {0.0, 1.0};
-    for( int i=0; i<51; i++) {
-        dx.push_back(i*1.26);
-        dy.push_back(i*1.26);
+    for (int i = 0; i < 51; i++) {
+        dx.push_back(i * 1.26);
+        dy.push_back(i * 1.26);
     }
-    std::array<Boundary, 6> bc = {Boundary::REFLECT, Boundary::REFLECT,
-                                  Boundary::REFLECT, Boundary::REFLECT,
-                                  Boundary::REFLECT, Boundary::REFLECT};
+    std::array<Boundary, 6> bc = {{Boundary::REFLECT, Boundary::REFLECT,
+                                   Boundary::REFLECT, Boundary::REFLECT,
+                                   Boundary::REFLECT, Boundary::REFLECT}};
     Mesh mesh(2601, 2601, dx, dy, dz, bc);
 
     // try tracing some rays, make sure the points make sense

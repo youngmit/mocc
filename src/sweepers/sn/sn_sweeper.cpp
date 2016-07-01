@@ -20,15 +20,16 @@
 #include <string>
 #include "pugixml.hpp"
 #include "util/files.hpp"
+#include "util/omp_guard.h"
 #include "util/string_utils.hpp"
 
 namespace {
 using namespace mocc;
 BC_Size_t boundary_helper(const Mesh &mesh)
 {
-    BC_Size_t bc_size = {(int)mesh.ny() * (int)mesh.nz(),
-                         (int)mesh.nx() * (int)mesh.nz(),
-                         (int)mesh.nx() * (int)mesh.ny()};
+    BC_Size_t bc_size = {{(int)mesh.ny() * (int)mesh.nz(),
+                          (int)mesh.nx() * (int)mesh.nz(),
+                          (int)mesh.nx() * (int)mesh.ny()}};
     return bc_size;
 }
 }
@@ -56,12 +57,10 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
     // use that, otherwise generate volume-weighted cross sections
     if (input.child("data").empty()) {
         xs_mesh_ = SP_XSMesh_t(new XSMeshHomogenized(mesh));
-    }
-    else {
+    } else {
         try {
             xs_mesh_ = SP_XSMesh_t(new XSMeshHomogenized(mesh, input));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             std::cerr << e.what() << std::endl;
             throw EXCEPT("Failed to create XSMesh for Sn Sweeper.");
         }
@@ -103,11 +102,9 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
 
         if ((in_string == "gs") || (in_string == "gauss-seidel")) {
             gs_boundary_ = true;
-        }
-        else if ((in_string == "jacobi") || (in_string == "j")) {
+        } else if ((in_string == "jacobi") || (in_string == "j")) {
             gs_boundary_ = false;
-        }
-        else {
+        } else {
             throw EXCEPT("Unrecognized option for BC update!");
         }
     }
@@ -115,7 +112,6 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
     // disable Gauss-Seidel boundary update if we are using multiple
     // threads.
     /// \todo Add support for multi-threaded G-S boundary update in Sn
-    LogScreen << omp_get_max_threads() << " " << gs_boundary_ << std::endl;
     if ((omp_get_max_threads() > 1) && gs_boundary_) {
         gs_boundary_ = false;
         Warn("Disabling Gauss-Seidel boundary update "
@@ -159,14 +155,12 @@ void SnSweeper::update_incoming_flux()
             if (part_old > 0.0) {
                 real_t r = part / part_old;
                 return in * r;
-            }
-            else {
+            } else {
                 return in;
             }
         };
         update_incoming_generic<decltype(update)>(update);
-    }
-    else {
+    } else {
         // We dont have old partial currents to work with (probably because
         // this is the first iteration). Set the incomming flux to reflect
         // the partial current directly
@@ -272,8 +266,7 @@ void SnSweeper::output(H5Node &node) const
     LogFile << "Boundary update: ";
     if (gs_boundary_) {
         LogFile << "Gauss-Seidel" << std::endl;
-    }
-    else {
+    } else {
         LogFile << "Jacobi" << std::endl;
     }
 

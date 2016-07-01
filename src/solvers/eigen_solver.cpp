@@ -20,8 +20,16 @@
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
+#include "util/string_utils.hpp"
+#include "util/validate_input.hpp"
+#include "globals.hpp"
 
 const static int out_w = 14;
+
+namespace {
+const std::vector<std::string> recognized_attributes = {
+    "type", "cmfd", "k_tol", "psi_tol", "max_iter", "min_iter"};
+}
 
 namespace mocc {
 EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
@@ -31,6 +39,8 @@ EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
       min_iterations_(0)
 {
     LogFile << "Initializing Eigenvalue solver..." << std::endl;
+
+    validate_input(input, recognized_attributes);
 
     if (input.empty()) {
         throw EXCEPT("No input specified for the eigenvalue solver.");
@@ -68,6 +78,18 @@ EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
             throw EXCEPT("Invalid number of minimum iterations.");
         }
         min_iterations_ = in_int;
+    }
+
+    // Read in dump iterations if present
+    if (!input.child("dump_iterations").empty()) {
+        dump_iterations_ =
+            explode_string<int>(input.child("dump_iterations").child_value());
+        std::sort(dump_iterations_.begin(), dump_iterations_.end());
+        LogFile << "Dumping data for eigenvalue iterations:" << std::endl;
+        for (const auto i : dump_iterations_) {
+            LogFile << i << " ";
+        }
+        LogFile << std::endl;
     }
 
     // Count the number of fissile mesh regions
@@ -126,6 +148,12 @@ void EigenSolver::solve()
               << std::setw(out_w) << "k" << std::setw(out_w) << "k error"
               << std::setw(out_w) << "psi error" << std::endl;
 
+    auto dump_it       = dump_iterations_.begin();
+    unsigned next_dump = std::numeric_limits<unsigned>::max();
+    if (dump_it != dump_iterations_.end()) {
+        next_dump = *dump_it;
+    }
+
     for (size_t n_iterations = 0; n_iterations < max_iterations_;
          n_iterations++) {
         this->step();
@@ -150,6 +178,18 @@ void EigenSolver::solve()
         iteration_times_.push_back(RootTimer.time());
 
         this->print(n_iterations + 1, convergence_.back());
+
+        if (n_iterations + 1 == next_dump) {
+            std::stringstream fname;
+            fname << global::case_name << "_iter_" << n_iterations + 1 << ".h5";
+            H5Node h5f(fname.str(), H5Access::WRITE);
+            this->output(h5f);
+
+            next_dump = std::numeric_limits<int>::max();
+            if (++dump_it != dump_iterations_.end()) {
+                next_dump = *dump_it;
+            }
+        }
 
         if (n_iterations >= max_iterations_) {
             LogScreen << "Maximum number of iterations reached!" << std::endl;

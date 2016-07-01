@@ -289,8 +289,7 @@ void CMFD::setup_solve()
             if (cells.first > -1) {
                 diffusivity_1 = d_coeff[cells.first] /
                                 mesh_->cell_thickness(cells.first, norm);
-            }
-            else {
+            } else {
                 switch (bc[(int)(norm)][0]) {
                 case Boundary::REFLECT:
                     diffusivity_1 = 0.0 / 2.0;
@@ -306,8 +305,7 @@ void CMFD::setup_solve()
             if (cells.second > -1) {
                 diffusivity_2 = d_coeff[cells.second] /
                                 mesh_->cell_thickness(cells.second, norm);
-            }
-            else {
+            } else {
                 switch (bc[(int)(norm)][1]) {
                 case Boundary::REFLECT:
                     diffusivity_2 = 0.0 / 2.0;
@@ -356,8 +354,7 @@ void CMFD::setup_solve()
                                    (1.0 - s_tilde(is)) * flux_r) /
                                       (flux_l + flux_r)
                                 : (sfc_flux - s_tilde(is) * flux_r) / (flux_r);
-            }
-            else {
+            } else {
                 d_hat(is) = 0.0;
                 s_hat(is) = 0.0;
             }
@@ -388,8 +385,7 @@ void CMFD::setup_solve()
                         v += a * (d_tilde(surf) + d_hat_ij);
                     }
                     it.valueRef() = v;
-                }
-                else {
+                } else {
                     // off-diagonal element
                     auto pair       = mesh_->coarse_interface(i, j);
                     real_t a        = mesh_->coarse_area(i, pair.second);
@@ -455,8 +451,8 @@ void CMFD::store_currents()
 
             surface_flux_1g(is) = surface_flux;
 
-            partial_1g(is) = {0.25 * surface_flux + 0.5 * current,
-                              0.25 * surface_flux - 0.5 * current};
+            partial_1g(is) = {{0.25 * surface_flux + 0.5 * current,
+                               0.25 * surface_flux - 0.5 * current}};
         } // surfaces
     }     // groups
     return;

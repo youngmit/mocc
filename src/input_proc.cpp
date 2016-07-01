@@ -27,6 +27,7 @@
 #include "util/omp_guard.h"
 #include "util/timers.hpp"
 #include "core/angular_quadrature.hpp"
+#include "core/globals.hpp"
 #include "core/material_lib.hpp"
 #include "core/pin_mesh.hpp"
 #include "auxiliary/geometry_output.hpp"
@@ -129,6 +130,8 @@ InputProcessor::InputProcessor(std::vector<std::string> args)
             throw EXCEPT("<case_name> was provided, yet empty");
         }
     }
+
+    global::case_name = case_name_;
 
     xml_timer.toc();
 

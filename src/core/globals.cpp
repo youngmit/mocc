@@ -14,32 +14,10 @@
    limitations under the License.
 */
 
-#pragma once
-
-#include <cstddef>
-#include <iosfwd>
-#include <limits>
-#include <valarray>
-#include <vector>
+#include "globals.hpp"
 
 namespace mocc {
-
-#ifdef FORCE_SINGLE
-typedef float real_t;
-typedef int32_t int_t;
-#else
-typedef double real_t;
-typedef int64_t int_t;
-#endif
-
-// General purpose vector of floats, ints, etc
-typedef std::vector<real_t> VecF;
-typedef std::vector<int> VecI;
-typedef std::vector<int> VecSI;
-
-// valarray of floats
-typedef std::valarray<real_t> ArrayF;
-typedef std::slice_array<real_t> SliceF;
+namespace global {
+std::string case_name;
 }
-
-#define PROG_NAME "MOCC"
+}

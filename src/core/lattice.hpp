@@ -32,7 +32,7 @@ class Lattice {
 public:
     Lattice(const pugi::xml_node &input, const std::map<int, UP_Pin_t> &pins);
 
-    size_t id() const
+    int id() const
     {
         return id_;
     }
@@ -167,7 +167,7 @@ public:
     bool compatible(const Lattice &other) const;
 
 private:
-    size_t id_;
+    int id_;
     unsigned nx_;
     unsigned ny_;
     size_t n_reg_;

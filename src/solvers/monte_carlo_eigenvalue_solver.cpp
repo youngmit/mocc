@@ -87,7 +87,7 @@ MonteCarloEigenvalueSolver::MonteCarloEigenvalueSolver(
     return;
 }
 /**
- * The is pretty simple: 
+ * The is pretty simple:
  *  - Loop over inactive cycles, calling step(),
  *  - clear the tally data on pusher_, then
  *  - loop over active cycles, calling step()
