@@ -58,9 +58,6 @@ Ray::Ray(Point2 p1, Point2 p2, std::array<int, 2> bc, int iplane,
     ps.push_back(p1);
     ps.push_back(p2);
 
-    std::vector<Surface> s_fw;
-    std::vector<Surface> s_bw;
-
     mesh.trace(ps);
     std::vector<Point2> cps = ps;
 
