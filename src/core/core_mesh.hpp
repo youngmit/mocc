@@ -86,7 +86,7 @@ public:
     * as the index of the first region of the <tt>iz</tt>th plane. The
     * former would be useful for ray tracing purposes, where each
     * geometrically-unique plane is traced independently, and the FSR
-    * indices are incremented at sweep time to the approbriate concrete
+    * indices are incremented at sweep time to the appropriate concrete
     * plane. The latter is useful when the actual index is desired.
     *
     * This routine provides a means by which to locate the \ref PinMesh
