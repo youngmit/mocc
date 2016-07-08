@@ -82,6 +82,28 @@ TEST(test_rect)
         9, pm->find_reg(Point2(0.63, 0.0), Direction(5.0 * PI / 4.0, HPI)));
 }
 
+TEST(test_fine_mesh)
+{
+    std::string xml_input =
+        "<mesh id=\"1\" type=\"rect\" pitch=\"10\">"
+        "        <sub_x>80</sub_x>"
+        "        <sub_y>80</sub_y>"
+        "</mesh>";
+    pugi::xml_document xml;
+    xml.load_string(xml_input.c_str());
+
+    auto pm = PinMeshFactory(xml.child("mesh"));
+
+    CHECK(pm);
+
+    std::cout << *pm << std::endl;
+
+    // test two points for legitimate region index assertion test
+    CHECK_EQUAL(50,pm->find_reg(Point2(1.250000000000004,-4.9999999999999432)));
+    CHECK_EQUAL(6319,pm->find_reg(Point2(4.9375,4.8456249999999992)));
+}
+
+
 int main()
 {
     return UnitTest::RunAllTests();
