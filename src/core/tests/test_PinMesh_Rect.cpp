@@ -98,7 +98,7 @@ TEST(test_fine_mesh)
 
     std::cout << *pm << std::endl;
 
-    // test two points for legitimate region index assertion test
+    // two points for legitimate region index assertion test
     CHECK_EQUAL(50,pm->find_reg(Point2(1.250000000000004,-4.9999999999999432)));
     CHECK_EQUAL(6319,pm->find_reg(Point2(4.9375,4.8456249999999992)));
 }
