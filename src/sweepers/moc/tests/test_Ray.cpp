@@ -47,7 +47,7 @@ TEST(simple_ray)
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_file("6x5.xml");
 
-    CHECK(result);
+    REQUIRE CHECK(result);
 
     mocc::CoreMesh mesh(geom_xml);
     {
@@ -261,7 +261,7 @@ TEST(weird_ray)
     xml.load_string(test_xml.c_str());
     auto result = xml.load_string(test_xml.c_str());
 
-    CHECK(result);
+    REQUIRE CHECK(result);
 
     CoreMesh core_mesh(xml);
 
@@ -300,8 +300,7 @@ TEST(weird_ray)
         0.12752525252525249,  0.12752525252525249,  0.12752525252525268,
         0.12752525252525249,  0.089267676767675302, 0.038257575757577197};
 
-    // REQUIRE CHECK(36 == ray.nseg());
-    CHECK(36 == ray.nseg());
+    REQUIRE CHECK_EQUAL(36, ray.nseg());
     CHECK_ARRAY_EQUAL(seg_index_expect, ray.seg_index(), 36);
     CHECK_ARRAY_CLOSE(seg_len_expect, ray.seg_len(), 36, 0.000000000000001);
 }
