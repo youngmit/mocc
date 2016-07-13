@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include "pugixml.hpp"
@@ -149,15 +150,16 @@ int PinMesh_Rect::find_reg(Point2 p) const
     if (fabs(p.y) > 0.5 * pitch_y_) {
         return -1;
     }
-
+    
     int ix = std::distance(
-        hx_.begin(), std::lower_bound(hx_.begin(), hx_.end(), p.x, fuzzy_lt));
+        hx_.begin(), std::lower_bound(hx_.cbegin(), hx_.cend(), p.x));
     int iy = std::distance(
-        hy_.begin(), std::lower_bound(hy_.begin(), hy_.end(), p.y, fuzzy_lt));
+        hy_.begin(), std::lower_bound(hy_.cbegin(), hy_.cend(), p.y));
     ix--;
     iy--;
+    
+    int ireg = nx_ * iy + ix ;
 
-    int ireg = nx_ * iy + ix;
     assert( (ireg >= 0) && (ireg < n_reg_));
     return ireg;
 }
