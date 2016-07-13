@@ -71,6 +71,7 @@ Ray::Ray(Point2 p1, Point2 p2, std::array<int, 2> bc, int iplane,
         auto pin_p = Midpoint(*pi, p_prev);
 
         int first_reg          = 0;
+        // pin_p is overwritten as global coordinates of pin center.
         const PinMeshTuple pmt = mesh.get_pinmesh(pin_p, iplane, first_reg);
 
         int nseg = pmt.pm->trace(p_prev - pin_p, *pi - pin_p, first_reg,
