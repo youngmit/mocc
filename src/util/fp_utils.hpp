@@ -36,7 +36,7 @@ union real_int {
 #endif
 }
 
-constexpr real_t REAL_FUZZ = 100 * std::numeric_limits<real_t>::epsilon();
+constexpr real_t REAL_FUZZ = 200 * std::numeric_limits<real_t>::epsilon();
 
 /**
  * \brief Compare two floats using ULP.
