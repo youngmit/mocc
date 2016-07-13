@@ -27,7 +27,7 @@
 namespace mocc {
 CoreMesh::CoreMesh(const pugi::xml_node &input)
 {
-    LogScreen << " Building core mesh... " << std::endl;
+    LogScreen << "Building core mesh... " << std::endl;
     // Parse meshes
     pin_meshes_ = ParsePinMeshes(input);
     LogFile << "Pin meshes done" << std::endl;
