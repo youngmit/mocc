@@ -31,21 +31,11 @@ MESSAGE(STATUS "Coverage: ${COVERAGE}")
 enable_testing()
 
 include(AddUnitTest)
+include(CopyFileIfChanged)
 
 CONFIGURE_FILE("${CMAKE_MODULE_PATH}/CTestCustom.cmake" "${CMAKE_BINARY_DIR}/CTestCustom.cmake")
 
 include(CTest)
-
-MACRO(COPY_FILE_IF_CHANGED in_file out_file target)
-    IF(${in_file} IS_NEWER_THAN ${out_file})    
-        ADD_CUSTOM_COMMAND (
-            TARGET     ${target}
-            POST_BUILD
-            COMMAND    ${CMAKE_COMMAND}
-            ARGS       -E copy ${in_file} ${out_file}
-        )
-    ENDIF(${in_file} IS_NEWER_THAN ${out_file})
-ENDMACRO(COPY_FILE_IF_CHANGED)
 
 # use a vanilla inline for force inline (doesn't force inline, unless the
 # compiler family supports it)
