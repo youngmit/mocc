@@ -55,7 +55,8 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
 
 const std::vector<std::string> recognized_attributes = {
     "type",      "update_incoming", "n_inner",
-    "dump_rays", "boundary",        "tl_splitting"};
+    "dump_rays", "boundary",        "tl_splitting",
+    "dump_fsr_flux"};
 }
 
 namespace mocc {
