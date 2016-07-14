@@ -22,16 +22,18 @@ namespace mocc {
 
 BoundaryCondition::BoundaryCondition(int n_group,
                                      const AngularQuadrature &angquad,
-                                     BC_Type_t bc, BC_Size_t n_bc)
+                                     BC_Type_t bc, BC_Size_t n_bc,
+                                     int dim)
     : BoundaryCondition(n_group, angquad, bc,
-                        std::vector<BC_Size_t>(angquad.ndir(), n_bc))
+                        std::vector<BC_Size_t>(angquad.ndir(), n_bc), dim)
 {
     return;
 }
 
 BoundaryCondition::BoundaryCondition(int n_group,
                                      const AngularQuadrature &angquad,
-                                     BC_Type_t bc, std::vector<BC_Size_t> n_bc)
+                                     BC_Type_t bc, std::vector<BC_Size_t> n_bc,
+                                     int dim)
     : n_group_(n_group),
       n_angle_(n_bc.size()),
       bc_(bc),
@@ -40,6 +42,14 @@ BoundaryCondition::BoundaryCondition(int n_group,
 {
     assert((angquad.ndir() == (int)n_bc.size()) ||
            (angquad.ndir() / 2 == (int)n_bc.size()));
+
+    assert((dim == 2) || (dim == 3));
+    if (dim==2) {
+        factor_ = 2.0;
+    }
+    else {
+        factor_ = 1.0;
+    }
 
     int n_angle = n_bc.size();
 
@@ -68,7 +78,8 @@ BoundaryCondition::BoundaryCondition(int n_group,
 }
 
 BoundaryCondition::BoundaryCondition(const BoundaryCondition &rhs)
-    : BoundaryCondition(rhs.n_group_, rhs.ang_quad_, rhs.bc_, rhs.size_)
+    : BoundaryCondition(rhs.n_group_, rhs.ang_quad_, rhs.bc_, rhs.size_,
+            (rhs.factor_==2.0?2:3))
 {
     return;
 }
@@ -100,7 +111,7 @@ void BoundaryCondition::initialize_scalar(real_t val)
                     // a separate initialization routine that does the
                     // initialization based on bc_.
                     for (int i = 0; i < face_pair.first; i++) {
-                        face[i] = 2.0 / FPI;
+                        face[i] = 1.0 / FPI * factor_;
                     }
                     break;
                 case Boundary::PARALLEL:
