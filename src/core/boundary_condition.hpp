@@ -61,7 +61,7 @@ public:
      * a vector and call the general case (below).
      */
     BoundaryCondition(int n_group, const AngularQuadrature &angquad,
-                      BC_Type_t bc, BC_Size_t n_bc);
+                      BC_Type_t bc, BC_Size_t n_bc, int dim=2);
 
     /**
      * \brief Construct a more complicated boundary condition, where each
@@ -76,7 +76,7 @@ public:
      * angle.
      */
     BoundaryCondition(int n_group, const AngularQuadrature &angquad,
-                      BC_Type_t bc, std::vector<BC_Size_t> n_bc);
+                      BC_Type_t bc, std::vector<BC_Size_t> n_bc, int dim=2);
 
     /**
      * \brief Replace the default copy constructor to avoid aliasing of the
@@ -223,5 +223,8 @@ private:
     // incremented by bc_per_group_*group to yield final starting index of a
     // face of BCs
     blitz::Array<int, 2> offset_;
+
+    // A factor to scale the incoming boundary flux based on 2D or 3D
+    real_t factor_;
 };
 }
