@@ -93,7 +93,7 @@ public:
     virtual size_t n_reg(MeshTreatment treatment) const
     {
         assert(treatment == MeshTreatment::PIN);
-        return nx_*ny_*nz_;
+        return nx_ * ny_ * nz_;
     }
 
     /**
@@ -327,6 +327,8 @@ public:
      * It should be considered possible for the return value to be of any
      * direction normal (e.g. X, Y, or Z). Under the current indexing
      * scheme, it will always be Z-normal, but this could change.
+     *
+     * \sa plane_surf_xy_begin()
      */
     int plane_surf_begin(size_t plane) const
     {
@@ -348,6 +350,9 @@ public:
      *
      * Iterating from here to \ref plane_surf_end() is safe, since the x/y
      * surfaces are guaranteed contiguous.
+     *
+     * \sa plane_surf_begin()
+     * \sa plane_surf_end()
      */
     int plane_surf_xy_begin(size_t plane) const
     {
