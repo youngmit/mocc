@@ -329,6 +329,9 @@ void RayData::correct_volume(const CoreMesh &mesh)
     // Correct each angle independently, preserving volume integral of
     // region for each angle
     case VolumeCorrection::FLAT:
+        LogFile << std::endl << std::endl;
+        LogFile << "Using " << correction_type_ << " volume correction for "
+                << "rays." << std::endl;
         for (size_t iplane = 0; iplane < n_planes_; iplane++) {
             // flat_corr_max to store the maximum correction for all angles and
             // regions
@@ -377,15 +380,13 @@ void RayData::correct_volume(const CoreMesh &mesh)
             flat_corr_rms = sqrt(flat_corr_rms /
                 (mesh.plane(iplane).n_reg() * (ang_quad_.ndir()/4)));
 
-            LogFile << std::endl << std::endl;
-            LogFile << "Using " << correction_type_ << " volume correction for "
-                    << "rays." << std::endl;
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
                     << "region index " << max_ireg
-                    << " and angle index " << max_iang << "."
+                    << " and angle index " << max_iang << ", the magnitude of "
+                    << "the correction being " << flat_corr_max << "."
                     << std::endl;
-            LogFile << "The RMS of the correction is " << flat_corr_max << "."
+            LogFile << "The RMS of the correction is " << flat_corr_rms << "."
                     << std::endl;
             LogFile << std::endl << std::endl;
 
@@ -395,6 +396,9 @@ void RayData::correct_volume(const CoreMesh &mesh)
     // Correct all angles at the same time, preserving the angular
     // integral of the region volumes for all angles
     case VolumeCorrection::ANGLE:
+        LogFile << std::endl << std::endl;
+        LogFile << "Using " << correction_type_ << " volume correction for "
+                << "rays." << std::endl;
         for (size_t iplane = 0; iplane < n_planes_; iplane++) {
             // flat_corr_max to store the maximum correction for all regions
             // flat_corr_rms to store the rms of the severity of correction
@@ -446,17 +450,15 @@ void RayData::correct_volume(const CoreMesh &mesh)
             flat_corr_rms = sqrt(flat_corr_rms / 
                     (int)mesh.plane(iplane).n_reg());
 
-            LogFile << std::endl << std::endl;
-            LogFile << "Using " << correction_type_ << " volume correction for "
-                    << "rays." << std::endl;
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
-                    << "region index " << max_ireg << "."
+                    << "region index " << max_ireg << ", the magnitude of "
+                    << "the correction being " << flat_corr_max << "."
                     << std::endl;
-            LogFile << "The RMS of the correction is " << flat_corr_max << "."
+            LogFile << "The RMS of the correction is " << flat_corr_rms << "."
                     << std::endl;
             LogFile << std::endl << std::endl;
-
+            
         } // plane loop
         break;
     case VolumeCorrection::NONE:
