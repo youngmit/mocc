@@ -157,7 +157,7 @@ public:
         assert((0 <= ip) & (ip < (int)planes_.size()));
         return planes_[ip];
     }
-    
+
     /**
      * \brief Return a const reference to the \ref Plane that fills the passed
      * axial region
@@ -169,9 +169,21 @@ public:
     }
 
     /**
+     * \brief Return a reference to the vector of \ref MacroPlane objects
+     *
+     * This is useful for iterating over the macroplane/subplane mesh in
+     * sweepers that support or are aware of such structure.
+     */
+    const std::vector<MacroPlane> &macroplanes() const
+    {
+        return macroplanes_;
+    }
+
+    /**
      * \brief Return a reference to the vector of macroplane heights
      */
-    const VecF &macroplane_heights() const {
+    const VecF &macroplane_heights() const
+    {
         return macroplane_heights_;
     }
 
@@ -371,6 +383,10 @@ public:
         return this->coarse_volume();
     }
 
+    const auto &pins() const {
+        return pins_;
+    }
+
     /**
      * \brief Return a reference to the subplane parameters
      */
@@ -423,6 +439,8 @@ private:
 
     // The height of each macroplane
     VecF macroplane_heights_;
+
+    std::vector<MacroPlane> macroplanes_;
 
     // Number of assemblies
     size_t nasy_;
