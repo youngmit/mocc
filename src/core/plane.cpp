@@ -23,7 +23,7 @@
 
 namespace mocc {
 Plane::Plane(const std::vector<const Lattice *> &lattices, size_t nx, size_t ny)
-    : lattices_(lattices)
+    : lattices_(lattices), nx_pin_(0), ny_pin_(0)
 {
     assert(lattices.size() == nx * ny);
 
@@ -38,6 +38,7 @@ Plane::Plane(const std::vector<const Lattice *> &lattices, size_t nx, size_t ny)
         hx_.push_back(prev + this->at(ix, 0).hx());
         dx.push_back(this->at(ix, 0).hx());
         prev += this->at(ix, 0).hx();
+        nx_pin_ += this->at(ix, 0).nx();
     }
     VecF dy;
     prev = 0.0;
@@ -46,6 +47,7 @@ Plane::Plane(const std::vector<const Lattice *> &lattices, size_t nx, size_t ny)
         hy_.push_back(prev + this->at(0, iy).hy());
         dy.push_back(this->at(0, iy).hy());
         prev += this->at(0, iy).hy();
+        ny_pin_ += this->at(0, iy).ny();
     }
 
     // Ensure that the lattices in the plane conform
@@ -138,7 +140,7 @@ const PinMesh *Plane::get_pinmesh(Point2 &p, int &first_reg,
 
 Position Plane::pin_position(size_t ipin) const
 {
-    ipin = ipin % n_pin_;
+    ipin     = ipin % n_pin_;
     int ilat = 0;
     for (auto &lattice : lattices_) {
         if (ipin < lattice->n_pin()) {
@@ -178,12 +180,34 @@ bool Plane::geometrically_equivalent(const Plane &other) const
         return false;
     }
 
-    for (int ilat = 0; ilat < lattices_.size(); ilat++) {
+    for (unsigned ilat = 0; ilat < lattices_.size(); ilat++) {
         if (!lattices_[ilat]->geometrically_equivalent(
                 *(other.lattices_[ilat]))) {
             return false;
         }
     }
     return true;
+}
+
+std::ostream &operator<<(std::ostream &os, const MacroPlane &mp)
+{
+    std::vector<std::vector<int>> ids(mp.plane->ny_pin(),
+                                      std::vector<int>(mp.plane->nx_pin(), -1));
+    unsigned ipin = 0;
+    for( const auto &pin: mp) {
+        Position pos = mp.plane->pin_position(ipin);
+        ids[pos.y][pos.x] = pin->id();
+        ipin++;
+    }
+
+    std::reverse(ids.begin(), ids.end());
+
+    for(const auto &row: ids) {
+        for( const auto id: row) {
+            os << id << " ";
+        }
+        os << std::endl;
+    }
+    return os;
 }
 } // namespace mocc
