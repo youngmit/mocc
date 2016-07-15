@@ -73,7 +73,7 @@ public:
      */
     void set_fission_source(const ArrayB1 *fs)
     {
-        assert((int)fs->size() == sweeper()->n_reg());
+        assert((int)fs->size() == sweeper()->n_reg_fission());
         fs_ = fs;
     }
 
