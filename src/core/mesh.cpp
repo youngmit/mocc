@@ -34,7 +34,8 @@ Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
       dz_vec_(hz.size() - 1),
       coarse_vol_(nx_ * ny_ * nz_),
       bounding_box_(Point2(0.0, 0.0), Point2(hx.back(), hy.back())),
-      n_surf_plane_((nx_ + 1) * ny_ + (ny_ + 1) * nx_ + nx_ * ny_)
+      n_surf_plane_((nx_ + 1) * ny_ + (ny_ + 1) * nx_ + nx_ * ny_),
+      macroplane_index_(nz_, 0)
 {
     assert(std::is_sorted(x_vec_.begin(), x_vec_.end()));
     assert(std::is_sorted(y_vec_.begin(), y_vec_.end()));
@@ -73,6 +74,13 @@ Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
     assert(nx_ == (int)hx.size() - 1);
     assert(ny_ == (int)hy.size() - 1);
     assert(nz_ == (int)hz.size() - 1);
+
+    // Start with macroplane indices being the raw axial index. If this needs to
+    // be something else, it will get properly set elsewhere
+    for (int iz = 0; iz < nz_; iz++) {
+        macroplane_index_[iz] = iz;
+    }
+
     this->prepare_surfaces();
     return;
 }
@@ -646,8 +654,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
         } else {
             // Good to leave as-is
         }
-    }
-    else {
+    } else {
         assert(false);
     }
 
