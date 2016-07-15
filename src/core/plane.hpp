@@ -16,8 +16,8 @@
 
 #pragma once
 
+#include <iosfwd>
 #include <vector>
-
 #include "util/global_config.hpp"
 #include "geometry/direction.hpp"
 #include "geometry/geom.hpp"
@@ -78,11 +78,30 @@ public:
     const PinMesh *get_pinmesh(Position pos) const;
 
     /**
-     * Return the number of solution mesh regions in the \ref Plane
+     * \brief Return the number of solution mesh regions in the \ref Plane
      */
     size_t n_reg() const
     {
         return n_reg_;
+    }
+
+    unsigned nx_pin() const
+    {
+        return nx_pin_;
+    }
+
+    unsigned ny_pin() const
+    {
+        return ny_pin_;
+    }
+
+    /**
+     * \brief Return the total number of pins in all of the \ref Lattices of
+     * this \ref Plane
+     */
+    size_t n_pin() const
+    {
+        return n_pin_;
     }
 
     /**
@@ -140,6 +159,11 @@ public:
 
 private:
     /**
+     * Local list of \ref Lattice pointers
+     */
+    std::vector<const Lattice *> lattices_;
+
+    /**
      * Number of lattices in the x direction
      */
     unsigned nx_;
@@ -147,6 +171,9 @@ private:
      * Number of lattices in the y direction
      */
     unsigned ny_;
+
+    unsigned nx_pin_;
+    unsigned ny_pin_;
 
     size_t n_reg_;
     size_t n_xsreg_;
@@ -158,11 +185,6 @@ private:
     VecF hy_;
 
     /**
-     * Local list of \ref Lattice pointers
-     */
-    std::vector<const Lattice *> lattices_;
-
-    /**
      * List of the starting FSR index for each \ref Lattice in the plane
      */
     VecI first_reg_lattice_;
@@ -170,5 +192,57 @@ private:
     int n_fuel_;
 
     int n_pin_;
+};
+
+/**
+ * \brief Representation of a logical collection of Plane objects
+ *
+ * This struct contains useful data and references to data for the purpose of
+ * interacting with the core mesh at the macroplane level. A collection of these
+ * is intended to be very useful for the purpose of iterating over homogenized
+ * planes in the mesh, and their internal pins.
+ */
+struct MacroPlane {
+public:
+    typedef std::vector<const Pin *>::const_iterator PinIter_t;
+    MacroPlane(Plane const *plane, int iz_min, int iz_max, real_t height,
+               PinIter_t begin, PinIter_t end)
+        : plane(plane),
+          iz_min(iz_min),
+          iz_max(iz_max),
+          height(height),
+          begin_(begin),
+          end_(end)
+    {
+        return;
+    }
+
+    PinIter_t begin() const
+    {
+        return begin_;
+    }
+    PinIter_t end() const
+    {
+        return end_;
+    }
+    const Pin *back() const
+    {
+        return *(end_ - 1);
+    }
+    unsigned size() const
+    {
+        return end_ - begin_;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const MacroPlane &mp);
+
+    Plane const *plane;
+    int iz_min;
+    int iz_max;
+    real_t height;
+
+private:
+    const PinIter_t begin_;
+    const PinIter_t end_;
 };
 }
