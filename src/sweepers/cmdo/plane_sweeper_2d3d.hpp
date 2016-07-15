@@ -163,12 +163,17 @@ public:
      */
     void calc_fission_source(real_t k, ArrayB1 &fission_source) const
     {
-        if (expose_sn_) {
-            sn_sweeper_->calc_fission_source(k, fission_source);
-        }
-        else {
-            moc_sweeper_.calc_fission_source(k, fission_source);
-        }
+        assert((int)fission_source.size() ==
+               moc_sweeper_.n_reg() + sn_sweeper_->n_reg());
+
+        // Alias the appropriate regions of the passed fission source
+        ArrayB1 sn_fission_source(
+            fission_source(blitz::Range(0, sn_sweeper_->n_reg() - 1)));
+        ArrayB1 moc_fission_source(fission_source(
+            blitz::Range(sn_sweeper_->n_reg(), blitz::toEnd)));
+        sn_sweeper_->calc_fission_source(k, sn_fission_source);
+        moc_sweeper_.calc_fission_source(k, moc_fission_source);
+
         return;
     }
 
