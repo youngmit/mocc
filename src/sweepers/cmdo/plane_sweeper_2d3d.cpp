@@ -330,8 +330,8 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
         // Cheat and peek into the MoC tag
         int n_inner = input.child("moc_sweeper").attribute("n_inner").as_int(0);
         if (n_inner > 0) {
-            throw EXCEPT("Probably shouldn't expose the Sn sweeper while "
-                         "doing MoC sweeps");
+            Warn("Probably shouldn't expose the Sn sweeper while "
+                 "doing MoC sweeps");
         }
     }
 
