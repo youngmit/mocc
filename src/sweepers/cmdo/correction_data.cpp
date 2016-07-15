@@ -21,11 +21,6 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 
-using std::setfill;
-using std::setw;
-using std::cout;
-using std::endl;
-
 namespace mocc {
 void CorrectionData::from_data(const pugi::xml_node &input)
 {
@@ -98,8 +93,9 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                 // Gobble that data. Om nom nom!
                 {
                     std::stringstream path;
-                    path << "/alpha_x/" << setfill('0') << setw(3) << ig << "_"
-                         << setfill('0') << setw(3) << iang;
+                    path << "/alpha_x/" << std::setfill('0') << std::setw(3)
+                         << ig << "_" << std::setfill('0') << std::setw(3)
+                         << iang;
 
                     h5f.read_1d(path.str(), slice);
                     assert(slice.size() == mesh_->n_cell_plane());
@@ -113,8 +109,9 @@ void CorrectionData::from_data(const pugi::xml_node &input)
 
                 {
                     std::stringstream path;
-                    path << "/alpha_y/" << setfill('0') << setw(3) << ig << "_"
-                         << setfill('0') << setw(3) << iang;
+                    path << "/alpha_y/" << std::setfill('0') << std::setw(3)
+                         << ig << "_" << std::setfill('0') << std::setw(3)
+                         << iang;
                     h5f.read_1d(path.str(), slice);
                     for (int ip = bot_plane; ip <= top_plane; ip++) {
                         int stt = mesh_->plane_cell_begin(ip);
@@ -125,8 +122,8 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                 }
                 {
                     std::stringstream path;
-                    path << "/beta/" << setfill('0') << setw(3) << ig << "_"
-                         << setfill('0') << setw(3) << iang;
+                    path << "/beta/" << std::setfill('0') << std::setw(3) << ig
+                         << "_" << std::setfill('0') << std::setw(3) << iang;
                     h5f.read_1d(path.str(), slice);
                     for (int ip = bot_plane; ip <= top_plane; ip++) {
                         int stt = mesh_->plane_cell_begin(ip);
@@ -161,24 +158,24 @@ void CorrectionData::output(H5Node &file) const
             {
                 slice = beta_(g, a, blitz::Range::all());
                 std::stringstream setname;
-                setname << "/beta/" << setfill('0') << setw(3) << g << "_"
-                        << setfill('0') << setw(3) << a;
+                setname << "/beta/" << std::setfill('0') << std::setw(3) << g
+                        << "_" << std::setfill('0') << std::setw(3) << a;
                 file.write(setname.str(), slice, dims);
             }
 
             {
                 slice = alpha_(g, a, blitz::Range::all(), (int)Normal::X_NORM);
                 std::stringstream setname;
-                setname << "/alpha_x/" << setfill('0') << setw(3) << g << "_"
-                        << setfill('0') << setw(3) << a;
+                setname << "/alpha_x/" << std::setfill('0') << std::setw(3) << g
+                        << "_" << std::setfill('0') << std::setw(3) << a;
                 file.write(setname.str(), slice, dims);
             }
 
             {
                 slice = alpha_(g, a, blitz::Range::all(), (int)Normal::Y_NORM);
                 std::stringstream setname;
-                setname << "/alpha_y/" << setfill('0') << setw(3) << g << "_"
-                        << setfill('0') << setw(3) << a;
+                setname << "/alpha_y/" << std::setfill('0') << std::setw(3) << g
+                        << "_" << std::setfill('0') << std::setw(3) << a;
                 file.write(setname.str(), slice, dims);
             }
         }

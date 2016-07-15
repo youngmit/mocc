@@ -23,10 +23,6 @@
 #include "util/h5file.hpp"
 #include "transport_sweeper_factory.hpp"
 
-using std::cout;
-using std::endl;
-using std::cin;
-
 namespace mocc {
 FixedSourceSolver::FixedSourceSolver(const pugi::xml_node &input,
                                      const CoreMesh &mesh) try
@@ -38,8 +34,8 @@ FixedSourceSolver::FixedSourceSolver(const pugi::xml_node &input,
     LogFile << "Initializing Fixed-Source solver..." << std::endl;
 
     std::string type = input.attribute("type").value();
-    // See if we are creating a fully-specified FSS. If the passed-in input
-    // is type="fixed_source" do extra stuff.
+    // See if we are creating a fully-specified FSS. If the passed-in input is
+    // type="fixed_source" do extra stuff.
     if (type == "fixed_source") {
         fixed_source_ = true;
         LogFile << "Using an explicitly-defined fixed source solver"
@@ -75,8 +71,7 @@ FixedSourceSolver::FixedSourceSolver(const pugi::xml_node &input,
     LogFile << "Done initializing Fixed-Source solver." << std::endl;
 
     return;
-}
-catch (Exception e) {
+} catch (Exception e) {
     Fail(e);
 }
 
@@ -88,17 +83,18 @@ void FixedSourceSolver::solve()
         this->step();
 
         real_t resid = sweeper_->flux_residual();
-        LogScreen << iouter << " " << std::setprecision(15) << resid << endl;
+        LogScreen << iouter << " " << std::setprecision(15) << resid
+                  << std::endl;
 
         if (resid < flux_tol_) {
             LogFile << "Logging multi-group  scalar flux grouped by energy"
                        " group index from Group 1 to group G."
-                    << endl;
+                    << std::endl;
             for (int ig = 0; ig < sweeper_->n_group(); ig++) {
                 LogFile << "Scalar flux for energy group " << ig + 1 << " :"
-                        << endl;
+                        << std::endl;
                 LogFile << (sweeper_->flux())(blitz::Range::all(), ig);
-                LogFile << endl;
+                LogFile << std::endl;
             }
             /// return flux_( ireg, ig );
             break;

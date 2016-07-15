@@ -17,11 +17,11 @@
 #pragma once
 
 #include <iosfwd>
+#include "util/h5file.hpp"
+#include "util/pugifwd.hpp"
 #include "core/cmfd.hpp"
 #include "core/core_mesh.hpp"
 #include "core/eigen_interface.hpp"
-#include "util/h5file.hpp"
-#include "util/pugifwd.hpp"
 #include "core/transport_sweeper.hpp"
 #include "fixed_source_solver.hpp"
 #include "solver.hpp"
@@ -112,7 +112,5 @@ private:
      * \brief Perform a CMFD accelerator solve
      */
     void do_cmfd();
-
-   
 };
 }
