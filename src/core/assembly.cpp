@@ -111,7 +111,7 @@ Assembly::Assembly(const pugi::xml_node &input,
         }
     }
 
-    // Store the total numver of FSRs and XS regions in the assembly
+    // Store the total number of FSRs and XS regions in the assembly
     n_reg_   = 0;
     n_xsreg_ = 0;
     for (auto &l : lattices_) {
