@@ -102,23 +102,12 @@ Core::Core(const pugi::xml_node &input,
     }
 
     // Check to make sure that the assemblies all fit together
-    // Main things to check are that they all have the same number of planes
-    // and that the heights of each plane match
-    unsigned int nz = (*assemblies_.begin())->nz();
-    for (auto asy = assemblies_.begin(); asy != assemblies_.end(); ++asy) {
-        if ((*asy)->nz() != nz) {
-            throw EXCEPT("Assemblies in the core have incompatible numbers "
-                         "of planes.");
-        }
-    }
-
-    for (unsigned int i = 0; i < nz; i++) {
-        real_t dz = (*assemblies_.begin())->dz(i);
-        for (auto asy = assemblies_.begin(); asy != assemblies_.end(); ++asy) {
-            if ((*asy)->dz(i) != dz) {
-                throw EXCEPT("Assemblies have incompatible plane heights "
-                             "in core.");
-            }
+    // We will rely on the Assemblies compatible() method. Since Assembly
+    // compatibility is transitive, checking any one assembly against all others
+    // should be sufficient to determine compatibility between all assemblies.
+    for( const auto &asy: assemblies_) {
+        if(!assemblies_.front()->compatible(*asy)) {
+            throw EXCEPT("Assemblies in the core are not compatible.");
         }
     }
 

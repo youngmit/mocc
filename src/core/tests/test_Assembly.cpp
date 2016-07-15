@@ -20,6 +20,8 @@
 #include "core/assembly.hpp"
 #include "core/lattice.hpp"
 
+#include "inputs.hpp"
+
 using namespace mocc;
 
 TEST(assembly)
@@ -99,7 +101,7 @@ TEST(assembly)
     pugi::xml_document xml;
     auto result = xml.load_string(test_xml.c_str());
 
-    CHECK(result);
+    REQUIRE CHECK(result);
 
     auto meshes = ParsePinMeshes(xml);
     MaterialLib mat_lib(xml.child("material_lib"));
@@ -113,6 +115,26 @@ TEST(assembly)
     std::vector<int> ref_subplane = {1, 1, 1, 1, 1, 10, 5};
     CHECK_EQUAL(7, assemblies[4]->subplane().size());
     CHECK_ARRAY_EQUAL(ref_subplane, assemblies[4]->subplane(),7);
+}
+
+TEST(more) {
+    std::string xml =
+        pinmesh_xml + material_xml + pin_xml + lattice_xml + assembly_xml;
+
+    pugi::xml_document xml_doc;
+    pugi::xml_parse_result result = xml_doc.load_string(xml.c_str());
+
+    REQUIRE CHECK(result);
+
+    auto meshes = ParsePinMeshes(xml_doc);
+    MaterialLib mat_lib(xml_doc.child("material_lib"));
+    auto pins = ParsePins(xml_doc, meshes, mat_lib);
+    auto lattices = ParseLattices(xml_doc, pins);
+    auto assemblies = ParseAssemblies(xml_doc, lattices);
+
+    CHECK(assemblies[1]->compatible(*assemblies[2]));
+    CHECK(!assemblies[1]->compatible(*assemblies[100]));
+
 }
 
 int main(int, const char *[])
