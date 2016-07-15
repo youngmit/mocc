@@ -25,12 +25,6 @@
 
 using mocc::sn::SnSweeper;
 
-using std::cout;
-using std::endl;
-using std::cin;
-using std::setfill;
-using std::setw;
-
 namespace {
 const std::vector<std::string> recognized_attributes = {
     "type",
