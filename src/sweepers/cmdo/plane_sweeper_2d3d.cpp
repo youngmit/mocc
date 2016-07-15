@@ -122,12 +122,12 @@ void PlaneSweeper_2D3D::sweep(int group)
             }
         }
         if (n_negative > 0) {
-            cout << n_negative << " negative fluxes in group " << group << endl;
+            std::cout << n_negative << " negative fluxes in group " << group
+                      << std::endl;
         }
     }
 
     ArrayB1 prev_moc_flux = prev_moc_flux_(group, blitz::Range::all());
-    prev_moc_flux(0)      = 0.0;
     moc_sweeper_.get_pin_flux_1g(group, prev_moc_flux);
 
     if (do_mocproject_) {
@@ -153,11 +153,11 @@ void PlaneSweeper_2D3D::sweep(int group)
     }
     residual = sqrt(residual) / mesh_.n_pin();
 
-    cout << "MoC/Sn residual: " << residual;
+    LogScreen << "MoC/Sn residual: " << residual;
     if (sn_resid_norm_[group].size() > 0) {
-        cout << "   \t" << residual / sn_resid_norm_[group].back();
+        std::cout << "   \t" << residual / sn_resid_norm_[group].back();
     }
-    cout << endl;
+    LogScreen << std::endl;
     sn_resid_norm_[group].push_back(residual);
 }
 
@@ -236,7 +236,7 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
     file.create_group("/SnResid");
     for (int g = 0; g < n_group_; g++) {
         std::stringstream setname;
-        setname << "/SnResid/" << setfill('0') << setw(3) << g;
+        setname << "/SnResid/" << std::setfill('0') << std::setw(3) << g;
         VecI niter(1, sn_resid_norm_[g].size());
         file.write(setname.str(), sn_resid_norm_[g], niter);
     }
@@ -247,7 +247,7 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
         auto h5g = file.create_group("moc_flux");
         for (const auto &ig : groups_) {
             std::stringstream setname;
-            setname << setfill('0') << setw(3) << ig + 1;
+            setname << std::setfill('0') << std::setw(3) << ig + 1;
             h5g.write(setname.str(), flux(ig, blitz::Range::all()), dims);
         }
     }
@@ -257,7 +257,7 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
         auto group = file.create_group("/transverse_leakage");
         for (int g = 0; g < n_group_; g++) {
             std::stringstream setname;
-            setname << setfill('0') << setw(3) << g;
+            setname << std::setfill('0') << std::setw(3) << g;
 
             const auto tl_slice = tl_((int)g, blitz::Range::all());
 
