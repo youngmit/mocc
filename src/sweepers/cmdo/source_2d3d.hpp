@@ -78,35 +78,15 @@ public:
      */
     void fission(const ArrayB1 &fs, int ig)
     {
-        assert(((int)fs.size() == n_reg_) ||
-               ((int)fs.size() == sn_source_.n_reg()));
+        assert((int)fs.size() == (n_reg_ + sn_source_.n_reg()));
 
-        if ((int)fs.size() == n_reg_ && n_reg_ != sn_source_.n_reg()) {
-            // Set the MoC source if the mesh is contiguous.
-            Source::fission(fs, ig);
-            // We need to homogenize the fission source to the Sn mesh
-            ArrayB1 sn_fs(sn_source_.n_reg());
-            sn_fs        = 0.0;
-            int ireg_fsr = 0;
-            int ipin     = 0;
-            for (const auto &pin : mesh_) {
-                auto pos = mesh_.pin_position(ipin);
-                int ireg = mesh_.coarse_cell(pos);
-                for (const auto a : pin->areas()) {
-                    sn_fs(ireg) += a * fs(ireg_fsr);
-                    ireg_fsr++;
-                }
-                sn_fs(ireg) /= pin->area();
-                ipin++;
-            }
+        // Alias the appropriate regions of the passed fission source
+        ArrayB1 sn_fission_source(fs(blitz::Range(0, sn_source_.n_reg() - 1)));
+        ArrayB1 moc_fission_source(
+            fs(blitz::Range(sn_source_.n_reg(), blitz::toEnd)));
 
-            sn_source_.fission(sn_fs, ig);
-        }
-        else {
-            // Let's assume the fission source is defined on the Sn mesh, and
-            // set it directly
-            sn_source_.fission(fs, ig);
-        }
+        sn_source_.fission(sn_fission_source, ig);
+        Source::fission(moc_fission_source, ig);
     }
 
     void in_scatter(size_t ig)
