@@ -19,6 +19,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include "util/error.hpp"
 #include "util/range.hpp"
 #include "util/validate_input.hpp"
@@ -47,12 +48,15 @@ PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
                                      const CoreMesh &mesh)
     : TransportSweeper(input),
       mesh_(mesh),
+      n_pin_moc_(std::accumulate(
+          mesh_.macroplanes().begin(), mesh_.macroplanes().end(), 0,
+          [](int n, const MacroPlane p) { return n + p.plane->n_pin(); })),
       pair_(SnSweeperFactory_CDD(input.child("sn_sweeper"), mesh)),
       sn_sweeper_(std::move(pair_.first)),
       corrections_(pair_.second),
       moc_sweeper_(input.child("moc_sweeper"), mesh),
       ang_quad_(moc_sweeper_.get_ang_quad()),
-      tl_(sn_sweeper_->n_group(), mesh_.n_pin()),
+      tl_(sn_sweeper_->n_group(), n_pin_moc_),
       sn_resid_norm_(sn_sweeper_->n_group()),
       sn_resid_(sn_sweeper_->n_group(), mesh_.n_pin()),
       prev_moc_flux_(sn_sweeper_->n_group(), mesh_.n_pin()),
@@ -179,28 +183,37 @@ void PlaneSweeper_2D3D::add_tl(int group)
     assert(coarse_data_);
     ArrayB1 tl_fsr(n_reg_);
 
+    blitz::Array<real_t, 1> tl_g = tl_(group, blitz::Range::all());
+    tl_g = 0.0;
+
+    int iplane   = 0;
     int ireg_pin = 0;
     int ipin     = 0;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        real_t dz = mplane.height;
+        for (const auto &mpin : mplane) {
+            Position pos  = mesh_.pin_position(ipin);
+            pos.z         = mplane.iz_min;
+            size_t icell  = mesh_.coarse_cell(pos);
+            int surf_down = mesh_.coarse_surf(icell, Surface::BOTTOM);
+            pos.z         = mplane.iz_max;
+            icell         = mesh_.coarse_cell(pos);
+            int surf_up   = mesh_.coarse_surf(icell, Surface::TOP);
+            // Get index for storing in tl_ array
+            pos.z       = iplane;
+            int icoarse = mesh_.coarse_cell(pos);
 
-    blitz::Array<real_t, 1> tl_g = tl_(group, blitz::Range::all());
-
-    for (const auto &pin : mesh_) {
-        Position pos  = mesh_.pin_position(ipin);
-        size_t icell  = mesh_.coarse_cell(pos);
-        real_t dz     = mesh_.dz(pos.z);
-        int surf_up   = mesh_.coarse_surf(icell, Surface::TOP);
-        int surf_down = mesh_.coarse_surf(icell, Surface::BOTTOM);
-        real_t j_up   = coarse_data_->current(surf_up, group);
-        real_t j_down = coarse_data_->current(surf_down, group);
-        tl_g(ipin) =
-            tl_g(ipin) * (1.0 - relax_) + relax_ * (j_down - j_up) / dz;
-
-        for (int ir = 0; ir < pin->n_reg(); ir++) {
-            tl_fsr(ir + ireg_pin) = tl_g(ipin);
+            real_t j_up   = coarse_data_->current(surf_up, group);
+            real_t j_down = coarse_data_->current(surf_down, group);
+            tl_g(icoarse) =
+                tl_g(icoarse) * (1.0 - relax_) + relax_ * (j_down - j_up) / dz;
+            for (int ir = 0; ir < mpin->n_reg(); ir++) {
+                tl_fsr(ireg_pin) = tl_g(icoarse);
+                ireg_pin++;
+            }
+            ipin++;
         }
-
-        ipin++;
-        ireg_pin += pin->n_reg();
+        iplane++;
     }
 
     // Hand the transverse leakage to the MoC sweeper.
@@ -222,6 +235,10 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
         moc_sweeper_.output(g);
     }
 
+    VecI dims_moc;
+    dims_moc.push_back(mesh_.macroplanes().size());
+    dims_moc.push_back(mesh_.ny());
+    dims_moc.push_back(mesh_.nx());
     VecI dims;
     dims.push_back(mesh_.nz());
     dims.push_back(mesh_.ny());
@@ -256,7 +273,8 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
 
             const auto tl_slice = tl_((int)g, blitz::Range::all());
 
-            group.write(setname.str(), tl_slice.begin(), tl_slice.end(), dims);
+            group.write(setname.str(), tl_slice.begin(), tl_slice.end(),
+                        dims_moc);
         }
     }
 

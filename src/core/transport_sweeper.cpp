@@ -52,6 +52,19 @@ const pugi::xml_node find_angquad(const pugi::xml_node &input)
     }
     return input;
 }
+
+SP_XSMesh_t xs_mesh_factory(const CoreMesh &mesh, MeshTreatment treatment) {
+    switch(treatment) {
+    case MeshTreatment::TRUE:
+    case MeshTreatment::PLANE:
+        return std::make_shared<XSMesh>(mesh, treatment);
+        break;
+    case MeshTreatment::PIN:
+    default:
+        return std::make_shared<XSMeshHomogenized>(mesh);
+    }
+}
+
 }
 
 namespace mocc {
@@ -59,7 +72,7 @@ TransportSweeper::TransportSweeper(const pugi::xml_node &input,
                                    const CoreMesh &mesh,
                                    MeshTreatment treatment)
     : core_mesh_(&mesh),
-      xs_mesh_(new XSMesh(mesh, treatment)),
+      xs_mesh_(xs_mesh_factory(mesh, treatment)),
       n_reg_(mesh.n_reg(treatment)),
       n_group_(xs_mesh_->n_group()),
       groups_(Range(0, n_group_)),
@@ -105,7 +118,6 @@ real_t TransportSweeper::total_fission(bool old) const
 void TransportSweeper::calc_fission_source(real_t k,
                                            ArrayB1 &fission_source) const
 {
-
     real_t rkeff   = 1.0 / k;
     fission_source = 0.0;
     for (auto &xsr : *xs_mesh_) {

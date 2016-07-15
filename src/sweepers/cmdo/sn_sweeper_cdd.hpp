@@ -48,6 +48,12 @@ public:
         return;
     }
 
+    inline virtual void set_z(int iz) override final
+    {
+        CellWorker::set_z(iz);
+        correction_z_ = mesh_.macroplane_index()[iz];
+    }
+
     void set_group(int group) override final
     {
         group_ = group;
@@ -106,7 +112,8 @@ protected:
 
     std::shared_ptr<const CorrectionData> corrections_;
 
-    size_t iang_alpha_;
+    int iang_alpha_;
+    int correction_z_;
 
     int group_;
 };
@@ -129,11 +136,14 @@ public:
                                       int i) override final
     {
         int ix    = i % mesh_.nx();
+        int ia    = correction_z_ * plane_size_ + i % plane_size_;
         real_t tx = ox_ / mesh_.dx(ix);
 
-        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b  = corrections_->beta(i, iang_alpha_, group_);
+        real_t ax =
+            corrections_->alpha(ia, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, iang_alpha_, group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;
@@ -167,11 +177,14 @@ public:
                                       int i) override final
     {
         int ix    = i % mesh_.nx();
+        int ia    = correction_z_ * plane_size_ + i % plane_size_;
         real_t tx = ox_ / mesh_.dx(ix);
 
-        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b  = corrections_->beta(i, iang_alpha_, group_);
+        real_t ax =
+            corrections_->alpha(ia, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, iang_alpha_, group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;
@@ -205,11 +218,14 @@ public:
                                       int i) override final
     {
         int ix    = i % mesh_.nx();
+        int ia    = correction_z_ * plane_size_ + i % plane_size_;
         real_t tx = ox_ / mesh_.dx(ix);
 
-        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b  = corrections_->beta(i, iang_alpha_, group_);
+        real_t ax =
+            corrections_->alpha(ia, iang_alpha_, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, iang_alpha_, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, iang_alpha_, group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;

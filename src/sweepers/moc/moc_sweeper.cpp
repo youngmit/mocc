@@ -27,8 +27,6 @@
 #include "util/validate_input.hpp"
 #include "moc_current_worker.hpp"
 
-mocc::VecF temp;
-
 namespace {
 /**
  * \brief Return the appropriate sizing values for construcing a \ref
@@ -242,7 +240,8 @@ void MoCSweeper::initialize()
         coarse_data_->flux = val;
     }
     // There are better ways to do this, but for now, just start with 1.0
-    flux_ = val;
+    flux_     = val;
+    flux_old_ = val;
 
     // Walk through the boundary conditions and initialize them the 1/4pi
     real_t bound_val = val / FPI;
@@ -318,18 +317,27 @@ void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux) const
     flux = 0.0;
 
     int ireg = 0;
-    int ipin = 0;
-    for (auto &pin : mesh_) {
-        Position pos = mesh_.pin_position(ipin);
-        int i        = mesh_.coarse_cell(pos);
-        real_t v     = 0.0;
-        for (int ir = 0; ir < pin->n_reg(); ir++) {
-            v += vol_[ireg];
-            flux(i) += flux_(ireg, group) * vol_[ireg];
-            ireg++;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        int ipin = 0;
+        for (const auto mpin : mplane) {
+            real_t v        = 0.0;
+            real_t pin_flux = 0.0;
+            for (int ir = 0; ir < mpin->n_reg(); ir++) {
+                v += vol_[ireg];
+                pin_flux += flux_(ireg, group) * vol_[ireg];
+                ireg++;
+            }
+            pin_flux /= v;
+
+            Position pos = mesh_.pin_position(ipin);
+            for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
+                pos.z = iz;
+                int i = mesh_.coarse_cell(pos);
+                flux(i) += pin_flux;
+            }
+
+            ipin++;
         }
-        flux(i) /= v;
-        ipin++;
     }
 
     return;
@@ -337,7 +345,7 @@ void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux) const
 
 real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
 {
-    assert(pin_flux.size() == mesh_.n_pin());
+    assert((int)pin_flux.size() == mesh_.n_pin());
 
     // homogenize the passed-in pin flux to the coarser axial mesh.
     ArrayB1 plane_pin_flux(mesh_.nx() * mesh_.ny() * subplane_.size());
@@ -355,37 +363,32 @@ real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
 
     int iz       = 0;
     int ireg     = 0;
-    int ipin     = 0;
-    int ip       = 0;
     real_t resid = 0.0;
-    for (const auto np : subplane_) {
-        const auto &plane = mesh_.get_plane_by_axial_index(iz);
-        for (const auto &lattice : plane) {
-            for (const auto &pin : *lattice) {
-                Position pos   = plane.pin_position(ipin);
-                pos.z          = iz;
-                int i_coarse   = mesh_.coarse_cell(pos);
-                real_t fm_flux = 0.0;
-                for (const auto &area : pin->areas()) {
-                    fm_flux += flux_(ireg, group) * area;
-                    ireg++;
-                }
-                fm_flux /= pin->area();
-                real_t e = plane_pin_flux(i_coarse) - fm_flux;
-                real_t f = plane_pin_flux(i_coarse) / fm_flux;
-                ireg -= pin->n_reg();
-
-                for (int ir = 0; ir < pin->n_reg(); ir++) {
-                    flux_(ireg, group) *= f;
-                    ireg++;
-                }
-
-                resid += e * e;
-                ipin++;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        int ipin = 0;
+        for (const auto &pin : mplane) {
+            Position pos   = mesh_.pin_position(ipin);
+            pos.z          = iz;
+            int i_coarse   = mesh_.coarse_cell(pos);
+            real_t fm_flux = 0.0;
+            for (const auto area : pin->areas()) {
+                fm_flux += flux_(ireg, group) * area;
+                ireg++;
             }
+            fm_flux /= pin->area();
+            real_t e = plane_pin_flux(i_coarse) - fm_flux;
+            real_t f = plane_pin_flux(i_coarse) / fm_flux;
+            ireg -= pin->n_reg();
+
+            for (int ir = 0; ir < pin->n_reg(); ir++) {
+                flux_(ireg, group) *= f;
+                ireg++;
+            }
+
+            resid += e * e;
+            ipin++;
         }
-        ip++;
-        iz += np;
+        iz++;
     }
 
     return std::sqrt(resid) / plane_pin_flux.size();

@@ -20,7 +20,21 @@
 
 #include "xs_mesh_homogenized.hpp"
 
+#include "inputs.hpp"
+
 using namespace mocc;
+
+std::string core_xml = "<core nx=\"4\" ny=\"3\""
+                       "    north  = \"reflect\""
+                       "    south  = \"reflect\""
+                       "    east   = \"reflect\""
+                       "    west   = \"reflect\""
+                       "    top    = \"vacuum\""
+                       "    bottom = \"vacuum\" > "
+                       "    1 1 1 1"
+                       "    1 1 1 1"
+                       "    1 1 1 1"
+                       "</core>";
 
 TEST(xsmeshhom)
 {
@@ -60,6 +74,14 @@ TEST(fromdata_fail)
     if (!result) {
         std::cout << result.description() << std::endl;
     }
+    // the above xml file doesnt come with a core tag, so add one
+    // assembly 1 is a regular stack of lattices
+    result = geom_xml.append_buffer(core_xml.c_str(), core_xml.size());
+
+    if (!result) {
+        std::cout << "error parsing <core> addendum: " << std::endl;
+        std::cout << result.description() << std::endl;
+    }
 
     CoreMesh mesh(geom_xml);
 
@@ -92,6 +114,11 @@ TEST(fromdata)
     if (!result) {
         std::cout << result.description() << std::endl;
     }
+    result = geom_xml.append_buffer(core_xml.c_str(), core_xml.size());
+    if (!result) {
+        std::cout << "error parsing <core> addendum: " << std::endl;
+        std::cout << result.description() << std::endl;
+    }
 
     CoreMesh mesh(geom_xml);
 
@@ -106,17 +133,20 @@ TEST(fromdata)
 
     CHECK_EQUAL(7, xs_mesh.eubounds().size());
 
-    CHECK_EQUAL(72, xs_mesh.size());
+    CHECK_EQUAL(864, xs_mesh.size());
 
-    CHECK_CLOSE(2.005998E-02, xs_mesh[48].xsmacnf(0), 0.000001);
-    CHECK_CLOSE(2.005998E-02, xs_mesh[54].xsmacnf(0), 0.000001);
-    CHECK_CLOSE(2.005998E-02, xs_mesh[60].xsmacnf(0), 0.000001);
-    CHECK_CLOSE(2.005998E-02, xs_mesh[66].xsmacnf(0), 0.000001);
+    for(int i=576; i<864; i++) {
+        CHECK_CLOSE(2.005998E-02, xs_mesh[i].xsmacnf(0), 0.000001);
+    }
 
-    CHECK_CLOSE(0.0125521, xs_mesh[0].xsmacnf(0), 0.000001);
-    CHECK_CLOSE(0.0125521, xs_mesh[24].xsmacnf(0), 0.000001);
-    CHECK_CLOSE(0.0125521, xs_mesh[30].xsmacnf(0), 0.000001);
-    CHECK_CLOSE(0.0125521, xs_mesh[47].xsmacnf(0), 0.000001);
+    for(int ilat=0; ilat<96; ilat++) {
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+0].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+1].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+2].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+3].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+4].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+5].xsmacnf(0), 0.000001);
+    }
 
     // test this whole plane. It's got some asymmetry, so if everything is good
     // here, we can be pretty certain of the X- and Y-dimensions in the transfer
@@ -134,6 +164,84 @@ TEST(fromdata)
     XSMeshHomogenized xs_reference(mesh);
 
     CHECK(xs_mesh == xs_reference);
+}
+
+// Test creation of an XS mesh using the macroplane grouping. Use assembly 2 in
+// 2x3_stack.
+TEST(macroplanes)
+{
+    pugi::xml_document geom_xml;
+    pugi::xml_parse_result result = geom_xml.load_file("2x3_stack.xml");
+    REQUIRE CHECK(result);
+    if (!result) {
+        std::cout << result.description() << std::endl;
+    }
+    // the above xml file doesnt come with a core tag, so add one
+    // assembly 1 is a regular stack of lattices
+    std::string core_xml = "<core nx=\"4\" ny=\"3\""
+                           "    north  = \"reflect\""
+                           "    south  = \"reflect\""
+                           "    east   = \"reflect\""
+                           "    west   = \"reflect\""
+                           "    top    = \"vacuum\""
+                           "    bottom = \"vacuum\" > "
+                           "    2 2 2 2 "
+                           "    2 2 2 2 "
+                           "    2 2 2 2 "
+                           "</core>";
+    result = geom_xml.append_buffer(core_xml.c_str(), core_xml.size());
+    if (!result) {
+        std::cout << "error parsing <core> addendum: " << std::endl;
+        std::cout << result.description() << std::endl;
+    }
+
+    CoreMesh mesh(geom_xml);
+
+    XSMeshHomogenized xs_mesh(mesh);
+
+    CHECK_EQUAL(288, xs_mesh.size());
+
+    for(int i=216; i<288; i++) {
+        CHECK_CLOSE(2.005998E-02, xs_mesh[i].xsmacnf(0), 0.000001);
+    }
+    for(int ilat=0; ilat<36; ilat++) {
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+0].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+1].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+2].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+3].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+4].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+5].xsmacnf(0), 0.000001);
+    }
+}
+
+TEST(complicated) {
+    pugi::xml_document geom_xml;
+    pugi::xml_parse_result result = geom_xml.load_string(complex_xml.c_str());
+    REQUIRE CHECK(result);
+
+    CoreMesh mesh(geom_xml);
+    XSMeshHomogenized xs_mesh(mesh);
+
+    CHECK_EQUAL(960, xs_mesh.size());
+    
+    VecF xs(mesh.n_reg(MeshTreatment::PIN), 0.0);
+    int ixs = 0;
+    for(const auto &xsreg: xs_mesh) {
+        real_t xs_i = xsreg.xsmactr(0);
+        std::cout << ixs << " : ";
+        for(const int reg: xsreg.reg()){
+            std::cout << reg << " ";
+            xs[reg] = xs_i;
+        }
+        ixs++;
+        std::cout << std::endl;
+    }
+
+    int icell = mesh.coarse_cell(Position(1,6,19));
+    std::cout << icell << std::endl;
+    CHECK_CLOSE(1.40063733419359E-01, xs[icell], REAL_FUZZ);
+    icell = mesh.coarse_cell(Position(1,6,20));
+    CHECK_CLOSE(1.9242061690222E-01, xs[icell], REAL_FUZZ);
 }
 
 int main()

@@ -52,7 +52,7 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
 
         int iplane = 0;
         for (const auto plane_ray_id : macroplane_unique_ids_) {
-            int first_reg = first_reg_macroplane_[iplane];
+            int first_reg      = first_reg_macroplane_[iplane];
             auto &boundary_in  = boundary_[iplane];
             auto &boundary_out = boundary_out_[iplane];
             cw.set_plane(iplane);
@@ -63,9 +63,9 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                 // Get the source for this angle
                 auto &qbar = source_->get_transport(iang);
 
-                int iang1  = iang;
-                int iang2  = ang_quad_.reverse(iang);
-                Angle ang  = ang_quad_[iang];
+                int iang1 = iang;
+                int iang2 = ang_quad_.reverse(iang);
+                Angle ang = ang_quad_[iang];
 
                 // Get the boundary condition storage
                 const real_t *bc_in_1 =
@@ -80,7 +80,9 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
 
                 real_t stheta  = sin(ang.theta);
                 real_t rstheta = 1.0 / stheta;
-                real_t wt_v_st = ang.weight * rays_.spacing(iang) * stheta * PI;
+                real_t wt_v_st = ang.weight * rays_.spacing(iang) *
+                                 mesh_.macroplanes()[iplane].height * stheta *
+                                 PI;
 
 #pragma omp for schedule(static, 1)
                 for (int iray = 0; iray < (int)ang_rays.size(); iray++) {
