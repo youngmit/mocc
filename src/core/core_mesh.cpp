@@ -40,8 +40,8 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
     ny_           = core_.npin_y();
     nz_           = core_.nz();
     n_surf_plane_ = (nx_ + 1) * ny_ + (ny_ + 1) * nx_ + nx_ * ny_;
-    nasy_ = core_.nasy();
-    bc_                   = core_.boundary();
+    nasy_         = core_.nasy();
+    bc_           = core_.boundary();
 
     // Calculate the total core dimensions
     hx_ = 0.0;
@@ -58,7 +58,7 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
     std::vector<const Lattice *> plane_lattices;
     plane_lattices.reserve(core_.nx() * core_.ny());
     int plane_reg = 0;
-    n_fuel_2d_ = 0;
+    n_fuel_2d_    = 0;
     for (int iz = 0; iz < nz_; iz++) {
         first_reg_plane_.push_back(plane_reg);
         // Construct a temporary Plane object to test against the list of known
@@ -66,7 +66,7 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
         for (const auto &assembly : core_) {
             const Lattice &lattice = (*assembly)[iz];
             plane_lattices.push_back(&lattice);
-            plane_reg += assembly[iz].n_reg();
+            plane_reg += (*assembly)[iz].n_reg();
             // add the contained pins to the overall list of pins in the
             // CoreMesh
             for (const auto &pin : lattice) {
@@ -82,7 +82,7 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
                 return p.geometrically_equivalent(temp_plane);
             });
         int unique_id = std::distance(planes_.begin(), match_plane);
-        if( match_plane == planes_.end() ) {
+        if (match_plane == planes_.end()) {
             // This plane is thus far unique. Add it to planes_
             planes_.push_back(temp_plane);
             first_unique_.push_back(iz);
@@ -163,14 +163,38 @@ CoreMesh::CoreMesh(const pugi::xml_node &input)
 
     // Figure out the height of the macroplanes
     macroplane_heights_ = VecF(subplane_.size(), 0.0);
-    int iz = 0;
-    int isub = 0;
-    for (const auto &np: subplane_){
-        for(int i=0; i<np; i++) {
+    int iz              = 0;
+    int isub            = 0;
+    for (const auto &np : subplane_) {
+        for (int i = 0; i < np; i++) {
             macroplane_heights_[isub] += dz_vec_[iz];
             iz++;
         }
         isub++;
+    }
+
+    // Figure out the macroplanes in general
+    macroplanes_.reserve(subplane_.size());
+    iz         = 0;
+    int iplane = 0;
+    for (const auto np : subplane_) {
+        MacroPlane::PinIter_t stt = core_pins_.begin() + iz * nx_ * ny_;
+        MacroPlane::PinIter_t stp = stt + nx_ * ny_;
+        macroplanes_.emplace_back(&(planes_[unique_plane_ids_[iz]]), iz,
+                                  iz + np - 1, macroplane_heights_[iplane], stt,
+                                  stp);
+        iz += np;
+        iplane++;
+    }
+
+    // Set the macroplane indexes on the base Mesh type
+    macroplane_index_.resize(nz_);
+    iplane = 0;
+    for (const auto &mplane : macroplanes_) {
+        for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
+            macroplane_index_[iz] = iplane;
+        }
+        iplane++;
     }
 
     // calculate surface indices
