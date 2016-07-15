@@ -89,9 +89,13 @@ private:
     const ArrayB2 *flux_;
 
     /**
-    * \brief Return an XSMeshRegion containing homogenized cross sections
-    * from a pin cell. No flux wieghting is performed, only volume
-    * weighting.
+    * \brief Populate the passed XSMeshRegion with homogenized cross sections
+    * from a pin cell. No flux wieghting is performed, only volume weighting.
+    *
+    * \param i the index of the \ref XSMeshRegion in this \ref XSMeshHomogenized
+    * \param pin the \ref Pin to use for the homogenization
+    * \param xsr a reference to the \ref XSMeshRegion in which to store the resulting
+    * homogenized cross sections
     */
     void homogenize_region(int i, const Pin &pin, XSMeshRegion &xsr) const;
 
@@ -100,16 +104,13 @@ private:
     * from a pin cell. Use the passed scalar flux to perform flux-volume
     * weighting.
     *
-    * \param i the region in the Sn or coarse mesh that the region should
-    * belong to. Since it is assumed that there is a one-to-one mapping from
-    * the xs mesh to the Sn mesh, the vector of FSRs in the \ref
-    * XSMeshRegion will only contain one element, populated with the value
-    * of \c i.
+    * \param i the index of the xs mesh region in this xsmesh to compute cross
+    * sections for
     * \param first_reg the region offset into the \c flux array to be used
     * for this particular pin.
-    * \param pin the pin to homogenize cross sections for.
-    * \param xsr the \ref XSMeshRegion into which the cross sections should
-    * be homogenized.
+    * \param pin the \ref Pin to homogenize cross sections for.
+    * \param xsr A reference to the \ref XSMeshRegion into which the cross
+    * sections should be homogenized.
     *
     * This routine performs a flux-weighted homogenization of the cross
     * sections in the passed \ref Pin object and returns an \ref
