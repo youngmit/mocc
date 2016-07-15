@@ -68,12 +68,12 @@ public:
         return pin_mesh_->area();
     }
 
-     /**
-     * \brief Return a vector of the areas of each mesh region
-     *
-     * \note Pins possess no concept of axial height, so their "volume" is
-     * really surface area
-     */
+    /**
+    * \brief Return a vector of the areas of each mesh region
+    *
+    * \note Pins possess no concept of axial height, so their "volume" is
+    * really surface area
+    */
     const VecF &areas() const
     {
         return pin_mesh_->areas();
@@ -87,6 +87,19 @@ public:
     bool is_fuel() const
     {
         return is_fuel_;
+    }
+
+    /**
+     * \brief Return whether two pins are the same
+     *
+     * This is just checking the ids of the pins. At some point it may be useful
+     * to check other porperties of the Pin since it is possible to want to
+     * compare pins from different index universes, but for now this is
+     * sufficient
+     */
+    bool operator==(const Pin &other) const
+    {
+        return id_ == other.id_;
     }
 
 private:
