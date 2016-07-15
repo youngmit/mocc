@@ -146,6 +146,7 @@ public:
 
     const ScatteringRow &to(int ig) const
     {
+        assert((ig >= 0) && (ig < int(rows_.size())));
         return rows_[ig];
     }
 

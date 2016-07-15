@@ -65,7 +65,7 @@ Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
         dz_vec_[i - 1] = z_vec_[i] - z_vec_[i - 1];
     }
 
-    for (size_t i = 0; i < this->n_pin(); i++) {
+    for (int i = 0; i < this->n_pin(); i++) {
         auto pos       = this->coarse_position(i);
         coarse_vol_[i] = dx_vec_[pos.x] * dy_vec_[pos.y] * dz_vec_[pos.z];
     }
@@ -203,14 +203,12 @@ int Mesh::coarse_surf_point(Point2 p, int cell, std::array<int, 2> &s) const
 
         if (ix == cellpos.x) {
             corner_x = Surface::WEST;
-        }
-        else if (ix == cellpos.x + 1) {
+        } else if (ix == cellpos.x + 1) {
             corner_x = Surface::EAST;
         }
         if (iy == cellpos.y) {
             corner_y = Surface::SOUTH;
-        }
-        else if (iy == cellpos.y + 1) {
+        } else if (iy == cellpos.y + 1) {
             corner_y = Surface::NORTH;
         }
 
@@ -221,16 +219,13 @@ int Mesh::coarse_surf_point(Point2 p, int cell, std::array<int, 2> &s) const
         if (corner_x == Surface::WEST) {
             if (corner_y == Surface::NORTH) {
                 corner = Cardinal::NW;
-            }
-            else {
+            } else {
                 corner = Cardinal::SW;
             }
-        }
-        else {
+        } else {
             if (corner_y == Surface::NORTH) {
                 corner = Cardinal::NE;
-            }
-            else {
+            } else {
                 corner = Cardinal::SE;
             }
         }
@@ -454,8 +449,7 @@ size_t Mesh::coarse_norm_point(Point2 p, int octant, Surface (&s)[2]) const
             if ((octant == 2) || (octant == 3)) {
                 s[0] = Surface::WEST;
             }
-        }
-        else {
+        } else {
             if ((octant == 1) || (octant == 2)) {
                 s[0] = Surface::NORTH;
             }
@@ -611,42 +605,36 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
         assert((octant == 1) || (octant == 4));
         if (octant == 1) {
             // Good to leave as-is
-        }
-        else {
+        } else {
             if (on_y) {
                 // As per convention, bump down one in y
                 iy--;
             }
         }
-    }
-    else if (fp_equiv(p.x, hx_)) {
+    } else if (fp_equiv(p.x, hx_)) {
         // On the east side
         ix--;
         assert((octant == 2) || (octant == 3));
         if (octant == 2) {
             // Good to leave as-is
-        }
-        else {
+        } else {
             if (on_y) {
                 // As per convention, bump down one in y
                 iy--;
             }
         }
-    }
-    else if (fp_equiv_abs(p.y, 0.0)) {
+    } else if (fp_equiv_abs(p.y, 0.0)) {
         // On the south side
         assert((octant == 1) || (octant == 2));
         if (octant == 1) {
             // Good to leave as-is
-        }
-        else {
+        } else {
             if (on_x) {
                 // As per convention, bump down one in x
                 ix--;
             }
         }
-    }
-    else if (fp_equiv(p.y, hy_)) {
+    } else if (fp_equiv(p.y, hy_)) {
         // On the north side
         iy--;
         assert((octant == 3) || (octant == 4));
@@ -655,8 +643,7 @@ int Mesh::coarse_boundary_cell(Point2 p, int octant) const
                 // As per convention, bump down one in x
                 ix--;
             }
-        }
-        else {
+        } else {
             // Good to leave as-is
         }
     }
