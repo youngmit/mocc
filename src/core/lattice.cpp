@@ -221,7 +221,7 @@ bool Lattice::geometrically_equivalent(const Lattice &other) const
         return false;
     }
 
-    for(int ip=0; ip<pins_.size(); ip++) {
+    for(unsigned ip=0; ip<pins_.size(); ip++) {
         if(pins_[ip]->mesh().id() != other.pins_[ip]->mesh().id()) {
             return false;
         }
