@@ -223,6 +223,10 @@ private:
     void add_tl(int group);
 
     const CoreMesh &mesh_;
+
+    // The number of pins to consider in the MoC sweeper
+    int n_pin_moc_;
+
     CDDPair_t pair_;
     UP_SnSweeper_t sn_sweeper_;
     std::shared_ptr<CorrectionData> corrections_;

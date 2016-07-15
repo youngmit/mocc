@@ -6,7 +6,7 @@
 <pin id="1" mesh="2">
     1 1 1
     1 1 1
-    1 1 1 
+    1 1 1
 </pin>
 <lattice id="1" nx="2" ny="3">
     1 1
@@ -18,14 +18,16 @@
         1
     </lattices>
 </assembly>
-<core nx="1" ny="1" 
-    north  = "reflect" 
-    south  = "reflect" 
+<core nx="4" ny="3"
+    north  = "reflect"
+    south  = "reflect"
     east   = "reflect"
     west   = "reflect"
     top    = "vacuum"
     bottom = "vacuum" >
-    1 
+    1 1 1 1
+    1 1 1 1
+    1 1 1 1
 </core>
 
 <material_lib path="c5g7.xsl">

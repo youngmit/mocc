@@ -225,13 +225,18 @@ void CMFD::fission_source(real_t k)
 {
     int ng = xsmesh_->n_group();
 
-    real_t r_keff = 1.0 / k;
     fs_           = 0.0;
-    for (int i = 0; i < n_cell_; i++) {
-        for (int ig = 0; ig < ng; ig++) {
-            real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
-            fs_(i) += r_keff * xsnf * coarse_data_.flux(i, ig);
+    for (const auto &xsr : *xsmesh_) {
+        for (const int i : xsr.reg()) {
+            for (int ig = 0; ig < ng; ig++) {
+                fs_(i) += xsr.xsmacnf(ig) * coarse_data_.flux(i, ig);
+            }
         }
+    }
+
+    real_t r_keff = 1.0 / k;
+    for( auto &v: fs_){
+        v *= r_keff;
     }
     return;
 }
@@ -241,11 +246,11 @@ real_t CMFD::total_fission()
     int ng = xsmesh_->n_group();
 
     real_t f = 0.0;
-
-    for (int i = 0; i < n_cell_; i++) {
-        for (int ig = 0; ig < ng; ig++) {
-            real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
-            f += xsnf * coarse_data_.flux(i, ig);
+    for (const auto &xsr : *xsmesh_) {
+        for (const int i : xsr.reg()) {
+            for (int ig = 0; ig < ng; ig++) {
+                f += xsr.xsmacnf(ig) * coarse_data_.flux(i, ig);
+            }
         }
     }
 
@@ -263,8 +268,14 @@ void CMFD::setup_solve()
     for (auto &m : m_) {
         // Diffusion coefficients
         VecF d_coeff(n_cell_);
-        for (int i = 0; i < n_cell_; i++) {
-            d_coeff[i] = 1.0 / (3.0 * (*xsmesh_)[i].xsmactr()[group]);
+        VecF xsrm(n_cell_);
+        for(const auto &xsr: *xsmesh_) {
+            real_t d = 1.0 / (3.0 * xsr.xsmactr(group));
+            real_t rm = xsr.xsmacrm(group);
+            for( const int i: xsr.reg()) {
+                d_coeff[i] = d;
+                xsrm[i] = rm;
+            }
         }
 
         // Surface diffusivity (d_tilde) and non-linear correction
@@ -370,8 +381,7 @@ void CMFD::setup_solve()
                 auto j = it.col();
                 if (i == j) {
                     // Diagonal element
-                    real_t xsrm = (*xsmesh_)[i].xsmacrm()[group];
-                    real_t v    = mesh_->coarse_volume(i) * xsrm;
+                    real_t v    = mesh_->coarse_volume(i) * xsrm[i];
                     for (auto is : AllSurfaces) {
                         size_t surf = mesh_->coarse_surf(i, is);
                         real_t a    = mesh_->coarse_area(i, is);

@@ -166,26 +166,20 @@ void SnSweeper::update_incoming_flux()
     }
 }
 
-/**
- * Watch out, this is potentially brittle, since it assumes parity between
- * the mesh regions and XS Mesh regions.
- */
 ArrayB3 SnSweeper::pin_powers() const
 {
     ArrayB3 powers(mesh_.nz(), mesh_.ny(), mesh_.nx());
     powers = 0.0;
 
-    for (int ireg = 0; ireg < n_reg_; ireg++) {
-        auto pos                = mesh_.coarse_position(ireg);
-        const XSMeshRegion &xsr = (*xs_mesh_)[ireg];
-        assert(xsr.reg().size() == 1);
-        assert(xsr.reg()[0] == ireg);
-        for (int ig = 0; ig < n_group_; ig++) {
-            real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
-            powers(pos.z, pos.y, pos.x) += p;
+    for (const auto &xsr : *xs_mesh_) {
+        for (const auto ireg : xsr.reg()) {
+            Position pos = mesh_.coarse_position(ireg);
+            for( int ig=0; ig<n_group_; ig++) {
+                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
+                powers(pos.z, pos.y, pos.x) += p;
+            }
         }
     }
-
     Normalize(powers.begin(), powers.end());
 
     return powers;

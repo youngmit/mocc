@@ -22,7 +22,7 @@
 #include "util/global_config.hpp"
 #include "util/pugifwd.hpp"
 #include "core/constants.hpp"
-#include "core/mesh.hpp"
+#include "core/core_mesh.hpp"
 #include "core/output_interface.hpp"
 
 namespace mocc {
@@ -42,12 +42,12 @@ public:
         return;
     }
 
-    CorrectionData(const Mesh &mesh, size_t nang, size_t ngroup)
+    CorrectionData(const CoreMesh &mesh, size_t nang, size_t ngroup)
         : mesh_(&mesh),
-          nreg_(mesh.n_pin()),
           nx_(mesh.nx()),
           ny_(mesh.ny()),
-          nz_(mesh.nz()),
+          nz_(mesh.macroplanes().size()),
+          nreg_(nx_ * ny_ * nz_),
           nang_(nang),
           ngroup_(ngroup),
           alpha_(ngroup_, nang_, nreg_, 2),
@@ -103,11 +103,11 @@ public:
     void output(H5Node &file) const;
 
 private:
-    const Mesh *mesh_;
-    int nreg_;
+    const CoreMesh *mesh_;
     int nx_;
     int ny_;
     int nz_;
+    int nreg_;
     int nang_;
     int ngroup_;
 

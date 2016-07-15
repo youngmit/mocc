@@ -252,10 +252,45 @@ public:
         return;
     }
 
+    /**
+     * \brief Clean up anything that needs to be done after sweeping all angles
+     *
+     * In the context of the \ref CurrentWorker and most of its children, this
+     * only includes expanding the currents to the full PIN grid from the
+     * potentially smaller MoC axial grid.
+     */
     MOCC_FORCE_INLINE void post_sweep()
     {
 #pragma omp single
         {
+            // Check to see if we need to expand the currents across the mesh.
+            if ((int)mesh_->nz() - 1 != (mesh_->macroplane_index().back())) {
+                // In the presence of subplaning, the currents coming from the
+                // sweeper are stored by macroplane, packed towards the bottom
+                // of the mesh.  To safely perform an in-place expansion, we
+                // will expand the currents in reverse, filling from the top
+                // down. This prevents over-writing of the source currents from
+                // the MoC sweep before having a chance to expand them, as would
+                // happen if the expansion went from the bottom up.
+                int iz = mesh_->nz() - 1;
+                for (auto mplane_it = mesh_->macroplane_index().crbegin();
+                     mplane_it != mesh_->macroplane_index().crend();
+                     ++mplane_it) {
+                    int stt_out = mesh_->plane_surf_xy_begin(iz);
+                    int stp_out = mesh_->plane_surf_end(iz);
+                    int ip      = *mplane_it;
+                    int stt_in  = mesh_->plane_surf_xy_begin(ip);
+                    int stp_in  = mesh_->plane_surf_end(ip);
+
+                    coarse_data_->current(blitz::Range(stt_out, stp_out),
+                                          group_) =
+                        coarse_data_->current(blitz::Range(stt_in, stp_in),
+                                              group_);
+
+                    iz--;
+                }
+            }
+
             auto all          = blitz::Range::all();
             auto current      = coarse_data_->current(all, group_);
             auto surface_flux = coarse_data_->surface_flux(all, group_);

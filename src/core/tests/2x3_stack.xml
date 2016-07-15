@@ -41,15 +41,15 @@
     </lattices>
 </assembly>
 
-<core nx="1" ny="1" 
-    north  = "reflect" 
-    south  = "reflect" 
-    east   = "reflect"
-    west   = "reflect"
-    top    = "vacuum"
-    bottom = "vacuum" >
-    1 
-</core>
+<assembly id="2" np="12" hz="0.5">
+    <lattices>
+        {1 1 1 1}
+        {2 2}{2 2}
+        {2 2 2 2}
+    </lattices>
+</assembly>
+
+
 
 <material_lib path="c5g7.xsl">
     <material id="1" name="UO2-3.3" />

@@ -18,15 +18,12 @@
 
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <sstream>
 #include "pugixml.hpp"
 #include "util/files.hpp"
 #include "util/h5file.hpp"
 #include "util/string_utils.hpp"
-
-using std::cout;
-using std::cin;
-using std::endl;
 
 namespace mocc {
 XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
@@ -36,31 +33,47 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
     eubounds_ = mesh_.mat_lib().g_bounds();
     ng_       = eubounds_.size();
 
-    int n_xsreg = mesh.n_pin();
+    int n_xsreg = std::accumulate(
+        mesh_.macroplanes().begin(), mesh_.macroplanes().end(), 0,
+        [](int n, const MacroPlane p) { return n + p.plane->n_pin(); });
 
     // Allocate space to store the cross sections
     this->allocate_xs(n_xsreg, ng_);
 
     // Set up the regions
+    //
+    // It is assumed that this type of XS mesh will be used to provide
+    // cross sections to a MeshTreatment::PIN type sweeper, possibly using
+    // flux-weighted homogenization with flux from a MeshTreatment::PLANE-type
+    // sweeper. The mapping from XS mesh region to sweeper region will therefore
+    // be from a homogenized pin at the macroplane level to all of the regions
+    // in a MeshTreatment::PIN-type mesh within the corresponding macroplane.
     regions_.reserve(n_xsreg);
-    VecI fsrs(1);
-    for (int i = 0; i < n_xsreg; i++) {
-        fsrs[0] = i;
-        regions_.emplace_back(fsrs, &xstr_(i, 0), &xsnf_(i, 0), &xsch_(i, 0),
-                              &xsf_(i, 0), &xsrm_(i, 0), ScatteringMatrix());
+    int ixsreg = 0;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        VecI ireg;
+        ireg.reserve(mplane.iz_max - mplane.iz_min + 1);
+        for (unsigned ipin = 0; ipin < mplane.size(); ++ipin) {
+            Position pos = mesh_.pin_position(ipin);
+            for (int iz = mplane.iz_min; iz <= mplane.iz_max; ++iz) {
+                pos.z = iz;
+                ireg.push_back(mesh_.coarse_cell(pos));
+            }
+            regions_.emplace_back(ireg, &xstr_(ixsreg, 0), &xsnf_(ixsreg, 0),
+                                  &xsch_(ixsreg, 0), &xsf_(ixsreg, 0),
+                                  &xsrm_(ixsreg, 0), ScatteringMatrix());
+            ireg.clear();
+            ixsreg++;
+        }
     }
 
-    int ipin = 0;
-    for (const auto &pin : mesh_) {
-        // Use the naturally-ordered pin index as the xs mesh index.
-        // This is to put the indexing in a way that works best for the Sn
-        // sweeper as it is implemented now. This is really brittle, and
-        // should be replaced with some sort of Sn Mesh object, which both
-        // the XS Mesh and the Sn sweeper will use to handle indexing.
-        auto pos = mesh.pin_position(ipin);
-        int ireg = mesh.coarse_cell(pos);
-        this->homogenize_region(ireg, *pin, regions_[ireg]);
-        ipin++;
+    // Homogenize initial cross sections
+    ixsreg = 0;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        for (const auto &mpin : mplane) {
+            this->homogenize_region(ixsreg, *mpin, regions_[ixsreg]);
+            ixsreg++;
+        }
     }
 }
 
@@ -88,10 +101,11 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
 
     int nreg_plane = mesh.nx() * mesh.ny();
 
-    // First, validate the data tags. Make sure that they are the right
-    // size and cover valid planes in the mesh.
+    // First, validate the data tags. Make sure that they are the right size and
+    // cover valid planes in the mesh.
     {
-        std::vector<bool> plane_data(mesh_.nz(), false);
+        int np = mesh_.macroplanes().size();
+        std::vector<bool> plane_data(np, false);
         for (auto data = input.child("data"); data;
              data      = data.next_sibling("data")) {
             int top_plane = 0;
@@ -103,10 +117,10 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
                 bot_plane = data.attribute("bottom_plane").as_int();
             }
 
-            if ((bot_plane < 0) || (bot_plane >= (int)mesh_.nz())) {
+            if ((bot_plane < 0) || (bot_plane >= np)) {
                 throw EXCEPT("Invalid bottom_plane");
             }
-            if ((top_plane < 0) || (top_plane >= (int)mesh_.nz())) {
+            if ((top_plane < 0) || (top_plane >= np)) {
                 throw EXCEPT("Invalid top_plane");
             }
 
@@ -143,7 +157,7 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
             }
         }
 
-        LogFile << "Data is being specified for the following planes:"
+        LogFile << "Data is being specified for the following macroplanes:"
                 << std::endl;
         LogFile << print_range(plane_data) << std::endl;
     }
@@ -171,7 +185,7 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
         h5d.read("//xsmesh/eubounds", eubounds_);
 
         // Get all the group data out to memory first
-        for (unsigned ig = 0; ig < ng_; ig++) {
+        for (int ig = 0; ig < (int)ng_; ig++) {
             {
                 std::stringstream path;
                 path << "/xsmesh/xstr/" << ig;
@@ -193,15 +207,21 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
                 h5d.read(path.str(), kf_buf);
             }
 
-            // Apply the above to the appropriate planes of the actual xs
-            // mesh
+            // Apply the above to the appropriate planes of the actual xs mesh
+            // Since the data are output to the HDF 5 for plotting, they need to
+            // be rearranged to the pin order
             for (int ip = bot_plane; ip <= top_plane; ip++) {
-                int stt = ip * nreg_plane;
-                int stp = stt + nreg_plane - 1;
-                xstr_(blitz::Range(stt, stp), ig) = tr_buf;
-                xsnf_(blitz::Range(stt, stp), ig) = nf_buf;
-                xsch_(blitz::Range(stt, stp), ig) = ch_buf;
-                xsf_(blitz::Range(stt, stp), ig)  = kf_buf;
+                const MacroPlane &mplane = mesh_.macroplanes()[ip];
+                for (unsigned ipin = 0; ipin < mplane.size(); ipin++) {
+                    int ixsreg   = nreg_plane * ip + ipin;
+                    Position pos = mesh_.pin_position(ipin);
+                    pos.z        = 0;
+                    int icell    = mesh_.coarse_cell(pos);
+                    xstr_(ixsreg, ig) = tr_buf(icell);
+                    xsnf_(ixsreg, ig) = nf_buf(icell);
+                    xsch_(ixsreg, ig) = ch_buf(icell);
+                    xsf_(ixsreg, ig)  = kf_buf(icell);
+                }
             }
         }
 
@@ -210,19 +230,18 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
         ArrayB3 scat;
         h5d.read("/xsmesh/xssc", scat);
 
-        // Set up the regions for the appropriate planes
-        VecI fsrs(1);
-        for (int i = bot_plane * nreg_plane; i < (top_plane + 1) * nreg_plane;
-             i++) {
-            int reg_in_plane = i % nreg_plane;
-            ArrayB2 scat_reg =
-                scat(reg_in_plane, blitz::Range::all(), blitz::Range::all());
-            fsrs[0]     = i;
-            regions_[i] = XSMeshRegion(fsrs, &xstr_(i, 0), &xsnf_(i, 0),
-                                       &xsch_(i, 0), &xsf_(i, 0), &xsrm_(i, 0),
-                                       ScatteringMatrix(scat_reg));
+        // Storing the results of the read above into the appropriate arrays
+        // should be sufficient for all cross sections except the scattering
+        // matrices. Go through and store the scattering matrices on the xsmesh
+        // regions too
+        for (int ipin = 0; ipin < nreg_plane; ipin++) {
+            ScatteringMatrix xssc(
+                scat(ipin, blitz::Range::all(), blitz::Range::all()));
+            for (int ip = bot_plane; ip <= top_plane; ip++) {
+                int ixsreg                = ipin + nreg_plane * ip;
+                regions_[ixsreg].xsmacsc_ = xssc;
+            }
         }
-
     } // <data> tag loop
 
     return;
@@ -236,20 +255,19 @@ void XSMeshHomogenized::update()
     if (!flux_) {
         // no update needed if doing volume-weighted cross sections
         return;
-    }
-    else {
+    } else {
         // For now assume that the flux is coming from a PLANE-type sweeper
         assert(flux_->extent(0) == (int)mesh_.n_reg(MeshTreatment::PLANE));
     }
-    int ipin      = 0;
     int first_reg = 0;
-    for (const auto &pin : mesh_) {
-        int ireg   = mesh_.coarse_cell(mesh_.pin_position(ipin));
-        int ixsreg = ireg;
-        this->homogenize_region_flux(ireg, first_reg, *pin, regions_[ixsreg]);
-
-        ipin++;
-        first_reg += pin->n_reg();
+    int ixsreg    = 0;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        for (const auto &pin : mplane) {
+            this->homogenize_region_flux(ixsreg, first_reg, *pin,
+                                         regions_[ixsreg]);
+            first_reg += pin->n_reg();
+            ixsreg++;
+        }
     }
     return;
 }
@@ -267,11 +285,11 @@ void XSMeshHomogenized::homogenize_region(int i, const Pin &pin,
 
     auto mat_lib   = mesh_.mat_lib();
     auto &pin_mesh = pin.mesh();
-    auto areas      = pin_mesh.areas();
+    auto areas     = pin_mesh.areas();
 
     for (size_t ig = 0; ig < ng_; ig++) {
-        int ireg    = 0;
-        int ixsreg  = 0;
+        int ireg     = 0;
+        int ixsreg   = 0;
         real_t farea = 0.0;
         for (auto &mat_id : pin.mat_ids()) {
             auto mat                      = mat_lib.get_material_by_id(mat_id);
@@ -336,7 +354,7 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
 
     auto mat_lib   = mesh_.mat_lib();
     auto &pin_mesh = pin.mesh();
-    auto areas      = pin_mesh.areas();
+    auto areas     = pin_mesh.areas();
 
     // Precompute the fission source in each region, since it is the
     // wieghting factor for chi
@@ -431,6 +449,8 @@ void XSMeshHomogenized::output(H5Node &file) const
 
     auto d = mesh_.dimensions();
     std::reverse(d.begin(), d.end());
+    d.front()     = mesh_.macroplanes().size();
+    int per_plane = d[1] * d[2];
 
     for (size_t ig = 0; ig < ng_; ig++) {
         // Transport cross section
@@ -440,10 +460,13 @@ void XSMeshHomogenized::output(H5Node &file) const
         VecF xsch(this->size(), 0.0);
         int i = 0;
         for (auto xsr : regions_) {
-            xstr[i] = xsr.xsmactr(ig);
-            xsnf[i] = xsr.xsmacnf(ig);
-            xsf[i]  = xsr.xsmacf(ig);
-            xsch[i] = xsr.xsmacch(ig);
+            Position pos = mesh_.pin_position(i);
+            pos.z        = i / per_plane;
+            int icell    = mesh_.coarse_cell(pos);
+            xstr[icell]  = xsr.xsmactr(ig);
+            xsnf[icell]  = xsr.xsmacnf(ig);
+            xsf[icell]   = xsr.xsmacf(ig);
+            xsch[icell]  = xsr.xsmacch(ig);
             i++;
         }
         {
