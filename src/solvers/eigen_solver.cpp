@@ -22,7 +22,7 @@
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
 #include "util/validate_input.hpp"
-#include "globals.hpp"
+#include "core/globals.hpp"
 
 const static int out_w = 14;
 
@@ -34,8 +34,8 @@ const std::vector<std::string> recognized_attributes = {
 namespace mocc {
 EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
     : fss_(input, mesh),
-      fission_source_(fss_.n_reg()),
-      fission_source_prev_(fss_.n_reg()),
+      fission_source_(fss_.sweeper()->n_reg_fission()),
+      fission_source_prev_(fss_.sweeper()->n_reg_fission()),
       min_iterations_(0)
 {
     LogFile << "Initializing Eigenvalue solver..." << std::endl;
@@ -166,7 +166,7 @@ void EigenSolver::solve()
         // iteration anyways.
         const auto &vol = fss_.sweeper()->volumes();
         real_t efis     = 0.0;
-        for (int i = 0; i < (int)fission_source_.size(); i++) {
+        for (int i = 0; i < (int)fss_.sweeper()->n_reg(); i++) {
             real_t e = (fission_source_(i) - fission_source_prev_(i)) * vol[i];
             efis += e * e;
         }
