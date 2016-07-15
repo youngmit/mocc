@@ -24,10 +24,6 @@
 #include "util/files.hpp"
 #include "correction_worker.hpp"
 
-using std::cout;
-using std::cin;
-using std::endl;
-
 namespace mocc {
 namespace cmdo {
 MoCSweeper_2D3D::MoCSweeper_2D3D(const pugi::xml_node &input,
@@ -42,8 +38,7 @@ MoCSweeper_2D3D::MoCSweeper_2D3D(const pugi::xml_node &input,
     LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
     if (allow_splitting_) {
         xstr_true_.reference(xstr_);
-    }
-    else {
+    } else {
         xstr_true_.resize(n_reg_);
     }
 
@@ -63,8 +58,7 @@ void MoCSweeper_2D3D::expand_xstr(int group)
                 xstr_true_(ireg) = xstr;
             }
         }
-    }
-    else {
+    } else {
         for (auto &xsr : *xs_mesh_) {
             real_t xstr = xsr.xsmactr(group);
             for (auto &ireg : xsr.reg()) {
@@ -118,8 +112,7 @@ void MoCSweeper_2D3D::sweep(int group)
             this->sweep1g(group, ccw);
             coarse_data_->set_has_radial_data(true);
             correction_residuals_[group].push_back(ccw.residual());
-        }
-        else {
+        } else {
             this->sweep1g(group, ncw);
         }
     }
