@@ -166,6 +166,17 @@ public:
     }
 
     /**
+     * \brief Return the number of retions to use to represent the fission
+     * source
+     *
+     * Usually this will be identical to \ref n_reg(), though some more exotic
+     * sweepers may need to define the fission source in a different way.
+     */
+    virtual int n_reg_fission() const {
+        return n_reg_;
+    }
+
+    /**
      * \brief Return the number of energy groups
      */
     int n_group() const
