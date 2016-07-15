@@ -40,7 +40,7 @@ public:
 
     MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                                       real_t &flux_z, real_t q, real_t xstr,
-                                      size_t i)
+                                      int i) override final
     {
         size_t ix  = i % mesh_.nx();
         real_t tx  = ox_ / mesh_.dx(ix);
@@ -55,7 +55,8 @@ public:
     }
 
     MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
-                                         real_t q, real_t xstr, size_t i)
+                                         real_t q, real_t xstr,
+                                         int i) override final
     {
         size_t ix  = i % mesh_.nx();
         real_t tx  = ox_ / mesh_.dx(ix);
@@ -79,7 +80,7 @@ public:
 
     MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                                       real_t &flux_z, real_t q, real_t xstr,
-                                      size_t i)
+                                      int i) override final
     {
         size_t ix = i % mesh_.nx();
         real_t tx = ox_ / mesh_.dx(ix);

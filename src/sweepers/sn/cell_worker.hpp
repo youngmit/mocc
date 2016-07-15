@@ -43,7 +43,7 @@ public:
         return;
     }
 
-    inline void set_group(size_t group)
+    inline virtual void set_group(int group)
     {
         return;
     }
@@ -52,7 +52,7 @@ public:
      * \brief Configure the \ref CellWorker to sweep cells on the given z
      * position.
      */
-    inline void set_z(size_t iz)
+    inline virtual void set_z(int iz)
     {
         tz_ = oz_ / mesh_.dz(iz);
     }
@@ -61,7 +61,7 @@ public:
      * \brief Configure the \ref CellWorker to sweep cells on the given y
      * position.
      */
-    inline void set_y(size_t iy)
+    inline void set_y(int iy)
     {
         ty_ = oy_ / mesh_.dy(iy);
     }
@@ -69,7 +69,7 @@ public:
     /**
      * \brief Configure the \ref CellWorker to sweep the given angle.
      */
-    virtual inline void set_angle(size_t iang, Angle angle)
+    virtual inline void set_angle(int iang, Angle angle)
     {
         iang_  = iang;
         angle_ = angle;
@@ -93,7 +93,7 @@ public:
      * \param[in] i the index of the cell to treat.
      */
     virtual real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z,
-                            real_t q, real_t xstr, size_t i) = 0;
+                            real_t q, real_t xstr, int i) = 0;
 
     /**
      * \brief Propagate flux through a single mesh element in 2-D
@@ -107,15 +107,15 @@ public:
      * \param[in] i the index of the cell to treat.
      */
     virtual real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
-                               real_t xstr, size_t i) = 0;
+                               real_t xstr, int i) = 0;
 
 protected:
     const Mesh &mesh_;
-    size_t plane_size_;
+    int plane_size_;
 
     real_t ty_;
     real_t tz_;
-    size_t iang_;
+    int iang_;
     Angle angle_;
     real_t ox_;
     real_t oy_;

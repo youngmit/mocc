@@ -48,12 +48,12 @@ public:
         return;
     }
 
-    void set_group(size_t group)
+    void set_group(int group) override final
     {
         group_ = group;
     }
 
-    MOCC_FORCE_INLINE void set_angle(size_t iang, Angle angle)
+    MOCC_FORCE_INLINE void set_angle(int iang, Angle angle) override final
     {
         sn::CellWorker::set_angle(iang, angle);
         iang_alpha_ = iang % (ang_quad_.ndir() / 2);
@@ -80,9 +80,9 @@ public:
      * live here.
      */
     MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
-                                         real_t q, real_t xstr, size_t i)
+                                         real_t q, real_t xstr, int i) override
     {
-        size_t ix = i % mesh_.nx();
+        int ix    = i % mesh_.nx();
         real_t tx = ox_ / mesh_.dx(ix);
 
         real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
@@ -108,7 +108,7 @@ protected:
 
     size_t iang_alpha_;
 
-    size_t group_;
+    int group_;
 };
 
 /**
@@ -126,9 +126,9 @@ public:
 
     MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                                       real_t &flux_z, real_t q, real_t xstr,
-                                      size_t i)
+                                      int i) override final
     {
-        size_t ix = i % mesh_.nx();
+        int ix    = i % mesh_.nx();
         real_t tx = ox_ / mesh_.dx(ix);
 
         real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
@@ -164,9 +164,9 @@ public:
 
     MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                                       real_t &flux_z, real_t q, real_t xstr,
-                                      size_t i)
+                                      int i) override final
     {
-        size_t ix = i % mesh_.nx();
+        int ix    = i % mesh_.nx();
         real_t tx = ox_ / mesh_.dx(ix);
 
         real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
@@ -202,9 +202,9 @@ public:
 
     MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
                                       real_t &flux_z, real_t q, real_t xstr,
-                                      size_t i)
+                                      int i) override final
     {
-        size_t ix = i % mesh_.nx();
+        int ix    = i % mesh_.nx();
         real_t tx = ox_ / mesh_.dx(ix);
 
         real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
