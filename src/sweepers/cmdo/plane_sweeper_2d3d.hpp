@@ -144,6 +144,18 @@ public:
     }
 
     /**
+     * \brief \copybrief TransportSweeper::n_reg_fission()
+     *
+     * This returns the sum of the sizes of the Sn and MoC sweeper. Calls to
+     * \ref PlaneSweeper_2D3D::calc_fission_source() will store the respective
+     * fission sources for the two sweepers one after the other.
+     */
+    int n_reg_fission() const
+    {
+        return sn_sweeper_->n_reg() + moc_sweeper_.n_reg();
+    }
+
+    /**
      * \brief \copybrief TransportSweeper::calc_fission_source()
      *
      * Override the default \ref TransportSweeper implementation to call the
