@@ -27,10 +27,10 @@ namespace mocc {
 class FixedSourceSolver : public Solver {
 public:
     /**
-    * Initialize a FSS using an XML node and CoreMesh. This expects the
-    * passed XML node to be a valid \<solver\> tag containing a relevant
-    * \<sweeper\> tag, which is needed by the \ref TransportSweeperFactory()
-    * to generate a \ref TransportSweeper.
+    * Initialize a FSS using an XML node and CoreMesh. This expects the passed
+    * XML node to be a valid \<solver\> tag containing a relevant \<sweeper\>
+    * tag, which is needed by the \ref TransportSweeperFactory() to generate a
+    * \ref TransportSweeper.
     */
     FixedSourceSolver(const pugi::xml_node &input, const CoreMesh &mesh);
 
@@ -39,9 +39,9 @@ public:
     }
 
     /**
-    * For now, there is no actual implementation of this method, since there
-    * is no functionality for specifying a user-defined Source. In practice,
-    * the FSS is driven via the \ref step() routine by the \ref EigenSolver.
+    * For now, there is no actual implementation of this method, since there is
+    * no functionality for specifying a user-defined Source. In practice, the
+    * FSS is driven via the \ref step() routine by the \ref EigenSolver.
     *
     * Ideally, this would solve a fixed source problem subject to the
     * configuration in the XML input. This can either be to some sort of
@@ -50,16 +50,16 @@ public:
     void solve();
 
     /**
-    * Instructs the sweeper to store the old value of the flux, then
-    * performs a group sweep.
+    * Instructs the sweeper to store the old value of the flux, then performs a
+    * group sweep.
     */
     void step();
 
     /**
-    * Initialize the state of the FSS to start a new problem. For now this
-    * just calls the same routine on the \ref TransportSweeper, which in
-    * turn initializes the scalar flux, boundary conditions, etc. to some
-    * sort of halfway-reasonable starting values.
+    * Initialize the state of the FSS to start a new problem. For now this just
+    * calls the same routine on the \ref TransportSweeper, which in turn
+    * initializes the scalar flux, boundary conditions, etc. to some sort of
+    * halfway-reasonable starting values.
     */
     void initialize()
     {
@@ -68,8 +68,8 @@ public:
 
     /**
      * Set the group-independent fission source. The group-dependent fission
-     * source is calculated internally by the \ref Source object, typically
-     * at the behest of an \ref EigenSolver
+     * source is calculated internally by the \ref Source object, typically at
+     * the behest of an \ref EigenSolver
      */
     void set_fission_source(const ArrayB1 *fs)
     {
@@ -78,7 +78,7 @@ public:
     }
 
     /**
-     * Return the number of flat source regions.
+     * Return the number of mesh regions.
      */
     unsigned int n_reg()
     {
@@ -99,8 +99,7 @@ public:
     }
 
     /**
-     * Return a pointer to the the \ref TransportSweeper. Use with
-     * care.
+     * Return a pointer to the the \ref TransportSweeper. Use with care.
      */
     TransportSweeper *sweeper()
     {
@@ -112,8 +111,8 @@ public:
 private:
     UP_Sweeper_t sweeper_;
     UP_Source_t source_;
-    // Pointer to the group-independent fission source. Usually comes from
-    // an eigenvalue solver, if present
+    // Pointer to the group-independent fission source. Usually comes from an
+    // eigenvalue solver, if present
     const ArrayB1 *fs_;
     size_t ng_;
 
