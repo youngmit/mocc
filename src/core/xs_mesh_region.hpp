@@ -24,6 +24,7 @@
 namespace mocc {
 class XSMeshRegion {
     friend class XSMesh;
+    friend class XSMeshHomogenized;
 
 public:
     XSMeshRegion() : is_fissile_(false)
