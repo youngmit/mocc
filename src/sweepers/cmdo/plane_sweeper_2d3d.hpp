@@ -79,8 +79,7 @@ public:
             for (int i = 0; i < (int)moc_pin_flux.size(); i++) {
                 moc_pin_flux = pin_flux(i) - sn_resid_(group, i);
             }
-        }
-        else {
+        } else {
             diff = moc_sweeper_.set_pin_flux_1g(group, pin_flux);
         }
 
@@ -137,8 +136,7 @@ public:
     {
         if (expose_sn_) {
             return sn_sweeper_->n_reg();
-        }
-        else {
+        } else {
             return moc_sweeper_.n_reg();
         }
     }
@@ -188,8 +186,7 @@ public:
     {
         if (expose_sn_) {
             return sn_sweeper_->total_fission(old);
-        }
-        else {
+        } else {
             return moc_sweeper_.total_fission(old);
         }
     }
@@ -231,6 +228,9 @@ private:
     std::shared_ptr<CorrectionData> corrections_;
     MoCSweeper_2D3D moc_sweeper_;
     AngularQuadrature ang_quad_;
+    // Pin-level transverse leakage. This is in coarse mesh ordering (at the
+    // macroplane axial refinement) for easy output to HDF5, since it is
+    // interacted with from the MoC side in expanded FSR space anyways
     ArrayB2 tl_;
 
     // L-2 norm of the Sn-MoC residuals by group sweep
