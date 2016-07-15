@@ -65,10 +65,9 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
 
     // See the Surface Normalization page
     // Note that the sin and cos are flipped from what we have in \ref
-    // RayData::RayData(). This is because "x spacing" applies to the
-    // y-normal faces and vice versa.
-    // we are currently using a ray count-based normalization. so the
-    // above doesnt really apply
+    // RayData::RayData(). This is because "x spacing" applies to the y-normal
+    // faces and vice versa.  we are currently using a ray count-based
+    // normalization. so the above doesnt really apply
     real_t area[2] = {std::abs(rays_.spacing(ang) / cos(ang_quad_[ang].alpha)),
                       std::abs(rays_.spacing(ang) / sin(ang_quad_[ang].alpha))};
     for (size_t ic = 0; ic < mesh_->n_cell_plane(); ic++) {

@@ -34,8 +34,8 @@ FixedSourceSolver::FixedSourceSolver(const pugi::xml_node &input,
     LogFile << "Initializing Fixed-Source solver..." << std::endl;
 
     std::string type = input.attribute("type").value();
-    // See if we are creating a fully-specified FSS. If the passed-in input
-    // is type="fixed_source" do extra stuff.
+    // See if we are creating a fully-specified FSS. If the passed-in input is
+    // type="fixed_source" do extra stuff.
     if (type == "fixed_source") {
         fixed_source_ = true;
         LogFile << "Using an explicitly-defined fixed source solver"
@@ -71,8 +71,7 @@ FixedSourceSolver::FixedSourceSolver(const pugi::xml_node &input,
     LogFile << "Done initializing Fixed-Source solver." << std::endl;
 
     return;
-}
-catch (Exception e) {
+} catch (Exception e) {
     Fail(e);
 }
 
