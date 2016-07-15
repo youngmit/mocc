@@ -54,7 +54,6 @@ void Source::initialize_group(int ig)
 
 std::ostream &operator<<(std::ostream &os, const Source &src)
 {
-    std::cout << src.source_1g_ << std::endl;
     return os;
 }
 
@@ -75,7 +74,6 @@ void Source::fission(const ArrayB1 &fs, int ig)
     }
 
     state_.has_fission = true;
-
     return;
 }
 
