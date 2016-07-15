@@ -72,7 +72,7 @@ public:
 
     inline void post_ray(const FluxStore &psi1, const FluxStore &psi2,
                          const ArrayB1 &e_tau, const moc::Ray &ray,
-                         int first_reg)
+                         int first_reg) override
     {
 #pragma omp critical
         {
@@ -167,7 +167,7 @@ public:
         return;
     }
 
-    inline void set_angle(Angle ang, real_t spacing)
+    inline void set_angle(Angle ang, real_t spacing) override
     {
         moc::Current::set_angle(ang, spacing);
         ang_ = ang;
@@ -183,7 +183,7 @@ public:
         return;
     }
 
-    void post_angle(int iang)
+    void post_angle(int iang) override
     {
 #pragma omp single
         {
@@ -210,8 +210,11 @@ public:
 
 private:
     CorrectionData *corrections_;
+    // References to the source and cross sections as defined on the fine mesh.
+    // We need these to get actual angular flux for a ray segment
     const VectorX &qbar_;
     const ArrayB1 &xstr_;
+
     const AngularQuadrature &ang_quad_;
     const XSMeshHomogenized &sn_xs_mesh_;
 
