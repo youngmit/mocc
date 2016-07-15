@@ -838,6 +838,11 @@ public:
         return lines_;
     }
 
+    const VecI &macroplane_index() const
+    {
+        return macroplane_index_;
+    }
+
 protected:
     /**
      * This method pre-computes the surface indices for each coarse cell.
@@ -896,6 +901,10 @@ protected:
 
     /// Number of surfaces per plane (doesn't consider the top surface)
     size_t n_surf_plane_;
+
+    /// Vector of the macroplane indices corresponding to each axial height of
+    /// the mesh.
+    VecI macroplane_index_;
 
     /// Boundary condition for each side of the mesh
     std::array<Boundary, 6> bc_;
