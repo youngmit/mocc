@@ -24,7 +24,7 @@
 #include "util/global_config.hpp"
 
 namespace mocc {
-XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment)
+XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment): state_(0)
 {
 
     LogFile << "Initializing XS Mesh... ";

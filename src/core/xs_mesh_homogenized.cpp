@@ -272,6 +272,7 @@ void XSMeshHomogenized::update()
             ixsreg++;
         }
     }
+    state_++;
     return;
 }
 

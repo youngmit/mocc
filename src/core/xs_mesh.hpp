@@ -50,7 +50,7 @@ public:
 
     const XSMeshRegion &operator[](size_t i) const
     {
-        assert(i >= 0 );
+        assert(i >= 0);
         assert(i < regions_.size());
         return regions_[i];
     }
@@ -112,6 +112,14 @@ public:
         return n_reg_expanded_;
     }
 
+    /**
+     * \brief Return the encoded state
+     */
+    int state() const
+    {
+        return state_;
+    }
+
 protected:
     /**
      * \brief Allocate space to store the actual cross sections.
@@ -151,6 +159,11 @@ protected:
 
     // Number of regions in the associated computational mesh
     int n_reg_expanded_;
+
+    // This is used to somehow encode the state of the cross sections, any time
+    // the cross sections change, this shall assume a new value, unique to the
+    // history of the XSMesh object
+    int state_;
 };
 
 typedef std::shared_ptr<XSMesh> SP_XSMesh_t;
