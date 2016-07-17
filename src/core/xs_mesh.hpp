@@ -167,4 +167,71 @@ protected:
 };
 
 typedef std::shared_ptr<XSMesh> SP_XSMesh_t;
+
+/**
+ * \brief Storage class for cross sections mapped from the XS mesh regions to
+ * computational mesh
+ *
+ * This class maintains an array of one-group cross sections, sized to the
+ * number of regions in a mesh, along with the state necessary to determine
+ * whether cross sections need to be expanded under requested circumstances.
+ * This is useful in cases where it is convenient to share expanded cross
+ * sections bewteen different parts of the code without having to
+ *  - duplicate the data,
+ *  - redundantly expand the cross sections, or
+ *  - worry about the order of operations and whether following a certain code
+ *  path will find the appropriate cross sections in the array.
+ *
+ * A concrete example of when this is especially useful is in the CDD sweeper,
+ * where both the Sn sweeper and the correction worker on the MoC sweeper need
+ * cross sections expanded to the Sn mesh. Having both classes share a reference
+ * to and instance of this class allows for them to both have access to the
+ * cross sections without having to store them twice. They can both call
+ * expand() right before they need up-to-date cross sections, and the actual
+ * expansion will take place only if needed.
+ */
+class ExpandedXS {
+public:
+    ExpandedXS() : xs_mesh_(nullptr)
+    {
+        return;
+    }
+
+    ExpandedXS(const XSMesh *xs_mesh)
+        : xstr_(xs_mesh->n_reg_expanded(), 0.0),
+          xs_mesh_(xs_mesh),
+          group_(-1),
+          state_(-1)
+    {
+        return;
+    }
+
+    real_t operator[](int i) const
+    {
+        return xstr_[i];
+    }
+
+    void expand(int group)
+    {
+        // only update if the group has canged or the cross sections have been
+        // updated
+        if ((group != group_) || (xs_mesh_->state() != state_)) {
+            group_ = group;
+            state_ = xs_mesh_->state();
+            for (const auto &xsr : *xs_mesh_) {
+                real_t xs = xsr.xsmactr(group);
+                for (const int ireg : xsr.reg()) {
+                    xstr_[ireg] = xs;
+                }
+            }
+        }
+        return;
+    }
+
+private:
+    VecF xstr_;
+    const XSMesh *xs_mesh_;
+    int group_;
+    int state_;
+};
 }
