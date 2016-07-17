@@ -52,9 +52,8 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
 }
 
 const std::vector<std::string> recognized_attributes = {
-    "type",      "update_incoming", "n_inner",
-    "dump_rays", "boundary",        "tl_splitting",
-    "dump_fsr_flux"};
+    "type",     "update_incoming", "n_inner",      "dump_rays",
+    "boundary", "tl_splitting",    "dump_fsr_flux"};
 }
 
 namespace mocc {
@@ -99,7 +98,7 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
     n_inner_ = int_in;
 
     // Parse the output options
-    dump_rays_ = input.attribute("dump_rays").as_bool(false);
+    dump_rays_     = input.attribute("dump_rays").as_bool(false);
     dump_fsr_flux_ = input.attribute("dump_fsr_flux").as_bool(false);
 
     // Determine boundary update technique
@@ -458,7 +457,8 @@ void MoCSweeper::check_balance(int group) const
         int icell = mesh_.coarse_cell(mesh_.pin_position(ipin));
         real_t bi = 0.0;
 
-        for (int ireg_pin = 0; ireg_pin < pin->n_reg(); ireg_pin++) {
+        for (int ireg_pin = 0; ireg_pin < pin->n_reg();
+             ireg_pin++) {
             bi -= flux_(ireg, group) * vol_[ireg] * xsrm(ireg);
             bi += (*source_)[ireg] * vol_[ireg];
             ireg++;
@@ -504,14 +504,15 @@ void MoCSweeper::output(H5Node &node) const
 
     // Make a group in the file to store the fsr_flux if dump_fsr_flux is trur
     if (dump_fsr_flux_) {
-        VecI dims = {1,(int)(mesh_.n_reg())};
+        VecI dims = {1, (int)(mesh_.n_reg(MeshTreatment::PLANE))};
         std::reverse(dims.begin(), dims.end());
-        
+
         node.create_group("fsr_flux");
 
-        for (int ig=0; ig < n_group_; ig++) {
+        for (int ig = 0; ig < n_group_; ig++) {
             std::stringstream setname;
-            setname << "fsr_flux/" << std::setfill('0') <<std::setw(3) << ig + 1;
+            setname << "fsr_flux/" << std::setfill('0') << std::setw(3)
+                    << ig + 1;
 
             ArrayB1 flux_1g = flux_(blitz::Range::all(), ig);
 

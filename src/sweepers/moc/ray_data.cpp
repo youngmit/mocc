@@ -340,7 +340,7 @@ void RayData::correct_volume(const CoreMesh &mesh)
             int max_ireg = 0;
             int max_iang = 0;
             real_t flat_corr_rms = 0.0;
-            const VecF &true_vol = mesh.plane(iplane).vols();
+            const VecF &true_vol = mesh.unique_plane(iplane).areas();
             int iang = 0;
 
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
@@ -378,7 +378,7 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 iang++;
             } // angle loop
             flat_corr_rms = sqrt(flat_corr_rms /
-                (mesh.plane(iplane).n_reg() * (ang_quad_.ndir()/4)));
+                (mesh.unique_plane(iplane).n_reg() * (ang_quad_.ndir()/4)));
 
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
@@ -406,8 +406,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
             real_t flat_corr_rms = 0.0;
             int max_ireg = 0;
             
-            const VecF &true_vol = mesh.plane(iplane).vols();
-            VecF fsr_vol(mesh.plane(iplane).n_reg(), 0.0);
+            const VecF &true_vol = mesh.unique_plane(iplane).areas();
+            VecF fsr_vol(mesh.unique_plane(iplane).n_reg(), 0.0);
             int iang = 0;
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
                  ++ang) {
@@ -449,7 +449,7 @@ void RayData::correct_volume(const CoreMesh &mesh)
             } // angle loop
             
             flat_corr_rms = sqrt(flat_corr_rms / 
-                    (int)mesh.plane(iplane).n_reg());
+                    (int)mesh.unique_plane(iplane).n_reg());
 
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
