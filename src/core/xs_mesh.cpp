@@ -95,6 +95,7 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment)
     // material library. We want to cast this into a contiguous, zero-based
     // index space for internal storage and saner indexing, hence the imat
     // counter.
+    n_reg_expanded_ = 0;
     VecI mat_ids(n_xsreg);
     int imat = 0;
     for (const auto &mat_pair : fsr_map) {
@@ -104,6 +105,7 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment)
         xsnf_(imat, blitz::Range::all()) = mat.xsnf();
         xsch_(imat, blitz::Range::all()) = mat.xsch();
         xsf_(imat, blitz::Range::all())  = mat.xsf();
+        n_reg_expanded_ += mat_pair.second.size();
 
         imat++;
     }

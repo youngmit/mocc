@@ -223,18 +223,16 @@ TEST(complicated) {
     XSMeshHomogenized xs_mesh(mesh);
 
     CHECK_EQUAL(960, xs_mesh.size());
+    CHECK_EQUAL(2880, xs_mesh.n_reg_expanded());
     
     VecF xs(mesh.n_reg(MeshTreatment::PIN), 0.0);
     int ixs = 0;
     for(const auto &xsreg: xs_mesh) {
         real_t xs_i = xsreg.xsmactr(0);
-        std::cout << ixs << " : ";
         for(const int reg: xsreg.reg()){
-            std::cout << reg << " ";
             xs[reg] = xs_i;
         }
         ixs++;
-        std::cout << std::endl;
     }
 
     int icell = mesh.coarse_cell(Position(1,6,19));

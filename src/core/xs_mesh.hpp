@@ -107,6 +107,17 @@ public:
         return !(*this == other);
     }
 
+    /**
+     * \brief Return the number of regions that this XSMesh would expand into
+     *
+     * This is essentially the same as n_reg() for the sweeper with which the
+     * XSMesh is associated.
+     */
+    int n_reg_expanded() const
+    {
+        return n_reg_expanded_;
+    }
+
 protected:
     /**
      * \brief Allocate space to store the actual cross sections.
@@ -143,6 +154,9 @@ protected:
 
     // Energy group upper bounds
     VecF eubounds_;
+
+    // Number of regions in the associated computational mesh
+    int n_reg_expanded_;
 };
 
 typedef std::shared_ptr<XSMesh> SP_XSMesh_t;

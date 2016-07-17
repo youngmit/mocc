@@ -49,6 +49,7 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
     // be from a homogenized pin at the macroplane level to all of the regions
     // in a MeshTreatment::PIN-type mesh within the corresponding macroplane.
     regions_.reserve(n_xsreg);
+    n_reg_expanded_ = 0;
     int ixsreg = 0;
     for (const auto &mplane : mesh_.macroplanes()) {
         VecI ireg;
@@ -62,6 +63,8 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
             regions_.emplace_back(ireg, &xstr_(ixsreg, 0), &xsnf_(ixsreg, 0),
                                   &xsch_(ixsreg, 0), &xsf_(ixsreg, 0),
                                   &xsrm_(ixsreg, 0), ScatteringMatrix());
+
+            n_reg_expanded_ += ireg.size();
             ireg.clear();
             ixsreg++;
         }

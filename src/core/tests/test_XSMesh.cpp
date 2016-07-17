@@ -35,6 +35,8 @@ TEST(test)
 
     XSMesh xs_mesh(mesh, MeshTreatment::PLANE);
 
+    CHECK_EQUAL(648, xs_mesh.n_reg_expanded());
+
     cout << "Sig-t: " << xs_mesh[0].xsmactr(0) << endl;
 
     auto cdf = xs_mesh[0].reaction_cdf(0);
