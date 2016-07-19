@@ -63,6 +63,9 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
         surfs[BW][XR] = Surface::EAST;
     }
 
+    // Make sure we have the right cross sections
+    xstr_sn_.expand(group);
+
     // See the Surface Normalization page
     // Note that the sin and cos are flipped from what we have in \ref
     // RayData::RayData(). This is because "x spacing" applies to the y-normal
@@ -78,7 +81,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
         real_t area_x = area[0] / mesh_->pin_dx()[pos.x];
         real_t area_y = area[1] / mesh_->pin_dy()[pos.y];
 
-        real_t xstr = sn_xs_mesh_[icc].xsmactr()[group];
+        real_t xstr = xstr_sn_[icc];
 
         // FW direction
         {

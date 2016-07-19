@@ -46,14 +46,21 @@ namespace cmdo {
 ////////////////////////////////////////////////////////////////////////////////
 PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
                                      const CoreMesh &mesh)
+    : PlaneSweeper_2D3D(input, mesh,
+                        SnSweeperFactory_CDD(input.child("sn_sweeper"), mesh))
+{
+    return;
+}
+////////////////////////////////////////////////////////////////////////////////
+PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
+                                     const CoreMesh &mesh, CDDPair_t cdd_pair)
     : TransportSweeper(input),
       mesh_(mesh),
       n_pin_moc_(std::accumulate(
           mesh_.macroplanes().begin(), mesh_.macroplanes().end(), 0,
           [](int n, const MacroPlane p) { return n + p.plane->n_pin(); })),
-      pair_(SnSweeperFactory_CDD(input.child("sn_sweeper"), mesh)),
-      sn_sweeper_(std::move(pair_.first)),
-      corrections_(pair_.second),
+      sn_sweeper_(std::move(cdd_pair.first)),
+      corrections_(cdd_pair.second),
       moc_sweeper_(input.child("moc_sweeper"), mesh),
       ang_quad_(moc_sweeper_.get_ang_quad()),
       tl_(sn_sweeper_->n_group(), n_pin_moc_),
@@ -76,7 +83,8 @@ PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
 
     auto sn_xs_mesh = sn_sweeper_->get_homogenized_xsmesh();
     assert(corrections_);
-    moc_sweeper_.set_coupling(corrections_, sn_xs_mesh);
+    moc_sweeper_.set_coupling(corrections_, sn_xs_mesh,
+                              sn_sweeper_->expanded_xs());
 
     if (!keep_sn_quad_) {
         sn_sweeper_->set_ang_quad(ang_quad_);
@@ -120,7 +128,7 @@ void PlaneSweeper_2D3D::sweep(int group)
             }
         }
         if (n_negative > 0) {
-            std::cout << n_negative << " negative fluxes in group " << group
+            LogScreen << n_negative << " negative fluxes in group " << group
                       << std::endl;
         }
     }

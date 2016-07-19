@@ -36,15 +36,15 @@ class CurrentCorrections : public moc::Current {
 public:
     CurrentCorrections(CoarseData *coarse_data, const Mesh *mesh,
                        CorrectionData *corrections, const VectorX &qbar,
-                       const ArrayB1 &xstr, const AngularQuadrature &ang_quad,
-                       const XSMeshHomogenized &sn_xs_mesh,
+                       ExpandedXS &xstr_fm, ExpandedXS &xstr_sn,
+                       const AngularQuadrature &ang_quad,
                        const moc::RayData &rays)
         : moc::Current(coarse_data, mesh),
           corrections_(corrections),
           qbar_(qbar),
-          xstr_(xstr),
+          xstr_(xstr_fm),
+          xstr_sn_(xstr_sn),
           ang_quad_(ang_quad),
-          sn_xs_mesh_(sn_xs_mesh),
           surf_sum_(mesh_->n_surf_plane() * 2),
           vol_sum_(mesh_->n_cell_plane() * 2),
           vol_norm_(mesh_->n_cell_plane()),
@@ -52,6 +52,8 @@ public:
           surf_norm_(mesh_->n_surf_plane() * 2),
           rays_(rays)
     {
+        assert(xstr_fm.size() == mesh->n_reg(MeshTreatment::PLANE));
+        assert(xstr_sn.size() == mesh->n_reg(MeshTreatment::PIN));
         return;
     }
 
@@ -113,7 +115,7 @@ public:
                     // Store forward volumetric stuff
                     for (unsigned i = 0; i < crd->nseg_fw; i++) {
                         int ireg       = ray.seg_index(iseg_fw) + first_reg;
-                        real_t xstr    = xstr_(ireg);
+                        real_t xstr    = xstr_[ireg];
                         real_t t       = ang_.rsintheta * ray.seg_len(iseg_fw);
                         real_t fluxvol = t * qbar_(ireg) +
                                          e_tau(iseg_fw) *
@@ -140,7 +142,7 @@ public:
                     for (unsigned i = 0; i < crd->nseg_bw; i++) {
                         iseg_bw--;
                         int ireg       = ray.seg_index(iseg_bw) + first_reg;
-                        real_t xstr    = xstr_(ireg);
+                        real_t xstr    = xstr_[ireg];
                         real_t t       = ang_.rsintheta * ray.seg_len(iseg_bw);
                         real_t fluxvol = t * qbar_(ireg) +
                                          e_tau(iseg_bw) *
@@ -213,10 +215,10 @@ private:
     // References to the source and cross sections as defined on the fine mesh.
     // We need these to get actual angular flux for a ray segment
     const VectorX &qbar_;
-    const ArrayB1 &xstr_;
+    ExpandedXS xstr_;
+    ExpandedXS xstr_sn_;
 
     const AngularQuadrature &ang_quad_;
-    const XSMeshHomogenized &sn_xs_mesh_;
 
     ArrayB1 surf_sum_;
     ArrayB1 vol_sum_;

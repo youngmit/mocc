@@ -45,7 +45,6 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
       mesh_(mesh),
       bc_type_(mesh.boundary()),
       flux_1g_(),
-      xstr_(mesh.n_pin()),
       bc_in_(mesh.mat_lib().n_group(), ang_quad_, bc_type_,
              boundary_helper(mesh)),
       bc_out_(1, ang_quad_, bc_type_, boundary_helper(mesh)),
@@ -79,6 +78,7 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
             throw EXCEPT("Failed to create XSMesh for Sn Sweeper.");
         }
     }
+    xstr_ = ExpandedXS(xs_mesh_.get());
 
     // Parse the number of inner iterations
     int int_in = input.attribute("n_inner").as_int(-1);

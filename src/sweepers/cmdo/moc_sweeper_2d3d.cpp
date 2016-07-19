@@ -35,42 +35,15 @@ MoCSweeper_2D3D::MoCSweeper_2D3D(const pugi::xml_node &input,
       internal_coupling_(false),
       correction_residuals_(n_group_)
 {
-    LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
     if (allow_splitting_) {
-        xstr_true_.reference(xstr_);
+        xstr_true_ = ExpandedXS(xs_mesh_.get());
     } else {
-        xstr_true_.resize(n_reg_);
+        xstr_true_ = ExpandedXS(xstr_);
     }
+    LogFile << "Constructing a 2D3D MoC sweeper" << std::endl;
 
     return;
 };
-
-// It'd be nice to just call this method on the base type to handle the
-// split xstr_, then do the xstr_true_ after, but if i need to do the loop
-// anyways...
-void MoCSweeper_2D3D::expand_xstr(int group)
-{
-    if (allow_splitting_) {
-        for (auto &xsr : *xs_mesh_) {
-            real_t xstr = xsr.xsmactr(group);
-            for (auto &ireg : xsr.reg()) {
-                xstr_(ireg)      = xstr + split_(ireg);
-                xstr_true_(ireg) = xstr;
-            }
-        }
-    } else {
-        for (auto &xsr : *xs_mesh_) {
-            real_t xstr = xsr.xsmactr(group);
-            for (auto &ireg : xsr.reg()) {
-                // only set xstr_. xstr_true_ should be referencing xstr_
-                // anyways.
-                xstr_(ireg) = xstr;
-            }
-        }
-    }
-
-    return;
-}
 
 void MoCSweeper_2D3D::sweep(int group)
 {
@@ -86,12 +59,15 @@ void MoCSweeper_2D3D::sweep(int group)
 
     n_sweep_++;
 
-    this->expand_xstr(group);
+    xstr_.expand(group, split_);
+    if (allow_splitting_) {
+        xstr_true_.expand(group);
+    }
 
     // Instantiate the workers for current/no current
     CurrentCorrections ccw(coarse_data_, &mesh_, corrections_.get(),
-                           source_->get_transport(0), xstr_, ang_quad_,
-                           *sn_xs_mesh_, rays_);
+                           source_->get_transport(0), xstr_true_, xstr_sn_,
+                           ang_quad_, rays_);
     moc::NoCurrent ncw(coarse_data_, &mesh_);
 
     auto all = blitz::Range::all();
@@ -102,7 +78,7 @@ void MoCSweeper_2D3D::sweep(int group)
     for (unsigned int inner = 0; inner < n_inner_; inner++) {
         n_sweep_inner_++;
         // update the self-scattering source
-        source_->self_scatter(group, xstr_);
+        source_->self_scatter(group, xstr_.xs());
 
         // Perform the stock sweep unless we are on the last outer and have
         // a CoarseData object.

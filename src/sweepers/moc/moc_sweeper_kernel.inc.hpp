@@ -97,7 +97,7 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                     for (int iseg = 0; iseg < ray.nseg(); iseg++) {
                         int ireg    = ray.seg_index(iseg) + first_reg;
                         e_tau(iseg) = 1.0 -
-                                      exp_.exp(-xstr_(ireg) *
+                                      exp_.exp(-xstr_[ireg] *
                                                ray.seg_len(iseg) * rstheta);
                     }
 
@@ -171,7 +171,7 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
             auto &qbar = source_->get_transport(0);
             for (int i = 0; i < (int)n_reg_; i++) {
                 flux_1g_(i) =
-                    flux_1g_(i) / (xstr_(i) * vol_[i]) + qbar[i] * FPI;
+                    flux_1g_(i) / (xstr_[i] * vol_[i]) + qbar[i] * FPI;
             }
         } // OMP single
 

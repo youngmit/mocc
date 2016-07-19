@@ -71,12 +71,7 @@ public:
         /// it's ready before continuing.
 
         // Store the transport cross section somewhere useful
-        for (auto &xsr : *xs_mesh_) {
-            real_t xstr = xsr.xsmactr()[group];
-            for (auto &ireg : xsr.reg()) {
-                xstr_[ireg] = xstr;
-            }
-        }
+        xstr_.expand(group);
 
         flux_1g_.reference(flux_(blitz::Range::all(), group));
 

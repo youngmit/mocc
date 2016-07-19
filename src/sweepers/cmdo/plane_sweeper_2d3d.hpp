@@ -50,10 +50,10 @@ public:
      */
     void update_incoming_flux()
     {
-        Warn("Incoming flux updates are not supported yet for 2D3D");
+        Warn("Incoming flux updates are not properly supported yet for 2D3D");
 
-        // moc_sweeper_.update_incoming_flux();
-        // sn_sweeper_->update_incoming_flux();
+        moc_sweeper_.update_incoming_flux();
+        sn_sweeper_->update_incoming_flux();
 
         return;
     }
@@ -167,8 +167,8 @@ public:
         // Alias the appropriate regions of the passed fission source
         ArrayB1 sn_fission_source(
             fission_source(blitz::Range(0, sn_sweeper_->n_reg() - 1)));
-        ArrayB1 moc_fission_source(fission_source(
-            blitz::Range(sn_sweeper_->n_reg(), blitz::toEnd)));
+        ArrayB1 moc_fission_source(
+            fission_source(blitz::Range(sn_sweeper_->n_reg(), blitz::toEnd)));
         sn_sweeper_->calc_fission_source(k, sn_fission_source);
         moc_sweeper_.calc_fission_source(k, moc_fission_source);
 
@@ -216,6 +216,11 @@ public:
     }
 
 private:
+    // Secret constructor, delegated to by the public constructor. This only
+    // exists so that the public ctor can store the result of the CDD factory in
+    // a temporary to be used in this ctor's initializer list.
+    PlaneSweeper_2D3D(const pugi::xml_node &input, const CoreMesh &mesh,
+                      CDDPair_t cdd_pair);
     // Parse the various options from the XML
     void parse_options(const pugi::xml_node &input);
     // Calculate transverse leakage based on the state of the coarse_data_
@@ -227,7 +232,6 @@ private:
     // The number of pins to consider in the MoC sweeper
     int n_pin_moc_;
 
-    CDDPair_t pair_;
     UP_SnSweeper_t sn_sweeper_;
     std::shared_ptr<CorrectionData> corrections_;
     MoCSweeper_2D3D moc_sweeper_;

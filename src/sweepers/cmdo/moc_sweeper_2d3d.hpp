@@ -30,15 +30,21 @@ public:
 
     /**
      * \brief Assign correction and cross-section coupling.
+     *
+     * \param data a shared pointer to the \ref CorrectionData
+     * \param xsmesh a shared pointer to the \ref XSMeshHomogenized to use
+     * \param ExpandedXS a reference the the \ref ExpandedXS instance to share
+     * with the Sn sweeper
      */
     void set_coupling(std::shared_ptr<CorrectionData> data,
-                      SP_XSMeshHomogenized_t xsmesh)
+                      SP_XSMeshHomogenized_t xsmesh, ExpandedXS &xstr)
     {
         if (corrections_ || sn_xs_mesh_) {
             throw EXCEPT("Correction data already assigned.");
         }
         corrections_ = data;
         sn_xs_mesh_  = xsmesh;
+        xstr_sn_     = xstr;
     }
 
     /**
@@ -52,20 +58,8 @@ public:
             mesh_, ang_quad_.ndir() / 2, xs_mesh_->n_group()));
         sn_xs_mesh_ = this->get_homogenized_xsmesh();
         sn_xs_mesh_->set_flux(flux_);
+        xstr_sn_ = ExpandedXS(sn_xs_mesh_.get());
     }
-
-    /**
-     * \brief \copybrief moc::MoCSweeper::expand_xstr()
-     *
-     * \copydetails moc::MoCSweeper::expand_xstr()
-     *
-     * In addition to what is performed by the \ref
-     * moc::MoCSweeper::expand_xstr() method, this also expands the
-     * unaltered transport cross sections to a separate array for the \ref
-     * CurrentCorrections. We do not want to use altered cross section for
-     * the Sn sweeper, which treats the axial dimension explicitly.
-     */
-    void expand_xstr(int group);
 
     /**
      * \brief Extend output() to export correction factors and homogenized
@@ -90,9 +84,10 @@ private:
      * The transport cross sections for the current group, unaltered due to
      * source splitting.
      */
-    ArrayB1 xstr_true_;
+    ExpandedXS xstr_true_;
 
     std::shared_ptr<XSMeshHomogenized> sn_xs_mesh_;
+    ExpandedXS xstr_sn_;
 
     bool internal_coupling_;
 

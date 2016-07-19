@@ -86,6 +86,10 @@ public:
         return std::static_pointer_cast<XSMeshHomogenized>(xs_mesh_);
     }
 
+    ExpandedXS &expanded_xs() {
+        return xstr_;
+    }
+
     virtual void output(H5Node &node) const;
 
 protected:
@@ -105,7 +109,7 @@ protected:
     ArrayB1 flux_1g_;
 
     // Temporary storage of the current-group transport cross section
-    ArrayF xstr_;
+    ExpandedXS xstr_;
 
     // Incomming boundary condition
     BoundaryCondition bc_in_;

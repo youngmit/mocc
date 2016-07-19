@@ -117,7 +117,7 @@ protected:
 
     // Array of one group transport cross sections, including transverse
     // leakage splitting, if necessary
-    ArrayB1 xstr_;
+    ExpandedXS xstr_;
 
     // Reference to a one-group slice of flux_. This should be
     // default-constructed, so that it only references data in flux_
@@ -162,16 +162,6 @@ protected:
     bool allow_splitting_;
 
     // Methods
-    /**
-     * \brief Expand the transport cross sections from the XS mesh to the
-     * FSR basis.
-     *
-     * This provides more efficient access to the transport cross sections
-     * throughout the sweep, without having to store an enormous nreg-by-ng
-     * array of transport cross sections.
-     */
-    virtual void expand_xstr(int group);
-
     /**
      * \brief Return the MoC plane corresponding to the passed axial index
      */

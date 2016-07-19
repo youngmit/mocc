@@ -70,7 +70,7 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
                                   bc_size_helper(rays_))),
       boundary_out_(mesh.nz(), BoundaryCondition(1, ang_quad_, mesh_.boundary(),
                                                  bc_size_helper(rays_))),
-      xstr_(n_reg_),
+      xstr_(xs_mesh_.get()),
       flux_1g_(),
       subplane_(mesh.subplane()),
       subplane_bounds_(),
@@ -192,15 +192,15 @@ void MoCSweeper::sweep(int group)
     timer_.tic();
     timer_sweep_.tic();
 
-    // set up the xstr_ array
-    this->expand_xstr(group);
+    // Expand the cross sections, and perform splitting if necessary
+    xstr_.expand(group, split_);
 
     flux_1g_.reference(flux_(blitz::Range::all(), group));
 
     // Perform inner iterations
     for (unsigned int inner = 0; inner < n_inner_; inner++) {
         // update the self-scattering source
-        source_->self_scatter(group, xstr_);
+        source_->self_scatter(group, xstr_.xs());
 
         // Perform the stock sweep unless we are on the last outer and have
         // a CoarseData object.
@@ -288,25 +288,6 @@ void MoCSweeper::update_incoming_flux()
 
     return;
 }
-
-void MoCSweeper::expand_xstr(int group)
-{
-    if (allow_splitting_) {
-        for (auto &xsr : *xs_mesh_) {
-            real_t xstr = xsr.xsmactr(group);
-            for (auto &ireg : xsr.reg()) {
-                xstr_(ireg) = xstr + split_(ireg);
-            }
-        }
-    } else {
-        for (auto &xsr : *xs_mesh_) {
-            real_t xstr = xsr.xsmactr(group);
-            for (auto &ireg : xsr.reg()) {
-                xstr_(ireg) = xstr;
-            }
-        }
-    }
-} // expand_xstr( group )
 
 void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux) const
 {
