@@ -189,49 +189,109 @@ typedef std::shared_ptr<XSMesh> SP_XSMesh_t;
  * cross sections without having to store them twice. They can both call
  * expand() right before they need up-to-date cross sections, and the actual
  * expansion will take place only if needed.
+ *
+ * \note Care is taken to keep access to the underlying cross sections
+ * efficient. A blitz array is used to store the cross sections themselves, so
+ * that we can take advantage of the aliasing functionality. The subscript
+ * operator under sane compiler treatment should be elided, and the use of the
+ * \c shared_ptr for storing the other state allows for full instances of the
+ * class (referring to the same data) to be used where a reference or pointer
+ * would otherwise be used, removing a level of indirection.
  */
 class ExpandedXS {
 public:
-    ExpandedXS() : xs_mesh_(nullptr)
+    ExpandedXS() : xs_mesh_(nullptr), state_(nullptr)
     {
         return;
     }
 
     ExpandedXS(const XSMesh *xs_mesh)
-        : xstr_(xs_mesh->n_reg_expanded(), 0.0),
+        : xstr_(xs_mesh->n_reg_expanded()),
           xs_mesh_(xs_mesh),
-          group_(-1),
-          state_(-1)
+          state_(std::make_shared<std::pair<int, int>>(-1, -1))
     {
         return;
     }
 
+    ExpandedXS(ExpandedXS &other)
+        : xstr_(other.xstr_), xs_mesh_(other.xs_mesh_), state_(other.state_)
+    {
+        return;
+    }
+
+    ExpandedXS &operator=(const ExpandedXS &other) {
+        if(this == &other) {
+            return *this;
+        }
+        xstr_.reference(other.xstr_);
+        xs_mesh_ = other.xs_mesh_;
+        state_ = other.state_;
+
+        return *this;
+    }
+
     real_t operator[](int i) const
     {
-        return xstr_[i];
+        return xstr_(i);
+    }
+
+    int size() const
+    {
+        return xstr_.size();
     }
 
     void expand(int group)
     {
         // only update if the group has canged or the cross sections have been
         // updated
-        if ((group != group_) || (xs_mesh_->state() != state_)) {
-            group_ = group;
-            state_ = xs_mesh_->state();
+        if ((group != state_->first) || (xs_mesh_->state() != state_->second)) {
+            state_->first  = group;
+            state_->second = xs_mesh_->state();
             for (const auto &xsr : *xs_mesh_) {
                 real_t xs = xsr.xsmactr(group);
                 for (const int ireg : xsr.reg()) {
-                    xstr_[ireg] = xs;
+                    xstr_(ireg) = xs;
                 }
             }
         }
         return;
     }
 
+    /**
+     * \brief Expand cross sections, optionally performing source splitting if
+     * provided.
+     */
+    void expand(int group, const ArrayB1 split)
+    {
+        if (split.size() > 0) {
+            // If we are doing splitting, skip the checks on group, etc. and
+            // always expand
+            assert((int)split.size() == xs_mesh_->n_reg_expanded());
+            for (const auto &xsr : *xs_mesh_) {
+                real_t xs = xsr.xsmactr(group);
+                for (const int ireg : xsr.reg()) {
+                    xstr_(ireg) = xs + split(ireg);
+                }
+            }
+        } else {
+            this->expand(group);
+        }
+        return;
+    }
+
+    const ArrayB1 &xs() const
+    {
+        return xstr_;
+    }
+
 private:
-    VecF xstr_;
+    ArrayB1 xstr_;
     const XSMesh *xs_mesh_;
-    int group_;
-    int state_;
+
+    // State of the cross sections. First is the energy group, second is the
+    // state of the XS mesh from which the cross sections were extracted. This
+    // is stored in a shared pointer so that multiple instances of ExpandedXS
+    // can share state.
+    std::shared_ptr<std::pair<int, int>> state_;
 };
 }
