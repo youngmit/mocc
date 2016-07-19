@@ -341,6 +341,7 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
     LogFile << "    Keep original Sn quadrature: " << keep_sn_quad_
             << std::endl;
     LogFile << "    Transverse Leakage: " << do_tl_ << std::endl;
+    LogFile << "    Relaxation factor: " << relax_ << std::endl;
     LogFile << "    Inactive MoC Outer Iterations: " << n_inactive_moc_
             << std::endl;
     LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;
