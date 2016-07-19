@@ -43,8 +43,6 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment): state_(0)
     // similar.
     std::map<int, VecI> fsr_map;
 
-    int nreg = mesh.n_reg(treatment);
-
     if (treatment == MeshTreatment::TRUE) {
         int ireg = 0;
         for (const auto &pini : mesh) {
