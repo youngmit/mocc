@@ -52,8 +52,8 @@ public:
     {
         Warn("Incoming flux updates are not properly supported yet for 2D3D");
 
-        moc_sweeper_.update_incoming_flux();
-        sn_sweeper_->update_incoming_flux();
+        //moc_sweeper_.update_incoming_flux();
+        //sn_sweeper_->update_incoming_flux();
 
         return;
     }
