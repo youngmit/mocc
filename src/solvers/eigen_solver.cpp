@@ -197,7 +197,7 @@ void EigenSolver::solve()
         }
 
         if ((error_k_ < tolerance_k_) && (error_psi_ < tolerance_psi_) &&
-            (n_iterations >= min_iterations_)) {
+            (n_iterations <= min_iterations_)) {
             LogScreen << "Convergence criteria satisfied!" << std::endl;
             break;
         }
