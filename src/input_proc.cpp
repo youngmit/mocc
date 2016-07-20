@@ -123,18 +123,6 @@ InputProcessor::InputProcessor(std::vector<std::string> args)
         throw EXCEPT("Error encountered in parsing XML file.");
     }
 
-    // Get problem-global stuff
-    if (!doc_.child("case_name").empty()) {
-        case_name_ = doc_.child("case_name").child_value();
-        if (case_name_.empty()) {
-            throw EXCEPT("<case_name> was provided, yet empty");
-        }
-    }
-
-    global::case_name = case_name_;
-
-    xml_timer.toc();
-
     // Handle the replacements specified on the command line if any
     for (const auto &replacement : replacements) {
         size_t loc = replacement.find("=");
@@ -154,6 +142,20 @@ InputProcessor::InputProcessor(std::vector<std::string> args)
         std::string value(replacement, loc + 1);
         apply_amendment(doc_, path, value);
     }
+
+    // Get problem-global stuff
+    if (!doc_.child("case_name").empty()) {
+        case_name_ = doc_.child("case_name").child_value();
+        if (case_name_.empty()) {
+            throw EXCEPT("<case_name> was provided, yet empty");
+        }
+    }
+
+    global::case_name = case_name_;
+
+    xml_timer.toc();
+
+    
 
     timer_.toc();
 
@@ -233,13 +235,34 @@ void apply_amendment(pugi::xml_node &node, std::string path,
 {
     size_t pos = path.find("/");
     if (pos == std::string::npos) {
-        // No slashes. This should be the name of the attribute in the
-        // current node to alter
-        if (node.attribute(path.c_str()).empty()) {
-            throw EXCEPT("The requested attribute to modify doesn't exist");
+        // No slashes. This should be either the name of the attribute in the
+        // current node to alter, or the name of the child node conatining the
+        // text to alter.
+        //
+        // Require that this be unambiguous, throwing an error if there is an
+        // attribute and a child node of the same node (should probably never
+        // happen anyways)
+        bool has_attribute = !node.attribute(path.c_str()).empty();
+        bool has_child     = !node.child(path.c_str()).empty();
+        if (!(has_attribute ^ has_child)) {
+            std::cout << path << std::endl;
+            std::cout << has_attribute << " " << has_child << std::endl;
+            throw EXCEPT("Could not find the requested attribute or child to "
+                         "modify, or could not disambiguate.")
         }
-        if (!node.attribute(path.c_str()).set_value(value.c_str())) {
-            throw EXCEPT("Failed to modify the requested attribute");
+
+        if (has_attribute) {
+            if (!node.attribute(path.c_str()).set_value(value.c_str())) {
+                throw EXCEPT("Failed to modify the requested attribute.");
+            }
+        }
+
+        if(has_child) {
+            pugi::xml_text text = node.child(path.c_str()).text();
+            if(!text) {
+                throw EXCEPT("No text data found at requested location.");
+            }
+            text = value.c_str();
         }
     } else {
         // There is a slash in there. Dig deeper
