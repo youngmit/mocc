@@ -192,7 +192,6 @@ void PlaneSweeper_2D3D::add_tl(int group)
     ArrayB1 tl_fsr(n_reg_);
 
     blitz::Array<real_t, 1> tl_g = tl_(group, blitz::Range::all());
-    tl_g = 0.0;
 
     int iplane   = 0;
     int ireg_pin = 0;
