@@ -161,7 +161,7 @@ void PlaneSweeper_2D3D::sweep(int group)
 
     LogScreen << "MoC/Sn residual: " << residual;
     if (sn_resid_norm_[group].size() > 0) {
-        std::cout << "   \t" << residual / sn_resid_norm_[group].back();
+        LogScreen << "   \t" << residual / sn_resid_norm_[group].back();
     }
     LogScreen << std::endl;
 
