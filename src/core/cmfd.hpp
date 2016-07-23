@@ -141,6 +141,7 @@ private:
     const Mesh *mesh_;
     SP_XSMeshHomogenized_t xsmesh_;
     int n_cell_;
+    int n_group_;
     CoarseData coarse_data_;
     bool is_enabled_;
 

@@ -37,18 +37,19 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
       mesh_(mesh),
       xsmesh_(xsmesh),
       n_cell_(mesh->n_pin()),
+      n_group_(xsmesh->n_group()),
       coarse_data_(*mesh, xsmesh->n_group()),
       is_enabled_(true),
       fs_(n_cell_),
       fs_old_(n_cell_),
       x0_(n_cell_),
       source_(n_cell_, xsmesh_.get(), coarse_data_.flux),
-      m_(xsmesh->n_group(), Eigen::SparseMatrix<real_t>(n_cell_, n_cell_)),
-      solvers_(xsmesh->n_group()),
-      d_hat_(mesh_->n_surf(), xsmesh_->n_group()),
-      d_tilde_(mesh_->n_surf(), xsmesh_->n_group()),
-      s_hat_(mesh_->n_surf(), xsmesh_->n_group()),
-      s_tilde_(mesh_->n_surf(), xsmesh_->n_group()),
+      m_(n_group_, Eigen::SparseMatrix<real_t>(n_cell_, n_cell_)),
+      solvers_(n_group_),
+      d_hat_(mesh_->n_surf(), n_group_),
+      d_tilde_(mesh_->n_surf(), n_group_),
+      s_hat_(mesh_->n_surf(), n_group_),
+      s_tilde_(mesh_->n_surf(), n_group_),
       n_solve_(0),
       k_tol_(1.0e-8),
       psi_tol_(1.0e-8),
@@ -136,7 +137,6 @@ void CMFD::solve(real_t &k)
 
     // Update homogenized cross sections
     xsmesh_->update();
-    int ng = xsmesh_->n_group();
 
     // Set up the linear systems
     this->setup_solve();
@@ -161,7 +161,7 @@ void CMFD::solve(real_t &k)
         this->fission_source(k);
         real_t tfis_old = tfis;
 
-        for (int group = 0; group < ng; group++) {
+        for (int group = 0; group < n_group_; group++) {
             source_.initialize_group(group);
             source_.fission(fs_, group);
             source_.in_scatter(group);
@@ -223,12 +223,10 @@ void CMFD::solve_1g(int group)
 
 void CMFD::fission_source(real_t k)
 {
-    int ng = xsmesh_->n_group();
-
     real_t r_keff = 1.0 / k;
     fs_           = 0.0;
     for (int i = 0; i < n_cell_; i++) {
-        for (int ig = 0; ig < ng; ig++) {
+        for (int ig = 0; ig < n_group_; ig++) {
             real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
             fs_(i) += r_keff * xsnf * coarse_data_.flux(i, ig);
         }
@@ -238,12 +236,10 @@ void CMFD::fission_source(real_t k)
 
 real_t CMFD::total_fission()
 {
-    int ng = xsmesh_->n_group();
-
     real_t f = 0.0;
 
     for (int i = 0; i < n_cell_; i++) {
-        for (int ig = 0; ig < ng; ig++) {
+        for (int ig = 0; ig < n_group_; ig++) {
             real_t xsnf = (*xsmesh_)[i].xsmacnf()[ig];
             f += xsnf * coarse_data_.flux(i, ig);
         }
