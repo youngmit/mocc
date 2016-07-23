@@ -70,7 +70,7 @@ public:
         return resid;
     };
 
-    inline void post_ray(const ArrayB1 &psi1, const ArrayB1 &psi2,
+    inline void post_ray(const FluxStore &psi1, const FluxStore &psi2,
                          const ArrayB1 &e_tau, const moc::Ray &ray,
                          int first_reg)
     {
@@ -92,16 +92,16 @@ public:
             int norm_fw = (int)mesh_->surface_normal(surf_fw);
             int norm_bw = (int)mesh_->surface_normal(surf_bw);
             current(surf_fw + surf_offset_) +=
-                psi1(iseg_fw) * current_weights_[norm_fw];
+                psi1[iseg_fw] * current_weights_[norm_fw];
             current(surf_bw + surf_offset_) -=
-                psi2(iseg_bw) * current_weights_[norm_bw];
+                psi2[iseg_bw] * current_weights_[norm_bw];
             surface_flux(surf_fw + surf_offset_) +=
-                psi1(iseg_fw) * flux_weights_[norm_fw];
+                psi1[iseg_fw] * flux_weights_[norm_fw];
             surface_flux(surf_bw + surf_offset_) -=
-                psi2(iseg_bw) * flux_weights_[norm_bw];
+                psi2[iseg_bw] * flux_weights_[norm_bw];
 
-            surf_sum_(surf_fw * 2 + 0) += psi1(iseg_fw);
-            surf_sum_(surf_bw * 2 + 1) += psi2(iseg_bw);
+            surf_sum_(surf_fw * 2 + 0) += psi1[iseg_fw];
+            surf_sum_(surf_bw * 2 + 1) += psi2[iseg_bw];
             surf_norm_(surf_fw * 2 + 0) += 1.0;
             surf_norm_(surf_bw * 2 + 1) += 1.0;
 
@@ -117,7 +117,7 @@ public:
                         real_t t       = ang_.rsintheta * ray.seg_len(iseg_fw);
                         real_t fluxvol = t * qbar_(ireg) +
                                          e_tau(iseg_fw) *
-                                             (psi1(iseg_fw) - qbar_(ireg)) /
+                                             (psi1[iseg_fw] - qbar_(ireg)) /
                                              xstr;
                         vol_sum_(cell_fw * 2 + 0) += fluxvol;
                         vol_norm_(cell_fw) += t;
@@ -128,10 +128,10 @@ public:
                     norm_fw = (int)surface_to_normal(crd->fw);
                     surf_fw = mesh_->coarse_surf(cell_fw, crd->fw);
                     current(surf_fw + surf_offset_) +=
-                        psi1(iseg_fw) * current_weights_[norm_fw];
+                        psi1[iseg_fw] * current_weights_[norm_fw];
                     surface_flux(surf_fw + surf_offset_) +=
-                        psi1(iseg_fw) * flux_weights_[norm_fw];
-                    surf_sum_(surf_fw * 2 + 0) += psi1(iseg_fw);
+                        psi1[iseg_fw] * flux_weights_[norm_fw];
+                    surf_sum_(surf_fw * 2 + 0) += psi1[iseg_fw];
                     surf_norm_(surf_fw * 2 + 0) += 1.0;
                 }
 
@@ -144,7 +144,7 @@ public:
                         real_t t       = ang_.rsintheta * ray.seg_len(iseg_bw);
                         real_t fluxvol = t * qbar_(ireg) +
                                          e_tau(iseg_bw) *
-                                             (psi2(iseg_bw + 1) - qbar_(ireg)) /
+                                             (psi2[iseg_bw + 1] - qbar_(ireg)) /
                                              xstr;
                         vol_sum_(cell_bw * 2 + 1) += fluxvol;
                         sigt_sum_(cell_bw * 2 + 1) += xstr * fluxvol;
@@ -153,10 +153,10 @@ public:
                     norm_bw = (int)surface_to_normal(crd->bw);
                     surf_bw = mesh_->coarse_surf(cell_bw, crd->bw);
                     current(surf_bw + surf_offset_) -=
-                        psi2(iseg_bw) * current_weights_[norm_bw];
+                        psi2[iseg_bw] * current_weights_[norm_bw];
                     surface_flux(surf_bw + surf_offset_) -=
-                        psi2(iseg_bw) * flux_weights_[norm_bw];
-                    surf_sum_(surf_bw * 2 + 1) += psi2(iseg_bw);
+                        psi2[iseg_bw] * flux_weights_[norm_bw];
+                    surf_sum_(surf_bw * 2 + 1) += psi2[iseg_bw];
                     surf_norm_(surf_bw * 2 + 1) += 1.0;
                 }
 

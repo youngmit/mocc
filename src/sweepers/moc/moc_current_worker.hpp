@@ -26,46 +26,49 @@
 namespace mocc {
 namespace moc {
 /**
- * This is a pure virtual class from which all valid current workers
- * should derive. There really shouldn't be any pointers of this class
- * floating around, since we never really intend to have to resolve
- * virtual method calls (use templates instead), but this provides the
- * requirements of all variants of the current worker to be used as a
- * template parameter to \ref MoCSweeper::sweep1g().
- *
- * In short, this class is provided as a means of checking that proposed
- * workers implement all of the required interfaces, and if not provide
- * a more reasonable error from the compiler than unholy template-based
- * complaints.
- */
-class CurrentWorker {
-public:
-    virtual void post_ray(const ArrayB1 &psi1, const ArrayB1 &psi2,
-                          const ArrayB1 &e_tau, const Ray &ray,
-                          int first_reg) = 0;
-
-    virtual void set_angle(Angle ang, real_t spacing) = 0;
-
-    virtual void post_angle(int iang) = 0;
-
-    virtual void set_plane(int iplane) = 0;
-
-    virtual void post_sweep() = 0;
-
-    virtual void post_plane() = 0;
-
-    virtual void set_group(int igroup) = 0;
-};
-
-/**
  * This can be used as a template parameter to the \ref
  * MoCSweeper::sweep1g() method. Using this class in such a way avoids
  * the extra work needed to compute currents, and with any optimization
  * enabled, should yield code identical to a hand-written MoC sweep
  * without the current work.
  */
-class NoCurrent : public CurrentWorker {
+class NoCurrent {
 public:
+    /**
+     * \brief Subscriptable abstraction for only storing a scalar value
+     *
+     * This class allows the MoC sweeper kernel to be agnostic to the type of
+     * storage needed to represent the flux along a ray. In cases where current
+     * or some other value is needed from the sweeper, it is necessary to keep
+     * the angular flux along the entire length of the ray. In other situations
+     * where this is unnecessary, it is a waste to keep track of this ray flux,
+     * and sufficient to just maintain the angular flux at the furthest-swept
+     * position on the ray. To allow the sweeper kernel to be written in a
+     * manner allowing both options, this class implements a subscript operator,
+     * which points to the same scalar every time, which should be elided by an
+     * optimizing compiler.
+     *
+     * \sa moc::Current::FluxStore
+     */
+    class FluxStore {
+    public:
+        FluxStore(int size)
+        {
+            return;
+        }
+        real_t &operator[](int i)
+        {
+            return psi_;
+        }
+        real_t operator[](int i) const
+        {
+            return psi_;
+        }
+
+    private:
+        real_t psi_;
+    };
+
     NoCurrent()
     {
     }
@@ -78,7 +81,7 @@ public:
      * is useful for when you need to do something with the angular
      * flux.
      */
-    MOCC_FORCE_INLINE void post_ray(const ArrayB1 &psi1, const ArrayB1 &psi2,
+    MOCC_FORCE_INLINE void post_ray(FluxStore psi1, FluxStore psi2,
                                     const ArrayB1 &e_tau, const Ray &ray,
                                     int first_reg)
     {
@@ -131,9 +134,21 @@ public:
  * See documentation for \ref moc::NoCurrent for canonical documentation
  * for each of the methods.
  */
-class Current : public CurrentWorker {
+class Current {
 public:
-    Current() : coarse_data_(nullptr), mesh_(nullptr)
+    /**
+     * \brief Typedef for a STL vector of real_t for storing angular flux along
+     * a ray.
+     *
+     * This type is used to store the flux along the entire length of the ray
+     * when such information is needed from the MoC sweeper kernel.
+     *
+     * \sa moc::NoCurrent::FluxStore
+     */
+    typedef std::vector<real_t> FluxStore;
+
+    Current()
+        : coarse_data_(nullptr), mesh_(nullptr)
     {
     }
 
@@ -185,22 +200,19 @@ public:
 #pragma omp barrier
     }
 
-    MOCC_FORCE_INLINE void post_ray(const ArrayB1 &psi1, const ArrayB1 &psi2,
-                                    const ArrayB1 &e_tau, const Ray &ray,
-                                    int first_reg)
+    MOCC_FORCE_INLINE void post_ray(const FluxStore &psi1,
+                                    const FluxStore &psi2, const ArrayB1 &e_tau,
+                                    const Ray &ray, int first_reg)
     {
 #pragma omp critical
         {
             /**
              * \todo this is going to perform poorly as implemented. this is a
-             * really large
-             * critical section, which we might be able to do as atomic updates,
-             * as is done
-             * in the Sn current worker. The Blitz array slicing is not thread
-             * safe, though,
-             * so we would need to be careful. It'd be nice to fiddle with this
-             * and profile
-             * once things settle down some.
+             * really large critical section, which we might be able to do as
+             * atomic updates, as is done in the Sn current worker. The Blitz
+             * array slicing is not thread safe, though, so we would need to be
+             * careful. It'd be nice to fiddle with this and profile once things
+             * settle down some.
              */
             auto all          = blitz::Range::all();
             auto current      = coarse_data_->current(all, group_);
@@ -216,10 +228,10 @@ public:
 
             int norm_fw = (int)mesh_->surface_normal(surf_fw);
             int norm_bw = (int)mesh_->surface_normal(surf_bw);
-            current(surf_fw) += psi1(iseg_fw) * current_weights_[norm_fw];
-            current(surf_bw) -= psi2(iseg_bw) * current_weights_[norm_bw];
-            surface_flux(surf_fw) += psi1(iseg_fw) * flux_weights_[norm_fw];
-            surface_flux(surf_bw) += psi2(iseg_bw) * flux_weights_[norm_bw];
+            current(surf_fw) += psi1[iseg_fw] * current_weights_[norm_fw];
+            current(surf_bw) -= psi2[iseg_bw] * current_weights_[norm_bw];
+            surface_flux(surf_fw) += psi1[iseg_fw] * flux_weights_[norm_fw];
+            surface_flux(surf_bw) += psi2[iseg_bw] * flux_weights_[norm_bw];
 
             auto begin = ray.cm_data().cbegin();
             auto end   = ray.cm_data().cend();
@@ -230,9 +242,9 @@ public:
                     norm_fw = (int)surface_to_normal(crd->fw);
                     surf_fw = mesh_->coarse_surf(cell_fw, crd->fw);
                     current(surf_fw) +=
-                        psi1(iseg_fw) * current_weights_[norm_fw];
+                        psi1[iseg_fw] * current_weights_[norm_fw];
                     surface_flux(surf_fw) +=
-                        psi1(iseg_fw) * flux_weights_[norm_fw];
+                        psi1[iseg_fw] * flux_weights_[norm_fw];
                 }
 
                 if (crd->bw != Surface::INVALID) {
@@ -240,9 +252,9 @@ public:
                     norm_bw = (int)surface_to_normal(crd->bw);
                     surf_bw = mesh_->coarse_surf(cell_bw, crd->bw);
                     current(surf_bw) -=
-                        psi2(iseg_bw) * current_weights_[norm_bw];
+                        psi2[iseg_bw] * current_weights_[norm_bw];
                     surface_flux(surf_bw) +=
-                        psi2(iseg_bw) * flux_weights_[norm_bw];
+                        psi2[iseg_bw] * flux_weights_[norm_bw];
                 }
 
                 cell_fw = mesh_->coarse_neighbor(cell_fw, (crd)->fw);

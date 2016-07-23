@@ -45,8 +45,8 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
 #pragma omp parallel default(shared)
     {
         ArrayB1 e_tau(rays_.max_segments());
-        ArrayB1 psi1(rays_.max_segments() + 1);
-        ArrayB1 psi2(rays_.max_segments() + 1);
+        typename CurrentWorker::FluxStore psi1(rays_.max_segments() + 1);
+        typename CurrentWorker::FluxStore psi2(rays_.max_segments() + 1);
         ArrayB1 t_flux(n_reg_);
         t_flux = 0.0;
 
@@ -100,33 +100,33 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
 
                     // Forward direction
                     // Initialize from bc
-                    psi1(0) = bc_in_1[bc1];
+                    psi1[0] = bc_in_1[bc1];
 
                     // Propagate through core geometry
                     for (int iseg = 0; iseg < ray.nseg(); iseg++) {
                         int ireg = ray.seg_index(iseg) + first_reg;
                         real_t psi_diff =
-                            (psi1(iseg) - qbar[ireg]) * e_tau(iseg);
-                        psi1(iseg + 1) = psi1(iseg) - psi_diff;
+                            (psi1[iseg] - qbar[ireg]) * e_tau(iseg);
+                        psi1[iseg + 1] = psi1[iseg] - psi_diff;
                         t_flux(ireg) += psi_diff * wt_v_st;
                     }
                     // Store boundary condition
-                    bc_out_1[bc2] = psi1(ray.nseg());
+                    bc_out_1[bc2] = psi1[ray.nseg()];
 
                     // Backward direction
                     // Initialize from bc
-                    psi2(ray.nseg()) = bc_in_2[bc2];
+                    psi2[ray.nseg()] = bc_in_2[bc2];
 
                     // Propagate through core geometry
                     for (int iseg = ray.nseg() - 1; iseg >= 0; iseg--) {
                         int ireg = ray.seg_index(iseg) + first_reg;
                         real_t psi_diff =
-                            (psi2(iseg + 1) - qbar[ireg]) * e_tau(iseg);
-                        psi2(iseg) = psi2(iseg + 1) - psi_diff;
+                            (psi2[iseg + 1] - qbar[ireg]) * e_tau(iseg);
+                        psi2[iseg] = psi2[iseg + 1] - psi_diff;
                         t_flux(ireg) += psi_diff * wt_v_st;
                     }
                     // Store boundary condition
-                    bc_out_2[bc1] = psi2(0);
+                    bc_out_2[bc1] = psi2[0];
 
                     // Stash currents
                     cw.post_ray(psi1, psi2, e_tau, ray, first_reg);
