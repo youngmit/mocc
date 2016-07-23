@@ -42,7 +42,7 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
       is_enabled_(true),
       fs_(n_cell_),
       fs_old_(n_cell_),
-      x0_(n_cell_),
+      x_(n_cell_),
       source_(n_cell_, xsmesh_.get(), coarse_data_.flux),
       m_(n_group_, Eigen::SparseMatrix<real_t>(n_cell_, n_cell_)),
       solvers_(n_group_),
@@ -51,8 +51,9 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
       s_hat_(mesh_->n_surf(), n_group_),
       s_tilde_(mesh_->n_surf(), n_group_),
       n_solve_(0),
-      k_tol_(1.0e-8),
-      psi_tol_(1.0e-8),
+      k_tol_(1.0e-6),
+      psi_tol_(1.0e-5),
+      resid_reduction_(0.001),
       max_iter_(100),
       zero_fixup_(false)
 {
@@ -90,6 +91,15 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
             psi_tol_ = input.attribute("psi_tol").as_float(-1.0);
             if (psi_tol_ <= 0.0) {
                 throw EXCEPT("Psi tolerance is invalid.");
+            }
+        }
+
+        // Residual reduction
+        if (!input.attribute("residual_reduction").empty()) {
+            resid_reduction_ =
+                input.attribute("residual_reduction").as_float(-1.0);
+            if (resid_reduction_ <= 0.0) {
+                throw EXCEPT("Residual reduction is invalid.");
             }
         }
 
@@ -147,6 +157,14 @@ void CMFD::solve(real_t &k)
     this->fission_source(k);
     real_t tfis = this->total_fission();
 
+    // Calculate initial residual
+    real_t r0 = this->residual();
+
+    // Use the residual to set tolerance on the BiCGSTAB solvers
+    for(auto &solver: solvers_) {
+        solver.setTolerance(resid_reduction_ * r0);
+    }
+
     auto flags = LogScreen.flags();
     LogScreen << "CMFD Converging to " << std::scientific << k_tol_ << " "
               << std::scientific << psi_tol_ << std::endl;
@@ -154,6 +172,7 @@ void CMFD::solve(real_t &k)
 
     int iter       = 0;
     real_t psi_err = 1.0;
+    real_t ri      = 0.0; // Iteration residual
     while (true) {
         iter++;
         // Compute fission source
@@ -161,6 +180,7 @@ void CMFD::solve(real_t &k)
         this->fission_source(k);
         real_t tfis_old = tfis;
 
+        ri = 0.0;
         for (int group = 0; group < n_group_; group++) {
             source_.initialize_group(group);
             source_.fission(fs_, group);
@@ -169,6 +189,7 @@ void CMFD::solve(real_t &k)
 
             this->solve_1g(group);
         }
+        ri = std::sqrt(ri) / (n_cell_ * n_group_);
 
         tfis  = this->total_fission();
         k_old = k;
@@ -182,16 +203,17 @@ void CMFD::solve(real_t &k)
         }
         psi_err = std::sqrt(psi_err);
 
-        if (((std::abs(k - k_old) < k_tol_) && (psi_err < psi_tol_)) ||
+        if (((std::abs(k - k_old) < k_tol_) && (psi_err < psi_tol_) &&
+             (ri / r0 < resid_reduction_)) ||
             (iter > max_iter_)) {
             break;
         }
 
         if ((iter % 10) == 0) {
-            this->print(iter, k, std::abs(k - k_old), psi_err);
+            this->print(iter, k, std::abs(k - k_old), psi_err, ri / r0);
         }
     }
-    this->print(iter, k, std::abs(k - k_old), psi_err);
+    this->print(iter, k, std::abs(k - k_old), psi_err, ri / r0);
 
     // Calculate the resultant currents and store back onto the coarse data
     this->store_currents();
@@ -203,22 +225,24 @@ void CMFD::solve(real_t &k)
     return;
 } // solve()
 
-void CMFD::solve_1g(int group)
+real_t CMFD::solve_1g(int group)
 {
     ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), group);
 
     for (int i = 0; i < n_cell_; i++) {
-        x0_[i] = flux_1g(i);
+        x_[i] = flux_1g(i);
     }
 
-    VectorX x = solvers_[group].solveWithGuess(source_.get(), x0_);
+    real_t resid = this->residual(group);
+
+    x_ = solvers_[group].solveWithGuess(source_.get(), x_);
 
     // Store the result of the LS solution onto the CoarseData
     for (int i = 0; i < n_cell_; i++) {
-        flux_1g(i) = x[i];
+        flux_1g(i) = x_[i];
     }
 
-    return;
+    return resid;
 }
 
 void CMFD::fission_source(real_t k)
@@ -401,13 +425,12 @@ void CMFD::setup_solve()
 
         solvers_[group].compute(m);
         solvers_[group].setMaxIterations(1500);
-        solvers_[group].setTolerance(psi_tol_ / 10.0);
 
         group++;
     } // group loop
     timer_setup_.toc();
     return;
-}
+} // setup_solve
 
 void CMFD::store_currents()
 {
@@ -454,13 +477,63 @@ void CMFD::store_currents()
     return;
 }
 
-void CMFD::print(int iter, real_t k, real_t k_err, real_t psi_err)
+real_t CMFD::residual()
+{
+    real_t norm = 0.0;
+
+    for (int group = 0; group < n_group_; group++) {
+        ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), group);
+        source_.initialize_group(group);
+        source_.fission(fs_, group);
+        source_.in_scatter(group);
+        source_.scale(mesh_->coarse_volume());
+
+        for (int icell = 0; icell < n_cell_; ++icell) {
+            x_[icell] = flux_1g(icell);
+        }
+
+        norm += this->residual(group);
+    }
+
+    // int group = 0;
+    // for (const auto &m : m_) {
+    //    ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), group);
+    //    VectorX flux_vec(n_cell_);
+    //    // memcpy would be nice here...
+    //    for (int icell = 0; icell < n_cell_; ++icell) {
+    //        flux_vec[icell] = flux_1g(icell);
+    //    }
+
+    //    source_.initialize_group(group);
+    //    source_.fission(fs_, group);
+    //    source_.in_scatter(group);
+    //    source_.scale(mesh_->coarse_volume());
+
+    //    VectorX residual = m * flux_vec - source_.get();
+    //    norm += residual.squaredNorm();
+
+    //    group++;
+    //}
+
+    return std::sqrt(norm) / (n_group_ * n_cell_);
+}
+
+real_t CMFD::residual(int group) const
+{
+    VectorX resid = m_[group] * x_ - source_.get();
+
+    return resid.squaredNorm();
+}
+
+void CMFD::print(int iter, real_t k, real_t k_err, real_t psi_err,
+                 real_t resid_ratio)
 {
     auto flags = LogScreen.flags();
     LogScreen << "       " << std::setprecision(5) << std::setw(6) << std::fixed
               << RootTimer.time() << " " << iter << " " << std::setprecision(10)
               << k << " " << std::scientific << k_err << " " << std::scientific
-              << psi_err << std::endl;
+              << psi_err << " " << std::scientific << resid_ratio << std::endl;
     LogScreen.flags(flags);
+    return;
 }
 }

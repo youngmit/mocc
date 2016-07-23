@@ -106,9 +106,63 @@ public:
 
 private:
     // Private methods
-    void solve_1g(int group);
+    /**
+     * \brief Compute and return the L-2 norm of the residual of the CMFD
+     * system, scaled by the size of the system.
+     *
+     * This calculates the residual of the CMFD system, considering all groups.
+     * Since this implementation of the method must calculate the source for all
+     * groups and needs to do repeated copies of the flux, it is somewhat more
+     * expensive than the single-group implementation, which assumes that the
+     * source is already calculated. As a result this is useful for calculating
+     * the initial residual at the beginning of the CMFD solve, while the other
+     * is more ideal for calculating the residual for each iteration.
+     *
+     * \pre The group-independent fission source has been calculated and stored
+     * in \c fs_.
+     *
+     * \sa CMFD::residual(int)
+     */
+    real_t residual();
+
+    /**
+     * \brief Compute and return the squared L-2 norm of the residual for a
+     * single group of the CMFD system
+     *
+     * \param group the group for which to calculate residual
+     *
+     * This is similar to the all-group method, but it only computes the
+     * contribution to the residual for the requested group. It assumes that the
+     * source (right-hand side) has already been computed and is therefore
+     * cheaper to use for assessing convergence.
+     *
+     * Unlike \ref CMFD::residual(), this returns an un-scaled, squared L-2
+     * norm. This should lead to the following code producing the same result as
+     * the group-independent \ref CMFD::residual() method:
+     * \code
+norm = 0.0;
+for(int ig=0; ig<n_group_; ig++) {
+    // Satisfy preconditions
+    norm += this->residual(group);
+}
+norm = std::sqrt(norm)/(n_cell_*n_group_);
+     * \endcode
+     *
+     * \pre The group-independent fission source has been calculated and stored
+     * in \c fs_.
+     *
+     * \pre The source (fission and inscattering) must be calculated for the
+     * current group.
+     *
+     * \pre The current-group flux is already stored in the \c x_ vector
+     *
+     * \sa CMFD::residual()
+     */
+    real_t residual(int group) const;
+    real_t solve_1g(int group);
     void fission_source(real_t k);
-    void print(int iter, real_t k, real_t k_err, real_t psi_err);
+    void print(int iter, real_t k, real_t k_err, real_t psi_err,
+               real_t resid_ratio);
 
     /**
      * \brief Calculate CMFD-derived currents after a CMFD solve and store
@@ -149,8 +203,8 @@ private:
     ArrayB1 fs_;
     ArrayB1 fs_old_;
 
-    // Single-group flux guess
-    VectorX x0_;
+    // Single-group flux result from LS solve, also used for initial guess
+    VectorX x_;
 
     SourceIsotropic source_;
 
@@ -175,6 +229,7 @@ private:
     // Convergence options
     real_t k_tol_;
     real_t psi_tol_;
+    real_t resid_reduction_;
     int max_iter_;
 
     // Other options
