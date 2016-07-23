@@ -57,7 +57,7 @@ public:
         return;
     }
 
-    inline void set_group(int group) override
+    inline void set_group(int group)
     {
         group_    = group;
         residual_ = {{0.0, 0.0, 0.0}};
@@ -74,7 +74,7 @@ public:
 
     inline void post_ray(const FluxStore &psi1, const FluxStore &psi2,
                          const ArrayB1 &e_tau, const moc::Ray &ray,
-                         int first_reg) override
+                         int first_reg)
     {
 #pragma omp critical
         {
@@ -169,7 +169,7 @@ public:
         return;
     }
 
-    inline void set_angle(Angle ang, real_t spacing) override
+    inline void set_angle(Angle ang, real_t spacing)
     {
         moc::Current::set_angle(ang, spacing);
         ang_ = ang;
@@ -185,7 +185,7 @@ public:
         return;
     }
 
-    void post_angle(int iang) override
+    void post_angle(int iang)
     {
 #pragma omp single
         {

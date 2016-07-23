@@ -247,12 +247,10 @@ real_t CMFD::solve_1g(int group)
 
 void CMFD::fission_source(real_t k)
 {
-    int ng = xsmesh_->n_group();
-
     fs_ = 0.0;
     for (const auto &xsr : *xsmesh_) {
         for (const int i : xsr.reg()) {
-            for (int ig = 0; ig < ng; ig++) {
+            for (int ig = 0; ig < n_group_; ig++) {
                 fs_(i) += xsr.xsmacnf(ig) * coarse_data_.flux(i, ig);
             }
         }
@@ -270,7 +268,7 @@ real_t CMFD::total_fission()
     real_t f = 0.0;
     for (const auto &xsr : *xsmesh_) {
         for (const int i : xsr.reg()) {
-            for (int ig = 0; ig < ng; ig++) {
+            for (int ig = 0; ig < n_group_; ig++) {
                 f += xsr.xsmacnf(ig) * coarse_data_.flux(i, ig);
             }
         }
