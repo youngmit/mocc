@@ -52,8 +52,23 @@ public:
           surf_norm_(mesh_->n_surf_plane() * 2),
           rays_(rays)
     {
-        assert(xstr_fm.size() == mesh->n_reg(MeshTreatment::PLANE));
-        assert(xstr_sn.size() == mesh->n_reg(MeshTreatment::PIN));
+        assert(xstr_fm.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
+        assert(xstr_sn.size() == (int)mesh->n_reg(MeshTreatment::PIN));
+        /// \todo this is a mess. come up with a better way to interact with the
+        /// cross sections or make this structure available through the mesh or
+        /// something
+        mplane_offset_.reserve(mesh_->macroplane_index().back());
+        int mplane = 0;
+        int offset = 0;
+        int cells_per_plane = mesh_->nx()*mesh_->ny();
+        mplane_offset_.push_back(0);
+        for(const auto index: mesh->macroplane_index()){
+            offset += cells_per_plane;
+            if(index != mplane) {
+                mplane_offset_.push_back(offset);
+                mplane = index;
+            }
+        }
         return;
     }
 
@@ -72,6 +87,14 @@ public:
         return resid;
     };
 
+    MOCC_FORCE_INLINE void set_plane(int plane) {
+        assert(plane < (int)mplane_offset_.size());
+        Current::set_plane(plane);
+
+        cell_offset_xs_ = mplane_offset_[plane];
+        return;
+    }
+
     inline void post_ray(const FluxStore &psi1, const FluxStore &psi2,
                          const ArrayB1 &e_tau, const moc::Ray &ray,
                          int first_reg)
@@ -82,12 +105,12 @@ public:
             auto current      = coarse_data_->current(all, group_);
             auto surface_flux = coarse_data_->surface_flux(all, group_);
 
-            size_t cell_fw = ray.cm_cell_fw();
-            size_t cell_bw = ray.cm_cell_bw();
-            int surf_fw    = ray.cm_surf_fw();
-            int surf_bw    = ray.cm_surf_bw();
-            int iseg_fw    = 0;
-            int iseg_bw    = ray.nseg();
+            int cell_fw = ray.cm_cell_fw();
+            int cell_bw = ray.cm_cell_bw();
+            int surf_fw = ray.cm_surf_fw();
+            int surf_bw = ray.cm_surf_bw();
+            int iseg_fw = 0;
+            int iseg_bw = ray.nseg();
 
             // Use an offset for the current contributions, but NOT for the
             // correction factors, which use plane-by-plane indexing
@@ -218,6 +241,8 @@ private:
     ExpandedXS xstr_;
     ExpandedXS xstr_sn_;
 
+    unsigned cell_offset_xs_;
+
     const AngularQuadrature &ang_quad_;
 
     ArrayB1 surf_sum_;
@@ -231,6 +256,8 @@ private:
     const moc::RayData &rays_;
 
     std::array<real_t, 3> residual_;
+
+    std::vector<int> mplane_offset_;
 
     /** \page surface_norm Surface Normalization
      * Surface normalization \todo discuss surface normalization

@@ -73,7 +73,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
     // normalization. so the above doesnt really apply
     real_t area[2] = {std::abs(rays_.spacing(ang) / cos(ang_quad_[ang].alpha)),
                       std::abs(rays_.spacing(ang) / sin(ang_quad_[ang].alpha))};
-    for (size_t ic = 0; ic < mesh_->n_cell_plane(); ic++) {
+    for (unsigned ic = 0; ic < mesh_->n_cell_plane(); ic++) {
         int icc = ic + cell_offset_;
 
         auto pos = mesh_->coarse_position(ic);
@@ -81,7 +81,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
         real_t area_x = area[0] / mesh_->pin_dx()[pos.x];
         real_t area_y = area[1] / mesh_->pin_dy()[pos.y];
 
-        real_t xstr = xstr_sn_[icc];
+        real_t xstr = xstr_sn_[ic+cell_offset_xs_];
 
         // FW direction
         {
