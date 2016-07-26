@@ -218,8 +218,8 @@ public:
             auto current      = coarse_data_->current(all, group_);
             auto surface_flux = coarse_data_->surface_flux(all, group_);
 
-            size_t cell_fw = ray.cm_cell_fw() + cell_offset_;
-            size_t cell_bw = ray.cm_cell_bw() + cell_offset_;
+            int cell_fw = ray.cm_cell_fw() + cell_offset_;
+            int cell_bw = ray.cm_cell_bw() + cell_offset_;
 
             int surf_fw = ray.cm_surf_fw() + surf_offset_;
             int surf_bw = ray.cm_surf_bw() + surf_offset_;
