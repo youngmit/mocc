@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <map>
 #include <memory>
-
 #include "util/pugifwd.hpp"
 #include "core/assembly.hpp"
 #include "core/core.hpp"
@@ -383,7 +382,8 @@ public:
         return this->coarse_volume();
     }
 
-    const auto &pins() const {
+    const auto &pins() const
+    {
         return pins_;
     }
 
