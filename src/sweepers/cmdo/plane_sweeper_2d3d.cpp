@@ -92,6 +92,8 @@ PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
 
     sn_sweeper_->get_homogenized_xsmesh()->set_flux(moc_sweeper_.flux());
 
+    tl_ = 0.0;
+
     coarse_data_ = nullptr;
 
     return;
