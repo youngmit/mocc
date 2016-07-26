@@ -191,15 +191,17 @@ void EigenSolver::solve()
             }
         }
 
-        if (n_iterations >= max_iterations_) {
-            LogScreen << "Maximum number of iterations reached!" << std::endl;
+        LogFile << (error_k_ < tolerance_k_) << " "
+                << (error_psi_ < tolerance_psi_) << " "
+                << (n_iterations >= min_iterations_) << std::endl;
+        if ((error_k_ < tolerance_k_) && (error_psi_ < tolerance_psi_) &&
+            (n_iterations >= min_iterations_)) {
+            LogScreen << "Convergence criteria satisfied!" << std::endl;
             break;
         }
 
-        if ((error_k_ < tolerance_k_) && (error_psi_ < tolerance_psi_) &&
-            (n_iterations <= min_iterations_)) {
-            LogScreen << "Convergence criteria satisfied!" << std::endl;
-            break;
+        if (n_iterations == (max_iterations_ - 1)) {
+            LogScreen << "Maximum number of iterations reached!" << std::endl;
         }
     }
 } // solve()
