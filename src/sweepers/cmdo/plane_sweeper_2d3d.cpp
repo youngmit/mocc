@@ -123,15 +123,22 @@ void PlaneSweeper_2D3D::sweep(int group)
         moc_sweeper_.sweep(group);
 
         int n_negative  = 0;
+        int n_NaN       = 0;
         const auto flux = moc_sweeper_.flux()(blitz::Range::all(), group);
         for (const auto &v : flux) {
             if (v < 0.0) {
                 n_negative++;
             }
+            if (v != v) {
+                n_NaN++;
+            }
         }
         if (n_negative > 0) {
             LogScreen << n_negative << " negative fluxes in group " << group
                       << std::endl;
+        }
+        if (n_NaN > 0) {
+            LogScreen << n_NaN << " NaN fluxes in group " << group << std::endl;
         }
     }
 
