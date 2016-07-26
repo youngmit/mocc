@@ -69,7 +69,6 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment): state_(0)
                     int ixsreg        = 0;
                     for (const auto &mat_id : mat_ids) {
                         for(unsigned reg=0; reg<pm.n_fsrs(ixsreg); ++reg ){
-                            assert(ireg < nreg);
                             fsr_map[mat_id].push_back(ireg);
                             ireg++;
                         }
