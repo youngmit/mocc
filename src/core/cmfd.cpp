@@ -167,7 +167,8 @@ void CMFD::solve(real_t &k)
 
     auto flags = LogScreen.flags();
     LogScreen << "CMFD Converging to " << std::scientific << k_tol_ << " "
-              << std::scientific << psi_tol_ << std::endl;
+              << std::scientific << psi_tol_ << " " << std::scientific << r0
+              << std::endl;
     LogScreen.flags(flags);
 
     int iter       = 0;
@@ -187,7 +188,7 @@ void CMFD::solve(real_t &k)
             source_.in_scatter(group);
             source_.scale(mesh_->coarse_volume());
 
-            this->solve_1g(group);
+            ri += this->solve_1g(group);
         }
         ri = std::sqrt(ri) / (n_cell_ * n_group_);
 
