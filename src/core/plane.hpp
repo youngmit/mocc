@@ -233,6 +233,10 @@ public:
     {
         return end_ - begin_;
     }
+    unsigned size_3d() const
+    {
+        return (end_ - begin_) * (iz_max - iz_min + 1);
+    }
 
     friend std::ostream &operator<<(std::ostream &os, const MacroPlane &mp);
 
