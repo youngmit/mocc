@@ -32,7 +32,8 @@ std::unordered_map<std::string, Warning> Warnings;
 
 void Error(const char *msg)
 {
-    std::cout << "ERROR: " << msg << std::endl;
+    std::cerr << "ERROR: " << msg << std::endl;
+    LogFile << "ERROR: " << msg << std::endl;
     exit(EXIT_FAILURE);
 }
 
@@ -50,7 +51,8 @@ void Warn(const std::string &msg)
 
 void Fail(Exception e)
 {
-    std::cout << e.what();
+    std::cerr << e.what();
+    LogFile << e.what();
     exit(EXIT_FAILURE);
 }
 

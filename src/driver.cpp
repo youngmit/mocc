@@ -172,8 +172,10 @@ int run(const std::vector<std::string> &args)
     }
 
     catch (Exception e) {
-        std::cout << "Error:" << std::endl;
-        std::cout << e.what();
+        std::cerr << "Error:" << std::endl;
+        std::cerr << e.what();
+        LogFile << "Error:" << std::endl;
+        LogFile << e.what();
         return 1;
     }
     return 0;
