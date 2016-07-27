@@ -146,37 +146,47 @@ void CorrectionData::output(H5Node &file) const
     dims.push_back(nx_);
     int n = nx_ * ny_ * nz_;
 
-    file.create_group("/alpha_x");
-    file.create_group("/alpha_y");
-    file.create_group("/beta");
+    file.create_group("alpha_x");
+    file.create_group("alpha_y");
+    file.create_group("beta");
 
     // Declare slice storage
     ArrayB1 slice(n);
 
     for (int g = 0; g < ngroup_; g++) {
+        std::stringstream path;
+        path << "alpha_x/" << std::setfill('0') << std::setw(3) << g;
+        auto ax_g = file.create_group(path.str());
+
+        path.str("");
+        path << "alpha_y/" << std::setfill('0') << std::setw(3) << g;
+        auto ay_g = file.create_group(path.str());
+
+        path.str("");
+        path << "beta/" << std::setfill('0') << std::setw(3) << g;
+        auto beta_g = file.create_group(path.str());
+
+
         for (int a = 0; a < nang_; a++) {
             {
                 slice = beta_(g, a, blitz::Range::all());
                 std::stringstream setname;
-                setname << "/beta/" << std::setfill('0') << std::setw(3) << g
-                        << "_" << std::setfill('0') << std::setw(3) << a;
-                file.write(setname.str(), slice, dims);
+                setname << std::setfill('0') << std::setw(3) << a;
+                beta_g.write(setname.str(), slice, dims);
             }
 
             {
                 slice = alpha_(g, a, blitz::Range::all(), (int)Normal::X_NORM);
                 std::stringstream setname;
-                setname << "/alpha_x/" << std::setfill('0') << std::setw(3) << g
-                        << "_" << std::setfill('0') << std::setw(3) << a;
-                file.write(setname.str(), slice, dims);
+                setname << std::setfill('0') << std::setw(3) << a;
+                ax_g.write(setname.str(), slice, dims);
             }
 
             {
                 slice = alpha_(g, a, blitz::Range::all(), (int)Normal::Y_NORM);
                 std::stringstream setname;
-                setname << "/alpha_y/" << std::setfill('0') << std::setw(3) << g
-                        << "_" << std::setfill('0') << std::setw(3) << a;
-                file.write(setname.str(), slice, dims);
+                setname << std::setfill('0') << std::setw(3) << a;
+                ay_g.write(setname.str(), slice, dims);
             }
         }
     }
