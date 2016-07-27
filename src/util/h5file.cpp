@@ -51,9 +51,16 @@ H5Node::H5Node(std::shared_ptr<H5::CommonFG> node, H5Access access)
 H5Node H5Node::create_group(std::string path)
 {
     if (access_ != H5Access::READ) {
+        std::shared_ptr<H5::CommonFG> sp;
+        try {
         H5::Group *g = new H5::Group();
         *g           = node_->createGroup(path.c_str());
-        std::shared_ptr<H5::CommonFG> sp(g);
+        sp.reset(g);
+        } catch(...) {
+            std::stringstream msg;
+            msg << "Failed to create group '" << path << "'";
+            throw EXCEPT(msg.str())
+        }
         return H5Node(sp, access_);
     }
     else {
