@@ -46,7 +46,11 @@ enum class H5Access {
     APPEND,
 };
 
+enum class H5Link { HARD, SOFT };
+
 /**
+ * \brief Wrapper class to selected HDF5 functionality.
+ *
  * Wrapper class for the HDF5 library. An instance of this class is similar
  * to the HDF5 CommonFG class, with extra stuff to make it easier to work
  * with.
