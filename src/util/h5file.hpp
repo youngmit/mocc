@@ -69,6 +69,20 @@ public:
     H5Node create_group(std::string path);
 
     /**
+     * \brief Create a link to an existing group somewhere else in the HDF5 file
+     *
+     * \param source the path to the source dataset or group, which must already
+     * exist in the file. An empty string or "." will refer to the node itself.
+     * \param destination the path for the link
+     * \param type the type of HDF5 link to create. Default: HARD
+     *
+     * This will create a new link to an existing object in the HDF5 file. A
+     * link is pretty much a shortcut to existing data.
+     */
+    void create_link(std::string source, std::string destination,
+                     H5Link type = H5Link::HARD);
+
+    /**
      * \brief Return a pointer to the underlying H5::CommonFG
      *
      * This is provided so that client code can use the full-blown HDF5
@@ -150,8 +164,7 @@ public:
             H5::DataSet dataset =
                 node_->createDataSet(path, H5::PredType::NATIVE_DOUBLE, space);
             dataset.write(data.data(), H5::PredType::NATIVE_DOUBLE);
-        }
-        catch (...) {
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to write dataset: " << path;
             throw EXCEPT(msg.str().c_str());
@@ -174,8 +187,7 @@ public:
             H5::DataSet dataset =
                 node_->createDataSet(path, H5::PredType::NATIVE_INT, space);
             dataset.write(&data, H5::PredType::NATIVE_INT);
-        }
-        catch (...) {
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to write dataset: " << path;
             throw EXCEPT(msg.str().c_str());
@@ -197,8 +209,7 @@ public:
             H5::DataSet dataset =
                 node_->createDataSet(path, H5::PredType::NATIVE_ULONG, space);
             dataset.write(&data, H5::PredType::NATIVE_ULONG);
-        }
-        catch (...) {
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to write dataset: " << path;
             throw EXCEPT(msg.str().c_str());
@@ -254,8 +265,7 @@ public:
             h5size    = dataspace.getSimpleExtentNpoints();
             dims.resize(ndim);
             dataspace.getSimpleExtentDims(dims.data());
-        }
-        catch (...) {
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to access dataset: " << path;
             throw EXCEPT(msg.str().c_str());
@@ -271,8 +281,7 @@ public:
             // Allocate space in the destination array
             if (data.dimensions() == 1) {
                 data.resize(h5size);
-            }
-            else {
+            } else {
                 if (data.dimensions() != ndim) {
                     throw EXCEPT("Array and dataset dimensionality "
                                  "disagree.");
@@ -282,15 +291,13 @@ public:
                 }
                 data.resize(shape);
             }
-        }
-        else {
+        } else {
             if (data.dimensions() == 1) {
                 if ((int)data.size() != h5size) {
                     std::cerr << data.size() << " " << h5size << std::endl;
                     throw EXCEPT("Incorrect array size.");
                 }
-            }
-            else {
+            } else {
                 // Make sure the dimensions match
                 for (int i = 0; i < ndim; i++) {
                     if (shape[i] != (int)dims[i]) {
@@ -302,8 +309,7 @@ public:
 
         try {
             dataset.read(data.data(), H5::PredType::NATIVE_DOUBLE);
-        }
-        catch (...) {
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to read dataset: " << path;
             throw EXCEPT(msg.str());
@@ -343,8 +349,7 @@ public:
             H5::DataSet dataset =
                 node_->createDataSet(path, H5::PredType::NATIVE_DOUBLE, space);
             dataset.write(d.data(), H5::PredType::NATIVE_DOUBLE);
-        }
-        catch (...) {
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to write dataset: " << path;
             throw EXCEPT(msg.str().c_str());

@@ -53,19 +53,36 @@ H5Node H5Node::create_group(std::string path)
     if (access_ != H5Access::READ) {
         std::shared_ptr<H5::CommonFG> sp;
         try {
-        H5::Group *g = new H5::Group();
-        *g           = node_->createGroup(path.c_str());
-        sp.reset(g);
-        } catch(...) {
+            H5::Group *g = new H5::Group();
+            *g           = node_->createGroup(path.c_str());
+            sp.reset(g);
+        } catch (...) {
             std::stringstream msg;
             msg << "Failed to create group '" << path << "'";
             throw EXCEPT(msg.str())
         }
         return H5Node(sp, access_);
-    }
-    else {
+    } else {
         throw EXCEPT("No write permissions");
     }
+}
+
+void H5Node::create_link(std::string source, std::string destination,
+                         H5Link type)
+{
+    try {
+        switch (type) {
+        case H5Link::HARD:
+            node_->link(H5G_LINK_HARD, source.c_str(), destination.c_str());
+            break;
+        case H5Link::SOFT:
+            node_->link(H5G_LINK_SOFT, source.c_str(), destination.c_str());
+            break;
+        }
+    } catch (...) {
+        throw EXCEPT("Failed to create link");
+    }
+    return;
 }
 
 std::vector<hsize_t> H5Node::dimensions(std::string path)
@@ -78,8 +95,7 @@ std::vector<hsize_t> H5Node::dimensions(std::string path)
         dataspace.getSimpleExtentDims(dims.data());
 
         return dims;
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to get dataset dimensions: " << path;
         throw EXCEPT(msg.str());
@@ -96,8 +112,7 @@ void H5Node::write(std::string path, const VecF &data)
         H5::DataSet dataset =
             node_->createDataSet(path, H5::PredType::NATIVE_DOUBLE, space);
         dataset.write(data.data(), H5::PredType::NATIVE_DOUBLE);
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to write dataset: " << path;
         throw EXCEPT(msg.str().c_str());
@@ -120,8 +135,7 @@ void H5Node::write(std::string path, const VecF &data, VecI dims)
         H5::DataSet dataset =
             node_->createDataSet(path, H5::PredType::NATIVE_DOUBLE, space);
         dataset.write(data.data(), H5::PredType::NATIVE_DOUBLE);
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to write dataset: " << path;
         throw EXCEPT(msg.str().c_str());
@@ -148,8 +162,7 @@ void H5Node::write(std::string path, const ArrayB1 &data, VecI dims)
         H5::DataSet dataset =
             node_->createDataSet(path, H5::PredType::NATIVE_DOUBLE, space);
         dataset.write(data.data(), H5::PredType::NATIVE_DOUBLE);
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to write dataset: " << path;
         throw EXCEPT(msg.str().c_str());
@@ -168,8 +181,7 @@ void H5Node::read_1d(std::string path, ArrayB1 &data) const
         dataset   = node_->openDataSet(path);
         dataspace = dataset.getSpace();
         h5size    = dataspace.getSimpleExtentNpoints();
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to access dataset: " << path;
         throw EXCEPT(msg.str());
@@ -177,8 +189,7 @@ void H5Node::read_1d(std::string path, ArrayB1 &data) const
 
     if (data.size() == 0) {
         data.resize(h5size);
-    }
-    else {
+    } else {
         if ((int)data.size() != h5size) {
             std::cerr << data.size() << " " << h5size << std::endl;
             throw EXCEPT("Incompatible data sizes");
@@ -187,8 +198,7 @@ void H5Node::read_1d(std::string path, ArrayB1 &data) const
 
     try {
         dataset.read(data.data(), H5::PredType::NATIVE_DOUBLE);
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to read dataset: " << path;
         throw EXCEPT(msg.str());
@@ -209,8 +219,7 @@ void H5Node::read(std::string path, std::vector<double> &data) const
         dataspace = dataset.getSpace();
         ndim      = dataspace.getSimpleExtentNdims();
         h5size    = dataspace.getSimpleExtentNpoints();
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to access dataset: " << path;
         throw EXCEPT(msg.str());
@@ -222,8 +231,7 @@ void H5Node::read(std::string path, std::vector<double> &data) const
 
     if (data.size() == 0) {
         data.resize(h5size);
-    }
-    else {
+    } else {
         if ((int)data.size() != h5size) {
             throw EXCEPT("Incompatible data sizes");
         }
@@ -231,8 +239,7 @@ void H5Node::read(std::string path, std::vector<double> &data) const
 
     try {
         dataset.read(data.data(), H5::PredType::NATIVE_DOUBLE);
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to read dataset: " << path;
         throw EXCEPT(msg.str());
@@ -249,8 +256,7 @@ void H5Node::write(std::string path, const std::string &str)
         H5::DataSet dataset = node_->createDataSet(path, vlst, space);
         H5std_string str_data(str);
         dataset.write(str_data, vlst);
-    }
-    catch (...) {
+    } catch (...) {
         std::stringstream msg;
         msg << "Failed to write string data: " << path;
         throw EXCEPT(msg.str());
