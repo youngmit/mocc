@@ -202,6 +202,8 @@ void AngularQuadrature::output(H5Node &node) const
 
     auto g = node.create_group("ang_quad");
 
+    g.write("n_polar", n_polar_);
+    g.write("n_azimuthal", n_azimuthal_);
     g.write("alpha", alpha);
     g.write("theta", theta);
     g.write("omega_x", ox);
