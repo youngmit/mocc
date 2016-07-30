@@ -245,6 +245,8 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
         sn_sweeper_->output(g);
     }
 
+    file.create_link("/Sn/xsmesh", "/xsmesh");
+
     // Put the MoC data in its own location
     {
         auto g = file.create_group("/MoC");
