@@ -24,6 +24,7 @@
 namespace mocc {
 void CorrectionData::from_data(const pugi::xml_node &input)
 {
+    int np = mesh_->macroplanes().size();
 
     if (input.child("data").empty()) {
         // There isn't actually any data. Go ahead and return
@@ -34,12 +35,12 @@ void CorrectionData::from_data(const pugi::xml_node &input)
 
     LogFile << "Loading CDD data from file(s)." << std::endl;
     // First, validate the data tags. Make sure that they are the right
-    // size and have cover all planes in the mesh.
+    // size and cover all planes in the mesh.
     {
-        std::vector<bool> plane_data(nz_, false);
+        std::vector<bool> plane_data(np, false);
         for (auto data = input.child("data"); data;
              data      = data.next_sibling("data")) {
-            int top_plane = 0;
+            int top_plane = np - 1;
             int bot_plane = 0;
             if (!data.attribute("top_plane").empty()) {
                 top_plane = data.attribute("top_plane").as_int();
@@ -48,10 +49,10 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                 bot_plane = data.attribute("bottom_plane").as_int();
             }
 
-            if ((bot_plane < 0) || (bot_plane >= (int)mesh_->nz())) {
+            if ((bot_plane < 0) || (bot_plane >= np)) {
                 throw EXCEPT("Invalid bottom_plane");
             }
-            if ((top_plane < 0) || (top_plane >= (int)mesh_->nz())) {
+            if ((top_plane < 0) || (top_plane >= np)) {
                 throw EXCEPT("Invalid top_plane");
             }
 
@@ -69,7 +70,7 @@ void CorrectionData::from_data(const pugi::xml_node &input)
             }
         }
         LogFile << "Correction data is being specified for the following "
-                   "planes:"
+                   "macroplanes:"
                 << std::endl;
         LogFile << print_range(plane_data) << std::endl;
     }
@@ -94,7 +95,7 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                 {
                     std::stringstream path;
                     path << "/alpha_x/" << std::setfill('0') << std::setw(3)
-                         << ig << "_" << std::setfill('0') << std::setw(3)
+                         << ig << "/" << std::setfill('0') << std::setw(3)
                          << iang;
 
                     h5f.read_1d(path.str(), slice);
@@ -102,6 +103,7 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                     for (int ip = bot_plane; ip <= top_plane; ip++) {
                         int stt = mesh_->plane_cell_begin(ip);
                         int stp = mesh_->plane_cell_end(ip) - 1;
+                        assert(stp < nreg_);
                         alpha_(ig, iang, blitz::Range(stt, stp),
                                (int)Normal::X_NORM) = slice;
                     }
@@ -116,6 +118,7 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                     for (int ip = bot_plane; ip <= top_plane; ip++) {
                         int stt = mesh_->plane_cell_begin(ip);
                         int stp = mesh_->plane_cell_end(ip) - 1;
+                        assert(stp < nreg_);
                         alpha_(ig, iang, blitz::Range(stt, stp),
                                (int)Normal::Y_NORM) = slice;
                     }
@@ -128,6 +131,7 @@ void CorrectionData::from_data(const pugi::xml_node &input)
                     for (int ip = bot_plane; ip <= top_plane; ip++) {
                         int stt = mesh_->plane_cell_begin(ip);
                         int stp = mesh_->plane_cell_end(ip) - 1;
+                        assert(stp < nreg_);
                         beta_(ig, iang, blitz::Range(stt, stp)) = slice;
                     }
                 }
@@ -165,7 +169,6 @@ void CorrectionData::output(H5Node &file) const
         path.str("");
         path << "beta/" << std::setfill('0') << std::setw(3) << g;
         auto beta_g = file.create_group(path.str());
-
 
         for (int a = 0; a < nang_; a++) {
             {
