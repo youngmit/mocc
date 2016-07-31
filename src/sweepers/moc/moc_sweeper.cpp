@@ -387,8 +387,11 @@ void MoCSweeper::apply_transverse_leakage(int group, const ArrayB1 &tl)
         split_      = 0.0;
         for (int ireg = 0; ireg < n_reg_; ireg++) {
             real_t s = (*source_)[ireg] + tl(ireg);
-            /// \todo once we get this working, clean this branch up
             if (s < 0.0) {
+                if(flux_1g_(ireg) < 0.0){
+                    std::cout << ireg << " " << flux_1g_(ireg) << std::endl;
+                    throw EXCEPT("Negative flux when splitting");
+                }
                 n_split++;
                 split_(ireg)     = -s / flux_1g_(ireg);
                 (*source_)[ireg] = 0.0;
