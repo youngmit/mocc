@@ -55,23 +55,19 @@ UP_SnSweeper_t SnSweeperFactory(const pugi::xml_node &input,
                       << std::endl;
             return UP_SnSweeper_t(
                 new sn::SnSweeperVariant<sn::CellWorker_DD>(input, mesh));
-        }
-        else if (axial == "sc") {
+        } else if (axial == "sc") {
             LogScreen << "Using Step Characteristics axial treatment"
                       << std::endl;
             return UP_SnSweeper_t(
                 new sn::SnSweeperVariant<sn::CellWorker_DD_SC>(input, mesh));
-        }
-        else {
+        } else {
             throw EXCEPT("Unsupported axial treatment");
         }
-    }
-    else if (equation == "cdd") {
+    } else if (equation == "cdd") {
         // Defer to the CDD factory, but discard the correction data
         auto cdd_pair = SnSweeperFactory_CDD(input, mesh);
         return std::move(cdd_pair.first);
-    }
-    else {
+    } else {
         throw EXCEPT("Unrecognized equation for Sn sweeper.");
     }
 
