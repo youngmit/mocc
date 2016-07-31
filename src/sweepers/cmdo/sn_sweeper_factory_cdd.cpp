@@ -15,8 +15,8 @@
 */
 
 #include "sn_sweeper_factory_cdd.hpp"
-#include "sn_sweeper_factory.hpp"
 #include "util/string_utils.hpp"
+#include "sn_sweeper_factory.hpp"
 
 namespace mocc {
 namespace cmdo {
@@ -67,8 +67,7 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
 
         swp->set_corrections(corrections);
         sweeper.reset(swp);
-    }
-    else if (axial == "sc") {
+    } else if (axial == "sc") {
         LogScreen << "Step Characteristics axial treatment" << std::endl;
         cmdo::SnSweeper_CDD<CellWorker_CDD_SC> *swp =
             new cmdo::SnSweeper_CDD<cmdo::CellWorker_CDD_SC>(input, mesh);
@@ -80,8 +79,7 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
 
         swp->set_corrections(corrections);
         sweeper.reset(swp);
-    }
-    else if (axial == "fw") {
+    } else if (axial == "fw") {
         LogScreen << "Forward Difference axial treatment" << std::endl;
         cmdo::SnSweeper_CDD<CellWorker_CDD_FW> *swp =
             new cmdo::SnSweeper_CDD<cmdo::CellWorker_CDD_FW>(input, mesh);
@@ -94,8 +92,7 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
 
         swp->set_corrections(corrections);
         sweeper.reset(swp);
-    }
-    else {
+    } else {
         throw EXCEPT("Unrecognized axial treatment in CDD.");
     }
     return CDDPair_t(std::move(sweeper), corrections);
