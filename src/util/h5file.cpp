@@ -34,8 +34,8 @@ unsigned int convert_access(mocc::H5Access access)
 }
 
 namespace mocc {
-H5Node::H5Node(std::string filename, H5Access access)
-    : file_(new H5::H5File(filename.c_str(), convert_access(access))),
+H5Node::H5Node(const char *filename, H5Access access)
+    : file_(new H5::H5File(filename, convert_access(access))),
       node_(file_),
       access_(access)
 {

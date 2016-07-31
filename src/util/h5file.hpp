@@ -57,7 +57,10 @@ enum class H5Link { HARD, SOFT };
  */
 class H5Node {
 public:
-    H5Node(std::string filename, H5Access access);
+    H5Node(std::string filename, H5Access access):
+        H5Node(filename.c_str(), access){return;}
+    
+    H5Node(const char *filename, H5Access access);
 
     /**
      * \brief Create a new group in the HDF5 file.
