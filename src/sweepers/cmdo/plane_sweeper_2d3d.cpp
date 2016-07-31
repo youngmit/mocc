@@ -155,6 +155,17 @@ void PlaneSweeper_2D3D::sweep(int group)
     if (do_snproject_) {
         ArrayB1 sn_flux(mesh_.n_pin());
         sn_sweeper_->get_pin_flux_1g(group, sn_flux);
+        int n_neg = 0;
+        for (auto &v : sn_flux) {
+            if (v < 0.0) {
+                n_neg++;
+                v = 0.0;
+            }
+        }
+        if (n_neg > 0) {
+            LogScreen << "Corrected " << n_neg
+                      << " negative fluxes in Sn projection" << std::endl;
+        }
         moc_sweeper_.set_pin_flux_1g(group, sn_flux);
     }
 
