@@ -135,17 +135,17 @@ TEST(fromdata)
 
     CHECK_EQUAL(864, xs_mesh.size());
 
-    for(int i=576; i<864; i++) {
+    for (int i = 576; i < 864; i++) {
         CHECK_CLOSE(2.005998E-02, xs_mesh[i].xsmacnf(0), 0.000001);
     }
 
-    for(int ilat=0; ilat<96; ilat++) {
-        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+0].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+1].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+2].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+3].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+4].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+5].xsmacnf(0), 0.000001);
+    for (int ilat = 0; ilat < 96; ilat++) {
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat * 6 + 0].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat * 6 + 1].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat * 6 + 2].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat * 6 + 3].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat * 6 + 4].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat * 6 + 5].xsmacnf(0), 0.000001);
     }
 
     // test this whole plane. It's got some asymmetry, so if everything is good
@@ -201,20 +201,21 @@ TEST(macroplanes)
 
     CHECK_EQUAL(288, xs_mesh.size());
 
-    for(int i=216; i<288; i++) {
+    for (int i = 216; i < 288; i++) {
         CHECK_CLOSE(2.005998E-02, xs_mesh[i].xsmacnf(0), 0.000001);
     }
-    for(int ilat=0; ilat<36; ilat++) {
-        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+0].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+1].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+2].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+3].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0115752, xs_mesh[ilat*6+4].xsmacnf(0), 0.000001);
-        CHECK_CLOSE(0.0125521, xs_mesh[ilat*6+5].xsmacnf(0), 0.000001);
+    for (int ilat = 0; ilat < 36; ilat++) {
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat * 6 + 0].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat * 6 + 1].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat * 6 + 2].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat * 6 + 3].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0115752, xs_mesh[ilat * 6 + 4].xsmacnf(0), 0.000001);
+        CHECK_CLOSE(0.0125521, xs_mesh[ilat * 6 + 5].xsmacnf(0), 0.000001);
     }
 }
 
-TEST(complicated) {
+TEST(complicated)
+{
     pugi::xml_document geom_xml;
     pugi::xml_parse_result result = geom_xml.load_string(complex_xml.c_str());
     REQUIRE CHECK(result);
@@ -224,21 +225,21 @@ TEST(complicated) {
 
     CHECK_EQUAL(960, xs_mesh.size());
     CHECK_EQUAL(2880, xs_mesh.n_reg_expanded());
-    
+
     VecF xs(mesh.n_reg(MeshTreatment::PIN), 0.0);
     int ixs = 0;
-    for(const auto &xsreg: xs_mesh) {
+    for (const auto &xsreg : xs_mesh) {
         real_t xs_i = xsreg.xsmactr(0);
-        for(const int reg: xsreg.reg()){
+        for (const int reg : xsreg.reg()) {
             xs[reg] = xs_i;
         }
         ixs++;
     }
 
-    int icell = mesh.coarse_cell(Position(1,6,19));
+    int icell = mesh.coarse_cell(Position(1, 6, 19));
     std::cout << icell << std::endl;
     CHECK_CLOSE(1.40063733419359E-01, xs[icell], REAL_FUZZ);
-    icell = mesh.coarse_cell(Position(1,6,20));
+    icell = mesh.coarse_cell(Position(1, 6, 20));
     CHECK_CLOSE(1.9242061690222E-01, xs[icell], REAL_FUZZ);
 }
 
