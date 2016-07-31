@@ -118,6 +118,10 @@ private:
     */
     void homogenize_region_flux(int i, int first_reg, const Pin &pin,
                                 XSMeshRegion &xsr) const;
+
+    void read_data_single(const pugi::xml_node &data);
+
+    void read_data_multi(const pugi::xml_node &input);
 };
 
 typedef std::shared_ptr<XSMeshHomogenized> SP_XSMeshHomogenized_t;

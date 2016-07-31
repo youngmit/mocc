@@ -50,7 +50,7 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
     // in a MeshTreatment::PIN-type mesh within the corresponding macroplane.
     regions_.reserve(n_xsreg);
     n_reg_expanded_ = 0;
-    int ixsreg = 0;
+    int ixsreg      = 0;
     for (const auto &mplane : mesh_.macroplanes()) {
         VecI ireg;
         ireg.reserve(mplane.iz_max - mplane.iz_min + 1);
@@ -102,150 +102,36 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
         throw EXCEPT("No data found in input tag.");
     }
 
-    int nreg_plane = mesh.nx() * mesh.ny();
-
     // First, validate the data tags. Make sure that they are the right size and
-    // cover valid planes in the mesh.
-    {
-        int np = mesh_.macroplanes().size();
-        std::vector<bool> plane_data(np, false);
-        for (auto data = input.child("data"); data;
-             data      = data.next_sibling("data")) {
-            int top_plane = 0;
-            int bot_plane = 0;
-            if (!data.attribute("top_plane").empty()) {
-                top_plane = data.attribute("top_plane").as_int();
-            }
-            if (!data.attribute("bottom_plane").empty()) {
-                bot_plane = data.attribute("bottom_plane").as_int();
-            }
+    // cover valid planes in the mesh. There are two ways to do this, either
+    // with 2-D data that we apply to planes with ranges, or one 3-D file, which
+    // should be 100% compatible, size-wise
 
-            if ((bot_plane < 0) || (bot_plane >= np)) {
-                throw EXCEPT("Invalid bottom_plane");
-            }
-            if ((top_plane < 0) || (top_plane >= np)) {
-                throw EXCEPT("Invalid top_plane");
-            }
-
-            if (data.attribute("file").empty()) {
-                throw EXCEPT("No file specified.");
-            }
-
-            // Check the dimensions of the contained XSMesh
-            H5Node h5d(data.attribute("file").value(), H5Access::READ);
-            auto dims = h5d.dimensions("/xsmesh/xstr/0");
-            if (dims[2] != mesh_.nx()) {
-                std::stringstream msg;
-                msg << "Incorrect XS Mesh dimensions: " << dims[2] << " "
-                    << mesh_.nx();
-                throw EXCEPT(msg.str());
-            }
-            if (dims[1] != mesh_.ny()) {
-                std::stringstream msg;
-                msg << "Incorrect XS Mesh dimensions: " << dims[1] << " "
-                    << mesh_.ny();
-                throw EXCEPT("Incorrect XS Mesh dimensions");
-            }
-            if (dims[0] != 1) {
-                throw EXCEPT("Data should only have one plane");
-            }
-
-            for (int ip = bot_plane; ip <= top_plane; ip++) {
-                if (plane_data[ip]) {
-                    std::stringstream msg;
-                    msg << "Plane data is over-specified. Look at plane " << ip;
-                    throw EXCEPT(msg.str());
-                }
-                plane_data[ip] = true;
-            }
-        }
-
-        LogFile << "Data is being specified for the following macroplanes:"
-                << std::endl;
-        LogFile << print_range(plane_data) << std::endl;
+    int n_data = 0;
+    for (const auto &d : input.children("data")) {
+        LogFile << "Found <data /> specification for "
+                << d.attribute("file").value() << std::endl;
+        n_data++;
     }
 
-    // We are going to want a nice contiguous buffer for storing xs as they
-    // come in from the file
-    ArrayB1 tr_buf(nreg_plane);
-    ArrayB1 nf_buf(nreg_plane);
-    ArrayB1 ch_buf(nreg_plane);
-    ArrayB1 kf_buf(nreg_plane);
-
-    for (auto data = input.child("data"); data;
-         data      = data.next_sibling("data")) {
-        int top_plane = 0;
-        int bot_plane = 0;
-        if (!data.attribute("top_plane").empty()) {
-            top_plane = data.attribute("top_plane").as_int();
-        }
-        if (!data.attribute("bottom_plane").empty()) {
-            bot_plane = data.attribute("bottom_plane").as_int();
-        }
-
+    bool single_compat = false;
+    if (n_data == 1) {
+        // see if the specified file seems compatible
+        const auto &data = input.child("data");
         H5Node h5d(data.attribute("file").value(), H5Access::READ);
-
-        h5d.read("//xsmesh/eubounds", eubounds_);
-
-        // Get all the group data out to memory first
-        for (int ig = 0; ig < (int)ng_; ig++) {
-            {
-                std::stringstream path;
-                path << "/xsmesh/xstr/" << ig;
-                h5d.read(path.str(), tr_buf);
-            }
-            {
-                std::stringstream path;
-                path << "/xsmesh/xsnf/" << ig;
-                h5d.read(path.str(), nf_buf);
-            }
-            {
-                std::stringstream path;
-                path << "/xsmesh/xsch/" << ig;
-                h5d.read(path.str(), ch_buf);
-            }
-            {
-                std::stringstream path;
-                path << "/xsmesh/xsf/" << ig;
-                h5d.read(path.str(), kf_buf);
-            }
-
-            // Apply the above to the appropriate planes of the actual xs mesh
-            // Since the data are output to the HDF 5 for plotting, they need to
-            // be rearranged to the pin order
-            for (int ip = bot_plane; ip <= top_plane; ip++) {
-                const MacroPlane &mplane = mesh_.macroplanes()[ip];
-                for (unsigned ipin = 0; ipin < mplane.size(); ipin++) {
-                    int ixsreg   = nreg_plane * ip + ipin;
-                    Position pos = mesh_.pin_position(ipin);
-                    pos.z        = 0;
-                    int icell    = mesh_.coarse_cell(pos);
-                    xstr_(ixsreg, ig) = tr_buf(icell);
-                    xsnf_(ixsreg, ig) = nf_buf(icell);
-                    xsch_(ixsreg, ig) = ch_buf(icell);
-                    xsf_(ixsreg, ig)  = kf_buf(icell);
-                }
-            }
+        auto dims = h5d.dimensions("/xsmesh/xstr/0");
+        if ((dims[2] == mesh_.nx()) && (dims[1] == mesh_.ny()) &&
+            (dims[0] == mesh.nz())) {
+            single_compat = true;
         }
+    }
 
-        // We dont try to plot the scattering cross sections in the same way
-        // as we do the others, so this can be read in more naturally.
-        ArrayB3 scat;
-        h5d.read("/xsmesh/xssc", scat);
-
-        // Storing the results of the read above into the appropriate arrays
-        // should be sufficient for all cross sections except the scattering
-        // matrices. Go through and store the scattering matrices on the xsmesh
-        // regions too
-        for (int ipin = 0; ipin < nreg_plane; ipin++) {
-            ScatteringMatrix xssc(
-                scat(ipin, blitz::Range::all(), blitz::Range::all()));
-            for (int ip = bot_plane; ip <= top_plane; ip++) {
-                int ixsreg                = ipin + nreg_plane * ip;
-                regions_[ixsreg].xsmacsc_ = xssc;
-            }
-        }
-    } // <data> tag loop
+    if (single_compat) {
+        LogScreen << "Reading single data file for cross sections" << std::endl;
+        this->read_data_single(input.child("data"));
+    } else {
+        this->read_data_multi(input);
+    }
 
     return;
 } // HDF5 constructor
@@ -437,6 +323,240 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
     ScatteringMatrix scat_mat(scat);
 
     xsr.update(xstr, xsnf, xsch, xsf, scat_mat);
+
+    return;
+}
+
+void XSMeshHomogenized::read_data_single(const pugi::xml_node &data)
+{
+    // Make sure that planes are either not defined, or cover the whole mesh
+    {
+        int bot_plane = 0;
+        int top_plane = mesh_.nz()-1;
+        if(!data.attribute("top_plane").empty()){
+            top_plane = data.attribute("top_plane").as_int(-1);
+        }
+        if(!data.attribute("bottom_plane").as_int(-1)) {
+            bot_plane = data.attribute("bottom_plane").as_int(-1);
+        }
+
+        if((bot_plane != 0) == (top_plane != mesh_.nz()-1)) {
+            throw EXCEPT("Plane bounds do not match mesh");
+        }
+
+    }
+
+
+    H5Node h5d(data.attribute("file").value(), H5Access::READ);
+
+    // We are going to want a nice contiguous buffer for storing xs as they
+    // come in from the file
+    ArrayB1 tr_buf(regions_.size());
+    ArrayB1 nf_buf(regions_.size());
+    ArrayB1 ch_buf(regions_.size());
+    ArrayB1 kf_buf(regions_.size());
+
+    for (int ig = 0; ig < (int)ng_; ig++) {
+        {
+            std::stringstream path;
+            path << "/xsmesh/xstr/" << ig;
+            h5d.read(path.str(), tr_buf);
+        }
+        {
+            std::stringstream path;
+            path << "/xsmesh/xsnf/" << ig;
+            h5d.read(path.str(), nf_buf);
+        }
+        {
+            std::stringstream path;
+            path << "/xsmesh/xsch/" << ig;
+            h5d.read(path.str(), ch_buf);
+        }
+        {
+            std::stringstream path;
+            path << "/xsmesh/xsf/" << ig;
+            h5d.read(path.str(), kf_buf);
+        }
+
+        // Apply the above to the appropriate planes of the actual xs mesh
+        // Since the data are output to the HDF 5 for plotting, they need to
+        // be rearranged to the pin order
+        int ipin            = 0;
+        unsigned nreg_plane = mesh_.nx() * mesh_.ny();
+        for (unsigned iplane = 0; iplane < mesh_.macroplanes().size();
+             iplane++) {
+            for (unsigned i_in = 0; i_in < nreg_plane; i_in++) {
+                Position pos = mesh_.pin_position(ipin);
+                pos.z        = iplane;
+                int icell    = mesh_.coarse_cell(pos);
+                xstr_(ipin, ig) = tr_buf(icell);
+                xsnf_(ipin, ig) = nf_buf(icell);
+                xsch_(ipin, ig) = ch_buf(icell);
+                xsf_(ipin, ig)  = kf_buf(icell);
+                ipin++;
+            }
+        }
+    } // groups
+
+    // We dont try to plot the scattering cross sections in the same way
+    // as we do the others, so this can be read in more naturally.
+    ArrayB3 scat;
+    h5d.read("/xsmesh/xssc", scat);
+    if (scat.shape()[0] != (int)regions_.size()) {
+        throw EXCEPT("Scattering data is the wrong size");
+    }
+
+    for (int ixsreg = 0; ixsreg < (int)regions_.size(); ixsreg++) {
+        ScatteringMatrix xssc(
+            scat(ixsreg, blitz::Range::all(), blitz::Range::all()));
+        regions_[ixsreg].xsmacsc_ = xssc;
+    }
+
+    return;
+}
+
+void XSMeshHomogenized::read_data_multi(const pugi::xml_node &input)
+{
+    int nreg_plane = mesh_.nx() * mesh_.ny();
+    // check the files for compatibility
+    {
+        int np = mesh_.macroplanes().size();
+        std::vector<bool> plane_data(np, false);
+        for (const auto &data : input.children("data")) {
+            int top_plane = 0;
+            int bot_plane = 0;
+            if (!data.attribute("top_plane").empty()) {
+                top_plane = data.attribute("top_plane").as_int();
+            }
+            if (!data.attribute("bottom_plane").empty()) {
+                bot_plane = data.attribute("bottom_plane").as_int();
+            }
+
+            if ((bot_plane < 0) || (bot_plane >= np)) {
+                throw EXCEPT("Invalid bottom_plane");
+            }
+            if ((top_plane < 0) || (top_plane >= np)) {
+                throw EXCEPT("Invalid top_plane");
+            }
+
+            if (data.attribute("file").empty()) {
+                throw EXCEPT("No file specified.");
+            }
+
+            // Check the dimensions of the contained XSMesh
+            H5Node h5d(data.attribute("file").value(), H5Access::READ);
+            auto dims = h5d.dimensions("/xsmesh/xstr/0");
+            if (dims[2] != mesh_.nx()) {
+                std::stringstream msg;
+                msg << "Incorrect XS Mesh dimensions: " << dims[2] << " "
+                    << mesh_.nx();
+                throw EXCEPT(msg.str());
+            }
+            if (dims[1] != mesh_.ny()) {
+                std::stringstream msg;
+                msg << "Incorrect XS Mesh dimensions: " << dims[1] << " "
+                    << mesh_.ny();
+                throw EXCEPT("Incorrect XS Mesh dimensions");
+            }
+            if (dims[0] != 1) {
+                throw EXCEPT("Data should only have one plane");
+            }
+
+            for (int ip = bot_plane; ip <= top_plane; ip++) {
+                if (plane_data[ip]) {
+                    std::stringstream msg;
+                    msg << "Plane data is over-specified. Look at plane " << ip;
+                    throw EXCEPT(msg.str());
+                }
+                plane_data[ip] = true;
+            }
+        }
+
+        LogFile << "Data is being specified for the following macroplanes:"
+                << std::endl;
+        LogFile << print_range(plane_data) << std::endl;
+    }
+
+    // We are going to want a nice contiguous buffer for storing xs as they
+    // come in from the file
+    ArrayB1 tr_buf(nreg_plane);
+    ArrayB1 nf_buf(nreg_plane);
+    ArrayB1 ch_buf(nreg_plane);
+    ArrayB1 kf_buf(nreg_plane);
+
+    for (const auto &data : input.children("data")) {
+        int top_plane = 0;
+        int bot_plane = 0;
+        if (!data.attribute("top_plane").empty()) {
+            top_plane = data.attribute("top_plane").as_int();
+        }
+        if (!data.attribute("bottom_plane").empty()) {
+            bot_plane = data.attribute("bottom_plane").as_int();
+        }
+
+        H5Node h5d(data.attribute("file").value(), H5Access::READ);
+
+        h5d.read("/xsmesh/eubounds", eubounds_);
+
+        // Get all the group data out to memory first
+        for (int ig = 0; ig < (int)ng_; ig++) {
+            {
+                std::stringstream path;
+                path << "/xsmesh/xstr/" << ig;
+                h5d.read(path.str(), tr_buf);
+            }
+            {
+                std::stringstream path;
+                path << "/xsmesh/xsnf/" << ig;
+                h5d.read(path.str(), nf_buf);
+            }
+            {
+                std::stringstream path;
+                path << "/xsmesh/xsch/" << ig;
+                h5d.read(path.str(), ch_buf);
+            }
+            {
+                std::stringstream path;
+                path << "/xsmesh/xsf/" << ig;
+                h5d.read(path.str(), kf_buf);
+            }
+
+            // Apply the above to the appropriate planes of the actual xs mesh
+            // Since the data are output to the HDF 5 for plotting, they need to
+            // be rearranged to the pin order
+            for (int ip = bot_plane; ip <= top_plane; ip++) {
+                const MacroPlane &mplane = mesh_.macroplanes()[ip];
+                for (unsigned ipin = 0; ipin < mplane.size(); ipin++) {
+                    int ixsreg   = nreg_plane * ip + ipin;
+                    Position pos = mesh_.pin_position(ipin);
+                    pos.z        = 0;
+                    int icell    = mesh_.coarse_cell(pos);
+                    xstr_(ixsreg, ig) = tr_buf(icell);
+                    xsnf_(ixsreg, ig) = nf_buf(icell);
+                    xsch_(ixsreg, ig) = ch_buf(icell);
+                    xsf_(ixsreg, ig)  = kf_buf(icell);
+                }
+            }
+        }
+
+        // We dont try to plot the scattering cross sections in the same way
+        // as we do the others, so this can be read in more naturally.
+        ArrayB3 scat;
+        h5d.read("/xsmesh/xssc", scat);
+
+        // Storing the results of the read above into the appropriate arrays
+        // should be sufficient for all cross sections except the scattering
+        // matrices. Go through and store the scattering matrices on the xsmesh
+        // regions too
+        for (int ipin = 0; ipin < nreg_plane; ipin++) {
+            ScatteringMatrix xssc(
+                scat(ipin, blitz::Range::all(), blitz::Range::all()));
+            for (int ip = bot_plane; ip <= top_plane; ip++) {
+                int ixsreg                = ipin + nreg_plane * ip;
+                regions_[ixsreg].xsmacsc_ = xssc;
+            }
+        }
+    } // <data> tag loop
 
     return;
 }
