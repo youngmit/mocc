@@ -46,21 +46,30 @@ void Warn(const std::string &msg);
 
 class Exception : public std::exception {
 public:
-    Exception(const char *file, int line, const char *func, const char *msg);
-    Exception(const char *file, int line, const char *func,
-              const std::string &msg);
+    struct Info {
+    public:
+        Info(const char *file, int line, const char *func, const char *msg):
+            file(file), line(line), func(func), msg(msg)
+            {return;}
+        Info(const char *file, int line, const char *func, std::string msg):
+            Info(file, line, func, msg.c_str()){return;}
+        std::string file;
+        unsigned line;
+        std::string func;
+        std::string msg;
+    };
+    Exception(Info info);
+    Exception(Info info, const Exception &parent);
 
     const char *what() const noexcept;
 
 private:
-    std::string file_;
-    int line_;
-    std::string func_;
-    std::string message_;
+    Info info_;
     std::string print_message_;
 };
 
 extern void Fail(Exception e);
 
-#define EXCEPT(msg) Exception(__FILE__, __LINE__, __func__, msg);
+#define EXCEPT(msg) Exception(Exception::Info(__FILE__, __LINE__, __func__, msg));
+#define EXCEPT_E(msg, e) Exception(Exception::Info(__FILE__, __LINE__, __func__, msg), e);
 }

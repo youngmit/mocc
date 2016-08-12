@@ -56,26 +56,21 @@ void Fail(Exception e)
     exit(EXIT_FAILURE);
 }
 
-Exception::Exception(const char *file, int line, const char *func,
-                     const char *msg)
-    : file_(file), line_(line), func_(func), message_(msg)
+Exception::Exception(Info info)
+    : info_(info)
 {
     std::stringstream ret;
-    ret << file_ << ":" << line_ << " in " << func_ << std::endl;
-    ret << message_ << std::endl;
+    ret << info_.file << ":" << info.line << " in " << info.func << std::endl;
+    ret << info_.msg << std::endl;
     print_message_ = ret.str();
 
     return;
 }
 
-Exception::Exception(const char *file, int line, const char *func,
-                     const std::string &msg)
-    : file_(file), line_(line), func_(func), message_(msg)
+Exception::Exception(Info info, const Exception &parent)
+    : Exception(info)
 {
-    std::stringstream ret;
-    ret << file_ << ":" << line_ << " in " << func_ << std::endl;
-    ret << message_ << std::endl;
-    print_message_ = ret.str();
+    print_message_.append(parent.what());
 
     return;
 }
