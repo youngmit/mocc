@@ -56,6 +56,7 @@ public:
      * boundary
      * \param n_bc the number of conditions to store for each direction
      * normal.
+     * \param dim the dimensionality of the associated sweeper. Default=2
      *
      * To cut down on code duplication, just expand the scalar \p n_bc into
      * a vector and call the general case (below).
@@ -74,6 +75,7 @@ public:
      * boundary
      * \param n_bc a vector containing the number of BCs needed for each
      * angle.
+     * \param dim the dimensionality of the associated sweeper. Default=2
      */
     BoundaryCondition(int n_group, const AngularQuadrature &angquad,
                       BC_Type_t bc, std::vector<BC_Size_t> n_bc, int dim=2);

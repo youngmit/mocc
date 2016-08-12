@@ -96,8 +96,8 @@ public:
     }
 
     /**
-     * \brief Return the total number of pins in all of the \ref Lattices of
-     * this \ref Plane
+     * \brief Return the total number of pins in all of the \ref Lattice objects
+     * in this \ref Plane
      */
     size_t n_pin() const
     {
