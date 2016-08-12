@@ -153,7 +153,7 @@ public:
     void update(const VecF &xstr, const VecF &xsnf, const VecF &xsch,
                 const VecF &xsf, const ScatteringMatrix &xssc)
     {
-        for (int ig = 0; ig < (int)xssc.n_group(); ig++) {
+        for (int ig = 0; ig < xssc.n_group(); ig++) {
             xsmactr_[ig] = xstr[ig];
             xsmacnf_[ig] = xsnf[ig];
             xsmacch_[ig] = xsch[ig];
@@ -161,6 +161,22 @@ public:
             xsmacrm_[ig] = xstr[ig] - xssc.self_scat(ig);
         }
         xsmacsc_ = xssc;
+        return;
+    }
+
+    /**
+     * \brief Update the removal cross section
+     *
+     * This instructs an \ref XSMeshRegion to update its removal cross sections
+     * based on the state of the other cross sections. Since the removal cross
+     * section is derived from the others, it is redundant to output/input it or
+     * homogenize it directly
+     */
+    void update_removal()
+    {
+        for(int ig = 0; ig<xsmacsc_.n_group(); ig++) {
+            xsmacrm_[ig] = xsmactr_[ig] - xsmacsc_.self_scat(ig);
+        }
         return;
     }
 

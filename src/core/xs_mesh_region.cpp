@@ -39,4 +39,43 @@ XSMeshRegion::XSMeshRegion(const VecI &fsrs, real_t *xstr, real_t *xsnf,
     }
     return;
 }
+
+std::ostream &operator<<(std::ostream &os, const XSMeshRegion &xsr)
+{
+    int ng = xsr.xsmacsc_.n_group();
+    os << "Transport: " << std::endl;
+    for (int ig = 0; ig < ng; ig++) {
+        os << xsr.xsmactr_[ig] << " ";
+    }
+    os << std::endl;
+
+    os << "nu-fission: " << std::endl;
+    for (int ig = 0; ig < ng; ig++) {
+        os << xsr.xsmacnf_[ig] << " ";
+    }
+    os << std::endl;
+
+    os << "fission: " << std::endl;
+    for (int ig = 0; ig < ng; ig++) {
+        os << xsr.xsmacf_[ig] << " ";
+    }
+    os << std::endl;
+
+    os << "chi: " << std::endl;
+    for (int ig = 0; ig < ng; ig++) {
+        os << xsr.xsmacch_[ig] << " ";
+    }
+    os << std::endl;
+
+    os << "removal: " << std::endl;
+    for (int ig = 0; ig < ng; ig++) {
+        os << xsr.xsmacrm_[ig] << " ";
+    }
+    os << std::endl;
+
+    os << "Scattering matrix:" << std::endl;
+    os << xsr.xsmacsc_ << std::endl;
+
+    return os;
+}
 } // namespace mocc
