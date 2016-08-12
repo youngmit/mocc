@@ -22,6 +22,7 @@
 #include "util/files.hpp"
 #include "util/omp_guard.h"
 #include "util/string_utils.hpp"
+#include "util/validate_input.hpp"
 
 namespace {
 using namespace mocc;
@@ -32,6 +33,9 @@ BC_Size_t boundary_helper(const Mesh &mesh)
                           (int)mesh.nx() * (int)mesh.ny()}};
     return bc_size;
 }
+
+const std::vector<std::string> recognized_attributes = {
+    "type", "n_inner", "equation", "boundary_update", "update_incoming"};
 }
 
 namespace mocc {
@@ -51,6 +55,7 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
       gs_boundary_(true)
 {
     LogFile << "Constructing a base Sn sweeper" << std::endl;
+    validate_input(input, recognized_attributes);
 
     // Make sure we have input from the XML
     if (input.empty()) {
@@ -174,7 +179,7 @@ ArrayB3 SnSweeper::pin_powers() const
     for (const auto &xsr : *xs_mesh_) {
         for (const auto ireg : xsr.reg()) {
             Position pos = mesh_.coarse_position(ireg);
-            for( int ig=0; ig<n_group_; ig++) {
+            for (int ig = 0; ig < n_group_; ig++) {
                 real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
                 powers(pos.z, pos.y, pos.x) += p;
             }
