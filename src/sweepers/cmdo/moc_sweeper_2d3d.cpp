@@ -133,5 +133,5 @@ void MoCSweeper_2D3D::output(H5Node &node) const
     }
     return;
 }
-}
 } // Namespace mocc::cmdo
+} // Namespace mocc
