@@ -24,7 +24,7 @@
 #include "util/global_config.hpp"
 
 namespace mocc {
-XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment): state_(0)
+XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment) : state_(0)
 {
 
     LogFile << "Initializing XS Mesh... ";
@@ -65,10 +65,10 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment): state_(0)
             for (const auto &lattice : plane) {
                 for (const auto &pin : *lattice) {
                     const VecI &mat_ids = pin->mat_ids();
-                    const PinMesh &pm = pin->mesh();
-                    int ixsreg        = 0;
+                    const PinMesh &pm   = pin->mesh();
+                    int ixsreg          = 0;
                     for (const auto &mat_id : mat_ids) {
-                        for(unsigned reg=0; reg<pm.n_fsrs(ixsreg); ++reg ){
+                        for (unsigned reg = 0; reg < pm.n_fsrs(ixsreg); ++reg) {
                             fsr_map[mat_id].push_back(ireg);
                             ireg++;
                         }
