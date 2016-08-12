@@ -24,8 +24,6 @@
 namespace mocc {
 void CorrectionData::from_data(const pugi::xml_node &input)
 {
-    int np = mesh_->macroplanes().size();
-
     if (input.child("data").empty()) {
         // There isn't actually any data. Go ahead and return
         LogFile << "CorrectionData::from_data() was called, but <data/> "
@@ -34,8 +32,115 @@ void CorrectionData::from_data(const pugi::xml_node &input)
     }
 
     LogFile << "Loading CDD data from file(s)." << std::endl;
+
+    int np = mesh_->macroplanes().size();
+
+    int n_data = 0;
+
+    for (const auto &d : input.children("data")) {
+        n_data++;
+        LogFile << "Looking for correction data in file: "
+                << d.attribute("file").value() << std::endl;
+    }
+
+    bool single_file = false;
+    if (n_data == 1) {
+        // peek at the size of the data and see if it matches the entire geom
+        H5Node h5d(input.child("data").attribute("file").value(),
+                   H5Access::READ);
+        auto dims = h5d.dimensions("alpha_x/000/000");
+        if ((dims[2] == mesh_->nx()) && (dims[1] == mesh_->ny()) &&
+            ((int)dims[0] == np)) {
+            single_file = true;
+        }
+    }
+
+    if (single_file) {
+        this->read_data_single(input.child("data"));
+    } else {
+        this->read_data_multi(input);
+    }
+
+    return;
+}
+
+void CorrectionData::read_data_single(const pugi::xml_node &data,
+                                      int bottom_plane, int top_plane)
+{
+    // Make sure that if specified, the [macro]plane bounds correspond to the
+    // mesh
+    {
+        int bot_plane_in = 0;
+        int top_plane_in = mesh_->macroplanes().size() - 1;
+        if (!data.attribute("top_plane").empty()) {
+            top_plane_in = data.attribute("top_plane").as_int(-1);
+        }
+        if (!data.attribute("bottom_plane").empty()) {
+            bot_plane_in = data.attribute("bottom_plane").as_int(-1);
+        }
+
+        if ((bot_plane_in != 0) ||
+            (top_plane_in != (int)mesh_->macroplanes().size() - 1)) {
+            throw EXCEPT("Plane bounds specified, but invalid");
+        }
+    }
+
+    H5Node h5d(data.attribute("file").value(), H5Access::READ);
+
+    // allocate a single buffer to read our data into for each group/angle
+    ArrayB1 inbuf(nx_ * ny_ * nz_);
+
+    for (int ig = 0; ig < ngroup_; ig++) {
+        for (int iang = 0; iang < nang_; iang++) {
+            // alpha x
+            {
+                std::stringstream path;
+                path << "/alpha_x/" << std::setw(3) << std::setfill('0') << ig
+                     << "/" << std::setw(3) << std::setfill('0') << iang;
+                h5d.read(path.str(), inbuf);
+                for (int ip = bottom_plane; ip <= top_plane; ip++) {
+                    int stt = mesh_->plane_cell_begin(ip);
+                    int stp = mesh_->plane_cell_end(ip) - 1;
+                    alpha_(ig, iang, blitz::Range(stt, stp),
+                           (int)Normal::X_NORM) = inbuf;
+                }
+            }
+            // alpha y
+            {
+                std::stringstream path;
+                path << "/alpha_y/" << std::setw(3) << std::setfill('0') << ig
+                     << "/" << std::setw(3) << std::setfill('0') << iang;
+                h5d.read(path.str(), inbuf);
+                for (int ip = bottom_plane; ip <= top_plane; ip++) {
+                    int stt = mesh_->plane_cell_begin(ip);
+                    int stp = mesh_->plane_cell_end(ip) - 1;
+                    alpha_(ig, iang, blitz::Range(stt, stp),
+                           (int)Normal::Y_NORM) = inbuf;
+                }
+            }
+            // beta
+            {
+                std::stringstream path;
+                path << "/beta/" << std::setw(3) << std::setfill('0') << ig
+                     << "/" << std::setw(3) << std::setfill('0') << iang;
+                h5d.read(path.str(), inbuf);
+                for (int ip = bottom_plane; ip <= top_plane; ip++) {
+                    int stt = mesh_->plane_cell_begin(ip);
+                    int stp = mesh_->plane_cell_end(ip) - 1;
+                    beta_(ig, iang, blitz::Range(stt, stp)) = inbuf;
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+void CorrectionData::read_data_multi(const pugi::xml_node &input)
+{
     // First, validate the data tags. Make sure that they are the right
     // size and cover all planes in the mesh.
+    int np = mesh_->macroplanes().size();
     {
         std::vector<bool> plane_data(np, false);
         for (auto data = input.child("data"); data;
@@ -87,58 +192,9 @@ void CorrectionData::from_data(const pugi::xml_node &input)
         if (!data.attribute("bottom_plane").empty()) {
             bot_plane = data.attribute("bottom_plane").as_int();
         }
-        H5Node h5f(data.attribute("file").value(), H5Access::READ);
 
-        for (int ig = 0; ig < ngroup_; ig++) {
-            for (int iang = 0; iang < nang_; iang++) {
-                // Gobble that data. Om nom nom!
-                {
-                    std::stringstream path;
-                    path << "/alpha_x/" << std::setfill('0') << std::setw(3)
-                         << ig << "/" << std::setfill('0') << std::setw(3)
-                         << iang;
-
-                    h5f.read_1d(path.str(), slice);
-                    assert(slice.size() == mesh_->n_cell_plane());
-                    for (int ip = bot_plane; ip <= top_plane; ip++) {
-                        int stt = mesh_->plane_cell_begin(ip);
-                        int stp = mesh_->plane_cell_end(ip) - 1;
-                        assert(stp < nreg_);
-                        alpha_(ig, iang, blitz::Range(stt, stp),
-                               (int)Normal::X_NORM) = slice;
-                    }
-                }
-
-                {
-                    std::stringstream path;
-                    path << "/alpha_y/" << std::setfill('0') << std::setw(3)
-                         << ig << "_" << std::setfill('0') << std::setw(3)
-                         << iang;
-                    h5f.read_1d(path.str(), slice);
-                    for (int ip = bot_plane; ip <= top_plane; ip++) {
-                        int stt = mesh_->plane_cell_begin(ip);
-                        int stp = mesh_->plane_cell_end(ip) - 1;
-                        assert(stp < nreg_);
-                        alpha_(ig, iang, blitz::Range(stt, stp),
-                               (int)Normal::Y_NORM) = slice;
-                    }
-                }
-                {
-                    std::stringstream path;
-                    path << "/beta/" << std::setfill('0') << std::setw(3) << ig
-                         << "_" << std::setfill('0') << std::setw(3) << iang;
-                    h5f.read_1d(path.str(), slice);
-                    for (int ip = bot_plane; ip <= top_plane; ip++) {
-                        int stt = mesh_->plane_cell_begin(ip);
-                        int stp = mesh_->plane_cell_end(ip) - 1;
-                        assert(stp < nreg_);
-                        beta_(ig, iang, blitz::Range(stt, stp)) = slice;
-                    }
-                }
-            }
-        }
+        this->read_data_single(data, bot_plane, top_plane);
     }
-
     return;
 }
 

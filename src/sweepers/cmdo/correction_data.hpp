@@ -103,6 +103,45 @@ public:
     void output(H5Node &file) const;
 
 private:
+    // Private methods to facilitate reading data from HDF5 files
+    /**
+     * \brief Read a single data file
+     *
+     * \param data an XML node containing a \<data\> specification
+     *
+     * This method reads data from a file specified in a \<data\> tag, applying
+     * it to the entire problem geometry. This delegates to the \ref
+     * read_data_single(const pugi::xml_node&, int, int) version, with the
+     * macroplane bounds set to the extents of the core.
+     */
+    void read_data_single(const pugi::xml_node &data)
+    {
+        this->read_data_single(data, 0, mesh_->macroplanes().size() - 1);
+        return;
+    }
+
+    /**
+     * \brief Read a single data file
+     *
+     * \param data an XML node containing a \<data\> specification
+     * \param bottom_plane the bottom macroplane index to apply the data to
+     * \param top_plane the top macroplane index to apply the data to
+     *
+     * This method reads data from a file specified in a \<data\> tag, applying
+     * it to the range of macroplanes specified.
+     */
+    void read_data_single(const pugi::xml_node &data, int bottom_plane,
+                          int top_plane);
+
+    /**
+     * \brief Read data from all \<data\> tags in the passed XML node
+     *
+     * \param input an XML node that contains one or more \<data\> tag children
+     *
+     * This checks the \<data\> tags for validity, then delegates to \ref
+     * read_data_single(const pugi::xml_node&, int, int)
+     */
+    void read_data_multi(const pugi::xml_node &input);
     const CoreMesh *mesh_;
     int nx_;
     int ny_;
