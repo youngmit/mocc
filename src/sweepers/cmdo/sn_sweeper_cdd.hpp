@@ -155,6 +155,7 @@ public:
         flux_y = (psi - gy * flux_y) / gy;
         flux_z = 2.0 * psi - flux_z;
 
+
         return psi;
     }
 };
@@ -257,8 +258,14 @@ public:
         // Look for data to set the angular quadrature
         if (!input.child("data").empty()) {
             std::string fname = input.child("data").attribute("file").value();
-            H5Node file(fname, H5Access::READ);
-            this->ang_quad_ = AngularQuadrature(file);
+            LogScreen << "Reading angular quadrature from file: " << fname << std::endl;
+            try{
+                H5Node file(fname, H5Access::READ);
+                this->ang_quad_ = AngularQuadrature(file);
+            } catch(Exception e) {
+                throw EXCEPT_E("Failed to read angular quadrature from file", e);
+            }
+            
             real_t wsum     = 0.0;
             for (auto a : this->ang_quad_) {
                 wsum += a.weight;
