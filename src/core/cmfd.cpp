@@ -18,14 +18,22 @@
 
 #include <cmath>
 #include <iomanip>
+#include <string>
 #include <vector>
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/global_config.hpp"
+#include "util/validate_input.hpp"
 
 typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;
+
+namespace {
+const std::vector<std::string> recognized_attributes = {
+    "enabled",  "k_tol",         "psi_tol", "residual_reduction",
+    "max_iter", "negative_fixup"};
+}
 
 namespace mocc {
 CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
@@ -57,6 +65,9 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
       max_iter_(100),
       zero_fixup_(false)
 {
+    // Check input attributes
+    validate_input(input, recognized_attributes);
+
     // Set up the structure of the matrix
     std::vector<T> structure;
     for (int i = 0; i < n_cell_; i++) {
