@@ -102,6 +102,8 @@ public:
         return id_ == other.id_;
     }
 
+    friend std::ostream &operator<<(std::ostream &os, const Pin &pin);
+
 private:
     // Pin ID
     const unsigned int id_;

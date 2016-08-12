@@ -84,6 +84,23 @@ Pin::Pin(const pugi::xml_node &input, const PinMesh_Map_t &meshes,
     return;
 }
 
+std::ostream &operator<<(std::ostream &os, const Pin &pin)
+{
+    os << "Pin:\n";
+    os << "\tID: " << pin.id_ << "\n";
+    os << "\tMesh ID: " << pin.mesh_id_ << "\n";
+    if (pin.mat_IDs_.size() < 10) {
+        os << "\tMaterials: ";
+        for (auto mid : pin.mat_IDs_) {
+            os << mid << " ";
+        }
+    } else {
+        os << "\tMaterials: too many";
+    }
+
+    return os;
+}
+
 std::map<int, UP_Pin_t> ParsePins(const pugi::xml_node &input,
                                   const PinMesh_Map_t &meshes,
                                   const MaterialLib &mat_lib)
