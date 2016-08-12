@@ -302,7 +302,7 @@ void CMFD::setup_solve()
         VecF d_coeff(n_cell_);
         VecF xsrm(n_cell_);
         for (const auto &xsr : *xsmesh_) {
-            real_t d  = 1.0 / (3.0 * xsr.xsmactr(group));
+            real_t d = 1.0 / (3.0 * xsr.xsmactr(group));
             real_t rm = xsr.xsmacrm(group);
             for (const int i : xsr.reg()) {
                 d_coeff[i] = d;
@@ -310,12 +310,11 @@ void CMFD::setup_solve()
             }
         }
 
-        // Surface diffusivity (d_tilde) and non-linear correction
-        // coefficient (d_hat)
-        // There are lots of options to optimize this, mostly algebraic
+        // Surface diffusivity (d_tilde) and non-linear correction coefficient
+        // (d_hat) There are lots of options to optimize this, mostly algebraic
         // simplifications, but this is very conformal to the canonical
-        // formulations of CMFD found in the literature. If this starts
-        // taking too much time, optimize.
+        // formulations of CMFD found in the literature. If this starts taking
+        // too much time, optimize.
         ArrayB1 d_tilde = d_tilde_(blitz::Range::all(), group);
         ArrayB1 d_hat   = d_hat_(blitz::Range::all(), group);
         ArrayB1 s_tilde = s_tilde_(blitz::Range::all(), group);
@@ -516,26 +515,6 @@ real_t CMFD::residual()
 
         norm += this->residual(group);
     }
-
-    // int group = 0;
-    // for (const auto &m : m_) {
-    //    ArrayB1 flux_1g = coarse_data_.flux(blitz::Range::all(), group);
-    //    VectorX flux_vec(n_cell_);
-    //    // memcpy would be nice here...
-    //    for (int icell = 0; icell < n_cell_; ++icell) {
-    //        flux_vec[icell] = flux_1g(icell);
-    //    }
-
-    //    source_.initialize_group(group);
-    //    source_.fission(fs_, group);
-    //    source_.in_scatter(group);
-    //    source_.scale(mesh_->coarse_volume());
-
-    //    VectorX residual = m * flux_vec - source_.get();
-    //    norm += residual.squaredNorm();
-
-    //    group++;
-    //}
 
     return std::sqrt(norm) / (n_group_ * n_cell_);
 }
