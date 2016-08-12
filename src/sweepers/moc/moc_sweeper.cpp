@@ -53,7 +53,7 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
 
 const std::vector<std::string> recognized_attributes = {
     "type",     "update_incoming", "n_inner",      "dump_rays",
-    "boundary", "tl_splitting",    "dump_fsr_flux"};
+    "boundary_update", "tl_splitting",    "dump_fsr_flux"};
 }
 
 namespace mocc {
@@ -103,8 +103,8 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
 
     // Determine boundary update technique
     gauss_seidel_boundary_ = true;
-    if (!input.attribute("boundary").empty()) {
-        std::string in_string = input.attribute("boundary").value();
+    if (!input.attribute("boundary_update").empty()) {
+        std::string in_string = input.attribute("boundary_update").value();
         sanitize(in_string);
         if (in_string == "jacobi" || in_string == "j") {
             gauss_seidel_boundary_ = false;
