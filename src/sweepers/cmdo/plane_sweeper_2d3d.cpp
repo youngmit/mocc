@@ -257,6 +257,7 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
     }
 
     file.create_link("/Sn/xsmesh", "/xsmesh");
+    file.create_link("/Sn/ang_quad", "/ang_quad");
 
     // Put the MoC data in its own location
     {
