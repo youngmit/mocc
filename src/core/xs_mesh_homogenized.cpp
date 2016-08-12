@@ -90,7 +90,7 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh)
  *
  * Since the primary use-case for this functionality is for using planar,
  * fine-mesh MoC solutions to provide cross sections to a coarse-mesh Sn
- * solver, the data is specified along with the upper bound plane index to
+ * solver, the data is specified along with the upper bound macroplane index to
  * which the cross sections are to be applied. The data itself is assumed to
  * be coming from a call to \ref XSMesh::output().
  */
@@ -121,7 +121,7 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
         H5Node h5d(data.attribute("file").value(), H5Access::READ);
         auto dims = h5d.dimensions("/xsmesh/xstr/0");
         if ((dims[2] == mesh_.nx()) && (dims[1] == mesh_.ny()) &&
-            (dims[0] == mesh.nz())) {
+            (dims[0] == mesh_.macroplanes().size())) {
             single_compat = true;
         }
     }
@@ -229,6 +229,7 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
                                                XSMeshRegion &xsr) const
 {
     assert(flux_);
+
     // Extract a reference to the flux array.
     const ArrayB2 flux = *flux_;
 
@@ -250,20 +251,20 @@ void XSMeshHomogenized::homogenize_region_flux(int i, int first_reg,
     // wieghting factor for chi
     VecF fs(pin_mesh.n_reg(), 0.0);
     {
-        int ixsreg = 0;
-        for (auto &mat_id : pin.mat_ids()) {
-            auto mat = mat_lib.get_material_by_id(mat_id);
-            for (size_t ig = 0; ig < ng_; ig++) {
-                int ireg       = first_reg; // pin-local region index
-                int ireg_local = 0;
-                for (size_t i = 0; i < pin_mesh.n_fsrs(ixsreg); i++) {
+        for (int ig = 0; ig < (int)ng_; ig++) {
+            int ireg       = first_reg; // pin-local region index
+            int ireg_local = 0;
+            int ixsreg     = 0;
+            for (auto &mat_id : pin.mat_ids()) {
+                auto mat = mat_lib.get_material_by_id(mat_id);
+                for (int i = 0; i < (int)pin_mesh.n_fsrs(ixsreg); i++) {
                     fs[ireg_local] +=
-                        mat.xsnf(ig) * flux(ireg, (int)ig) * areas[ireg_local];
+                        mat.xsnf(ig) * flux(ireg, ig) * areas[ireg_local];
                     ireg++;
                     ireg_local++;
                 }
+                ixsreg++;
             }
-            ixsreg++;
         }
     }
 
@@ -332,20 +333,19 @@ void XSMeshHomogenized::read_data_single(const pugi::xml_node &data)
     // Make sure that planes are either not defined, or cover the whole mesh
     {
         int bot_plane = 0;
-        int top_plane = mesh_.nz()-1;
-        if(!data.attribute("top_plane").empty()){
+        int top_plane = mesh_.macroplanes().size() - 1;
+        if (!data.attribute("top_plane").empty()) {
             top_plane = data.attribute("top_plane").as_int(-1);
         }
-        if(!data.attribute("bottom_plane").as_int(-1)) {
+        if (!data.attribute("bottom_plane").empty()) {
             bot_plane = data.attribute("bottom_plane").as_int(-1);
         }
 
-        if((bot_plane != 0) == (top_plane != mesh_.nz()-1)) {
+        if ((bot_plane != 0) ||
+            (top_plane != (int)mesh_.macroplanes().size() - 1)) {
             throw EXCEPT("Plane bounds do not match mesh");
         }
-
     }
-
 
     H5Node h5d(data.attribute("file").value(), H5Access::READ);
 
@@ -430,6 +430,7 @@ void XSMeshHomogenized::read_data_single(const pugi::xml_node &data)
         ScatteringMatrix xssc(
             scat(ixsreg, blitz::Range::all(), blitz::Range::all()));
         regions_[ixsreg].xsmacsc_ = xssc;
+        regions_[ixsreg].update_removal();
     }
 
     return;
@@ -574,6 +575,7 @@ void XSMeshHomogenized::read_data_multi(const pugi::xml_node &input)
             for (int ip = bot_plane; ip <= top_plane; ip++) {
                 int ixsreg                = ipin + nreg_plane * ip;
                 regions_[ixsreg].xsmacsc_ = xssc;
+                regions_[ixsreg].update_removal();
             }
         }
     } // <data> tag loop
