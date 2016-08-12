@@ -360,22 +360,38 @@ void XSMeshHomogenized::read_data_single(const pugi::xml_node &data)
         {
             std::stringstream path;
             path << "/xsmesh/xstr/" << ig;
-            h5d.read(path.str(), tr_buf);
+            try {
+                h5d.read(path.str(), tr_buf);
+            } catch (Exception e) {
+                throw EXCEPT_E("Failed to read cross sections", e);
+            }
         }
         {
             std::stringstream path;
             path << "/xsmesh/xsnf/" << ig;
-            h5d.read(path.str(), nf_buf);
+            try {
+                h5d.read(path.str(), nf_buf);
+            } catch (Exception e) {
+                throw EXCEPT_E("Failed to read cross sections", e);
+            }
         }
         {
             std::stringstream path;
             path << "/xsmesh/xsch/" << ig;
-            h5d.read(path.str(), ch_buf);
+            try {
+                h5d.read(path.str(), ch_buf);
+            } catch (Exception e) {
+                throw EXCEPT_E("Failed to read cross sections", e);
+            }
         }
         {
             std::stringstream path;
             path << "/xsmesh/xsf/" << ig;
-            h5d.read(path.str(), kf_buf);
+            try {
+                h5d.read(path.str(), kf_buf);
+            } catch (Exception e) {
+                throw EXCEPT_E("Failed to read cross sections", e);
+            }
         }
 
         // Apply the above to the appropriate planes of the actual xs mesh
@@ -401,7 +417,11 @@ void XSMeshHomogenized::read_data_single(const pugi::xml_node &data)
     // We dont try to plot the scattering cross sections in the same way
     // as we do the others, so this can be read in more naturally.
     ArrayB3 scat;
-    h5d.read("/xsmesh/xssc", scat);
+    try {
+        h5d.read("/xsmesh/xssc", scat);
+    } catch (Exception e) {
+        throw EXCEPT_E("Failed to read scattering data", e);
+    }
     if (scat.shape()[0] != (int)regions_.size()) {
         throw EXCEPT("Scattering data is the wrong size");
     }
