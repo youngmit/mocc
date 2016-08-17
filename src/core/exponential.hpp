@@ -36,7 +36,7 @@ public:
     {
     }
 
-    inline real_t exp(real_t v)
+    inline real_t exp(real_t v) const
     {
         return std::exp(v);
     }
@@ -66,7 +66,7 @@ public:
         }
     }
 
-    inline real_t exp(real_t v)
+    inline real_t exp(real_t v) const
     {
         if (v < min_ || v > max_) {
             std::cout << "Out-of-bounds exponential argument: " << v
@@ -113,7 +113,7 @@ template <int N> class Exponential_UnsafeLinear : public Exponential_Linear<N> {
         return;
     }
 
-    inline real_t exp(real_t v)
+    inline real_t exp(real_t v) const
     {
         int i = (v - this->min_) * this->rspace_;
         v -= this->space_ * i + this->min_;
