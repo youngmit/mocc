@@ -23,8 +23,7 @@
 #include "util/error.hpp"
 #include "util/range.hpp"
 #include "util/validate_input.hpp"
-
-using mocc::sn::SnSweeper;
+#include "sn_sweeper_factory_cdd.hpp"
 
 namespace {
 const std::vector<std::string> recognized_attributes = {
@@ -155,6 +154,8 @@ void PlaneSweeper_2D3D::sweep(int group)
     if (do_snproject_) {
         ArrayB1 sn_flux(mesh_.n_pin());
         sn_sweeper_->get_pin_flux_1g(group, sn_flux);
+
+        // Check for negative fluxes on the Sn mesh
         int n_neg = 0;
         for (auto &v : sn_flux) {
             if (v < 0.0) {

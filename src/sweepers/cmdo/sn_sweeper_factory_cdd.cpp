@@ -18,6 +18,26 @@
 #include "util/string_utils.hpp"
 #include "sn_sweeper_factory.hpp"
 
+namespace {
+using namespace mocc;
+using namespace mocc::cmdo;
+
+// This stuff would otherwise be copy-pasted all over the place
+template <class T>
+CDDPair_t create_sweeper(const pugi::xml_node &input, const CoreMesh &mesh)
+{
+    std::unique_ptr<T> swp(std::make_unique<T>(input, mesh));
+    std::shared_ptr<CorrectionData> corrections(
+        std::make_shared<CorrectionData>(mesh, swp->ang_quad().ndir() / 2,
+                                         swp->n_group()));
+    if (!input.child("data").empty()) {
+        corrections->from_data(input);
+    }
+    swp->set_corrections(corrections);
+    return CDDPair_t(std::move(swp), corrections);
+}
+}
+
 namespace mocc {
 namespace cmdo {
 CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
@@ -57,41 +77,13 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
     }
     if (axial == "dd") {
         LogScreen << "Diamond Difference axial treatment" << std::endl;
-        cmdo::SnSweeper_CDD<CellWorker_CDD_DD> *swp =
-            new cmdo::SnSweeper_CDD<cmdo::CellWorker_CDD_DD>(input, mesh);
-        corrections = std::make_shared<CorrectionData>(
-            mesh, swp->ang_quad().ndir() / 2, swp->n_group());
-        if (!input.child("data").empty()) {
-            corrections->from_data(input);
-        }
-
-        swp->set_corrections(corrections);
-        sweeper.reset(swp);
+        return create_sweeper<SnSweeper_CDD_DD>(input, mesh);
     } else if (axial == "sc") {
         LogScreen << "Step Characteristics axial treatment" << std::endl;
-        cmdo::SnSweeper_CDD<CellWorker_CDD_SC> *swp =
-            new cmdo::SnSweeper_CDD<cmdo::CellWorker_CDD_SC>(input, mesh);
-        corrections = std::make_shared<CorrectionData>(
-            mesh, swp->ang_quad().ndir() / 2, swp->n_group());
-        if (!input.child("data").empty()) {
-            corrections->from_data(input);
-        }
-
-        swp->set_corrections(corrections);
-        sweeper.reset(swp);
+        return create_sweeper<SnSweeper_CDD_SC>(input, mesh);
     } else if (axial == "fw") {
         LogScreen << "Forward Difference axial treatment" << std::endl;
-        cmdo::SnSweeper_CDD<CellWorker_CDD_FW> *swp =
-            new cmdo::SnSweeper_CDD<cmdo::CellWorker_CDD_FW>(input, mesh);
-
-        corrections = std::make_shared<CorrectionData>(
-            mesh, swp->ang_quad().ndir() / 2, swp->n_group());
-        if (!input.child("data").empty()) {
-            corrections->from_data(input);
-        }
-
-        swp->set_corrections(corrections);
-        sweeper.reset(swp);
+        return create_sweeper<SnSweeper_CDD_FW>(input, mesh);
     } else {
         throw EXCEPT("Unrecognized axial treatment in CDD.");
     }

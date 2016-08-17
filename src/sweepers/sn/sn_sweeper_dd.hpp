@@ -30,22 +30,22 @@ namespace sn {
  * work needed to propagate flux through an orthogonal mesh cell using
  * the diamond difference scheme.
  */
-class CellWorker_DD : public sn::CellWorker {
+class SnSweeper_DD : public SnSweeperVariant<SnSweeper_DD> {
 public:
-    CellWorker_DD(const Mesh &mesh, const AngularQuadrature &ang_quad)
-        : CellWorker(mesh, ang_quad)
+    SnSweeper_DD(const pugi::xml_node &input, const CoreMesh &mesh)
+        : SnSweeperVariant<SnSweeper_DD>(input, mesh)
     {
         return;
     }
 
-    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
-                                      real_t &flux_z, real_t q, real_t xstr,
-                                      int i) override
+    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
+                    real_t xstr, int i, const ThreadState &t_state) const
     {
-        size_t ix  = i % mesh_.nx();
-        real_t tx  = ox_ / mesh_.dx(ix);
-        real_t psi = 2.0 * (tx * flux_x + ty_ * flux_y + tz_ * flux_z) + q;
-        psi /= 2.0 * (tx + ty_ + tz_) + xstr;
+        size_t ix = i % mesh_.nx();
+        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+        real_t psi =
+            2.0 * (tx * flux_x + t_state.ty * flux_y + t_state.tz * flux_z) + q;
+        psi /= 2.0 * (tx + t_state.ty + t_state.tz) + xstr;
 
         flux_x = 2.0 * psi - flux_x;
         flux_y = 2.0 * psi - flux_y;
@@ -54,14 +54,13 @@ public:
         return psi;
     }
 
-    MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
-                                         real_t q, real_t xstr,
-                                         int i) override final
+    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
+                       int i, const ThreadState &t_state) const
     {
         size_t ix  = i % mesh_.nx();
-        real_t tx  = ox_ / mesh_.dx(ix);
-        real_t psi = 2.0 * (tx * flux_x + ty_ * flux_y) + q;
-        psi /= 2.0 * (tx + ty_) + xstr;
+        real_t tx  = t_state.angle.ox / mesh_.dx(ix);
+        real_t psi = 2.0 * (tx * flux_x + t_state.ty * flux_y) + q;
+        psi /= 2.0 * (tx + t_state.ty) + xstr;
 
         flux_x = 2.0 * psi - flux_x;
         flux_y = 2.0 * psi - flux_y;
@@ -70,28 +69,27 @@ public:
     }
 };
 
-class CellWorker_DD_SC : public sn::CellWorker_DD {
+class SnSweeper_DD_SC : public SnSweeperVariant<SnSweeper_DD_SC> {
 public:
-    CellWorker_DD_SC(const Mesh &mesh, const AngularQuadrature &ang_quad)
-        : CellWorker_DD(mesh, ang_quad)
+    SnSweeper_DD_SC(const pugi::xml_node &input, const CoreMesh &mesh)
+        : SnSweeperVariant<SnSweeper_DD_SC>(input, mesh)
     {
         return;
     }
 
-    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
-                                      real_t &flux_z, real_t q, real_t xstr,
-                                      int i) override final
+    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
+                    real_t xstr, int i, const ThreadState &t_state) const
     {
         size_t ix = i % mesh_.nx();
-        real_t tx = ox_ / mesh_.dx(ix);
+        real_t tx = t_state.angle.ox / mesh_.dx(ix);
 
-        real_t tau    = xstr / tz_;
+        real_t tau    = xstr / t_state.tz;
         real_t rho    = 1.0 / tau - 1.0 / (std::exp(tau) - 1.0);
         real_t rhofac = rho / (1.0 - rho);
 
-        real_t psi = 2.0 * (tx * flux_x + ty_ * flux_y) +
-                     tz_ * (rhofac + 1.0) * flux_z + q;
-        psi /= 2.0 * (tx + ty_) + tz_ / (1.0 - rho) + xstr;
+        real_t psi = 2.0 * (tx * flux_x + t_state.ty * flux_y) +
+                     t_state.tz * (rhofac + 1.0) * flux_z + q;
+        psi /= 2.0 * (tx + t_state.ty) + t_state.tz / (1.0 - rho) + xstr;
 
         flux_x = 2.0 * psi - flux_x;
         flux_y = 2.0 * psi - flux_y;

@@ -54,17 +54,17 @@ UP_SnSweeper_t SnSweeperFactory(const pugi::xml_node &input,
             LogScreen << "Using Diamond Difference axial treatment"
                       << std::endl;
             return UP_SnSweeper_t(
-                new sn::SnSweeperVariant<sn::CellWorker_DD>(input, mesh));
+                new sn::SnSweeper_DD(input, mesh));
         } else if (axial == "sc") {
             LogScreen << "Using Step Characteristics axial treatment"
                       << std::endl;
             return UP_SnSweeper_t(
-                new sn::SnSweeperVariant<sn::CellWorker_DD_SC>(input, mesh));
+                new sn::SnSweeper_DD_SC(input, mesh));
         } else {
             throw EXCEPT("Unsupported axial treatment");
         }
     } else if (equation == "cdd") {
-        // Defer to the CDD factory, but discard the correction data
+//        // Defer to the CDD factory, but discard the correction data
         auto cdd_pair = SnSweeperFactory_CDD(input, mesh);
         return std::move(cdd_pair.first);
     } else {

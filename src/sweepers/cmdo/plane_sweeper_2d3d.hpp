@@ -52,8 +52,8 @@ public:
     {
         Warn("Incoming flux updates are not properly supported yet for 2D3D");
 
-        //moc_sweeper_.update_incoming_flux();
-        //sn_sweeper_->update_incoming_flux();
+        // moc_sweeper_.update_incoming_flux();
+        // sn_sweeper_->update_incoming_flux();
 
         return;
     }
@@ -77,7 +77,8 @@ public:
         if (discrepant_flux_update_) {
             ArrayB1 moc_pin_flux(pin_flux.size());
             for (int i = 0; i < (int)moc_pin_flux.size(); i++) {
-                moc_pin_flux(i) = std::max(0.0, pin_flux(i) - sn_resid_(group, i));
+                moc_pin_flux(i) =
+                    std::max(0.0, pin_flux(i) - sn_resid_(group, i));
             }
         } else {
             diff = moc_sweeper_.set_pin_flux_1g(group, pin_flux);

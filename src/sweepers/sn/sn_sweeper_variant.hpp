@@ -44,10 +44,21 @@ namespace sn {
  * in the \ref cmdo::PlaneSweeper_2D3D class, which knows what type of \ref
  * CellWorker it is using.
  */
-template <class Worker> class SnSweeperVariant : public SnSweeper {
+template <class Equation> class SnSweeperVariant : public SnSweeper {
 public:
+    struct ThreadState {
+    public:
+        int ty;
+        int tz;
+        int iang;
+        int iang_2d;
+        real_t ox;
+        real_t oy;
+        real_t oz;
+        Angle angle;
+    };
     SnSweeperVariant(const pugi::xml_node &input, const CoreMesh &mesh)
-        : SnSweeper(input, mesh), cell_worker_(mesh_, ang_quad_)
+        : SnSweeper(input, mesh), plane_size_(mesh.nx() * mesh_.ny())
     {
         return;
     }
@@ -56,7 +67,22 @@ public:
     {
     }
 
-    void sweep(int group)
+    real_t virtual evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
+                               real_t xstr, int i,
+                               const ThreadState &t_state) const
+    {
+        return static_cast<const Equation &>(*this).evaluate_2d(
+            flux_x, flux_y, q, xstr, i, t_state);
+    }
+    real_t virtual evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z,
+                            real_t q, real_t xstr, int i,
+                            const ThreadState &t_state) const
+    {
+        return static_cast<const Equation &>(*this).evaluate(
+            flux_x, flux_y, flux_z, q, xstr, i, t_state);
+    }
+
+    void sweep(int group) override
     {
         assert(source_);
         timer_.tic();
@@ -66,6 +92,8 @@ public:
         timer_xsupdate_.toc();
 
         timer_sweep_.tic();
+
+        group_ = group;
 
         /// \todo add an is_ready() method to the worker, and make sure that
         /// it's ready before continuing.
@@ -84,18 +112,15 @@ public:
                 coarse_data_->zero_data(group);
                 if (core_mesh_->is_2d()) {
                     this->sweep_1g_2d<sn::Current>(group);
-                }
-                else {
+                } else {
                     this->sweep_1g<sn::Current>(group);
                 }
                 coarse_data_->set_has_axial_data(true);
                 coarse_data_->set_has_radial_data(true);
-            }
-            else {
+            } else {
                 if (core_mesh_->is_2d()) {
                     this->sweep_1g_2d<sn::NoCurrent>(group);
-                }
-                else {
+                } else {
                     this->sweep_1g<sn::NoCurrent>(group);
                 }
             }
@@ -123,9 +148,6 @@ protected:
         {
             CurrentWorker cw(coarse_data_, &mesh_);
 
-            Worker cell_worker = cell_worker_;
-            cell_worker.set_group(group);
-
             ArrayB1 t_flux(n_reg_);
             t_flux = 0.0;
 
@@ -137,52 +159,57 @@ protected:
             real_t *y_flux;
             real_t *z_flux;
 
+            Angle angle;
+
+            ThreadState t_state;
+
 #pragma omp for
             for (int iang = 0; iang < ang_quad_.ndir(); iang++) {
-                Angle ang = ang_quad_[iang];
+                angle           = ang_quad_[iang];
+                t_state.iang    = iang;
+                t_state.iang_2d = iang % ang_quad_.ndir() / 2;
+                t_state.angle   = ang_quad_[iang];
                 // Configure the current worker for this angle
-                cw.set_octant(ang);
+                cw.set_octant(angle);
 
                 // Get the source for this angle
                 auto &q = source_->get_transport(iang);
 
-                cell_worker.set_angle(iang, ang);
-
-                real_t wgt = ang.weight * HPI;
-                real_t ox  = ang.ox;
-                real_t oy  = ang.oy;
-                real_t oz  = ang.oz;
+                real_t wgt = angle.weight * HPI;
+                t_state.ox = angle.ox;
+                t_state.oy = angle.oy;
+                t_state.oz = angle.oz;
 
                 // Configure the loop direction. Could template the below for
                 // speed at some point.
                 int sttx = 0;
                 int stpx = nx;
                 int xdir = 1;
-                if (ox < 0.0) {
-                    ox   = -ox;
-                    sttx = nx - 1;
-                    stpx = -1;
-                    xdir = -1;
+                if (t_state.ox < 0.0) {
+                    t_state.ox = -t_state.ox;
+                    sttx       = nx - 1;
+                    stpx       = -1;
+                    xdir       = -1;
                 }
 
                 int stty = 0;
                 int stpy = ny;
                 int ydir = 1;
-                if (oy < 0.0) {
-                    oy   = -oy;
-                    stty = ny - 1;
-                    stpy = -1;
-                    ydir = -1;
+                if (t_state.oy < 0.0) {
+                    t_state.oy = -t_state.oy;
+                    stty       = ny - 1;
+                    stpy       = -1;
+                    ydir       = -1;
                 }
 
                 int sttz = 0;
                 int stpz = nz;
                 int zdir = 1;
-                if (oz < 0.0) {
-                    oz   = -oz;
-                    sttz = nz - 1;
-                    stpz = -1;
-                    zdir = -1;
+                if (t_state.oz < 0.0) {
+                    t_state.oz = -t_state.oz;
+                    sttz       = nz - 1;
+                    stpz       = -1;
+                    zdir       = -1;
                 }
 
                 // initialize upwind condition
@@ -196,12 +223,12 @@ protected:
                 bc_in_.copy_face(group, iang, Normal::Y_NORM, y_flux);
                 bc_in_.copy_face(group, iang, Normal::Z_NORM, z_flux);
 
-                cw.upwind_work(x_flux, y_flux, z_flux, ang, group);
+                cw.upwind_work(x_flux, y_flux, z_flux, angle, group);
 
                 for (int iz = sttz; iz != stpz; iz += zdir) {
-                    cell_worker.set_z(iz);
+                    t_state.tz = t_state.oz / mesh_.dz(iz);
                     for (int iy = stty; iy != stpy; iy += ydir) {
-                        cell_worker.set_y(iy);
+                        t_state.ty = t_state.oy / mesh_.dy(iy);
                         for (int ix = sttx; ix != stpx; ix += xdir) {
                             // Gross. really need an Sn mesh abstraction
                             real_t psi_x = x_flux[ny * iz + iy];
@@ -210,8 +237,9 @@ protected:
 
                             size_t i = mesh_.coarse_cell(Position(ix, iy, iz));
 
-                            real_t psi = cell_worker.evaluate(
-                                psi_x, psi_y, psi_z, q[i], xstr_[i], i);
+                            real_t psi =
+                                this->evaluate(psi_x, psi_y, psi_z, q[i],
+                                               xstr_[i], i, t_state);
 
                             x_flux[ny * iz + iy] = psi_x;
                             y_flux[nx * iz + ix] = psi_y;
@@ -219,11 +247,9 @@ protected:
 
                             t_flux(i) += psi * wgt;
 
-                            // Stash currents (or not, depending on the
-                            // CurrentWorker template parameter)
                             cw.current_work(
                                 x_flux[ny * iz + iy], y_flux[nx * iz + ix],
-                                z_flux[nx * iy + ix], i, ang, group);
+                                z_flux[nx * iy + ix], i, angle, group);
                         }
                     }
                 }
@@ -264,9 +290,6 @@ protected:
         {
             CurrentWorker cw(coarse_data_, &mesh_);
 
-            Worker cell_worker = cell_worker_;
-            cell_worker.set_group(group);
-
             ArrayB1 t_flux(n_reg_);
             t_flux = 0.0;
 
@@ -276,41 +299,45 @@ protected:
             real_t *x_flux;
             real_t *y_flux;
 
+            Angle angle;
+            ThreadState t_state;
+
 #pragma omp for
             for (int iang = 0; iang < ang_quad_.ndir() / 2; iang++) {
-                Angle ang = ang_quad_[iang];
+                angle           = ang_quad_[iang];
+                t_state.iang    = iang;
+                t_state.iang_2d = iang % ang_quad_.ndir() / 2;
                 // Configure the current worker for this angle
-                cw.set_octant(ang);
+                cw.set_octant(angle);
 
                 // Get the source for this angle
                 auto &q = source_->get_transport(iang);
 
-                cell_worker.set_angle(iang, ang);
-
-                real_t wgt = ang.weight * PI;
-                real_t ox  = ang.ox;
-                real_t oy  = ang.oy;
+                real_t wgt = angle.weight * PI;
+                t_state.ox = t_state.angle.ox;
+                t_state.oy = t_state.angle.oy;
+                t_state.oz = t_state.angle.oz;
 
                 // Configure the loop direction. Could template the below for
                 // speed at some point.
                 int sttx = 0;
                 int stpx = nx;
                 int xdir = 1;
-                if (ox < 0.0) {
-                    ox   = -ox;
-                    sttx = nx - 1;
-                    stpx = -1;
-                    xdir = -1;
+                if (t_state.ox < 0.0) {
+                    t_state.ox = -t_state.ox;
+                    sttx       = nx - 1;
+                    stpx       = -1;
+                    xdir       = -1;
                 }
 
                 int stty = 0;
                 int stpy = ny;
                 int ydir = 1;
-                if (oy < 0.0) {
-                    oy   = -oy;
-                    stty = ny - 1;
-                    stpy = -1;
-                    ydir = -1;
+                if (t_state.oy < 0.0) {
+                    t_state.oy = -t_state.oy;
+                    stty       = ny - 1;
+                    stpy       = -1;
+                    ydir       = -1;
                 }
 
                 // initialize upwind condition
@@ -321,11 +348,11 @@ protected:
                 bc_in_.copy_face(group, iang, Normal::X_NORM, x_flux);
                 bc_in_.copy_face(group, iang, Normal::Y_NORM, y_flux);
 
-                cw.upwind_work(x_flux, y_flux, ang, group);
+                cw.upwind_work(x_flux, y_flux, angle, group);
 
-                cell_worker.set_z(0);
+                t_state.tz = t_state.oz / mesh_.dz(0);
                 for (int iy = stty; iy != stpy; iy += ydir) {
-                    cell_worker.set_y(iy);
+                    t_state.ty = t_state.oy / mesh_.dy(iy);
                     for (int ix = sttx; ix != stpx; ix += xdir) {
                         // Gross. really need an Sn mesh abstraction
                         real_t psi_x = x_flux[iy];
@@ -333,8 +360,8 @@ protected:
 
                         size_t i = mesh_.coarse_cell(Position(ix, iy, 0));
 
-                        real_t psi = cell_worker.evaluate_2d(psi_x, psi_y, q[i],
-                                                             xstr_[i], i);
+                        real_t psi = this->evaluate_2d(psi_x, psi_y, q[i],
+                                                       xstr_[i], i, t_state);
 
                         x_flux[iy] = psi_x;
                         y_flux[ix] = psi_y;
@@ -343,7 +370,8 @@ protected:
 
                         // Stash currents (or not, depending on the
                         // CurrentWorker template parameter)
-                        cw.current_work(x_flux[iy], y_flux[ix], i, ang, group);
+                        cw.current_work(x_flux[iy], y_flux[ix], i, angle,
+                                        group);
                     }
                 }
 
@@ -368,7 +396,8 @@ protected:
         return;
     }
 
-    Worker cell_worker_;
+    int plane_size_;
+    int group_;
 };
 }
 }

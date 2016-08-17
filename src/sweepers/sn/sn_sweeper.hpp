@@ -86,7 +86,8 @@ public:
         return std::static_pointer_cast<XSMeshHomogenized>(xs_mesh_);
     }
 
-    ExpandedXS &expanded_xs() {
+    ExpandedXS &expanded_xs()
+    {
         return xstr_;
     }
 

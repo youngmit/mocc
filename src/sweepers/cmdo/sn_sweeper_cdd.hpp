@@ -40,29 +40,32 @@ typedef std::pair<std::unique_ptr<SnSweeper>, std::shared_ptr<CorrectionData>>
  * sn::CellWorker::evaluate() method can be tailored for different axial
  * treatments.
  */
-class CellWorker_CDD : public sn::CellWorker {
+template <class Equation>
+class SnSweeper_CDD : public SnSweeperVariant<Equation> {
 public:
-    CellWorker_CDD(const Mesh &mesh, const AngularQuadrature &ang_quad)
-        : CellWorker(mesh, ang_quad), ang_quad_(ang_quad), corrections_(nullptr)
+    SnSweeper_CDD(const pugi::xml_node &input, const CoreMesh &mesh)
+        : sn::SnSweeperVariant<Equation>(input, mesh), corrections_(nullptr)
     {
+        // Look for data to set the angular quadrature
+        if (!input.child("data").empty()) {
+            std::string fname = input.child("data").attribute("file").value();
+            LogScreen << "Reading angular quadrature from file: " << fname
+                      << std::endl;
+            try {
+                H5Node file(fname, H5Access::READ);
+                this->ang_quad_ = AngularQuadrature(file);
+            } catch (Exception e) {
+                throw EXCEPT_E("Failed to read angular quadrature from file",
+                               e);
+            }
+
+            real_t wsum = 0.0;
+            for (auto a : this->ang_quad_) {
+                wsum += a.weight;
+            }
+            std::cout << "Weight sum: " << wsum << std::endl;
+        }
         return;
-    }
-
-    inline virtual void set_z(int iz) override final
-    {
-        CellWorker::set_z(iz);
-        correction_z_ = mesh_.macroplane_index()[iz];
-    }
-
-    void set_group(int group) override final
-    {
-        group_ = group;
-    }
-
-    MOCC_FORCE_INLINE void set_angle(int iang, Angle angle) override final
-    {
-        sn::CellWorker::set_angle(iang, angle);
-        iang_alpha_ = iang % (ang_quad_.ndir() / 2);
     }
 
     /**
@@ -75,86 +78,47 @@ public:
      */
     void set_corrections(std::shared_ptr<const CorrectionData> data)
     {
+        assert(data);
         corrections_ = data;
     }
 
-    /**
-     * \copydoc sn::CellWorker::evaluate_2d()
-     *
-     * Since the variants of the CDD worker are all for different axial
-     * treatments, the 2-D version of \ref sn::CellWorker::evaluate() can
-     * live here.
-     */
-    MOCC_FORCE_INLINE real_t evaluate_2d(real_t &flux_x, real_t &flux_y,
-                                         real_t q, real_t xstr, int i) override
-    {
-        int ix    = i % mesh_.nx();
-        real_t tx = ox_ / mesh_.dx(ix);
-
-        real_t ax = corrections_->alpha(i, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay = corrections_->alpha(i, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b  = corrections_->beta(i, iang_alpha_, group_);
-
-        real_t gx = ax * b;
-        real_t gy = ay * b;
-
-        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y);
-        psi /= tx / gx + ty_ / gy + xstr;
-
-        flux_x = (psi - gx * flux_x) / gx;
-        flux_y = (psi - gy * flux_y) / gy;
-
-        return psi;
-    }
-
 protected:
-    const AngularQuadrature &ang_quad_;
-
     std::shared_ptr<const CorrectionData> corrections_;
 
-    int iang_alpha_;
     int correction_z_;
-
-    int group_;
 };
 
-/**
- * An extension of \ref CellWorker_CDD to propagate flux through an
- * orthogonal mesh region with the corrected diamond difference (CDD)
- * in X and Y, with diamond difference in Z.
- */
-class CellWorker_CDD_DD : public CellWorker_CDD {
+class SnSweeper_CDD_DD : public SnSweeper_CDD<SnSweeper_CDD_DD> {
 public:
-    CellWorker_CDD_DD(const Mesh &mesh, const AngularQuadrature &ang_quad)
-        : CellWorker_CDD(mesh, ang_quad)
+    SnSweeper_CDD_DD(const pugi::xml_node &input, const CoreMesh &mesh)
+        : SnSweeper_CDD<SnSweeper_CDD_DD>(input, mesh)
     {
         return;
     }
 
-    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
-                                      real_t &flux_z, real_t q, real_t xstr,
-                                      int i) override final
+    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
+                    real_t xstr, int i, const ThreadState &t_state) const
     {
-        int ix    = i % mesh_.nx();
-        int ia    = correction_z_ * plane_size_ + i % plane_size_;
-        real_t tx = ox_ / mesh_.dx(ix);
+        int ix    = i % this->mesh_.nx();
+        int ia    = correction_z_ * this->plane_size_ + i % this->plane_size_;
+        real_t tx = t_state.angle.ox / this->mesh_.dx(ix);
 
-        real_t ax =
-            corrections_->alpha(ia, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay =
-            corrections_->alpha(ia, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b = corrections_->beta(ia, iang_alpha_, group_);
+        real_t ax = corrections_->alpha(ia, t_state.iang_2d, this->group_,
+                                        Normal::X_NORM);
+        real_t ay = corrections_->alpha(ia, t_state.iang_2d, this->group_,
+                                        Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, t_state.iang_2d, this->group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;
 
-        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y + tz_ * flux_z);
-        psi /= tx / gx + ty_ / gy + 2.0 * tz_ + xstr;
+        real_t psi =
+            q + 2.0 * (tx * flux_x + t_state.ty * flux_y + t_state.tz * flux_z);
+        psi /= tx / gx + t_state.ty / gy + 2.0 * t_state.tz + xstr;
 
         flux_x = (psi - gx * flux_x) / gx;
         flux_y = (psi - gy * flux_y) / gy;
         flux_z = 2.0 * psi - flux_z;
-
 
         return psi;
     }
@@ -165,33 +129,57 @@ public:
  * mesh region with the corrected diamond difference (CDD) scheme in X and
  * Y, with FW difference in Z.
  */
-class CellWorker_CDD_FW : public CellWorker_CDD {
+class SnSweeper_CDD_FW : public SnSweeper_CDD<SnSweeper_CDD_FW> {
 public:
-    CellWorker_CDD_FW(const Mesh &mesh, const AngularQuadrature &ang_quad)
-        : CellWorker_CDD(mesh, ang_quad)
+    SnSweeper_CDD_FW(const pugi::xml_node &input, const CoreMesh &mesh)
+        : SnSweeper_CDD<SnSweeper_CDD_FW>(input, mesh)
     {
         return;
     }
 
-    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
-                                      real_t &flux_z, real_t q, real_t xstr,
-                                      int i) override final
+    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
+                       int i, const ThreadState &t_state) const
     {
-        int ix    = i % mesh_.nx();
-        int ia    = correction_z_ * plane_size_ + i % plane_size_;
-        real_t tx = ox_ / mesh_.dx(ix);
+        int ix    = i % this->mesh_.nx();
+        real_t tx = t_state.angle.ox / this->mesh_.dx(ix);
 
-        real_t ax =
-            corrections_->alpha(ia, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay =
-            corrections_->alpha(ia, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b = corrections_->beta(ia, iang_alpha_, group_);
+        real_t ax = corrections_->alpha(i, t_state.iang_2d, this->group_,
+                                        Normal::X_NORM);
+        real_t ay = corrections_->alpha(i, t_state.iang_2d, this->group_,
+                                        Normal::Y_NORM);
+        real_t b = corrections_->beta(i, t_state.iang_2d, this->group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;
 
-        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y) + tz_ * flux_z;
-        psi /= tx / gx + ty_ / gy + tz_ + xstr;
+        real_t psi = q + 2.0 * (tx * flux_x + t_state.ty * flux_y);
+        psi /= tx / gx + t_state.ty / gy + xstr;
+
+        flux_x = (psi - gx * flux_x) / gx;
+        flux_y = (psi - gy * flux_y) / gy;
+
+        return psi;
+    }
+
+    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
+                    real_t xstr, int i, const ThreadState &t_state) const
+    {
+        int ix    = i % mesh_.nx();
+        int ia    = correction_z_ * plane_size_ + i % plane_size_;
+        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+
+        real_t ax =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, t_state.iang_2d, group_);
+
+        real_t gx = ax * b;
+        real_t gy = ay * b;
+
+        real_t psi =
+            q + 2.0 * (tx * flux_x + t_state.ty * flux_y) + t_state.tz * flux_z;
+        psi /= tx / gx + t_state.ty / gy + t_state.tz + xstr;
 
         flux_x = (psi - gx * flux_x) / gx;
         flux_y = (psi - gy * flux_y) / gy;
@@ -206,38 +194,61 @@ public:
  * mesh region with the corrected diamond difference (CDD) scheme in X and
  * Y, with step characteristics in Z.
  */
-class CellWorker_CDD_SC : public CellWorker_CDD {
+class SnSweeper_CDD_SC : public SnSweeper_CDD<SnSweeper_CDD_SC> {
 public:
-    CellWorker_CDD_SC(const Mesh &mesh, const AngularQuadrature &ang_quad)
-        : CellWorker_CDD(mesh, ang_quad), exponential_()
+    SnSweeper_CDD_SC(const pugi::xml_node &input, const CoreMesh &mesh)
+        : SnSweeper_CDD<SnSweeper_CDD_SC>(input, mesh), exponential_()
     {
         return;
     }
 
-    MOCC_FORCE_INLINE real_t evaluate(real_t &flux_x, real_t &flux_y,
-                                      real_t &flux_z, real_t q, real_t xstr,
-                                      int i) override final
+    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
+                       int i, const ThreadState &t_state) const
     {
-        int ix    = i % mesh_.nx();
-        int ia    = correction_z_ * plane_size_ + i % plane_size_;
-        real_t tx = ox_ / mesh_.dx(ix);
+        int ix    = i % this->mesh_.nx();
+        real_t tx = t_state.angle.ox / this->mesh_.dx(ix);
 
-        real_t ax =
-            corrections_->alpha(ia, iang_alpha_, group_, Normal::X_NORM);
-        real_t ay =
-            corrections_->alpha(ia, iang_alpha_, group_, Normal::Y_NORM);
-        real_t b = corrections_->beta(ia, iang_alpha_, group_);
+        real_t ax = corrections_->alpha(i, t_state.iang_2d, this->group_,
+                                        Normal::X_NORM);
+        real_t ay = corrections_->alpha(i, t_state.iang_2d, this->group_,
+                                        Normal::Y_NORM);
+        real_t b = corrections_->beta(i, t_state.iang_2d, this->group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;
 
-        real_t tau    = xstr / tz_;
+        real_t psi = q + 2.0 * (tx * flux_x + t_state.ty * flux_y);
+        psi /= tx / gx + t_state.ty / gy + xstr;
+
+        flux_x = (psi - gx * flux_x) / gx;
+        flux_y = (psi - gy * flux_y) / gy;
+
+        return psi;
+    }
+
+    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
+                    real_t xstr, int i, const ThreadState &t_state) const
+    {
+        int ix    = i % mesh_.nx();
+        int ia    = correction_z_ * plane_size_ + i % plane_size_;
+        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+
+        real_t ax =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, t_state.iang_2d, group_);
+
+        real_t gx = ax * b;
+        real_t gy = ay * b;
+
+        real_t tau    = xstr / t_state.tz;
         real_t rho    = 1.0 / tau - 1.0 / (exponential_.exp(tau) - 1.0);
         real_t rhofac = rho / (1.0 - rho);
 
-        real_t psi = q + 2.0 * (tx * flux_x + ty_ * flux_y) +
-                     tz_ * (rhofac + 1.0) * flux_z;
-        psi /= tx / gx + ty_ / gy + tz_ / (1.0 - rho) + xstr;
+        real_t psi = q + 2.0 * (tx * flux_x + t_state.ty * flux_y) +
+                     t_state.tz * (rhofac + 1.0) * flux_z;
+        psi /= tx / gx + t_state.ty / gy + t_state.tz / (1.0 - rho) + xstr;
 
         flux_x = (psi - gx * flux_x) / gx;
         flux_y = (psi - gy * flux_y) / gy;
@@ -248,41 +259,6 @@ public:
 
 private:
     Exponential exponential_;
-};
-
-template <class T> class SnSweeper_CDD : public sn::SnSweeperVariant<T> {
-public:
-    SnSweeper_CDD(const pugi::xml_node &input, const CoreMesh &mesh)
-        : sn::SnSweeperVariant<T>(input, mesh), correction_data_(nullptr)
-    {
-        // Look for data to set the angular quadrature
-        if (!input.child("data").empty()) {
-            std::string fname = input.child("data").attribute("file").value();
-            LogScreen << "Reading angular quadrature from file: " << fname << std::endl;
-            try{
-                H5Node file(fname, H5Access::READ);
-                this->ang_quad_ = AngularQuadrature(file);
-            } catch(Exception e) {
-                throw EXCEPT_E("Failed to read angular quadrature from file", e);
-            }
-            
-            real_t wsum     = 0.0;
-            for (auto a : this->ang_quad_) {
-                wsum += a.weight;
-            }
-            std::cout << "Weight sum: " << wsum << std::endl;
-        }
-        return;
-    }
-
-    void set_corrections(std::shared_ptr<const CorrectionData> data)
-    {
-        correction_data_ = data;
-        this->cell_worker_.set_corrections(data);
-    }
-
-private:
-    std::shared_ptr<const CorrectionData> correction_data_;
 };
 }
 }
