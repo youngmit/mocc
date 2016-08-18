@@ -35,7 +35,8 @@ BC_Size_t boundary_helper(const Mesh &mesh)
 }
 
 const std::vector<std::string> recognized_attributes = {
-    "type", "n_inner", "equation", "boundary_update", "update_incoming"};
+    "type",  "n_inner",         "equation",
+    "axial", "boundary_update", "update_incoming"};
 }
 
 namespace mocc {

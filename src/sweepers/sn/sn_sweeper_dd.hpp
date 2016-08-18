@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include "core/mesh.hpp"
+#include <iostream>
 
 #include "util/force_inline.hpp"
-
+#include "core/mesh.hpp"
 #include "sn/cell_worker.hpp"
 #include "sn/sn_sweeper.hpp"
 
@@ -38,8 +38,9 @@ public:
         return;
     }
 
-    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
-                    real_t xstr, int i, const ThreadState &t_state) const
+    real_t MOCC_FORCE_INLINE evaluate(real_t &flux_x, real_t &flux_y,
+                                      real_t &flux_z, real_t q, real_t xstr,
+                                      int i, const ThreadState &t_state) const
     {
         size_t ix = i % mesh_.nx();
         real_t tx = t_state.angle.ox / mesh_.dx(ix);
@@ -50,6 +51,7 @@ public:
         flux_x = 2.0 * psi - flux_x;
         flux_y = 2.0 * psi - flux_y;
         flux_z = 2.0 * psi - flux_z;
+
 
         return psi;
     }
@@ -75,6 +77,20 @@ public:
         : SnSweeperVariant<SnSweeper_DD_SC>(input, mesh)
     {
         return;
+    }
+
+    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
+                       int i, const ThreadState &t_state) const
+    {
+        size_t ix  = i % mesh_.nx();
+        real_t tx  = t_state.angle.ox / mesh_.dx(ix);
+        real_t psi = 2.0 * (tx * flux_x + t_state.ty * flux_y) + q;
+        psi /= 2.0 * (tx + t_state.ty) + xstr;
+
+        flux_x = 2.0 * psi - flux_x;
+        flux_y = 2.0 * psi - flux_y;
+
+        return psi;
     }
 
     real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,

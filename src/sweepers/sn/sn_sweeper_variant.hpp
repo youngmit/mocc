@@ -48,8 +48,8 @@ template <class Equation> class SnSweeperVariant : public SnSweeper {
 public:
     struct ThreadState {
     public:
-        int ty;
-        int tz;
+        real_t ty;
+        real_t tz;
         int iang;
         int iang_2d;
         real_t ox;
@@ -67,14 +67,14 @@ public:
     {
     }
 
-    real_t virtual evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
+    inline real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
                                real_t xstr, int i,
                                const ThreadState &t_state) const
     {
         return static_cast<const Equation &>(*this).evaluate_2d(
             flux_x, flux_y, q, xstr, i, t_state);
     }
-    real_t virtual evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z,
+    inline real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z,
                             real_t q, real_t xstr, int i,
                             const ThreadState &t_state) const
     {

@@ -37,7 +37,8 @@ const std::vector<std::string> recognized_attributes = {
     "preserve_sn_quadrature",
     "relax",
     "discrepant_flux_update",
-    "dump_corrections"};
+    "dump_corrections",
+    "update_incoming"};
 }
 
 namespace mocc {
