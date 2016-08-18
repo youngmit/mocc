@@ -114,8 +114,8 @@ public:
                     this->sweep_1g_2d<sn::Current>(group);
                 } else {
                     this->sweep_1g<sn::Current>(group);
+                    coarse_data_->set_has_axial_data(true);
                 }
-                coarse_data_->set_has_axial_data(true);
                 coarse_data_->set_has_radial_data(true);
             } else {
                 if (core_mesh_->is_2d()) {
@@ -316,7 +316,7 @@ protected:
                 real_t wgt = angle.weight * PI;
                 t_state.ox = t_state.angle.ox;
                 t_state.oy = t_state.angle.oy;
-                t_state.oz = t_state.angle.oz;
+                t_state.oz = std::abs(t_state.angle.oz);
 
                 // Configure the loop direction. Could template the below for
                 // speed at some point.

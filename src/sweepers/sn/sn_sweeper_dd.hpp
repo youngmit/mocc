@@ -43,7 +43,7 @@ public:
                                       int i, const ThreadState &t_state) const
     {
         size_t ix = i % mesh_.nx();
-        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+        real_t tx = t_state.ox / mesh_.dx(ix);
         real_t psi =
             2.0 * (tx * flux_x + t_state.ty * flux_y + t_state.tz * flux_z) + q;
         psi /= 2.0 * (tx + t_state.ty + t_state.tz) + xstr;
@@ -52,7 +52,6 @@ public:
         flux_y = 2.0 * psi - flux_y;
         flux_z = 2.0 * psi - flux_z;
 
-
         return psi;
     }
 
@@ -60,7 +59,7 @@ public:
                        int i, const ThreadState &t_state) const
     {
         size_t ix  = i % mesh_.nx();
-        real_t tx  = t_state.angle.ox / mesh_.dx(ix);
+        real_t tx  = t_state.ox / mesh_.dx(ix);
         real_t psi = 2.0 * (tx * flux_x + t_state.ty * flux_y) + q;
         psi /= 2.0 * (tx + t_state.ty) + xstr;
 
@@ -83,7 +82,7 @@ public:
                        int i, const ThreadState &t_state) const
     {
         size_t ix  = i % mesh_.nx();
-        real_t tx  = t_state.angle.ox / mesh_.dx(ix);
+        real_t tx  = t_state.ox / mesh_.dx(ix);
         real_t psi = 2.0 * (tx * flux_x + t_state.ty * flux_y) + q;
         psi /= 2.0 * (tx + t_state.ty) + xstr;
 
@@ -97,7 +96,7 @@ public:
                     real_t xstr, int i, const ThreadState &t_state) const
     {
         size_t ix = i % mesh_.nx();
-        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+        real_t tx = t_state.ox / mesh_.dx(ix);
 
         real_t tau    = xstr / t_state.tz;
         real_t rho    = 1.0 / tau - 1.0 / (std::exp(tau) - 1.0);
