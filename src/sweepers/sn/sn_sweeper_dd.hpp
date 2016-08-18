@@ -55,8 +55,9 @@ public:
         return psi;
     }
 
-    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
-                       int i, const ThreadState &t_state) const
+    real_t MOCC_FORCE_INLINE evaluate_2d(real_t &flux_x, real_t &flux_y,
+                                         real_t q, real_t xstr, int i,
+                                         const ThreadState &t_state) const
     {
         size_t ix  = i % mesh_.nx();
         real_t tx  = t_state.ox / mesh_.dx(ix);

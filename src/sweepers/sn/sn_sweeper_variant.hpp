@@ -235,7 +235,7 @@ protected:
                             real_t psi_y = y_flux[nx * iz + ix];
                             real_t psi_z = z_flux[nx * iy + ix];
 
-                            size_t i = mesh_.coarse_cell(Position(ix, iy, iz));
+                            int i = mesh_.coarse_cell(Position(ix, iy, iz));
 
                             real_t psi =
                                 this->evaluate(psi_x, psi_y, psi_z, q[i],
@@ -358,7 +358,7 @@ protected:
                         real_t psi_x = x_flux[iy];
                         real_t psi_y = y_flux[ix];
 
-                        size_t i = mesh_.coarse_cell(Position(ix, iy, 0));
+                        int i = mesh_.coarse_cell(Position(ix, iy, 0));
 
                         real_t psi = this->evaluate_2d(psi_x, psi_y, q[i],
                                                        xstr_[i], i, t_state);
