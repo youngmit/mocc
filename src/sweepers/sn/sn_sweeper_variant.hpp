@@ -68,15 +68,15 @@ public:
     }
 
     inline real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q,
-                               real_t xstr, int i,
-                               const ThreadState &t_state) const
+                              real_t xstr, int i,
+                              const ThreadState &t_state) const
     {
         return static_cast<const Equation &>(*this).evaluate_2d(
             flux_x, flux_y, q, xstr, i, t_state);
     }
     inline real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z,
-                            real_t q, real_t xstr, int i,
-                            const ThreadState &t_state) const
+                           real_t q, real_t xstr, int i,
+                           const ThreadState &t_state) const
     {
         return static_cast<const Equation &>(*this).evaluate(
             flux_x, flux_y, flux_z, q, xstr, i, t_state);
@@ -160,7 +160,6 @@ protected:
             real_t *z_flux;
 
             Angle angle;
-
             ThreadState t_state;
 
 #pragma omp for
@@ -272,7 +271,7 @@ protected:
         } // OMP Parallel
 
         return;
-    }
+    } // sweep_1g (3-D)
 
     /**
      * \brief Generic Sn sweep procedure for 2-D orthogonal mesh.
@@ -306,6 +305,7 @@ protected:
             for (int iang = 0; iang < ang_quad_.ndir() / 2; iang++) {
                 angle           = ang_quad_[iang];
                 t_state.iang    = iang;
+                t_state.angle   = angle;
                 t_state.iang_2d = iang % ang_quad_.ndir() / 2;
                 // Configure the current worker for this angle
                 cw.set_octant(angle);
@@ -314,9 +314,9 @@ protected:
                 auto &q = source_->get_transport(iang);
 
                 real_t wgt = angle.weight * PI;
-                t_state.ox = t_state.angle.ox;
-                t_state.oy = t_state.angle.oy;
-                t_state.oz = std::abs(t_state.angle.oz);
+                t_state.ox = angle.ox;
+                t_state.oy = angle.oy;
+                t_state.oz = angle.oz;
 
                 // Configure the loop direction. Could template the below for
                 // speed at some point.
@@ -368,8 +368,6 @@ protected:
 
                         t_flux(i) += psi * wgt;
 
-                        // Stash currents (or not, depending on the
-                        // CurrentWorker template parameter)
                         cw.current_work(x_flux[iy], y_flux[ix], i, angle,
                                         group);
                     }
@@ -378,8 +376,8 @@ protected:
                 if (gs_boundary_) {
                     bc_in_.update(group, iang, bc_out_);
                 }
-            }
-// Update the boundary condition
+            } // Angles
+              // Update the boundary condition
 #pragma omp single
             if (!gs_boundary_) {
                 bc_in_.update(group, bc_out_);
@@ -390,7 +388,6 @@ protected:
             {
                 flux_1g_ += t_flux;
             }
-
         } // OMP Parallel
 
         return;
