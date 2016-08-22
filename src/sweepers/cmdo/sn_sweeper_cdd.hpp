@@ -109,8 +109,7 @@ public:
 
 protected:
     std::shared_ptr<const CorrectionData> corrections_;
-
-    int correction_z_;
+    VecI macroplanes_;
 };
 
 class SnSweeper_CDD_DD : public SnSweeper_CDD<SnSweeper_CDD_DD> {
@@ -121,18 +120,25 @@ public:
         return;
     }
 
+    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
+                       int i, const ThreadState &t_state) const
+    {
+        return SnSweeper_CDD<SnSweeper_CDD_DD>::evaluate_2d(flux_x, flux_y, q,
+                                                            xstr, i, t_state);
+    }
+
     real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
                     real_t xstr, int i, const ThreadState &t_state) const
     {
-        int ix    = i % this->mesh_.nx();
-        int ia    = correction_z_ * this->plane_size_ + i % this->plane_size_;
-        real_t tx = t_state.angle.ox / this->mesh_.dx(ix);
+        int ix = i % mesh_.nx();
+        int ia = t_state.macroplane * this->plane_size_ + i % this->plane_size_;
+        real_t tx = t_state.ox / mesh_.dx(ix);
 
-        real_t ax = corrections_->alpha(ia, t_state.iang_2d, this->group_,
-                                        Normal::X_NORM);
-        real_t ay = corrections_->alpha(ia, t_state.iang_2d, this->group_,
-                                        Normal::Y_NORM);
-        real_t b = corrections_->beta(ia, t_state.iang_2d, this->group_);
+        real_t ax =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, t_state.iang_2d, group_);
 
         real_t gx = ax * b;
         real_t gy = ay * b;
@@ -166,8 +172,8 @@ public:
                     real_t xstr, int i, const ThreadState &t_state) const
     {
         int ix    = i % mesh_.nx();
-        int ia    = correction_z_ * plane_size_ + i % plane_size_;
-        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+        int ia    = t_state.macroplane * plane_size_ + i % plane_size_;
+        real_t tx = t_state.ox / mesh_.dx(ix);
 
         real_t ax =
             corrections_->alpha(ia, t_state.iang_2d, group_, Normal::X_NORM);
@@ -207,7 +213,7 @@ public:
                        int i, const ThreadState &t_state) const
     {
         int ix    = i % this->mesh_.nx();
-        real_t tx = t_state.angle.ox / this->mesh_.dx(ix);
+        real_t tx = t_state.ox / this->mesh_.dx(ix);
 
         real_t ax = corrections_->alpha(i, t_state.iang_2d, this->group_,
                                         Normal::X_NORM);
@@ -231,8 +237,8 @@ public:
                     real_t xstr, int i, const ThreadState &t_state) const
     {
         int ix    = i % mesh_.nx();
-        int ia    = correction_z_ * plane_size_ + i % plane_size_;
-        real_t tx = t_state.angle.ox / mesh_.dx(ix);
+        int ia    = t_state.macroplane * plane_size_ + i % plane_size_;
+        real_t tx = t_state.ox / mesh_.dx(ix);
 
         real_t ax =
             corrections_->alpha(ia, t_state.iang_2d, group_, Normal::X_NORM);

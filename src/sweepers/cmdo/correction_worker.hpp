@@ -91,7 +91,6 @@ public:
         assert(plane < (int)mplane_offset_.size());
         Current::set_plane(plane);
 
-        cell_offset_xs_ = mplane_offset_[plane];
         return;
     }
 

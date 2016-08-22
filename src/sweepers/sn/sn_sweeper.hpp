@@ -100,6 +100,8 @@ protected:
     Timer &timer_xsupdate_;
     const CoreMesh &mesh_;
 
+    VecI macroplanes_;
+
     unsigned int n_inner_;
 
     // Boundary condition enumeration

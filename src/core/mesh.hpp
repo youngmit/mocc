@@ -842,6 +842,10 @@ public:
     {
         return macroplane_index_;
     }
+    int macroplane_index(int iz) const
+    {
+        return macroplane_index_[iz];
+    }
 
 protected:
     /**

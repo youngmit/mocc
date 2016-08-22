@@ -48,6 +48,7 @@ SnSweeper::SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
       timer_sweep_(timer_.new_timer("Sweep", false)),
       timer_xsupdate_(timer_.new_timer("XS Update", false)),
       mesh_(mesh),
+      macroplanes_(mesh.macroplane_index()),
       bc_type_(mesh.boundary()),
       flux_1g_(),
       bc_in_(mesh.mat_lib().n_group(), ang_quad_, bc_type_,

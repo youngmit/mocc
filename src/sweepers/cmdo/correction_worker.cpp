@@ -81,7 +81,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
         real_t area_x = area[0] / mesh_->pin_dx()[pos.x];
         real_t area_y = area[1] / mesh_->pin_dy()[pos.y];
 
-        real_t xstr = xstr_sn_[ic+cell_offset_xs_];
+        real_t xstr = xstr_sn_[icc];
 
         // FW direction
         {
@@ -101,6 +101,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
             real_t ay = vol_sum_(ic * 2 + 0) / (psi_yl + psi_yr);
 
             real_t b = sigt_sum_(ic * 2 + 0) / xstr;
+            assert(b == b);
 
             real_t e =
                 ax - corrections_->alpha(icc, iang1, group, Normal::X_NORM);
@@ -134,6 +135,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
             real_t ay = vol_sum_(ic * 2 + 1) / (psi_yl + psi_yr);
 
             real_t b = sigt_sum_(ic * 2 + 1) / xstr;
+            assert(b == b);
 
             real_t e =
                 ax - corrections_->alpha(icc, iang2, group, Normal::X_NORM);

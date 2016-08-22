@@ -52,6 +52,7 @@ public:
         real_t tz;
         int iang;
         int iang_2d;
+        int macroplane;
         real_t ox;
         real_t oy;
         real_t oz;
@@ -166,7 +167,7 @@ protected:
             for (int iang = 0; iang < ang_quad_.ndir(); iang++) {
                 angle           = ang_quad_[iang];
                 t_state.iang    = iang;
-                t_state.iang_2d = iang % ang_quad_.ndir() / 2;
+                t_state.iang_2d = iang % (ang_quad_.ndir() / 2);
                 t_state.angle   = ang_quad_[iang];
                 // Configure the current worker for this angle
                 cw.set_octant(angle);
@@ -225,7 +226,8 @@ protected:
                 cw.upwind_work(x_flux, y_flux, z_flux, angle, group);
 
                 for (int iz = sttz; iz != stpz; iz += zdir) {
-                    t_state.tz = t_state.oz / mesh_.dz(iz);
+                    t_state.tz         = t_state.oz / mesh_.dz(iz);
+                    t_state.macroplane = macroplanes_[iz];
                     for (int iy = stty; iy != stpy; iy += ydir) {
                         t_state.ty = t_state.oy / mesh_.dy(iy);
                         for (int ix = sttx; ix != stpx; ix += xdir) {
@@ -301,12 +303,14 @@ protected:
             Angle angle;
             ThreadState t_state;
 
+            t_state.macroplane = 0;
+
 #pragma omp for
             for (int iang = 0; iang < ang_quad_.ndir() / 2; iang++) {
                 angle           = ang_quad_[iang];
                 t_state.iang    = iang;
                 t_state.angle   = angle;
-                t_state.iang_2d = iang % ang_quad_.ndir() / 2;
+                t_state.iang_2d = iang % (ang_quad_.ndir() / 2);
                 // Configure the current worker for this angle
                 cw.set_octant(angle);
 
