@@ -89,6 +89,8 @@ public:
      *
      * This is not necessarily the number of pins. For a MoC/CoreMesh this
      * is the number of flat source regions.
+     *
+     * \todo change name to n_regions()
      */
     virtual size_t n_reg(MeshTreatment treatment) const
     {
@@ -308,7 +310,7 @@ public:
     /**
      * \brief Return the lowest coarse cell index in a given plane
      */
-    int plane_cell_begin(size_t plane) const
+    int plane_cell_begin(int plane) const
     {
         return nx_ * ny_ * plane;
     }
@@ -316,7 +318,7 @@ public:
     /**
      * \brief Return the highest coarse cell index in a given plane, plus 1
      */
-    int plane_cell_end(size_t plane) const
+    int plane_cell_end(int plane) const
     {
         return nx_ * ny_ * (plane + 1);
     }
