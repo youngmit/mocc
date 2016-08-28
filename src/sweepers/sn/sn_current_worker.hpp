@@ -113,9 +113,9 @@ public:
                 size_t i = mesh_->coarse_cell(pos);
                 int surf = mesh_->coarse_surf(i, upwind_z_);
 #pragma omp atomic update
-                data_->current(surf, group) += oz * z[ny * iy + ix];
+                data_->current(surf, group) += oz * z[nx * iy + ix];
 #pragma omp atomic update
-                data_->surface_flux(surf, group) += z[ny * iy + ix];
+                data_->surface_flux(surf, group) += z[nx * iy + ix];
             }
         }
 
