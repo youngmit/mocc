@@ -103,7 +103,8 @@ TEST(moc_ihm)
     if (!result) {
         std::cout << result.description() << std::endl;
         std::cout << result.offset << std::endl;
-        std::cout << "\"" << ihm_xml.substr(result.offset - 10, 20) << "\"" << std::endl;
+        std::cout << "\"" << ihm_xml.substr(result.offset - 10, 20) << "\""
+                  << std::endl;
     }
 
     int ng = 7;
@@ -134,7 +135,7 @@ TEST(moc_ihm)
 
     for (int ig = 0; ig < ng; ig++) {
         std::cout << "pre sweep: " << sweeper.flux()(blitz::Range::all(), ig)
-             << std::endl;
+                  << std::endl;
         source->initialize_group(ig);
         source->fission(fission_source, ig);
         source->in_scatter(ig);

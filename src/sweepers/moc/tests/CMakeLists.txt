@@ -13,4 +13,5 @@ copy_file_if_changed(${CMAKE_CURRENT_SOURCE_DIR}/large.xml
     ${CMAKE_CURRENT_BINARY_DIR}/large.xml test_Ray)
 
 add_unit_test(test_MoC_IHM core moc pugixml)
+add_unit_test(test_MoCSweeper core moc pugixml)
 endif()
