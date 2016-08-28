@@ -87,9 +87,15 @@ public:
         return resid;
     };
 
+    /**
+     * \brief Set up the worker to treat the indexed macroplane
+     *
+     * \param plane the index of the macroplane that is about to be swept
+     */
     MOCC_FORCE_INLINE void set_plane(int plane) {
         assert(plane < (int)mplane_offset_.size());
         Current::set_plane(plane);
+        cell_offset_xs_ = mplane_offset_[plane];
 
         return;
     }
@@ -256,6 +262,7 @@ private:
 
     std::array<real_t, 3> residual_;
 
+    // Index offset to get the first coarse mesh region in a given macroplane
     std::vector<int> mplane_offset_;
 
     /** \page surface_norm Surface Normalization

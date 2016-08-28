@@ -81,7 +81,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
         real_t area_x = area[0] / mesh_->pin_dx()[pos.x];
         real_t area_y = area[1] / mesh_->pin_dy()[pos.y];
 
-        real_t xstr = xstr_sn_[icc];
+        real_t xstr = xstr_sn_[ic+cell_offset_xs_];
 
         // FW direction
         {
