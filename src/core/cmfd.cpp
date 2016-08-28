@@ -450,7 +450,7 @@ void CMFD::setup_solve()
         } // matrix element loop
 
         solvers_[group].compute(m);
-        solvers_[group].setMaxIterations(1500);
+        solvers_[group].setMaxIterations(150);
 
         group++;
     } // group loop
