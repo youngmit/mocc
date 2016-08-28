@@ -29,7 +29,7 @@ class SnSweeper : public TransportSweeper {
 public:
     SnSweeper(const pugi::xml_node &input, const CoreMesh &mesh);
 
-    void initialize()
+    void initialize() override final
     {
         flux_     = 1.0;
         flux_old_ = 1.0;
@@ -38,11 +38,44 @@ public:
         return;
     }
 
-    void get_pin_flux_1g(int ig, ArrayB1 &flux) const
+    /**
+     * \copydoc TransportSweeper::get_pin_flux_1g()
+     *
+     * The default \ref MeshTreatment for \ref SnSweeper and its derived types
+     * is \ref MeshTreatment::PIN.
+     */
+    void get_pin_flux_1g(int group, ArrayB1 &flux,
+                         MeshTreatment treatment) const override final
     {
-        assert((int)flux.size() == n_reg_);
+        assert((int)flux.size() == mesh_.n_reg(treatment));
 
-        flux = flux_(blitz::Range::all(), ig);
+        switch (treatment) {
+        case MeshTreatment::PIN:
+            flux = flux_(blitz::Range::all(), group);
+            break;
+        case MeshTreatment::PLANE: {
+            flux            = 0.0;
+            int n_per_plane = mesh_.nx() * mesh_.ny();
+            int imp         = 0;
+            int mplane_stt  = 0;
+            int mplane_stp  = 0;
+            for (const auto &mplane : mesh_.macroplanes()) {
+                mplane_stp = mplane_stt + n_per_plane;
+                for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
+                    real_t hz = mesh_.dz(iz);
+                    flux(blitz::Range(mplane_stt, mplane_stp)) +=
+                        flux_(blitz::Range(mesh_.plane_cell_begin(iz),
+                                           mesh_.plane_cell_end(iz)),
+                              group) *
+                        hz;
+                }
+                mplane_stt = mplane_stp;
+                imp++;
+            }
+        } break;
+        default:
+            throw EXCEPT("Unsupported mesh treatment");
+        }
 
         return;
     }
@@ -50,16 +83,22 @@ public:
     /**
      * \brief \copybrief TransportSweeper::update_incoming_flux()
      */
-    void update_incoming_flux();
+    void update_incoming_flux() override final;
 
-    ArrayB3 pin_powers() const;
+    ArrayB3 pin_powers() const override final;
 
     /**
-     * Just copy the flux across, since no homogenization is necessary.
+     * \copydoc TransportSweeper::set_pin_flux_1g()
+     *
+     * The default \ref MeshTreatment for \ref SnSweeper and derived types is
+     * MeshTreatment::PIN.
      */
-    real_t set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
+    real_t
+    set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
+                    MeshTreatment treatment = MeshTreatment::PIN) override final
     {
-        assert((int)pin_flux.size() == n_reg_);
+        assert((int)pin_flux.size() == mesh_.n_reg(treatment));
+        assert(treatment == MeshTreatment::PIN);
 
         real_t resid = 0.0;
         size_t i     = 0;
@@ -81,7 +120,7 @@ public:
         return;
     }
 
-    SP_XSMeshHomogenized_t get_homogenized_xsmesh()
+    SP_XSMeshHomogenized_t get_homogenized_xsmesh() override final
     {
         return std::static_pointer_cast<XSMeshHomogenized>(xs_mesh_);
     }
@@ -91,7 +130,7 @@ public:
         return xstr_;
     }
 
-    virtual void output(H5Node &node) const;
+    virtual void output(H5Node &node) const override;
 
 protected:
     Timer &timer_;
@@ -107,7 +146,8 @@ protected:
     // Boundary condition enumeration
     std::array<Boundary, 6> bc_type_;
 
-    // One-group slice of flux_. Should be default-constructed, and assigned
+    // One-group slice of flux_. Should be default-constructed, and
+    // assigned
     // slices using .reference()
     ArrayB1 flux_1g_;
 
@@ -130,19 +170,24 @@ protected:
     void add_data(const pugi::xml_node &input);
 
     /**
-     * \brief Check the neutron balance in all of the cells of the sweeper
+     * \brief Check the neutron balance in all of the cells of the
+     * sweeper
      */
     void check_balance(int group) const;
 
     /**
-     * This funtion template is used to permit flexibility in the incoming
-     * flux update without incurring lots of code duplication, and withot
-     * affecting performance. The loop over surfaces is somewhat involved,
+     * This funtion template is used to permit flexibility in the
+     * incoming
+     * flux update without incurring lots of code duplication, and
+     * withot
+     * affecting performance. The loop over surfaces is somewhat
+     * involved,
      * and replicating it by hand for each flux update method would be
      * unmaintainable.
      *
      * The update for each surface is performed using a lambda function,
-     * upon which this template is instantiated, which, under optimization,
+     * upon which this template is instantiated, which, under
+     * optimization,
      * should be inlined.
      */
     template <class Function> void update_incoming_generic(Function f)

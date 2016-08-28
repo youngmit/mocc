@@ -79,21 +79,43 @@ public:
 
     /**
      * \brief Return a vector containing the pin-homogenized multi-group
-     * scalar flux. The values in the vector are ordered group-major.
+     * scalar flux.
+     *
+     * \param treatment the type of coarse mesh treatment to use. Default=PIN
      */
-    ArrayB2 get_pin_flux() const;
+    ArrayB2 get_pin_flux(MeshTreatment treatment = MeshTreatment::PIN) const;
 
     /**
      * \brief Produce pin-homogenized scalar flux for the specified group
      * and store in the passed array.
+     *
+     * \param [in] group the energy group to extract flux for
+     * \param [out] flux the \ref ArrayB1 in which to store the flux
+     * \param [in] treatment the \ref MeshTreatment to use for homogenization.
+     * Optional, see below.
+     *
+     * The \p treatment parameter is optional, and used to control the type of
+     * homogenization to perform. Different implementations will have different
+     * default arguments based upon what is most natural to the implementing
+     * sweeper. It is expected that the passed \ref ArrayB1 be allocated to the
+     * appropriate size for the desired \ref MeshTreatment.
      */
-    virtual void get_pin_flux_1g(int ig, ArrayB1 &flux) const = 0;
+    virtual void
+    get_pin_flux_1g(int group, ArrayB1 &flux,
+                    MeshTreatment treatment = MeshTreatment::PIN) const = 0;
 
     /**
-     * \brief Project a single-group pin mesh-homogenized flux to the fine
+     * \brief Project a single-group pin mesh-homogenized flux to the sweeper
      * mesh. Return the residual.
+     *
+     * \param group the energy group to set
+     * \param pin_flux the input homogenized flux
+     * \param treatment the type of MeshTreatment used as the basis for the
+     * homogenized flux. Optional, see specific implentations for default value
      */
-    virtual real_t set_pin_flux_1g(int group, const ArrayB1 &pin_flux) = 0;
+    virtual real_t
+    set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
+                    MeshTreatment treatment = MeshTreatment::PIN) = 0;
 
     /**
      * \brief Project a multi-group pin mesh-homogenized flux to the fine
@@ -172,7 +194,8 @@ public:
      * Usually this will be identical to \ref n_reg(), though some more exotic
      * sweepers may need to define the fission source in a different way.
      */
-    virtual int n_reg_fission() const {
+    virtual int n_reg_fission() const
+    {
         return n_reg_;
     }
 

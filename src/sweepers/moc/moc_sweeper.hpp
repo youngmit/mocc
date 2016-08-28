@@ -41,15 +41,34 @@ public:
     {
     }
 
-    virtual void sweep(int group);
+    virtual void sweep(int group) override;
 
-    void initialize();
+    void initialize() override final;
 
-    void get_pin_flux_1g(int group, ArrayB1 &flux) const;
+    /**
+     * \copydoc TransportSweeper::get_pin_flux_1g()
+     *
+     * The default \ref MeshTreatment for the \ref MoCSweeper and derived types
+     * is \ref MeshTreatment::PLANE
+     */
+    void get_pin_flux_1g(
+        int group, ArrayB1 &flux,
+        MeshTreatment treatment = MeshTreatment::PLANE) const override final;
 
-    real_t set_pin_flux_1g(int group, const ArrayB1 &pin_flux);
+    /**
+     * \copydoc TransportSweeper::get_pin_flux_1g()
+     *
+     * The default \ref MeshTreatment for \ref MoCSweeper is \ref
+     * MeshTreatment::PLANE, which results in a pin-by-pin fine-mesh projection,
+     * preserving the intra-pin flux shape for each pin. If passed \ref
+     * MeshTreatment::PIN, an axial homogenization is performed first, and the
+     * result is treated in the same way as MeshTreatment::PLANE.
+     */
+    real_t set_pin_flux_1g(
+        int group, const ArrayB1 &pin_flux,
+        MeshTreatment treatment = MeshTreatment::PLANE) override final;
 
-    void output(H5Node &node) const;
+    void output(H5Node &node) const override;
 
     void homogenize(CoarseData &data) const
     {
@@ -59,7 +78,7 @@ public:
     /**
      * \brief \copybrief TransportSweeper::update_incoming_flux()
      */
-    void update_incoming_flux();
+    void update_incoming_flux() override final;
 
     /**
      * \copybrief TransportSweeper::create_source()
@@ -68,7 +87,8 @@ public:
      * method, but also makes sure that the source is configured properly
      * for MoC.
      */
-    virtual UP_Source_t create_source(const pugi::xml_node &input) const
+    virtual UP_Source_t
+    create_source(const pugi::xml_node &input) const override final
     {
         auto source = TransportSweeper::create_source(input);
         return source;
@@ -82,7 +102,7 @@ public:
         return ang_quad_;
     }
 
-    SP_XSMeshHomogenized_t get_homogenized_xsmesh()
+    SP_XSMeshHomogenized_t get_homogenized_xsmesh() override final
     {
         auto xsm = SP_XSMeshHomogenized_t(new XSMeshHomogenized(mesh_));
         xsm->set_flux(flux_);

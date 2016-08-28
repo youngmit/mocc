@@ -66,7 +66,7 @@ PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
       tl_(sn_sweeper_->n_group(), n_pin_moc_),
       sn_resid_norm_(sn_sweeper_->n_group()),
       sn_resid_(sn_sweeper_->n_group(), mesh_.n_pin()),
-      prev_moc_flux_(sn_sweeper_->n_group(), mesh_.n_pin()),
+      prev_moc_flux_(sn_sweeper_->n_group(), mesh_.n_reg(MeshTreatment::PLANE)),
       i_outer_(-1)
 {
     validate_input(input, recognized_attributes);
@@ -143,7 +143,7 @@ void PlaneSweeper_2D3D::sweep(int group)
     }
 
     ArrayB1 prev_moc_flux = prev_moc_flux_(group, blitz::Range::all());
-    moc_sweeper_.get_pin_flux_1g(group, prev_moc_flux);
+    moc_sweeper_.get_pin_flux_1g(group, prev_moc_flux, MeshTreatment::PLANE);
 
     if (do_mocproject_) {
         sn_sweeper_->set_pin_flux_1g(group, prev_moc_flux);
@@ -153,8 +153,8 @@ void PlaneSweeper_2D3D::sweep(int group)
     sn_sweeper_->sweep(group);
 
     if (do_snproject_) {
-        ArrayB1 sn_flux(mesh_.n_pin());
-        sn_sweeper_->get_pin_flux_1g(group, sn_flux);
+        ArrayB1 sn_flux(mesh_.n_reg(MeshTreatment::PLANE));
+        sn_sweeper_->get_pin_flux_1g(group, sn_flux, MeshTreatment::PLANE);
 
         // Check for negative fluxes on the Sn mesh
         int n_neg = 0;
@@ -173,7 +173,7 @@ void PlaneSweeper_2D3D::sweep(int group)
 
     // Compute Sn-MoC residual
     real_t residual = 0.0;
-    for (size_t i = 0; i < prev_moc_flux.size(); i++) {
+    for (unsigned i = 0; i < prev_moc_flux.size(); i++) {
         residual += (prev_moc_flux(i) - sn_sweeper_->flux(group, i)) *
                     (prev_moc_flux(i) - sn_sweeper_->flux(group, i));
         sn_resid_(group, (int)i) =
@@ -198,12 +198,13 @@ void PlaneSweeper_2D3D::initialize()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void PlaneSweeper_2D3D::get_pin_flux_1g(int ig, ArrayB1 &flux) const
+void PlaneSweeper_2D3D::get_pin_flux_1g(int ig, ArrayB1 &flux,
+                                        MeshTreatment treatment) const
 {
     if (expose_sn_) {
-        sn_sweeper_->get_pin_flux_1g(ig, flux);
+        sn_sweeper_->get_pin_flux_1g(ig, flux, MeshTreatment::PIN);
     } else {
-        moc_sweeper_.get_pin_flux_1g(ig, flux);
+        moc_sweeper_.get_pin_flux_1g(ig, flux, MeshTreatment::PIN);
     }
 }
 

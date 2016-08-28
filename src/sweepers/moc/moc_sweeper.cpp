@@ -52,8 +52,9 @@ std::vector<mocc::BC_Size_t> bc_size_helper(const mocc::moc::RayData &rays)
 }
 
 const std::vector<std::string> recognized_attributes = {
-    "type",     "update_incoming", "n_inner",      "dump_rays",
-    "boundary_update", "tl_splitting",    "dump_fsr_flux"};
+    "type",         "update_incoming", "n_inner",
+    "dump_rays",    "boundary_update", "tl_splitting",
+    "dump_fsr_flux"};
 }
 
 namespace mocc {
@@ -289,86 +290,133 @@ void MoCSweeper::update_incoming_flux()
     return;
 }
 
-void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux) const
+void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux,
+                                 MeshTreatment treatment) const
 {
     assert((int)flux.size() == mesh_.n_pin());
     /// \todo Put this back in when we address index ordering
-    // assert(flux.isStorageContiguous());
+    /// assert(flux.isStorageContiguous());
     flux = 0.0;
 
-    int ireg = 0;
-    for (const auto &mplane : mesh_.macroplanes()) {
-        int ipin = 0;
-        for (const auto mpin : mplane) {
-            real_t v        = 0.0;
-            real_t pin_flux = 0.0;
-            for (int ir = 0; ir < mpin->n_reg(); ir++) {
-                v += vol_[ireg];
-                pin_flux += flux_(ireg, group) * vol_[ireg];
-                ireg++;
-            }
-            pin_flux /= v;
+    switch (treatment) {
+    case MeshTreatment::PLANE: {
+        int ireg    = 0;
+        int implane = 0;
+        for (const auto &mplane : mesh_.macroplanes()) {
+            int ipin = 0;
+            for (const auto mpin : mplane) {
+                real_t v        = 0.0;
+                real_t pin_flux = 0.0;
+                for (int ir = 0; ir < mpin->n_reg(); ir++) {
+                    v += vol_[ireg];
+                    pin_flux += flux_(ireg, group) * vol_[ireg];
+                    ireg++;
+                }
+                pin_flux /= v;
 
-            Position pos = mesh_.pin_position(ipin);
-            for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
-                pos.z = iz;
-                int i = mesh_.coarse_cell(pos);
+                Position pos = mesh_.pin_position(ipin);
+                pos.z        = implane;
+                int i        = mesh_.coarse_cell(pos);
                 flux(i) += pin_flux;
-            }
 
-            ipin++;
+                ipin++;
+            }
+            implane++;
         }
+    } break;
+
+    case MeshTreatment::PIN: {
+        int ireg = 0;
+        for (const auto &mplane : mesh_.macroplanes()) {
+            int ipin = 0;
+            for (const auto mpin : mplane) {
+                real_t v        = 0.0;
+                real_t pin_flux = 0.0;
+                for (int ir = 0; ir < mpin->n_reg(); ir++) {
+                    v += vol_[ireg];
+                    pin_flux += flux_(ireg, group) * vol_[ireg];
+                    ireg++;
+                }
+                pin_flux /= v;
+
+                Position pos = mesh_.pin_position(ipin);
+                for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
+                    pos.z = iz;
+                    int i = mesh_.coarse_cell(pos);
+                    flux(i) += pin_flux;
+                }
+
+                ipin++;
+            }
+        }
+    } break;
+    default:
+        throw EXCEPT("Unsupported mesh treatment requested");
     }
 
     return;
 }
 
-real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
+real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
+                                   MeshTreatment treatment)
 {
-    assert((int)pin_flux.size() == mesh_.n_pin());
+    assert((int)pin_flux.size() == mesh_.n_reg(treatment));
 
-    // homogenize the passed-in pin flux to the coarser axial mesh.
     ArrayB1 plane_pin_flux(mesh_.nx() * mesh_.ny() * subplane_.size());
-    plane_pin_flux = 0.0;
-    for (int i = 0; i < mesh_.n_pin(); i++) {
-        Position pos = mesh_.coarse_position(i);
-        int iz       = pos.z;
-        pos.z        = this->moc_plane_index(pos.z);
-        plane_pin_flux(mesh_.coarse_cell(pos)) += pin_flux(i) * mesh_.dz(iz);
-    }
-    for (unsigned i = 0; i < plane_pin_flux.size(); i++) {
-        int iz = i / (mesh_.nx() * mesh_.ny());
-        plane_pin_flux(i) /= mesh_.macroplane_heights()[iz];
-    }
+    plane_pin_flux = pin_flux;
 
-    int iz       = 0;
-    int ireg     = 0;
     real_t resid = 0.0;
-    for (const auto &mplane : mesh_.macroplanes()) {
-        int ipin = 0;
-        for (const auto &pin : mplane) {
-            Position pos   = mesh_.pin_position(ipin);
-            pos.z          = iz;
-            int i_coarse   = mesh_.coarse_cell(pos);
-            real_t fm_flux = 0.0;
-            for (const auto area : pin->areas()) {
-                fm_flux += flux_(ireg, group) * area;
-                ireg++;
-            }
-            fm_flux /= pin->area();
-            real_t e = plane_pin_flux(i_coarse) - fm_flux;
-            real_t f = plane_pin_flux(i_coarse) / fm_flux;
-            ireg -= pin->n_reg();
 
-            for (int ir = 0; ir < pin->n_reg(); ir++) {
-                flux_(ireg, group) *= f;
-                ireg++;
-            }
-
-            resid += e * e;
-            ipin++;
+    // Watch out: we use fall-through here, since once we have a
+    // macroplane-homogenized flux, we can use the same logic.
+    switch (treatment) {
+    case MeshTreatment::PIN:
+        plane_pin_flux = 0.0;
+        // homogenize the passed-in pin flux to the coarser axial mesh.
+        for (int i = 0; i < mesh_.n_pin(); i++) {
+            Position pos = mesh_.coarse_position(i);
+            int iz       = pos.z;
+            pos.z        = this->moc_plane_index(pos.z);
+            plane_pin_flux(mesh_.coarse_cell(pos)) +=
+                pin_flux(i) * mesh_.dz(iz);
         }
-        iz++;
+        for (unsigned i = 0; i < plane_pin_flux.size(); i++) {
+            int iz = i / (mesh_.nx() * mesh_.ny());
+            plane_pin_flux(i) /= mesh_.macroplane_heights()[iz];
+        }
+    case MeshTreatment::PLANE: {
+        int iz       = 0;
+        int ireg     = 0;
+        for (const auto &mplane : mesh_.macroplanes()) {
+            int ipin = 0;
+            for (const auto &pin : mplane) {
+                Position pos   = mesh_.pin_position(ipin);
+                pos.z          = iz;
+                int i_coarse   = mesh_.coarse_cell(pos);
+                real_t fm_flux = 0.0;
+                for (const auto area : pin->areas()) {
+                    fm_flux += flux_(ireg, group) * area;
+                    ireg++;
+                }
+                fm_flux /= pin->area();
+                real_t e = plane_pin_flux(i_coarse) - fm_flux;
+                real_t f = plane_pin_flux(i_coarse) / fm_flux;
+                ireg -= pin->n_reg();
+
+                for (int ir = 0; ir < pin->n_reg(); ir++) {
+                    flux_(ireg, group) *= f;
+                    ireg++;
+                }
+
+                resid += e * e;
+                ipin++;
+            }
+            iz++;
+        }
+    } break;
+    default:
+        // i suppose there is no reason we couldn't use TRUE...
+        throw EXCEPT("Unsupported mesh treatment used");
     }
 
     return std::sqrt(resid) / plane_pin_flux.size();
@@ -388,7 +436,7 @@ void MoCSweeper::apply_transverse_leakage(int group, const ArrayB1 &tl)
         for (int ireg = 0; ireg < n_reg_; ireg++) {
             real_t s = (*source_)[ireg] + tl(ireg);
             if (s < 0.0) {
-                if(flux_1g_(ireg) < 0.0){
+                if (flux_1g_(ireg) < 0.0) {
                     std::cout << ireg << " " << flux_1g_(ireg) << std::endl;
                     throw EXCEPT("Negative flux when splitting");
                 }
@@ -441,8 +489,7 @@ void MoCSweeper::check_balance(int group) const
         int icell = mesh_.coarse_cell(mesh_.pin_position(ipin));
         real_t bi = 0.0;
 
-        for (int ireg_pin = 0; ireg_pin < pin->n_reg();
-             ireg_pin++) {
+        for (int ireg_pin = 0; ireg_pin < pin->n_reg(); ireg_pin++) {
             bi -= flux_(ireg, group) * vol_[ireg] * xsrm(ireg);
             bi += (*source_)[ireg] * vol_[ireg];
             ireg++;

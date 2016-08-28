@@ -190,16 +190,16 @@ ArrayB3 TransportSweeper::pin_powers() const
     return powers;
 }
 
-ArrayB2 TransportSweeper::get_pin_flux() const
+ArrayB2 TransportSweeper::get_pin_flux(MeshTreatment treatment) const
 {
     assert(core_mesh_);
-    ArrayB2 flux(core_mesh_->n_pin(), n_group_);
+    ArrayB2 flux(core_mesh_->n_reg(treatment), n_group_);
 
     auto flux_it = flux.begin();
 
     for (int ig = 0; ig < n_group_; ig++) {
         ArrayB1 flux_1g(flux(blitz::Range::all(), ig));
-        this->get_pin_flux_1g(ig, flux_1g);
+        this->get_pin_flux_1g(ig, flux_1g, treatment);
     }
 
     return flux;

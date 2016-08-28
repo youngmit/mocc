@@ -39,16 +39,16 @@ class PlaneSweeper_2D3D : public TransportSweeper {
 public:
     PlaneSweeper_2D3D(const pugi::xml_node &input, const CoreMesh &mesh);
 
-    void sweep(int group);
+    void sweep(int group) override final;
 
-    void initialize();
+    void initialize() override final;
 
     /**
      * \brief \copybrief mocc::TransportSweeper::update_incoming_flux()
      *
      * This delegates to both contained sweepers.
      */
-    void update_incoming_flux()
+    void update_incoming_flux() override final
     {
         Warn("Incoming flux updates are not properly supported yet for 2D3D");
 
@@ -61,7 +61,8 @@ public:
     /**
      * \brief \copybrief TransportSweeper::get_pin_flux_1g()
      */
-    void get_pin_flux_1g(int ig, ArrayB1 &flux) const;
+    void get_pin_flux_1g(int ig, ArrayB1 &flux,
+                         MeshTreatment treatment) const override final;
 
     /**
      * \brief \copybrief TransportSweeper::set_pin_flux_1g()
@@ -69,9 +70,12 @@ public:
      * Delegate to the subbordinate \ref sn::SnSweeper and \ref
      * moc::MoCSweeper.  Return the error from the MoC sweeper.
      */
-    real_t set_pin_flux_1g(int group, const ArrayB1 &pin_flux)
+    real_t
+    set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
+                    MeshTreatment treatment = MeshTreatment::PIN) override final
     {
-        sn_sweeper_->set_pin_flux_1g(group, pin_flux);
+        assert(treatment == MeshTreatment::PIN);
+        sn_sweeper_->set_pin_flux_1g(group, pin_flux, MeshTreatment::PIN);
 
         real_t diff = 0.0;
         if (discrepant_flux_update_) {
@@ -90,7 +94,7 @@ public:
     /**
      * \brief \copybrief HasOutput::output()
      */
-    void output(H5Node &file) const;
+    void output(H5Node &file) const override final;
 
     /**
      * \brief \copybrief TransportSweeper::assign_source()
@@ -98,7 +102,7 @@ public:
      * Associate the sweeper with a source. This has to do a little extra
      * work, since the Sn sweeper needs its own source.
      */
-    virtual void assign_source(Source *source)
+    virtual void assign_source(Source *source) override final
     {
         assert(source != nullptr);
         source_ = source;
@@ -120,7 +124,7 @@ public:
      * based on the input to the \<source /\> tag, which is better done by
      * the Source constructor. Clean this up
      */
-    UP_Source_t create_source(const pugi::xml_node &input) const
+    UP_Source_t create_source(const pugi::xml_node &input) const override final
     {
         std::cout << "creating 2d3d source" << std::endl;
 
@@ -128,12 +132,12 @@ public:
         return source;
     }
 
-    SP_XSMeshHomogenized_t get_homogenized_xsmesh()
+    SP_XSMeshHomogenized_t get_homogenized_xsmesh() override final
     {
         return sn_sweeper_->get_homogenized_xsmesh();
     }
 
-    int n_reg() const
+    int n_reg() const override final
     {
         if (expose_sn_) {
             return sn_sweeper_->n_reg();
@@ -149,7 +153,7 @@ public:
      * \ref PlaneSweeper_2D3D::calc_fission_source() will store the respective
      * fission sources for the two sweepers one after the other.
      */
-    int n_reg_fission() const
+    int n_reg_fission() const override final
     {
         return sn_sweeper_->n_reg() + moc_sweeper_.n_reg();
     }
@@ -160,7 +164,8 @@ public:
      * Override the default \ref TransportSweeper implementation to call the
      * method on one of the sub-sweepers.
      */
-    void calc_fission_source(real_t k, ArrayB1 &fission_source) const
+    void calc_fission_source(real_t k,
+                             ArrayB1 &fission_source) const override final
     {
         assert((int)fission_source.size() ==
                moc_sweeper_.n_reg() + sn_sweeper_->n_reg());
@@ -183,7 +188,7 @@ public:
      * method on one of the sub-sweepers. For now, using the MoC
      * implementation, since it's the finer mesh, generally speaking
      */
-    real_t total_fission(bool old) const
+    real_t total_fission(bool old) const override final
     {
         if (expose_sn_) {
             return sn_sweeper_->total_fission(old);
@@ -197,7 +202,7 @@ public:
      *
      * Defer to the MoC and Sn sweepers.
      */
-    void store_old_flux()
+    void store_old_flux() override final
     {
         moc_sweeper_.store_old_flux();
         sn_sweeper_->store_old_flux();
@@ -209,7 +214,7 @@ public:
      *
      * Delegate to subordinate sweepers.
      */
-    void set_coarse_data(CoarseData *cd)
+    void set_coarse_data(CoarseData *cd) override final
     {
         coarse_data_ = cd;
         moc_sweeper_.set_coarse_data(cd);
