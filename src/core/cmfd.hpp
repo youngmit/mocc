@@ -29,7 +29,7 @@
 #include "xs_mesh_homogenized.hpp"
 
 namespace mocc {
-class CMFD {
+class CMFD : public HasOutput {
 public:
     CMFD(const pugi::xml_node &input, const Mesh *mesh,
          SP_XSMeshHomogenized_t xsmesh);
@@ -103,6 +103,8 @@ public:
         psi_tol_ = tol;
         return;
     }
+
+    void output(H5Node &node) const;
 
 private:
     // Private methods
@@ -234,6 +236,7 @@ norm = std::sqrt(norm)/(n_cell_*n_group_);
 
     // Other options
     bool zero_fixup_;
+    bool dump_current_;
 };
 typedef std::unique_ptr<CMFD> UP_CMFD_t;
 }

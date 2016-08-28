@@ -31,8 +31,8 @@ typedef Eigen::SparseMatrix<mocc::real_t> M;
 
 namespace {
 const std::vector<std::string> recognized_attributes = {
-    "enabled",  "k_tol",         "psi_tol", "residual_reduction",
-    "max_iter", "negative_fixup"};
+    "enabled",  "k_tol",           "psi_tol",     "residual_reduction",
+    "max_iter", "negative_fixupa", "dump_current"};
 }
 
 namespace mocc {
@@ -63,7 +63,8 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
       psi_tol_(1.0e-5),
       resid_reduction_(0.001),
       max_iter_(100),
-      zero_fixup_(false)
+      zero_fixup_(false),
+      dump_current_(false)
 {
     // Check input attributes
     validate_input(input, recognized_attributes);
@@ -129,6 +130,10 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
         // Enabled
         if (!input.attribute("enabled").empty()) {
             is_enabled_ = input.attribute("enabled").as_bool(true);
+        }
+
+        if (!input.attribute("dump_current").empty()) {
+            dump_current_ = input.attribute("dump_current").as_bool(false);
         }
     }
 
@@ -302,7 +307,7 @@ void CMFD::setup_solve()
         VecF d_coeff(n_cell_);
         VecF xsrm(n_cell_);
         for (const auto &xsr : *xsmesh_) {
-            real_t d = 1.0 / (3.0 * xsr.xsmactr(group));
+            real_t d  = 1.0 / (3.0 * xsr.xsmactr(group));
             real_t rm = xsr.xsmacrm(group);
             for (const int i : xsr.reg()) {
                 d_coeff[i] = d;
@@ -524,6 +529,37 @@ real_t CMFD::residual(int group) const
     VectorX resid = m_[group] * x_ - source_.get();
 
     return resid.squaredNorm();
+}
+
+void CMFD::output(H5Node &node) const
+{
+    if (!dump_current_) {
+        return;
+    }
+
+    auto dims = mesh_->dimensions();
+    std::reverse(dims.begin(), dims.end());
+
+    ArrayB1 surf_current(mesh_->n_pin());
+
+    auto current_g = node.create_group("current");
+    for (int ig = 0; ig < n_group_; ig++) {
+        std::stringstream g_str;
+        g_str << ig + 1;
+        auto group_g = current_g.create_group(g_str.str());
+        for (const auto &surf : AllSurfaces) {
+            std::stringstream s_str;
+            s_str << surf;
+
+            for (int i = 0; i < mesh_->n_pin(); ++i) {
+                surf_current(i) = coarse_data_.current(
+                    mesh_->coarse_surf(i, surf), ig);
+            }
+            group_g.write(s_str.str(), surf_current, dims);
+        }
+    }
+
+    return;
 }
 
 void CMFD::print(int iter, real_t k, real_t k_err, real_t psi_err,
