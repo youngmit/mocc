@@ -35,7 +35,7 @@ namespace mocc {
 namespace sn {
 /**
  * The \ref SnSweeperVariant allows for the templating of an Sn sweeper upon
- * a specific differencing scheme. They are derived from the\ref SnSweeper
+ * a specific differencing scheme. They are derived from the \ref SnSweeper
  * class itself so that the \ref SnSweeperFactory may return a pointer of
  * that type for use elsewhere, so that the template parameter need not be
  * known to the client code. In uses where the differencing scheme is indeed
@@ -43,6 +43,10 @@ namespace sn {
  * and have access to a fully-typed \ref CellWorker member. This is useful
  * in the \ref cmdo::PlaneSweeper_2D3D class, which knows what type of \ref
  * CellWorker it is using.
+ *
+ * Specialization is carried out using the Curiously-Recurring Template pattern.
+ * See the specific implementations (e.g. \ref SnSweeper_DD or \ref
+ * cmdo::SnSweeper_CDD).
  */
 template <class Equation> class SnSweeperVariant : public SnSweeper {
 public:

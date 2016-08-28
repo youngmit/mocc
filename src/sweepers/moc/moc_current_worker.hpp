@@ -147,8 +147,7 @@ public:
      */
     typedef std::vector<real_t> FluxStore;
 
-    Current()
-        : coarse_data_(nullptr), mesh_(nullptr)
+    Current() : coarse_data_(nullptr), mesh_(nullptr)
     {
     }
 
@@ -267,8 +266,7 @@ public:
     /**
      * \brief Clean up anything that needs to be done after sweeping all angles
      *
-     * In the context of the \ref CurrentWorker and most of its children, this
-     * only includes expanding the currents to the full PIN grid from the
+     * This only includes expanding the currents to the full PIN grid from the
      * potentially smaller MoC axial grid.
      */
     MOCC_FORCE_INLINE void post_sweep()

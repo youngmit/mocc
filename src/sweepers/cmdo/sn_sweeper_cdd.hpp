@@ -34,11 +34,8 @@ typedef std::pair<std::unique_ptr<SnSweeper>, std::shared_ptr<CorrectionData>>
     CDDPair_t;
 
 /**
- * An extension of \ref sn::CellWorker to propagate flux through an
- * orthogonal mesh region with the corrected diamond difference (CDD)
- * scheme. This class is still virtual, as the
- * sn::CellWorker::evaluate() method can be tailored for different axial
- * treatments.
+ * \brief Specialization of \ref SnSweeperVariant to use the Corrected Diamond
+ * Differenc scheme
  */
 template <class Equation>
 class SnSweeper_CDD : public SnSweeperVariant<Equation> {
@@ -112,6 +109,10 @@ protected:
     VecI macroplanes_;
 };
 
+/**
+ * \brief Specialization of \ref SnSweeper_CDD to use diamond difference in the
+ * axial dimension
+ */
 class SnSweeper_CDD_DD : public SnSweeper_CDD<SnSweeper_CDD_DD> {
 public:
     SnSweeper_CDD_DD(const pugi::xml_node &input, const CoreMesh &mesh)
@@ -156,9 +157,8 @@ public:
 };
 
 /**
- * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
- * mesh region with the corrected diamond difference (CDD) scheme in X and
- * Y, with FW difference in Z.
+ * \brief Specialization of \ref SnSweeper_CDD to use forward differencing in
+ * the axial dimension
  */
 class SnSweeper_CDD_FW : public SnSweeper_CDD<SnSweeper_CDD_FW> {
 public:
@@ -197,9 +197,8 @@ public:
 };
 
 /**
- * A variant of \ref CellWorker_CDD to propagate flux through an orthogonal
- * mesh region with the corrected diamond difference (CDD) scheme in X and
- * Y, with step characteristics in Z.
+ * \brief Specialization of \ref SnSweeper_CDD to use step characteristics in
+ * the axial dimension
  */
 class SnSweeper_CDD_SC : public SnSweeper_CDD<SnSweeper_CDD_SC> {
 public:

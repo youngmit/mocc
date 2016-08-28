@@ -26,9 +26,8 @@
 namespace mocc {
 namespace sn {
 /**
- * A simple class extending \ref sn::CellWorker to perform the algebraic
- * work needed to propagate flux through an orthogonal mesh cell using
- * the diamond difference scheme.
+ * \brief Specialization of \ref SnSweeperVariant to use the diamond difference
+ * scheme
  */
 class SnSweeper_DD : public SnSweeperVariant<SnSweeper_DD> {
 public:
@@ -71,6 +70,11 @@ public:
     }
 };
 
+/**
+ * \brief Specialization of \ref SnSweeperVariant to use the diamond difference
+ * scheme in the radial dimensions and step characteristics in the axial
+ * dimension
+ */
 class SnSweeper_DD_SC : public SnSweeperVariant<SnSweeper_DD_SC> {
 public:
     SnSweeper_DD_SC(const pugi::xml_node &input, const CoreMesh &mesh)
