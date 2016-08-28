@@ -56,7 +56,7 @@ public:
         MeshTreatment treatment = MeshTreatment::PLANE) const override final;
 
     /**
-     * \copydoc TransportSweeper::get_pin_flux_1g()
+     * \copydoc TransportSweeper::set_pin_flux_1g()
      *
      * The default \ref MeshTreatment for \ref MoCSweeper is \ref
      * MeshTreatment::PLANE, which results in a pin-by-pin fine-mesh projection,
