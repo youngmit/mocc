@@ -209,30 +209,6 @@ public:
         return;
     }
 
-    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
-                       int i, const ThreadState &t_state) const
-    {
-        int ix    = i % this->mesh_.nx();
-        real_t tx = t_state.ox / this->mesh_.dx(ix);
-
-        real_t ax = corrections_->alpha(i, t_state.iang_2d, this->group_,
-                                        Normal::X_NORM);
-        real_t ay = corrections_->alpha(i, t_state.iang_2d, this->group_,
-                                        Normal::Y_NORM);
-        real_t b = corrections_->beta(i, t_state.iang_2d, this->group_);
-
-        real_t gx = ax * b;
-        real_t gy = ay * b;
-
-        real_t psi = q + 2.0 * (tx * flux_x + t_state.ty * flux_y);
-        psi /= tx / gx + t_state.ty / gy + xstr;
-
-        flux_x = (psi - gx * flux_x) / gx;
-        flux_y = (psi - gy * flux_y) / gy;
-
-        return psi;
-    }
-
     real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
                     real_t xstr, int i, const ThreadState &t_state) const
     {
