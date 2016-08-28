@@ -295,6 +295,9 @@ void EigenSolver::output(H5Node &file) const
     }
 
     fss_.output(file);
+    if(cmfd_) {
+        cmfd_->output(file);
+    }
     return;
 }
 
