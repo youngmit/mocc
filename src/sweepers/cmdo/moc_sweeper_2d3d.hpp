@@ -33,7 +33,7 @@ public:
      *
      * \param data a shared pointer to the \ref CorrectionData
      * \param xsmesh a shared pointer to the \ref XSMeshHomogenized to use
-     * \param ExpandedXS a reference the the \ref ExpandedXS instance to share
+     * \param xstr a reference the the \ref ExpandedXS instance to share
      * with the Sn sweeper
      */
     void set_coupling(std::shared_ptr<CorrectionData> data,
