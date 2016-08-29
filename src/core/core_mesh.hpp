@@ -75,6 +75,8 @@ public:
         case MeshTreatment::PIN:
             n_reg = this->n_pin();
             break;
+        case MeshTreatment::PIN_PLANE:
+            n_reg = nx_ * ny_ * subplane_.size();
         }
         return n_reg;
     }
@@ -335,9 +337,9 @@ public:
 
     const VecF volumes(MeshTreatment treatment) const
     {
+        VecF volumes;
         switch (treatment) {
         case MeshTreatment::TRUE: {
-            VecF volumes;
             volumes.reserve(this->n_reg(treatment));
             int ipin = 0;
             for (const auto &pin : *this) {
@@ -373,6 +375,18 @@ public:
             }
             return volumes;
         }
+        case MeshTreatment::PIN_PLANE:
+            volumes.reserve(this->n_reg(treatment));
+            for (const auto &mplane : macroplanes_) {
+                for (int iy = 0; iy < ny_; iy++) {
+                    for (int ix = 0; ix < nx_; ix++) {
+                        volumes.push_back(dx_vec_[ix] * dy_vec_[iy] *
+                                          mplane.height);
+                    }
+                }
+            }
+
+            return volumes;
         case MeshTreatment::PIN:
             // Fall through and return coarse volume. Putting the last return in
             // here causes warnings on some compilers

@@ -49,24 +49,24 @@ public:
      * \copydoc TransportSweeper::get_pin_flux_1g()
      *
      * The default \ref MeshTreatment for the \ref MoCSweeper and derived types
-     * is \ref MeshTreatment::PLANE
+     * is \ref MeshTreatment::PIN_PLANE
      */
     void get_pin_flux_1g(
         int group, ArrayB1 &flux,
-        MeshTreatment treatment = MeshTreatment::PLANE) const override final;
+        MeshTreatment treatment = MeshTreatment::PIN_PLANE) const override final;
 
     /**
      * \copydoc TransportSweeper::set_pin_flux_1g()
      *
      * The default \ref MeshTreatment for \ref MoCSweeper is \ref
-     * MeshTreatment::PLANE, which results in a pin-by-pin fine-mesh projection,
-     * preserving the intra-pin flux shape for each pin. If passed \ref
-     * MeshTreatment::PIN, an axial homogenization is performed first, and the
-     * result is treated in the same way as MeshTreatment::PLANE.
+     * MeshTreatment::PIN_PLANE, which results in a pin-by-pin fine-mesh
+     * projection, preserving the intra-pin flux shape for each pin. If passed
+     * \ref MeshTreatment::PIN, an axial homogenization is performed first, and
+     * the result is treated in the same way as MeshTreatment::PLANE.
      */
     real_t set_pin_flux_1g(
         int group, const ArrayB1 &pin_flux,
-        MeshTreatment treatment = MeshTreatment::PLANE) override final;
+        MeshTreatment treatment = MeshTreatment::PIN_PLANE) override final;
 
     void output(H5Node &node) const override;
 

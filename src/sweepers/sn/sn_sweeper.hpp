@@ -53,7 +53,7 @@ public:
         case MeshTreatment::PIN:
             flux = flux_(blitz::Range::all(), group);
             break;
-        case MeshTreatment::PLANE: {
+        case MeshTreatment::PIN_PLANE: {
             flux            = 0.0;
             int n_per_plane = mesh_.nx() * mesh_.ny();
             int imp         = 0;
@@ -63,12 +63,14 @@ public:
                 mplane_stp = mplane_stt + n_per_plane;
                 for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
                     real_t hz = mesh_.dz(iz);
-                    flux(blitz::Range(mplane_stt, mplane_stp)) +=
+                    flux(blitz::Range(mplane_stt, mplane_stp-1)) +=
                         flux_(blitz::Range(mesh_.plane_cell_begin(iz),
                                            mesh_.plane_cell_end(iz)),
                               group) *
                         hz;
                 }
+                flux(blitz::Range(mplane_stt, mplane_stp-1)) /= mplane.height;
+
                 mplane_stt = mplane_stp;
                 imp++;
             }

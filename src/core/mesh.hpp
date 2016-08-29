@@ -40,7 +40,10 @@ enum class MeshTreatment : unsigned char {
     /// Pin-homogenized mesh. Planes are not homogenized.
     PIN,
     /// Pins are not homogenized. Planes are homogenized as desired
-    PLANE
+    PLANE,
+    /// Pin- and macroplane-homogenized mesh. Good for getting coarse results
+    ///from and MoC sweeper
+    PIN_PLANE
 };
 
 /**

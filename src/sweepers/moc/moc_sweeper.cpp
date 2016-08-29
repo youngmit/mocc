@@ -293,13 +293,13 @@ void MoCSweeper::update_incoming_flux()
 void MoCSweeper::get_pin_flux_1g(int group, ArrayB1 &flux,
                                  MeshTreatment treatment) const
 {
-    assert((int)flux.size() == mesh_.n_pin());
+    assert((int)flux.size() == mesh_.n_reg(treatment));
     /// \todo Put this back in when we address index ordering
     /// assert(flux.isStorageContiguous());
     flux = 0.0;
 
     switch (treatment) {
-    case MeshTreatment::PLANE: {
+    case MeshTreatment::PIN_PLANE: {
         int ireg    = 0;
         int implane = 0;
         for (const auto &mplane : mesh_.macroplanes()) {
@@ -384,7 +384,7 @@ real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
             int iz = i / (mesh_.nx() * mesh_.ny());
             plane_pin_flux(i) /= mesh_.macroplane_heights()[iz];
         }
-    case MeshTreatment::PLANE: {
+    case MeshTreatment::PIN_PLANE: {
         int iz       = 0;
         int ireg     = 0;
         for (const auto &mplane : mesh_.macroplanes()) {

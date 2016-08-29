@@ -66,7 +66,8 @@ PlaneSweeper_2D3D::PlaneSweeper_2D3D(const pugi::xml_node &input,
       tl_(sn_sweeper_->n_group(), n_pin_moc_),
       sn_resid_norm_(sn_sweeper_->n_group()),
       sn_resid_(sn_sweeper_->n_group(), mesh_.n_pin()),
-      prev_moc_flux_(sn_sweeper_->n_group(), mesh_.n_reg(MeshTreatment::PLANE)),
+      prev_moc_flux_(sn_sweeper_->n_group(),
+                     mesh_.n_reg(MeshTreatment::PIN_PLANE)),
       i_outer_(-1)
 {
     validate_input(input, recognized_attributes);
@@ -143,7 +144,8 @@ void PlaneSweeper_2D3D::sweep(int group)
     }
 
     ArrayB1 prev_moc_flux = prev_moc_flux_(group, blitz::Range::all());
-    moc_sweeper_.get_pin_flux_1g(group, prev_moc_flux, MeshTreatment::PLANE);
+    moc_sweeper_.get_pin_flux_1g(group, prev_moc_flux,
+                                 MeshTreatment::PIN_PLANE);
 
     if (do_mocproject_) {
         sn_sweeper_->set_pin_flux_1g(group, prev_moc_flux);
@@ -152,10 +154,10 @@ void PlaneSweeper_2D3D::sweep(int group)
     // Sn sweeper
     sn_sweeper_->sweep(group);
 
-    if (do_snproject_) {
-        ArrayB1 sn_flux(mesh_.n_reg(MeshTreatment::PLANE));
-        sn_sweeper_->get_pin_flux_1g(group, sn_flux, MeshTreatment::PLANE);
+    ArrayB1 sn_flux(mesh_.n_reg(MeshTreatment::PIN_PLANE));
+    sn_sweeper_->get_pin_flux_1g(group, sn_flux, MeshTreatment::PIN_PLANE);
 
+    if (do_snproject_) {
         // Check for negative fluxes on the Sn mesh
         int n_neg = 0;
         for (auto &v : sn_flux) {
@@ -168,16 +170,15 @@ void PlaneSweeper_2D3D::sweep(int group)
             LogScreen << "Corrected " << n_neg
                       << " negative fluxes in Sn projection" << std::endl;
         }
-        moc_sweeper_.set_pin_flux_1g(group, sn_flux);
+        moc_sweeper_.set_pin_flux_1g(group, sn_flux, MeshTreatment::PIN_PLANE);
     }
 
     // Compute Sn-MoC residual
     real_t residual = 0.0;
-    for (unsigned i = 0; i < prev_moc_flux.size(); i++) {
-        residual += (prev_moc_flux(i) - sn_sweeper_->flux(group, i)) *
-                    (prev_moc_flux(i) - sn_sweeper_->flux(group, i));
-        sn_resid_(group, (int)i) =
-            sn_sweeper_->flux(group, i) - prev_moc_flux(i);
+    for (int i = 0; i < prev_moc_flux.size(); i++) {
+        real_t diff = prev_moc_flux(i) - sn_flux(i);
+        residual += diff * diff;
+        sn_resid_(group, i) = diff;
     }
     residual = sqrt(residual) / mesh_.n_pin();
 

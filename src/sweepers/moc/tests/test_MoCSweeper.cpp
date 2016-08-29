@@ -57,8 +57,8 @@ TEST(moc)
 
     // Make sure that we can get/set/get pin flux without change
     {
-        ArrayB1 pin_flux_1(mesh.n_reg(MeshTreatment::PLANE));
-        ArrayB1 pin_flux_2(mesh.n_reg(MeshTreatment::PLANE));
+        ArrayB1 pin_flux_1(mesh.n_reg(MeshTreatment::PIN_PLANE));
+        ArrayB1 pin_flux_2(mesh.n_reg(MeshTreatment::PIN_PLANE));
 
         sweeper.get_pin_flux_1g(0, pin_flux_1);
         sweeper.set_pin_flux_1g(0, pin_flux_1);

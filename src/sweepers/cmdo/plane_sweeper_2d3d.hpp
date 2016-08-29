@@ -85,7 +85,8 @@ public:
                     std::max(0.0, pin_flux(i) - sn_resid_(group, i));
             }
         } else {
-            diff = moc_sweeper_.set_pin_flux_1g(group, pin_flux);
+            diff = moc_sweeper_.set_pin_flux_1g(group, pin_flux,
+                                                MeshTreatment::PIN);
         }
 
         return diff;
