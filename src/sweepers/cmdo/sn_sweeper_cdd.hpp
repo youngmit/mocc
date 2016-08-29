@@ -70,7 +70,7 @@ public:
         const typename SnSweeperVariant<Equation>::ThreadState &t_state) const
     {
         int ix    = i % this->mesh_.nx();
-        real_t tx = t_state.angle.ox / this->mesh_.dx(ix);
+        real_t tx = t_state.ox / this->mesh_.dx(ix);
 
         real_t ax = corrections_->alpha(i, t_state.iang_2d, this->group_,
                                         Normal::X_NORM);
