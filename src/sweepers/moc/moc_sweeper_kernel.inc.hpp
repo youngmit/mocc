@@ -16,9 +16,6 @@
 
 #pragma once
 
-// These inclusions are unnecesary, and only provided so Doxygen can chase
-// references.
-
 /**
  * \file
  * This contains the actual MoC sweeper kernel, and --fortune willing--
@@ -78,8 +75,8 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                 // Set up the current worker for sweeping this angle
                 cw.set_angle(ang, rays_.spacing(iang));
 
-                real_t stheta  = sin(ang.theta);
-                real_t rstheta = 1.0 / stheta;
+                real_t stheta  = std::sin(ang.theta);
+                real_t rstheta = ang.rsintheta;
                 real_t wt_v_st = ang.weight * rays_.spacing(iang) *
                                  mesh_.macroplanes()[iplane].height * stheta *
                                  PI;
