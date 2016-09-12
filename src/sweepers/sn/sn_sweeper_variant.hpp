@@ -109,12 +109,13 @@ public:
         flux_1g_.reference(flux_(blitz::Range::all(), group));
 
         // Perform inner iterations
-        for (size_t inner = 0; inner < n_inner_; inner++) {
+        for (unsigned inner = 0; inner < n_inner_; inner++) {
             // Set the source (add upscatter and divide by 4PI)
             source_->self_scatter(group);
             if (inner == n_inner_ - 1 && coarse_data_) {
                 // Wipe out the existing currents
                 coarse_data_->zero_data(group);
+                coarse_data_->source() = "Sn Sweeper";
                 if (core_mesh_->is_2d()) {
                     this->sweep_1g_2d<sn::Current>(group);
                 } else {
