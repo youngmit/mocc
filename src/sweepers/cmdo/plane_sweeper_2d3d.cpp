@@ -38,7 +38,8 @@ const std::vector<std::string> recognized_attributes = {
     "relax",
     "discrepant_flux_update",
     "dump_corrections",
-    "update_incoming"};
+    "update_incoming",
+    "cycle"};
 }
 
 namespace mocc {
@@ -117,6 +118,29 @@ void PlaneSweeper_2D3D::sweep(int group)
         this->add_tl(group);
     }
 
+    // Do an early Sn sweep if V-cycle is enabled
+    if (v_cycle_) {
+        sn_sweeper_->sweep(group);
+
+        ArrayB1 sn_flux(mesh_.n_reg(MeshTreatment::PIN_PLANE));
+        sn_sweeper_->get_pin_flux_1g(group, sn_flux, MeshTreatment::PIN_PLANE);
+
+        // Check for negative fluxes on the Sn mesh
+        int n_neg = 0;
+        for (auto &v : sn_flux) {
+            if (v < 0.0) {
+                n_neg++;
+                v = 0.0;
+            }
+        }
+        if (n_neg > 0) {
+            LogScreen << "Corrected " << n_neg
+                      << " negative fluxes in Sn projection"
+                      << "\n";
+        }
+        moc_sweeper_.set_pin_flux_1g(group, sn_flux, MeshTreatment::PIN_PLANE);
+    }
+
     // MoC Sweeper
     bool do_moc =
         ((i_outer_ + 1) > n_inactive_moc_) && ((i_outer_ % moc_modulo_) == 0);
@@ -135,11 +159,11 @@ void PlaneSweeper_2D3D::sweep(int group)
             }
         }
         if (n_negative > 0) {
-            LogScreen << n_negative << " negative fluxes in group " << group
-                      << std::endl;
+            LogScreen << n_negative << " negative MoC fluxes in group " << group
+                      << "\n";
         }
         if (n_NaN > 0) {
-            LogScreen << n_NaN << " NaN fluxes in group " << group << std::endl;
+            LogScreen << n_NaN << " NaN MoC fluxes in group " << group << "\n";
         }
     }
 
@@ -168,14 +192,15 @@ void PlaneSweeper_2D3D::sweep(int group)
         }
         if (n_neg > 0) {
             LogScreen << "Corrected " << n_neg
-                      << " negative fluxes in Sn projection" << std::endl;
+                      << " negative fluxes in Sn projection"
+                      << "\n";
         }
         moc_sweeper_.set_pin_flux_1g(group, sn_flux, MeshTreatment::PIN_PLANE);
     }
 
     // Compute Sn-MoC residual
     real_t residual = 0.0;
-    for (int i = 0; i < prev_moc_flux.size(); i++) {
+    for (int i = 0; i < (int)prev_moc_flux.size(); i++) {
         real_t diff = prev_moc_flux(i) - sn_flux(i);
         residual += diff * diff;
         sn_resid_(group, i) = diff;
@@ -186,7 +211,7 @@ void PlaneSweeper_2D3D::sweep(int group)
     if (sn_resid_norm_[group].size() > 0) {
         LogScreen << "   \t" << residual / sn_resid_norm_[group].back();
     }
-    LogScreen << std::endl;
+    LogScreen << "\n";
 
     sn_resid_norm_[group].push_back(residual);
 }
@@ -202,6 +227,11 @@ void PlaneSweeper_2D3D::initialize()
 void PlaneSweeper_2D3D::get_pin_flux_1g(int ig, ArrayB1 &flux,
                                         MeshTreatment treatment) const
 {
+    // for now, only support PIN. We should only be calling this from places
+    // above the sweeper itself, such as Eigen solver or in CMFD, so shouldnt
+    // need the others.
+    assert(treatment == MeshTreatment::PIN);
+
     if (expose_sn_) {
         sn_sweeper_->get_pin_flux_1g(ig, flux, MeshTreatment::PIN);
     } else {
@@ -294,7 +324,7 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
         for (const auto &ig : groups_) {
             std::stringstream setname;
             setname << std::setfill('0') << std::setw(3) << ig + 1;
-            h5g.write(setname.str(), flux(ig, blitz::Range::all()), dims);
+            h5g.write(setname.str(), flux(ig, blitz::Range::all()), dims_moc);
         }
     }
 
@@ -335,6 +365,7 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
     relax_                  = 1.0;
     discrepant_flux_update_ = false;
     dump_corrections_       = false;
+    v_cycle_                = false;
 
     // Override with entries in the input node
     if (!input.attribute("expose_sn").empty()) {
@@ -367,6 +398,17 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
     }
     dump_corrections_ = input.attribute("dump_corrections").as_bool(false);
 
+    if (!input.attribute("cycle").empty()) {
+        std::string cycle = input.attribute("cycle").value();
+        if (cycle == "v") {
+            v_cycle_ = true;
+        } else if ((cycle == "saw") || (cycle == "sawtooth")) {
+            v_cycle_ = false;
+        } else {
+            throw EXCEPT("Unrecognized cycle attribute");
+        }
+    }
+
     // Throw a warning if TL is disabled
     if (!do_tl_) {
         Warn("Transverse leakage is disabled. Are you sure that's what you "
@@ -384,19 +426,26 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
         }
     }
 
-    LogFile << "2D3D Sweeper options:" << std::endl;
-    LogFile << "    Sn Projection: " << do_snproject_ << std::endl;
-    LogFile << "    MoC Projection: " << do_mocproject_ << std::endl;
-    LogFile << "    Expose Sn pin flux: " << expose_sn_ << std::endl;
-    LogFile << "    Keep original Sn quadrature: " << keep_sn_quad_
-            << std::endl;
-    LogFile << "    Transverse Leakage: " << do_tl_ << std::endl;
-    LogFile << "    Relaxation factor: " << relax_ << std::endl;
-    LogFile << "    Inactive MoC Outer Iterations: " << n_inactive_moc_
-            << std::endl;
-    LogFile << "    MoC sweep modulo: " << moc_modulo_ << std::endl;
+    LogFile << "2D3D Sweeper options:"
+            << "\n";
+    LogFile << "    Sn Projection: " << do_snproject_ << "\n";
+    LogFile << "    MoC Projection: " << do_mocproject_ << "\n";
+    LogFile << "    Expose Sn pin flux: " << expose_sn_ << "\n";
+    LogFile << "    Keep original Sn quadrature: " << keep_sn_quad_ << "\n";
+    LogFile << "    Transverse Leakage: " << do_tl_ << "\n";
+    LogFile << "    Relaxation factor: " << relax_ << "\n";
+    LogFile << "    Inactive MoC Outer Iterations: " << n_inactive_moc_ << "\n";
+    LogFile << "    MoC sweep modulo: " << moc_modulo_ << "\n";
     LogFile << "    Apply Sn-MoC flux residual to CMFD updates: "
-            << discrepant_flux_update_ << std::endl;
+            << discrepant_flux_update_ << "\n";
+    LogFile << "    Sweep cycle: ";
+    if (v_cycle_) {
+        LogFile << "V"
+                << "\n";
+    } else {
+        LogFile << "Sawtooth"
+                << "\n";
+    }
 }
 }
 } // Namespace mocc::cmdo

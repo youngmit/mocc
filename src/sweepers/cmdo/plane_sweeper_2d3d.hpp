@@ -286,6 +286,8 @@ private:
     bool discrepant_flux_update_;
     // Write correction factors to HDF5 file?
     bool dump_corrections_;
+    // Whether to use a sawtooth or V cycle in the sweep
+    bool v_cycle_;
 };
 }
 } // Namespace mocc::cmdo
