@@ -460,6 +460,7 @@ void CMFD::setup_solve()
 
 void CMFD::store_currents()
 {
+    coarse_data_.source() = "CMFD";
     int n_group = xsmesh_->n_group();
     int n_surf  = mesh_->n_surf();
     for (int ig = 0; ig < n_group; ig++) {
@@ -543,6 +544,7 @@ void CMFD::output(H5Node &node) const
     ArrayB1 surf_current(mesh_->n_pin());
 
     auto current_g = node.create_group("current");
+    current_g.write("source", coarse_data_.source());
     for (int ig = 0; ig < n_group_; ig++) {
         std::stringstream g_str;
         g_str << ig + 1;
