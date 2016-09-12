@@ -59,24 +59,18 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment) : state_(0)
         }
     } else if (treatment == MeshTreatment::PLANE) {
         int ireg = 0;
-        int iz   = 0;
-        for (const auto &block : mesh.subplane()) {
-            const Plane &plane = mesh.unique_plane(mesh.unique_plane_id(iz));
-            for (const auto &lattice : plane) {
-                for (const auto &pin : *lattice) {
-                    const VecI &mat_ids = pin->mat_ids();
-                    const PinMesh &pm   = pin->mesh();
-                    int ixsreg          = 0;
-                    for (const auto &mat_id : mat_ids) {
-                        for (unsigned reg = 0; reg < pm.n_fsrs(ixsreg); ++reg) {
-                            fsr_map[mat_id].push_back(ireg);
-                            ireg++;
-                        }
-                        ixsreg++;
+        for (const auto &mplane : mesh.macroplanes()) {
+            for (const auto &pin : mplane) {
+                int ixsreg = 0;
+                for (const auto mat_id : pin->mat_ids()) {
+                    for (unsigned reg = 0; reg < pin->mesh().n_fsrs(ixsreg);
+                         reg++) {
+                        fsr_map[mat_id].push_back(ireg);
+                        ireg++;
                     }
+                    ixsreg++;
                 }
             }
-            iz += block;
         }
     } else {
         // Should be using the homogenized class. This would be nice to merge at
@@ -85,7 +79,6 @@ XSMesh::XSMesh(const CoreMesh &mesh, MeshTreatment treatment) : state_(0)
     }
 
     int n_xsreg = fsr_map.size();
-
     this->allocate_xs(n_xsreg, ng_);
 
     // The ids/keys in fsr_map correspond to the user-specified IDs in the
