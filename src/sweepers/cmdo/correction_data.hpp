@@ -69,9 +69,14 @@ public:
     {
     }
 
-    size_t size()
+    size_t size() const
     {
         return alpha_.size();
+    }
+
+    int n_cell() const
+    {
+        return nreg_;
     }
 
     inline real_t &alpha(int reg, int ang, int group, Normal norm)
