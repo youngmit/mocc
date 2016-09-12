@@ -55,8 +55,7 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
         surfs[FW][XR] = Surface::EAST;
         surfs[BW][XL] = Surface::EAST;
         surfs[BW][XR] = Surface::WEST;
-    }
-    else {
+    } else {
         surfs[FW][XL] = Surface::EAST;
         surfs[FW][XR] = Surface::WEST;
         surfs[BW][XL] = Surface::WEST;
@@ -74,14 +73,17 @@ void CurrentCorrections::calculate_corrections(size_t ang, size_t group)
     real_t area[2] = {std::abs(rays_.spacing(ang) / cos(ang_quad_[ang].alpha)),
                       std::abs(rays_.spacing(ang) / sin(ang_quad_[ang].alpha))};
     for (unsigned ic = 0; ic < mesh_->n_cell_plane(); ic++) {
-        int icc = ic + cell_offset_;
+        int icc  = ic + cell_offset_;    // index into the correction data
+        int icxs = ic + cell_offset_xs_; // index into expanded XS
+        assert(icxs < xstr_sn_.size());
+        assert(icc < corrections_->n_cell());
 
         auto pos = mesh_->coarse_position(ic);
 
         real_t area_x = area[0] / mesh_->pin_dx()[pos.x];
         real_t area_y = area[1] / mesh_->pin_dy()[pos.y];
 
-        real_t xstr = xstr_sn_[ic+cell_offset_xs_];
+        real_t xstr = xstr_sn_[icxs];
 
         // FW direction
         {

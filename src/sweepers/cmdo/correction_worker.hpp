@@ -36,13 +36,14 @@ class CurrentCorrections : public moc::Current {
 public:
     CurrentCorrections(CoarseData *coarse_data, const Mesh *mesh,
                        CorrectionData *corrections, const VectorX &qbar,
-                       ExpandedXS &xstr_fm, ExpandedXS &xstr_sn,
-                       const AngularQuadrature &ang_quad,
+                       ExpandedXS &xstr_true, ExpandedXS &xstr_split,
+                       ExpandedXS &xstr_sn, const AngularQuadrature &ang_quad,
                        const moc::RayData &rays)
         : moc::Current(coarse_data, mesh),
           corrections_(corrections),
           qbar_(qbar),
-          xstr_(xstr_fm),
+          xstr_true_(xstr_true),
+          xstr_split_(xstr_split),
           xstr_sn_(xstr_sn),
           ang_quad_(ang_quad),
           surf_sum_(mesh_->n_surf_plane() * 2),
@@ -54,20 +55,22 @@ public:
     {
         assert(xstr_fm.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
         assert(xstr_sn.size() == (int)mesh->n_reg(MeshTreatment::PIN));
+        assert(qbar_.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
+
         /// \todo this is a mess. come up with a better way to interact with the
         /// cross sections or make this structure available through the mesh or
         /// something
         mplane_offset_.reserve(mesh_->macroplane_index().back());
-        int mplane = 0;
-        int offset = 0;
-        int cells_per_plane = mesh_->nx()*mesh_->ny();
+        int mplane          = 0;
+        int offset          = 0;
+        int cells_per_plane = mesh_->nx() * mesh_->ny();
         mplane_offset_.push_back(0);
-        for(const auto index: mesh->macroplane_index()){
-            offset += cells_per_plane;
-            if(index != mplane) {
+        for (const auto index : mesh->macroplane_index()) {
+            if (index != mplane) {
                 mplane_offset_.push_back(offset);
                 mplane = index;
             }
+            offset += cells_per_plane;
         }
         return;
     }
@@ -92,7 +95,8 @@ public:
      *
      * \param plane the index of the macroplane that is about to be swept
      */
-    MOCC_FORCE_INLINE void set_plane(int plane) {
+    MOCC_FORCE_INLINE void set_plane(int plane)
+    {
         assert(plane < (int)mplane_offset_.size());
         Current::set_plane(plane);
         cell_offset_xs_ = mplane_offset_[plane];
@@ -142,16 +146,26 @@ public:
                 if (crd->fw != Surface::INVALID) {
                     // Store forward volumetric stuff
                     for (unsigned i = 0; i < crd->nseg_fw; i++) {
-                        int ireg       = ray.seg_index(iseg_fw) + first_reg;
-                        real_t xstr    = xstr_[ireg];
-                        real_t t       = ang_.rsintheta * ray.seg_len(iseg_fw);
-                        real_t fluxvol = t * qbar_(ireg) +
-                                         e_tau(iseg_fw) *
-                                             (psi1[iseg_fw] - qbar_(ireg)) /
-                                             xstr;
+                        int ireg         = ray.seg_index(iseg_fw) + first_reg;
+                        real_t xstr      = xstr_split_[ireg];
+                        real_t xstr_true = xstr_true_[ireg];
+                        real_t t = ang_.rsintheta * ray.seg_len(iseg_fw);
+                        real_t fluxvol =
+                            t * qbar_(ireg) +
+                            (psi1[iseg_fw] - psi1[iseg_fw + 1]) / xstr;
+                        if (fluxvol < 0.0) {
+                            std::cout << "negative psi-bar: " << ireg << " "
+                                      << iseg_fw << " " << fluxvol << "\n";
+                            std::cout << t << " " << qbar_(ireg) << " "
+                                      << psi1[iseg_fw] << " "
+                                      << psi1[iseg_fw + 1] << " " << xstr << " "
+                                      << e_tau(iseg_fw) << " "
+                                      << 1.0 - std::exp(-xstr * t) << "\n";
+                            throw EXCEPT("neg psibar");
+                        }
                         vol_sum_(cell_fw * 2 + 0) += fluxvol;
                         vol_norm_(cell_fw) += t;
-                        sigt_sum_(cell_fw * 2 + 0) += xstr * fluxvol;
+                        sigt_sum_(cell_fw * 2 + 0) += xstr_true * fluxvol;
                         iseg_fw++;
                     }
                     // Store FW surface stuff
@@ -169,15 +183,16 @@ public:
                     // Store backward volumetric stuff
                     for (unsigned i = 0; i < crd->nseg_bw; i++) {
                         iseg_bw--;
-                        int ireg       = ray.seg_index(iseg_bw) + first_reg;
-                        real_t xstr    = xstr_[ireg];
+                        int ireg         = ray.seg_index(iseg_bw) + first_reg;
+                        real_t xstr      = xstr_split_[ireg];
+                        real_t xstr_true = xstr_true_[ireg];
                         real_t t       = ang_.rsintheta * ray.seg_len(iseg_bw);
                         real_t fluxvol = t * qbar_(ireg) +
                                          e_tau(iseg_bw) *
                                              (psi2[iseg_bw + 1] - qbar_(ireg)) /
                                              xstr;
                         vol_sum_(cell_bw * 2 + 1) += fluxvol;
-                        sigt_sum_(cell_bw * 2 + 1) += xstr * fluxvol;
+                        sigt_sum_(cell_bw * 2 + 1) += xstr_true * fluxvol;
                     }
                     // Store BW surface stuff
                     norm_bw = (int)surface_to_normal(crd->bw);
@@ -243,7 +258,18 @@ private:
     // References to the source and cross sections as defined on the fine mesh.
     // We need these to get actual angular flux for a ray segment
     const VectorX &qbar_;
-    ExpandedXS xstr_;
+    // The actual fine-mesh cross sections. These should not include any
+    // modifications due to TL splitting or similar. Specifically, they should
+    // be consistent with what would be used  to perform scalar flux-weighed
+    // cross sections.
+    ExpandedXS xstr_true_;
+    // The fine-mesh cross sections that are used in the associated MoC sweep
+    // procedure. These should include all modifications that the MoC sweeper
+    // uses. Specifically, these should be consistent with the cross sections
+    // used in the MoC sweep kernel to propagate flux, since we use them to
+    // convert from Delta Psi to Psi bar
+    ExpandedXS xstr_split_;
+
     ExpandedXS xstr_sn_;
 
     unsigned cell_offset_xs_;
