@@ -66,8 +66,8 @@ void MoCSweeper_2D3D::sweep(int group)
 
     // Instantiate the workers for current/no current
     CurrentCorrections ccw(coarse_data_, &mesh_, corrections_.get(),
-                           source_->get_transport(0), xstr_true_, xstr_sn_,
-                           ang_quad_, rays_);
+                           source_->get_transport(0), xstr_true_, xstr_,
+                           xstr_sn_, ang_quad_, rays_);
     moc::NoCurrent ncw(coarse_data_, &mesh_);
 
     auto all = blitz::Range::all();
