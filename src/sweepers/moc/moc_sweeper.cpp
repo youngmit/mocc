@@ -449,7 +449,7 @@ void MoCSweeper::apply_transverse_leakage(int group, const ArrayB1 &tl)
         }
 
         if (n_split > 0) {
-            LogScreen << "Split " << n_split << " region sources" << std::endl;
+            LogFile << "Split " << n_split << " region sources" << std::endl;
         }
     } else {
         for (int ireg = 0; ireg < n_reg_; ireg++) {
