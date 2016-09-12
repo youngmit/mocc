@@ -129,6 +129,14 @@ EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
 // working, we will start factoring in CMFD and other fancy tricks
 void EigenSolver::solve()
 {
+
+    LogScreen << "Converging to: \n"
+                 "\t Eigenvalue: "
+              << tolerance_k_ << "\n"
+              << "\t Fission Source (L-2 norm): " << tolerance_psi_ << "\n"
+              << "\t Min/Max Iterations: " << min_iterations_
+              << " / " << max_iterations_ << "\n\n";
+
     keff_      = 1.0;
     keff_prev_ = 1.0;
 
@@ -295,7 +303,7 @@ void EigenSolver::output(H5Node &file) const
     }
 
     fss_.output(file);
-    if(cmfd_) {
+    if (cmfd_) {
         cmfd_->output(file);
     }
     return;
