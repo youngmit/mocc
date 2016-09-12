@@ -116,6 +116,16 @@ public:
         return;
     }
 
+    std::string &source()
+    {
+        return source_;
+    }
+
+    const std::string &source() const
+    {
+        return source_;
+    }
+
     /**
      * \brief Zero out all of the data associated with the given group.
      *
@@ -151,6 +161,8 @@ private:
     bool has_data_radial_;
     bool has_data_axial_;
     bool has_old_partial_;
+    // Where the most recent data are from
+    std::string source_;
 };
 
 typedef std::shared_ptr<CoarseData> SP_CoarseData_t;

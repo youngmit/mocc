@@ -28,7 +28,8 @@ CoarseData::CoarseData(const Mesh &mesh, size_t ngroup)
       mesh_(mesh),
       has_data_radial_(false),
       has_data_axial_(false),
-      has_old_partial_(false)
+      has_old_partial_(false),
+      source_("No Data")
 {
     current      = 0.0;
     surface_flux = 0.0;
