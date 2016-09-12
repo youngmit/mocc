@@ -126,9 +126,12 @@ void H5Node::write(std::string path, const VecF &data)
 void H5Node::write(std::string path, const VecF &data, VecI dims)
 {
     hsize_t *dims_a = new hsize_t[dims.size()];
-    for (size_t i = 0; i < dims.size(); i++) {
+    int size = 1;
+    for (unsigned i = 0; i < dims.size(); i++) {
         dims_a[i] = dims[i];
+        size *= dims[i];
     }
+    assert(size == data.size());
 
     try {
         H5::DataSpace space(dims.size(), dims_a);
