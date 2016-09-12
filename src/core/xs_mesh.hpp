@@ -302,6 +302,14 @@ public:
         return xstr_;
     }
 
+    auto begin() const {
+        return xstr_.begin();
+    }
+
+    auto end() const {
+        return xstr_.end();
+    }
+
 private:
     ArrayB1 xstr_;
     const XSMesh *xs_mesh_;
