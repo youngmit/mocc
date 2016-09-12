@@ -201,6 +201,15 @@ private:
  * interacting with the core mesh at the macroplane level. A collection of these
  * is intended to be very useful for the purpose of iterating over homogenized
  * planes in the mesh, and their internal pins.
+ *
+ * The \ref Plane reference contained within a \ref MacroPlane does not
+ * necessarily contain the material data which should correspond to the \ref
+ * MacroPlane, and should therefore not be used to obtain such data. Instead,
+ * use the \ref begin() and \ref end() iterators to access the actual \ref Pin
+ * objects and their \ref Material data.
+ *
+ * \todo The above is pretty dangerous. Might be good to provide a PlaneMesh
+ * class which only stores PinMesh references, rather than Pin references.
  */
 struct MacroPlane {
 public:
