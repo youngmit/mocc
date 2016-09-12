@@ -200,11 +200,18 @@ typedef std::shared_ptr<XSMesh> SP_XSMesh_t;
  */
 class ExpandedXS {
 public:
+    /**
+     * \brief Default constructor owns and refers to no data
+     */
     ExpandedXS() : xs_mesh_(nullptr), state_(nullptr)
     {
         return;
     }
 
+    /**
+     * \brief Make a new object with its own storage for expanded cross
+     * sections, based on passed \ref XSMesh.
+     */
     ExpandedXS(const XSMesh *xs_mesh)
         : xstr_(xs_mesh->n_reg_expanded()),
           xs_mesh_(xs_mesh),
@@ -213,25 +220,36 @@ public:
         return;
     }
 
+    /**
+     * \brief Reference the expanded data from an existing instance of \ref
+     * ExpandedXS
+     */
     ExpandedXS(ExpandedXS &other)
         : xstr_(other.xstr_), xs_mesh_(other.xs_mesh_), state_(other.state_)
     {
         return;
     }
 
-    ExpandedXS &operator=(const ExpandedXS &other) {
-        if(this == &other) {
+    /**
+     * \brief Assignment will share reference to the underlying data
+     * 
+     * Blitz reference counting should make this all work out quite well.
+     */
+    ExpandedXS &operator=(const ExpandedXS &other)
+    {
+        if (this == &other) {
             return *this;
         }
         xstr_.reference(other.xstr_);
         xs_mesh_ = other.xs_mesh_;
-        state_ = other.state_;
+        state_   = other.state_;
 
         return *this;
     }
 
     real_t operator[](int i) const
     {
+        assert((i >= 0) && (i < this->size()));
         return xstr_(i);
     }
 
