@@ -363,7 +363,16 @@ real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
     assert((int)pin_flux.size() == mesh_.n_reg(treatment));
 
     ArrayB1 plane_pin_flux(mesh_.nx() * mesh_.ny() * subplane_.size());
-    plane_pin_flux = pin_flux;
+
+    // Check for setting any of the pin fluxes to zero. This can cause lots of
+    // issues down the line.
+    for(auto v: pin_flux) {
+        if(v <= 0.0 ) {
+            std::stringstream msg;
+            msg << "Negative or zero input flux: " << v;
+            throw EXCEPT(msg.str());
+        }
+    }
 
     real_t resid = 0.0;
 
@@ -385,6 +394,7 @@ real_t MoCSweeper::set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
             plane_pin_flux(i) /= mesh_.macroplane_heights()[iz];
         }
     case MeshTreatment::PIN_PLANE: {
+        plane_pin_flux = pin_flux;
         int iz       = 0;
         int ireg     = 0;
         for (const auto &mplane : mesh_.macroplanes()) {
