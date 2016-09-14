@@ -199,6 +199,11 @@ void EigenSolver::solve()
             }
         }
 
+        // Check for NaN
+        if(keff_ != keff_) {
+            throw EXCEPT("Eigenvalue is not a number. Giving up.");
+        }
+
         LogFile << (error_k_ < tolerance_k_) << " "
                 << (error_psi_ < tolerance_psi_) << " "
                 << (n_iterations >= min_iterations_) << std::endl;
