@@ -56,7 +56,7 @@ public:
 template <int N> class Exponential_Linear : public Exponential {
 public:
     Exponential_Linear(real_t min = -10.0, real_t max = 0.0)
-        : min_(-10.0),
+        : min_(min),
           max_(max),
           space_((max - min_) / (real_t)(N)),
           rspace_(1.0 / space_)
@@ -88,6 +88,19 @@ public:
             max_error  = std::max(max_error, err);
         }
         return max_error;
+    }
+
+    /*
+     * \brief Return the table value for the passed point index
+     *
+     * This is mostly useful for testing and debugging purposes.
+     */
+    real_t operator[](int i) const {
+        return d_[i];
+    }
+
+    real_t dx() const {
+        return space_;
     }
 
 protected:
