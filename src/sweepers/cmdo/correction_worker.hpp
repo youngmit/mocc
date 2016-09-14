@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "util/files.hpp"
 #include "util/global_config.hpp"
 #include "core/angular_quadrature.hpp"
 #include "core/coarse_data.hpp"
@@ -53,7 +54,8 @@ public:
           surf_norm_(mesh_->n_surf_plane() * 2),
           rays_(rays)
     {
-        assert(xstr_fm.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
+        assert(xstr_true_.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
+        assert(xstr_split_.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
         assert(xstr_sn.size() == (int)mesh->n_reg(MeshTreatment::PIN));
         assert(qbar_.size() == (int)mesh->n_reg(MeshTreatment::PLANE));
 
@@ -153,16 +155,6 @@ public:
                         real_t fluxvol =
                             t * qbar_(ireg) +
                             (psi1[iseg_fw] - psi1[iseg_fw + 1]) / xstr;
-                        if (fluxvol < 0.0) {
-                            std::cout << "negative psi-bar: " << ireg << " "
-                                      << iseg_fw << " " << fluxvol << "\n";
-                            std::cout << t << " " << qbar_(ireg) << " "
-                                      << psi1[iseg_fw] << " "
-                                      << psi1[iseg_fw + 1] << " " << xstr << " "
-                                      << e_tau(iseg_fw) << " "
-                                      << 1.0 - std::exp(-xstr * t) << "\n";
-                            throw EXCEPT("neg psibar");
-                        }
                         vol_sum_(cell_fw * 2 + 0) += fluxvol;
                         vol_norm_(cell_fw) += t;
                         sigt_sum_(cell_fw * 2 + 0) += xstr_true * fluxvol;
