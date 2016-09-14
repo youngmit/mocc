@@ -17,9 +17,9 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <limits>
-#include <valarray>
 #include <vector>
 
 namespace mocc {
@@ -36,10 +36,6 @@ typedef int64_t int_t;
 typedef std::vector<real_t> VecF;
 typedef std::vector<int> VecI;
 typedef std::vector<int> VecSI;
-
-// valarray of floats
-typedef std::valarray<real_t> ArrayF;
-typedef std::slice_array<real_t> SliceF;
 }
 
 #define PROG_NAME "MOCC"
