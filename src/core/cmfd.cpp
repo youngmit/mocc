@@ -232,6 +232,20 @@ void CMFD::solve(real_t &k)
     }
     this->print(iter, k, std::abs(k - k_old), psi_err, ri / r0);
 
+    // Clean up any negative values. These shouldnt be present at convergence,
+    // but sometimes things are nasty on the way there.
+    int n_neg = 0;
+    for (auto &v : coarse_data_.flux) {
+        if (v < 0.0) {
+            n_neg++;
+            v = -v;
+        }
+    }
+    if (n_neg > 0) {
+        LogFile << "Had to fix " << n_neg
+                << "negative fluxes coming from CMFD\n";
+    }
+
     // Calculate the resultant currents and store back onto the coarse data
     this->store_currents();
 
@@ -396,6 +410,9 @@ void CMFD::setup_solve()
                                     : 0.0;
                 d_hat(is) =
                     (j + d_tilde(is) * (flux_r - flux_l)) / (flux_l + flux_r);
+                if (!std::isfinite(d_hat(is))) {
+                    d_hat(is) = 0.0;
+                }
                 s_hat(is) = (cells.first >= 0)
                                 ? (sfc_flux - s_tilde(is) * flux_l -
                                    (1.0 - s_tilde(is)) * flux_r) /
@@ -421,6 +438,7 @@ void CMFD::setup_solve()
                     for (auto is : AllSurfaces) {
                         size_t surf = mesh_->coarse_surf(i, is);
                         real_t a    = mesh_->coarse_area(i, is);
+
                         // Switch sign of D-hat if necessary
                         real_t d_hat_ij = d_hat(surf);
                         if ((is == Surface::WEST) || (is == Surface::SOUTH) ||
@@ -444,7 +462,8 @@ void CMFD::setup_solve()
                         d_hat_ij = -d_hat_ij;
                     }
 
-                    it.valueRef() = a * (d_hat_ij - d_tilde(surf));
+                    real_t v      = a * (d_hat_ij - d_tilde(surf));
+                    it.valueRef() = v;
                 }
             }
         } // matrix element loop
@@ -461,8 +480,8 @@ void CMFD::setup_solve()
 void CMFD::store_currents()
 {
     coarse_data_.source() = "CMFD";
-    int n_group = xsmesh_->n_group();
-    int n_surf  = mesh_->n_surf();
+    int n_group           = xsmesh_->n_group();
+    int n_surf            = mesh_->n_surf();
     for (int ig = 0; ig < n_group; ig++) {
         auto all             = blitz::Range::all();
         auto current_1g      = coarse_data_.current(blitz::Range::all(), ig);
@@ -554,8 +573,8 @@ void CMFD::output(H5Node &node) const
             s_str << surf;
 
             for (int i = 0; i < mesh_->n_pin(); ++i) {
-                surf_current(i) = coarse_data_.current(
-                    mesh_->coarse_surf(i, surf), ig);
+                surf_current(i) =
+                    coarse_data_.current(mesh_->coarse_surf(i, surf), ig);
             }
             group_g.write(s_str.str(), surf_current, dims);
         }
