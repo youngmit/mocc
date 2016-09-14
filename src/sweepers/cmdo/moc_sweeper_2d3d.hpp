@@ -71,13 +71,6 @@ public:
 private:
     void sweep1g_final(int group);
 
-    /**
-     * Given homogenized angular flux and total cross section data,
-     * calculate the correction factors for CDD
-     */
-    void calculate_corrections(size_t ang, size_t group, ArrayF flux_surf,
-                               ArrayF flux_node, ArrayF sigt);
-
     std::shared_ptr<CorrectionData> corrections_;
 
     /**
