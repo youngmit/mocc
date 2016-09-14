@@ -132,6 +132,18 @@ public:
             }
         }
 
+        // Clean up zeros
+            int n_neg = 0;
+        for(auto &v: flux_1g_){
+            if(v < 0) {
+                ++n_neg;
+                v = 0.0;
+            }
+        }
+        if(n_neg > 0) {
+            LogFile << "Fixed " << n_neg << "negative Sn fluxes\n";
+        }
+
         timer_.toc();
         timer_sweep_.toc();
         return;
