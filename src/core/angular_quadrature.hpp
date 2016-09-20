@@ -47,6 +47,9 @@ public:
 
     /**
      * \brief Initialize an \ref AngularQuadrature from an HDF5 file
+     *
+     * \param input an H5Node with a child group, "ang_quad/" containing the
+     * results of \ref output().
      */
     AngularQuadrature(const H5Node &input);
 

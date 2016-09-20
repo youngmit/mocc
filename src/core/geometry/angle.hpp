@@ -139,5 +139,4 @@ struct Angle : public Direction {
     }
 };
 
-// Angle ModifyAlpha ( Angle in, real_t new_alpha );
 }

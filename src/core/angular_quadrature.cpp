@@ -127,6 +127,8 @@ AngularQuadrature::AngularQuadrature(const H5Node &input)
     input.read("ang_quad/weight", weights);
     input.read("ang_quad/alpha", alpha);
     input.read("ang_quad/theta", theta);
+    input.read("ang_quad/n_azimuthal", n_azimuthal_);
+    input.read("ang_quad/n_polar", n_polar_);
 
     if ((ox.size() != oy.size()) || (ox.size() != oz.size()) ||
         (ox.size() != weights.size())) {
