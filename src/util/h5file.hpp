@@ -54,12 +54,20 @@ enum class H5Link { HARD, SOFT };
  * Wrapper class for the HDF5 library. An instance of this class is similar
  * to the HDF5 CommonFG class, with extra stuff to make it easier to work
  * with.
+ *
+ * \todo Implement some type_traits stuff to handle conversion of native types
+ * to their HDF5 enumeration values. This would make it possible to use
+ * templates to reduce code by not needed to explicitly implement different
+ * methods with H5_NATIVE_WHATEVER.
  */
 class H5Node {
 public:
-    H5Node(std::string filename, H5Access access):
-        H5Node(filename.c_str(), access){return;}
-    
+    H5Node(std::string filename, H5Access access)
+        : H5Node(filename.c_str(), access)
+    {
+        return;
+    }
+
     H5Node(const char *filename, H5Access access);
 
     /**
@@ -111,6 +119,9 @@ public:
 
     /**
      * \brief Return the dimensions of the dataset specified by the path
+     *
+     * \todo clean up the return type. hsize_t is kind of a pain to work with
+     * outside of this class
      */
     std::vector<hsize_t> dimensions(std::string path);
 
@@ -162,8 +173,8 @@ public:
         }
 
         if (data.size() != size) {
-            throw EXCEPT("Something fishy is going on with array "
-                         "dimensions.");
+            throw EXCEPT(
+                "Something fishy is going on with array dimensions.");
         }
 
         try {
@@ -290,8 +301,8 @@ public:
                 data.resize(h5size);
             } else {
                 if (data.dimensions() != ndim) {
-                    throw EXCEPT("Array and dataset dimensionality "
-                                 "disagree.");
+                    throw EXCEPT(
+                        "Array and dataset dimensionality disagree.");
                 }
                 for (int i = 0; i < ndim; i++) {
                     shape[i] = dims[i];
@@ -323,6 +334,32 @@ public:
         }
 
         return;
+    }
+
+    /**
+     * \brief Read a scalar numerical value
+     */
+    void read(std::string path, int &data) const
+    {
+        H5::DataSet dataset;
+        H5::DataSpace dataspace;
+
+        try {
+            dataset   = node_->openDataSet(path);
+            dataspace = dataset.getSpace();
+        } catch (...) {
+            std::stringstream msg;
+            msg << "Failed to access dataset: " << path;
+            throw EXCEPT(msg.str().c_str());
+        }
+
+        try {
+            dataset.read(&data, H5::PredType::NATIVE_INT);
+        } catch (...) {
+            std::stringstream msg;
+            msg << "Failed to read dataset: " << path;
+            throw EXCEPT(msg.str());
+        }
     }
 
     /**
