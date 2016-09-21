@@ -63,6 +63,7 @@ Exception::Exception(Info info)
     ret << info_.file << ":" << info.line << " in " << info.func << std::endl;
     ret << info_.msg << std::endl;
     print_message_ = ret.str();
+    print_stacktrace();
 
     return;
 }
