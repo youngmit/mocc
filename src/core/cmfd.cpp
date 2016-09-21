@@ -32,7 +32,7 @@ typedef Eigen::SparseMatrix<mocc::real_t> M;
 namespace {
 const std::vector<std::string> recognized_attributes = {
     "enabled",  "k_tol",           "psi_tol",     "residual_reduction",
-    "max_iter", "negative_fixupa", "dump_current"};
+    "max_iter", "negative_fixup", "dump_current"};
 }
 
 namespace mocc {
