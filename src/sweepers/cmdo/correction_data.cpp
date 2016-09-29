@@ -79,8 +79,7 @@ void CorrectionData::read_data_single(const pugi::xml_node &data,
             bot_plane_in = data.attribute("bottom_plane").as_int(-1);
         }
 
-        if ((bot_plane_in != 0) ||
-            (top_plane_in != (int)mesh_->macroplanes().size() - 1)) {
+        if ((bot_plane_in != bottom_plane) || (top_plane_in != top_plane)) {
             throw EXCEPT("Plane bounds specified, but invalid");
         }
     }
@@ -88,7 +87,7 @@ void CorrectionData::read_data_single(const pugi::xml_node &data,
     H5Node h5d(data.attribute("file").value(), H5Access::READ);
 
     // allocate a single buffer to read our data into for each group/angle
-    ArrayB1 inbuf(nx_ * ny_ * nz_);
+    ArrayB1 inbuf(nx_ * ny_);
 
     for (int ig = 0; ig < ngroup_; ig++) {
         for (int iang = 0; iang < nang_; iang++) {
@@ -97,7 +96,11 @@ void CorrectionData::read_data_single(const pugi::xml_node &data,
                 std::stringstream path;
                 path << "/alpha_x/" << std::setw(3) << std::setfill('0') << ig
                      << "/" << std::setw(3) << std::setfill('0') << iang;
-                h5d.read(path.str(), inbuf);
+                try {
+                    h5d.read(path.str(), inbuf);
+                } catch (Exception e) {
+                    throw EXCEPT_E("Failed to read alpha x", e);
+                }
                 for (int ip = bottom_plane; ip <= top_plane; ip++) {
                     int stt = mesh_->plane_cell_begin(ip);
                     int stp = mesh_->plane_cell_end(ip) - 1;
@@ -110,7 +113,11 @@ void CorrectionData::read_data_single(const pugi::xml_node &data,
                 std::stringstream path;
                 path << "/alpha_y/" << std::setw(3) << std::setfill('0') << ig
                      << "/" << std::setw(3) << std::setfill('0') << iang;
-                h5d.read(path.str(), inbuf);
+                try {
+                    h5d.read(path.str(), inbuf);
+                } catch (Exception e) {
+                    throw EXCEPT_E("Failed to read alpha y", e);
+                }
                 for (int ip = bottom_plane; ip <= top_plane; ip++) {
                     int stt = mesh_->plane_cell_begin(ip);
                     int stp = mesh_->plane_cell_end(ip) - 1;
@@ -123,7 +130,11 @@ void CorrectionData::read_data_single(const pugi::xml_node &data,
                 std::stringstream path;
                 path << "/beta/" << std::setw(3) << std::setfill('0') << ig
                      << "/" << std::setw(3) << std::setfill('0') << iang;
-                h5d.read(path.str(), inbuf);
+                try {
+                    h5d.read(path.str(), inbuf);
+                } catch (Exception e) {
+                    throw EXCEPT_E("Failed to read beta", e);
+                }
                 for (int ip = bottom_plane; ip <= top_plane; ip++) {
                     int stt = mesh_->plane_cell_begin(ip);
                     int stp = mesh_->plane_cell_end(ip) - 1;
