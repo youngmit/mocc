@@ -290,8 +290,16 @@ void PlaneSweeper_2D3D::output(H5Node &file) const
         sn_sweeper_->output(g);
     }
 
-    file.create_link("/Sn/xsmesh", "/xsmesh");
-    file.create_link("/Sn/ang_quad", "/ang_quad");
+    try {
+        file.create_link("/Sn/xsmesh", "/xsmesh");
+    } catch (...) {
+        throw EXCEPT("Failed to create Sn xsmesh link");
+    }
+    try {
+        file.create_link("/Sn/ang_quad", "/ang_quad");
+    } catch (...) {
+        throw EXCEPT("Failed to create Sn ang_quad link");
+    }
 
     // Put the MoC data in its own location
     {
@@ -411,8 +419,9 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
 
     // Throw a warning if TL is disabled
     if (!do_tl_) {
-        Warn("Transverse leakage is disabled. Are you sure that's what you "
-             "want?");
+        Warn(
+            "Transverse leakage is disabled. Are you sure that's what you "
+            "want?");
     }
 
     // Make sure that if we are doing expose_sn, we arent also trying to do
@@ -421,8 +430,9 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
         // Cheat and peek into the MoC tag
         int n_inner = input.child("moc_sweeper").attribute("n_inner").as_int(0);
         if (n_inner > 0) {
-            Warn("Probably shouldn't expose the Sn sweeper while "
-                 "doing MoC sweeps");
+            Warn(
+                "Probably shouldn't expose the Sn sweeper while "
+                "doing MoC sweeps");
         }
     }
 
