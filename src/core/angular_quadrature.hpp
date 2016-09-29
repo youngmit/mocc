@@ -55,6 +55,8 @@ public:
 
     AngularQuadrature(){};
 
+    AngularQuadrature &operator=(const AngularQuadrature &other);
+
     ~AngularQuadrature()
     {
     }
@@ -140,11 +142,9 @@ public:
     {
         if ((surf == Surface::NORTH) | (surf == Surface::SOUTH)) {
             return this->reflect(iang, Normal::Y_NORM);
-        }
-        else if ((surf == Surface::EAST) | (surf == Surface::WEST)) {
+        } else if ((surf == Surface::EAST) | (surf == Surface::WEST)) {
             return this->reflect(iang, Normal::X_NORM);
-        }
-        else {
+        } else {
             return this->reflect(iang, Normal::Z_NORM);
         }
     }
@@ -160,8 +160,7 @@ public:
         assert((dim == 2) || (dim == 3));
         if (dim == 2) {
             return (iang + ndir_oct_ * 2) % (ndir_oct_ * 4);
-        }
-        else {
+        } else {
             return (iang + ndir_oct_ * 6) % (ndir_oct_ * 8);
         }
         return 0;

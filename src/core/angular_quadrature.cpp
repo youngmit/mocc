@@ -18,6 +18,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "pugixml.hpp"
@@ -157,6 +158,37 @@ AngularQuadrature::AngularQuadrature(const H5Node &input)
     return;
 }
 
+AngularQuadrature &AngularQuadrature::operator=(const AngularQuadrature &other)
+{
+    if (this == &other) {
+        return *this;
+    }
+
+    // First check for compatibility. It is pretty dangerous under most
+    // circumstatnces to drastically change an AngularQuadrature after it
+    // has been constructed, and potentially used to construct other things.
+    if ((n_polar_ != other.n_polar_) || (n_azimuthal_ != other.n_azimuthal_)) {
+        std::stringstream msg;
+        msg << "Incompatible angular quadrature assignment from other anglular "
+               "quadrature!\n";
+        msg << "    Source Quadrature: " << other.n_azimuthal_ << " azimuthal, "
+            << other.n_polar_ << " polar\n";
+        msg << "    Destination Quadrature: " << n_azimuthal_ << " azimuthal, "
+            << n_polar_ << " polar\n";
+        throw EXCEPT(msg.str());
+    }
+
+    // Set all of the data equal, everything is POD or supports a sane
+    // assignment operator.
+    type_ = other.type_;
+    ndir_oct_ = other.ndir_oct_;
+    angles_ = other.angles_;
+    n_polar_ = other.n_polar_;
+    n_azimuthal_ = other.n_azimuthal_;
+
+    return *this;
+}
+
 void AngularQuadrature::modify_angle(int iang, Angle ang)
 {
     assert(iang < ndir_oct_);
@@ -221,8 +253,9 @@ void AngularQuadrature::update_weights()
     // Different quadratures will be adjusted differently
     switch (type_) {
     case QuadratureType::LS:
-        Warn("Don't have weight updates for modularized "
-             "level-symmetric quadrature yet.");
+        Warn(
+            "Don't have weight updates for modularized "
+            "level-symmetric quadrature yet.");
         break;
     case QuadratureType::IMPORT:
         LogScreen << "Manually-specified quadratures are not changed in "
