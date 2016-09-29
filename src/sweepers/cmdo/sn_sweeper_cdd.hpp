@@ -41,7 +41,9 @@ template <class Equation>
 class SnSweeper_CDD : public SnSweeperVariant<Equation> {
 public:
     SnSweeper_CDD(const pugi::xml_node &input, const CoreMesh &mesh)
-        : sn::SnSweeperVariant<Equation>(input, mesh), corrections_(nullptr)
+        : sn::SnSweeperVariant<Equation>(input, mesh),
+          corrections_(nullptr),
+          dump_corrections_(false)
     {
         // Look for data to set the angular quadrature
         if (!input.child("data").empty()) {
@@ -61,6 +63,11 @@ public:
                 wsum += a.weight;
             }
             std::cout << "Weight sum: " << wsum << std::endl;
+        }
+
+        if (!input.attribute("dump_corrections").empty()) {
+            dump_corrections_ =
+                input.attribute("dump_corrections").as_bool(false);
         }
         return;
     }
@@ -104,9 +111,20 @@ public:
         corrections_ = data;
     }
 
+    void output(H5Node &node) const
+    {
+        SnSweeper::output(node);
+        if (dump_corrections_) {
+            corrections_->output(node);
+        }
+    }
+
 protected:
     std::shared_ptr<const CorrectionData> corrections_;
     VecI macroplanes_;
+
+private:
+    bool dump_corrections_;
 };
 
 /**
