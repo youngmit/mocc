@@ -64,7 +64,7 @@ UP_SnSweeper_t SnSweeperFactory(const pugi::xml_node &input,
             throw EXCEPT("Unsupported axial treatment");
         }
     } else if (equation == "cdd") {
-//        // Defer to the CDD factory, but discard the correction data
+        // Defer to the CDD factory, but discard the correction data
         auto cdd_pair = SnSweeperFactory_CDD(input, mesh);
         return std::move(cdd_pair.first);
     } else {

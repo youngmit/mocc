@@ -50,6 +50,10 @@ namespace sn {
  */
 template <class Equation> class SnSweeperVariant : public SnSweeper {
 public:
+    /**
+     * \todo Use some more template magic to make the members of the TreadState
+     * sweeper-dependent
+     */
     struct ThreadState {
     public:
         real_t ty;

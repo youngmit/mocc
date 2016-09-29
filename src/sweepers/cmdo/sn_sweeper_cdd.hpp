@@ -166,9 +166,67 @@ public:
             q + 2.0 * (tx * flux_x + t_state.ty * flux_y + t_state.tz * flux_z);
         psi /= tx / gx + t_state.ty / gy + 2.0 * t_state.tz + xstr;
 
-        flux_x = (psi - gx * flux_x) / gx;
-        flux_y = (psi - gy * flux_y) / gy;
+        flux_x = psi / gx - flux_x;
+        flux_y = psi / gy - flux_y;
         flux_z = 2.0 * psi - flux_z;
+
+        return psi;
+    }
+};
+
+/**
+ * \brief Specialization of \ref SnSweeper_CDD to use diamond difference in the
+ * axial dimension with a negative flux fixup
+ */
+class SnSweeper_CDD_DD_FF : public SnSweeper_CDD<SnSweeper_CDD_DD_FF> {
+public:
+    SnSweeper_CDD_DD_FF(const pugi::xml_node &input, const CoreMesh &mesh)
+        : SnSweeper_CDD<SnSweeper_CDD_DD_FF>(input, mesh)
+    {
+        return;
+    }
+
+    real_t evaluate_2d(real_t &flux_x, real_t &flux_y, real_t q, real_t xstr,
+                       int i, const ThreadState &t_state) const
+    {
+        return SnSweeper_CDD<SnSweeper_CDD_DD_FF>::evaluate_2d(
+            flux_x, flux_y, q, xstr, i, t_state);
+    }
+
+    real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
+                    real_t xstr, int i, const ThreadState &t_state) const
+    {
+        int ix = i % mesh_.nx();
+        int ia = t_state.macroplane * this->plane_size_ + i % this->plane_size_;
+        real_t tx = t_state.ox / mesh_.dx(ix);
+
+        real_t ax =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::X_NORM);
+        real_t ay =
+            corrections_->alpha(ia, t_state.iang_2d, group_, Normal::Y_NORM);
+        real_t b = corrections_->beta(ia, t_state.iang_2d, group_);
+
+        real_t gx = ax * b;
+        real_t gy = ay * b;
+
+        real_t psi =
+            q + 2.0 * (tx * flux_x + t_state.ty * flux_y + t_state.tz * flux_z);
+        psi /= tx / gx + t_state.ty / gy + 2.0 * t_state.tz + xstr;
+
+        // If the downwind axial flux is negative, re-evaluate psibar as though
+        // it were actually zero, then compute the other downwind fluxes
+        real_t flux_z_temp = 2.0 * psi - flux_z;
+        if (flux_z_temp < 0.0) {
+            psi = q + 2.0 * (tx * flux_x + t_state.ty * flux_y) +
+                  t_state.tz * flux_z;
+            psi /= tx / gx + t_state.ty / gy + xstr;
+            flux_z = 0.0;
+        } else {
+            flux_z = flux_z_temp;
+        }
+
+        flux_x = psi / gx - flux_x;
+        flux_y = psi / gy - flux_y;
 
         return psi;
     }

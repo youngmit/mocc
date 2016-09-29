@@ -57,7 +57,7 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
             << "Something wants a CDD sweeper, but the equation "
                "specified is different. Keep in mind that the correction data "
                "generated here probably isn't being used"
-            << std::endl;
+            << "\n";
         // \todo this is a cyclical dependency. While not illegal, figure a
         // way around it. Maybe dont actually call the CDD factory from the
         // one called below.
@@ -76,13 +76,16 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
         sanitize(axial);
     }
     if (axial == "dd") {
-        LogScreen << "Diamond Difference axial treatment" << std::endl;
+        LogScreen << "Diamond Difference axial treatment\n";
         return create_sweeper<SnSweeper_CDD_DD>(input, mesh);
+    } else if (axial == "dd_ff") {
+        LogScreen << "Diamond Difference with negative flux fixup\n";
+        return create_sweeper<SnSweeper_CDD_DD_FF>(input, mesh);
     } else if (axial == "sc") {
-        LogScreen << "Step Characteristics axial treatment" << std::endl;
+        LogScreen << "Step Characteristics axial treatment\n";
         return create_sweeper<SnSweeper_CDD_SC>(input, mesh);
     } else if (axial == "fw") {
-        LogScreen << "Forward Difference axial treatment" << std::endl;
+        LogScreen << "Forward Difference axial treatment\n";
         return create_sweeper<SnSweeper_CDD_FW>(input, mesh);
     } else {
         throw EXCEPT("Unrecognized axial treatment in CDD.");
