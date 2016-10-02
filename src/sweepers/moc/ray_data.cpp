@@ -25,13 +25,14 @@
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
+#include "util/rational_approximation.hpp"
 #include "util/string_utils.hpp"
 #include "util/validate_input.hpp"
 #include "core/constants.hpp"
 
 namespace {
-const std::vector<std::string> recognized_attributes = {"modularity", "spacing",
-                                                        "volume_correction"};
+const std::vector<std::string> recognized_attributes = {
+    "modularity", "spacing", "volume_correction", "modularization"};
 }
 
 namespace mocc {
@@ -64,7 +65,7 @@ namespace moc {
 */
 RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                  const CoreMesh &mesh)
-    : ang_quad_(ang_quad)
+    : ang_quad_(ang_quad), modularization_method_(Modularization::RATIONAL)
 {
     LogScreen << "Generating ray data... " << std::endl;
     validate_input(input, recognized_attributes);
@@ -110,8 +111,9 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
             // Make sure that all of the pins on the CoreMesh have the same
             // dimensions
             if (!mesh.is_pin_modular()) {
-                throw EXCEPT("Core Mesh does not support pin modular ray "
-                             "tracing.");
+                throw EXCEPT(
+                    "Core Mesh does not support pin modular ray "
+                    "tracing.");
             }
         } else if (in_str == "core") {
             core_modular = true;
@@ -124,6 +126,19 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
         LogFile << "Ray modularity: CORE" << std::endl;
     } else {
         LogFile << "Ray modularity: PIN" << std::endl;
+    }
+
+    // Get the modularization method
+    if (!input.attribute("modularization").empty()) {
+        std::string in_str = input.attribute("modularization").value();
+        sanitize(in_str);
+        if (in_str == "trig") {
+            modularization_method_ = Modularization::TRIG;
+        } else if (in_str == "rational_fraction") {
+            modularization_method_ = Modularization::RATIONAL;
+        } else {
+            throw EXCEPT("Unrecognized modularizaion method speicified.");
+        }
     }
 
     // Store some necessary stuff from the CoreMesh
@@ -148,10 +163,9 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
 
         Angle ang = *ang_it;
 
-        int Nx = ceil(hx_mod / opt_spacing * std::abs(sin(ang.alpha)));
-        int Ny = ceil(hy_mod / opt_spacing * std::abs(cos(ang.alpha)));
-        // Nx += Nx%2+1;
-        // Ny += Ny%2+1;
+        auto N = this->modularize_angle(ang, hx_mod, hy_mod, opt_spacing);
+        int Nx = N.first;
+        int Ny = N.second;
 
         if (!core_modular) {
             Nx *= mesh.nx();
@@ -165,11 +179,11 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
         Ny_.push_back(Ny);
         Nrays_.push_back(Nx + Ny);
 
-        real_t new_alpha = atan(hy * Nx / (hx * Ny));
+        real_t new_alpha = std::atan(hy * Nx / (hx * Ny));
         ang.modify_alpha(new_alpha);
 
         ang_quad_.modify_angle(iang, ang);
-        real_t space = cos(ang_it->alpha) * hy / Ny;
+        real_t space = std::cos(ang_it->alpha) * hy / Ny;
         spacing_.push_back(space);
 
         iang++;
@@ -246,8 +260,9 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                     // BC is on the left/west boundary of the domain
                     bc[1] = p2.y / space_y;
                 } else {
-                    throw EXCEPT("Something has gone horribly wrong in the "
-                                 "ray trace.");
+                    throw EXCEPT(
+                        "Something has gone horribly wrong in the "
+                        "ray trace.");
                 }
                 assert(bc[0] >= 0);
                 assert(bc[1] >= 0);
@@ -274,8 +289,9 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                     // BC is on the left/west boundary of the core
                     bc[1] = p2.y / space_y;
                 } else {
-                    throw EXCEPT("Something has gone horribly wrong in the "
-                                 "ray trace.");
+                    throw EXCEPT(
+                        "Something has gone horribly wrong in the "
+                        "ray trace.");
                 }
                 assert(bc[0] >= 0);
                 assert(bc[1] >= 0);
@@ -296,8 +312,9 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
             // warning if not.
             if (std::any_of(nrayfsr.begin(), nrayfsr.end(),
                             [](int i) { return i == 0; })) {
-                Warn("No rays passed through at least one FSR. Try finer "
-                     "ray spacing or larger regions.");
+                Warn(
+                    "No rays passed through at least one FSR. Try finer "
+                    "ray spacing or larger regions.");
                 for (size_t ifsr = 0; ifsr < nrayfsr.size(); ifsr++) {
                     std::cout << ifsr << " " << nrayfsr[ifsr] << std::endl;
                 }
@@ -305,7 +322,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
 
             // Sort the rays by length. This might improve threading
             // performance
-            std::sort(rays.begin(), rays.end());
+            //std::sort(rays.begin(), rays.end());
             // std::reverse(rays.begin(), rays.end());
             // Move the stack of rays into the vector of angular ray sets.
             angle_rays.push_back(std::move(rays));
@@ -337,11 +354,11 @@ void RayData::correct_volume(const CoreMesh &mesh)
             // regions
             // flat_corr_rms to store the rms of the severity of correction
             real_t flat_corr_max = 0.0;
-            int max_ireg = 0;
-            int max_iang = 0;
+            int max_ireg         = 0;
+            int max_iang         = 0;
             real_t flat_corr_rms = 0.0;
             const VecF &true_vol = mesh.unique_plane(iplane).areas();
-            int iang = 0;
+            int iang             = 0;
 
             for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
                  ++ang) {
@@ -359,13 +376,14 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 for (size_t ireg = 0; ireg < mesh.unique_plane(iplane).n_reg();
                      ireg++) {
                     flat_cf[ireg] = true_vol[ireg] / fsr_vol[ireg];
-                    //jwg
-                    if (flat_corr_max < std::abs(flat_cf[ireg]-1.0)) {
-                        flat_corr_max = std::abs(flat_cf[ireg]-1.0);
-                        max_ireg = ireg;
-                        max_iang = iang;
+                    // jwg
+                    if (flat_corr_max < std::abs(flat_cf[ireg] - 1.0)) {
+                        flat_corr_max = std::abs(flat_cf[ireg] - 1.0);
+                        max_ireg      = ireg;
+                        max_iang      = iang;
                     }
-                    flat_corr_rms += (flat_cf[ireg]-1.0)*(flat_cf[ireg]-1.0);
+                    flat_corr_rms +=
+                        (flat_cf[ireg] - 1.0) * (flat_cf[ireg] - 1.0);
                 }
 
                 // Correction
@@ -377,13 +395,14 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 }
                 iang++;
             } // angle loop
-            flat_corr_rms = sqrt(flat_corr_rms /
-                (mesh.unique_plane(iplane).n_reg() * (ang_quad_.ndir()/4)));
+            flat_corr_rms =
+                sqrt(flat_corr_rms / (mesh.unique_plane(iplane).n_reg() *
+                                      (ang_quad_.ndir() / 4)));
 
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
-                    << "region index " << max_ireg
-                    << " and angle index " << max_iang << ", the magnitude of "
+                    << "region index " << max_ireg << " and angle index "
+                    << max_iang << ", the magnitude of "
                     << "the correction being " << flat_corr_max << "."
                     << std::endl;
             LogFile << "The RMS of the correction is " << flat_corr_rms << "."
@@ -404,8 +423,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
             // flat_corr_rms to store the rms of the severity of correction
             real_t flat_corr_max = 0.0;
             real_t flat_corr_rms = 0.0;
-            int max_ireg = 0;
-            
+            int max_ireg         = 0;
+
             const VecF &true_vol = mesh.unique_plane(iplane).areas();
             VecF fsr_vol(mesh.unique_plane(iplane).n_reg(), 0.0);
             int iang = 0;
@@ -427,11 +446,11 @@ void RayData::correct_volume(const CoreMesh &mesh)
             for (int ireg = 0; ireg < (int)mesh.unique_plane(iplane).n_reg();
                  ireg++) {
                 fsr_vol[ireg] = true_vol[ireg] / fsr_vol[ireg];
-                if (flat_corr_max < std::abs(fsr_vol[ireg]-1.0)) {
-                    flat_corr_max = std::abs(fsr_vol[ireg]-1.0);
-                    max_ireg = ireg;
+                if (flat_corr_max < std::abs(fsr_vol[ireg] - 1.0)) {
+                    flat_corr_max = std::abs(fsr_vol[ireg] - 1.0);
+                    max_ireg      = ireg;
                 }
-                flat_corr_rms += (fsr_vol[ireg]-1.0) * (fsr_vol[ireg]-1.0);
+                flat_corr_rms += (fsr_vol[ireg] - 1.0) * (fsr_vol[ireg] - 1.0);
             }
 
             // Correct ray lengths to enforce proper FSR volumes
@@ -447,9 +466,9 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 }
                 ++iang;
             } // angle loop
-            
-            flat_corr_rms = sqrt(flat_corr_rms / 
-                    (int)mesh.unique_plane(iplane).n_reg());
+
+            flat_corr_rms =
+                sqrt(flat_corr_rms / (int)mesh.unique_plane(iplane).n_reg());
 
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
@@ -459,13 +478,51 @@ void RayData::correct_volume(const CoreMesh &mesh)
             LogFile << "The RMS of the correction is " << flat_corr_rms << "."
                     << std::endl;
             LogFile << std::endl << std::endl;
-            
+
         } // plane loop
         break;
     case VolumeCorrection::NONE:
         break;
     }
 } // correct_volume
+
+std::pair<int, int> RayData::modularize_angle(Angle ang, real_t hx, real_t hy,
+                                              real_t nominal_spacing) const
+{
+    int Nx = 0;
+    int Ny = 0;
+
+    switch (modularization_method_) {
+    case Modularization::RATIONAL: {
+        // Get the angle cast into a slope less than 1, so that we can find a
+        // rational approximation to it.
+        real_t m = (ang.alpha < PI / 4.0) ? std::tan(ang.alpha)
+                                          : std::tan(PI / 2.0 - ang.alpha);
+        // Determine the best rational approximation of the slope.
+        auto Nxy = rational_approximation(m, 0.002, 0);
+        Nx       = Nxy.first;
+        Ny       = Nxy.second;
+        real_t alpha = std::atan((Nx * hy) / (Ny * hx));
+        int scale =
+            std::ceil((hx / Nx * std::abs(std::sin(alpha))) / nominal_spacing);
+        Nx *= scale;
+        Ny *= scale;
+        if (ang.alpha > PI / 4.0) {
+            std::swap(Nx, Ny);
+        }
+
+    } break;
+    case Modularization::TRIG:
+    default:
+        Nx = ceil(hx / nominal_spacing * std::abs(std::sin(ang.alpha)));
+        Ny = ceil(hy / nominal_spacing * std::abs(std::cos(ang.alpha)));
+        Nx += Nx % 2;
+        Ny += Ny % 2;
+        break;
+    }
+
+    return std::pair<int, int>(Nx, Ny);
+}
 
 std::ostream &operator<<(std::ostream &os, const RayData &rays)
 {

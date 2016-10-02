@@ -29,6 +29,7 @@
 namespace mocc {
 namespace moc {
 enum class VolumeCorrection { FLAT, ANGLE, NONE };
+enum class Modularization { TRIG, RATIONAL };
 std::ostream &operator<<(std::ostream &os, VolumeCorrection vc);
 /**
  * \page coarseraypage Coarse Ray Tracing
@@ -176,6 +177,11 @@ public:
     }
 
 private:
+    // Methods
+    std::pair<int, int> modularize_angle(Angle ang, real_t hx, real_t hy,
+                                         real_t nominal_spacing) const;
+
+    // Data
     // This starts as a copy of the angular quadrature that is passed in
     AngularQuadrature ang_quad_;
 
@@ -216,6 +222,8 @@ private:
      * debugging purposes sometimes.
      */
     void correct_volume(const CoreMesh &mesh);
+
+    Modularization modularization_method_;
 };
 
 typedef std::shared_ptr<RayData> SP_RayData_t;
