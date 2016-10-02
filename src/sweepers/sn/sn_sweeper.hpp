@@ -89,6 +89,8 @@ public:
 
     ArrayB3 pin_powers() const override final;
 
+    ArrayB2 pin_powers_2d() const;
+
     /**
      * \copydoc TransportSweeper::set_pin_flux_1g()
      *

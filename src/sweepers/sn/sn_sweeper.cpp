@@ -192,6 +192,24 @@ ArrayB3 SnSweeper::pin_powers() const
     return powers;
 }
 
+ArrayB2 SnSweeper::pin_powers_2d() const {
+    ArrayB2 powers(mesh_.ny(), mesh_.nx());
+    powers = 0.0;
+
+    for (const auto &xsr : *xs_mesh_) {
+        for (const auto ireg : xsr.reg()) {
+            Position pos = mesh_.coarse_position(ireg);
+            for (int ig = 0; ig < n_group_; ig++) {
+                real_t p = vol_[ireg] * flux_(ireg, ig) * xsr.xsmacf(ig);
+                powers(pos.y, pos.x) += p;
+            }
+        }
+    }
+    Normalize(powers.begin(), powers.end());
+
+    return powers;
+}
+
 void SnSweeper::check_balance(int group) const
 {
     if (!coarse_data_) {
@@ -253,6 +271,7 @@ void SnSweeper::output(H5Node &node) const
     }
 
     node.write("pin_powers", this->pin_powers());
+    node.write("pin_powers_2d", this->pin_powers_2d());
     ang_quad_.output(node);
 
     LogFile << "Sn Sweeper:" << std::endl;
