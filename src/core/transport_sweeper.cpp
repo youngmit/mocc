@@ -45,16 +45,18 @@ const pugi::xml_node find_angquad(const pugi::xml_node &input)
         } else {
             // We reached the end of the line, but still didnt find an
             // <ang_quad>. Fail
-            throw EXCEPT("Reached document root without finding an "
-                         "angular quadrature specification.");
+            throw EXCEPT(
+                "Reached document root without finding an "
+                "angular quadrature specification.");
             break;
         }
     }
     return input;
 }
 
-SP_XSMesh_t xs_mesh_factory(const CoreMesh &mesh, MeshTreatment treatment) {
-    switch(treatment) {
+SP_XSMesh_t xs_mesh_factory(const CoreMesh &mesh, MeshTreatment treatment)
+{
+    switch (treatment) {
     case MeshTreatment::TRUE:
     case MeshTreatment::PLANE:
         return std::make_shared<XSMesh>(mesh, treatment);
@@ -64,7 +66,6 @@ SP_XSMesh_t xs_mesh_factory(const CoreMesh &mesh, MeshTreatment treatment) {
         return std::make_shared<XSMeshHomogenized>(mesh);
     }
 }
-
 }
 
 namespace mocc {
@@ -138,6 +139,7 @@ void TransportSweeper::calc_fission_source(real_t k,
  */
 ArrayB3 TransportSweeper::pin_powers() const
 {
+    
     assert(n_reg_ == (int)core_mesh_->n_reg(MeshTreatment::PLANE));
     ArrayB3 powers(core_mesh_->subplane().size(), core_mesh_->ny(),
                    core_mesh_->nx());
@@ -147,7 +149,7 @@ ArrayB3 TransportSweeper::pin_powers() const
     // quick and simple. Calculate volume x flux x kappa-fission for all
     // flat source regions, then reduce to the pin mesh.
     ArrayB1 fsr_pow(n_reg_);
-    fsr_pow = 0.0;
+    fsr_pow  = 0.0;
     int ixsr = 0;
     for (const auto &xsr : *xs_mesh_) {
         for (int ig = 0; ig < n_group_; ig++) {
