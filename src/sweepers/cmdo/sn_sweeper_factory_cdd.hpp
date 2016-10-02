@@ -22,6 +22,7 @@
 #include "core/core_mesh.hpp"
 #include "correction_data.hpp"
 #include "sn_sweeper_cdd.hpp"
+#include "sn_sweeper_cdd_mb.hpp"
 
 namespace mocc {
 namespace cmdo {

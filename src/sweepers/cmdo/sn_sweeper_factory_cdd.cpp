@@ -87,6 +87,9 @@ CDDPair_t SnSweeperFactory_CDD(const pugi::xml_node &input,
     } else if (axial == "fw") {
         LogScreen << "Forward Difference axial treatment\n";
         return create_sweeper<SnSweeper_CDD_FW>(input, mesh);
+    } else if (axial =="pmb"){
+        LogScreen << "Primitive Multiple-Balance axial treatment\n";
+        return create_sweeper<SnSweeper_CDD_PMB>(input, mesh);
     } else {
         throw EXCEPT("Unrecognized axial treatment in CDD.");
     }
