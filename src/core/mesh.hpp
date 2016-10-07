@@ -185,7 +185,7 @@ public:
      * \brief Return the pin/coarse cell thickness in the x dimension at the
      * specified x position.
      */
-    inline real_t dx(size_t ix) const
+    inline real_t dx(int ix) const
     {
         return dx_vec_[ix];
     }
@@ -194,7 +194,7 @@ public:
      * \brief Return the pin/coarse cell thickness in the y dimension at the
      * specified y position.
      */
-    inline real_t dy(size_t iy) const
+    inline real_t dy(int iy) const
     {
         return dy_vec_[iy];
     }
@@ -203,7 +203,7 @@ public:
      * \brief Return the pin/coarse cell thickness in the z dimension at the
      * specified z position.
      */
-    inline real_t dz(size_t iz) const
+    inline real_t dz(int iz) const
     {
         return dz_vec_[iz];
     }
@@ -220,7 +220,7 @@ public:
     }
 
     /**
-    * \brief Return the pin boundary locations along the x dimension
+    * \brief Return the pin widths along the x dimension
     */
     const VecF &pin_dx() const
     {
@@ -228,14 +228,48 @@ public:
     }
 
     /**
-    * \brief Return the pin boundary locations along the y dimension
+    * \brief Return the pin widths along the y dimension
     */
     const VecF &pin_dy() const
     {
         return dy_vec_;
     }
 
-    real_t coarse_volume(size_t cell) const
+    /**
+    * \brief Return the pin heights along the y dimension
+    */
+    const VecF &pin_dz() const
+    {
+        return dz_vec_;
+    }
+
+    /**
+     * \brief Return a vector of all of the inter-pin boundary locations along
+     * the x dimension
+     */
+    const VecF &x_divisions() const
+    {
+        return x_vec_;
+    }
+
+    /**
+     * \brief Return a vector of all of the inter-pin boundary locations along
+     * the y dimension
+     */
+    const VecF &y_divisions() const
+    {
+        return y_vec_;
+    }
+
+    /**
+     * \brief Return a vector of all of the inter-plane boundaries
+     */
+    const VecF &z_divisions() const
+    {
+        return z_vec_;
+    }
+
+    real_t coarse_volume(int cell) const
     {
         return coarse_vol_[cell];
     }
@@ -291,6 +325,9 @@ public:
 
     /**
      * \brief Return the number of coarse surfaces.
+     *
+     * \param nz the number of planes to consider (default: nz_). This might be
+     * specified to use a coarser axial mesh for certain things (CMFD)
      */
     size_t n_surf() const
     {
@@ -333,7 +370,7 @@ public:
      *
      * \sa plane_surf_xy_begin()
      */
-    int plane_surf_begin(size_t plane) const
+    int plane_surf_begin(int plane) const
     {
         return n_surf_plane_ * plane;
     }
@@ -342,7 +379,7 @@ public:
      * \brief Return the highest coarse surface index in a given plane, plus
      * 1
      */
-    int plane_surf_end(size_t plane) const
+    int plane_surf_end(int plane) const
     {
         return n_surf_plane_ * (plane + 1);
     }
@@ -357,7 +394,7 @@ public:
      * \sa plane_surf_begin()
      * \sa plane_surf_end()
      */
-    int plane_surf_xy_begin(size_t plane) const
+    int plane_surf_xy_begin(int plane) const
     {
         return n_surf_plane_ * plane + nx_ * ny_;
     }
@@ -800,8 +837,9 @@ public:
 
         if (fp_equiv(z, z_vec_[iz])) {
             if (oz == 0.0) {
-                throw EXCEPT("Ambiguous plane index, without valid "
-                             "z-direction.");
+                throw EXCEPT(
+                    "Ambiguous plane index, without valid "
+                    "z-direction.");
             } else {
                 iz = (oz > 0.0) ? iz + 1 : iz;
             }
