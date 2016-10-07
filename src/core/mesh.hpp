@@ -301,10 +301,13 @@ public:
         switch (norm) {
         case Normal::X_NORM:
             h = dx_vec_[pos.x];
+            break;
         case Normal::Y_NORM:
             h = dy_vec_[pos.y];
+            break;
         case Normal::Z_NORM:
             h = dz_vec_[pos.z];
+            break;
         }
         return h;
     }
