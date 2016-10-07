@@ -19,8 +19,8 @@
 #include <sstream>
 
 namespace mocc {
-Mesh::Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
-           std::array<Boundary, 6> bc)
+Mesh::Mesh(size_t n_reg, size_t n_xsreg, const VecF &hx, const VecF &hy,
+           const VecF &hz, std::array<Boundary, 6> bc)
     : n_reg_(n_reg),
       n_xsreg_(n_xsreg),
       nx_(hx.size() - 1),
