@@ -26,7 +26,7 @@ namespace mocc {
  * the range.
  */
 template <class InputIterator>
-auto Normalize(InputIterator first, InputIterator last)
+auto Normalize(const InputIterator first, const InputIterator last)
 {
     typedef typename std::iterator_traits<InputIterator>::value_type T;
 
@@ -38,6 +38,47 @@ auto Normalize(InputIterator first, InputIterator last)
         if (*it > 0.0) {
             n++;
         }
+        sum += *it;
+    }
+
+std::cout << n << " " << sum << "\n";
+    T f = (T)n / sum;
+
+    for (auto it = first; it != last; ++it) {
+        *it *= f;
+    }
+
+    return f;
+}
+
+/**
+ * Normalize the range of values in [first, last), scaled first by the range
+ * starting at [scale, ....
+ *
+ * \param first an iterator to be beginning of the range to normalize
+ * \param last an iterator past the end of the range to normalize
+ * \param scale an iterator to the beginning of a range of scaling factors to
+ * use. Care should be taken that this points to a valid range that is the same
+ * size as [\p first, \p last)
+ *
+ * The normalization guarantees that the values will sum to the number of
+ * non-zero entries in the range.
+ */
+template <class InputIterator, class ScaleIterator>
+auto NormalizeScaled(const InputIterator first, const InputIterator last,
+                      ScaleIterator scale)
+{
+    typedef typename std::iterator_traits<InputIterator>::value_type T;
+
+    // Count the number of elements greater than zero
+    int n = 0;
+
+    T sum = 0.0;
+    for (auto it = first; it != last; ++it, ++scale) {
+        if (*it > 0.0) {
+            n++;
+        }
+        *it *= *scale;
         sum += *it;
     }
 
