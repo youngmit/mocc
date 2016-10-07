@@ -32,6 +32,7 @@ Source::Source(int nreg, const XSMesh *xs_mesh, const ArrayB2 &flux)
       flux_(flux)
 {
     assert(nreg * n_group_ == (int)flux_.size());
+    assert(xs_mesh_->n_reg_expanded() == nreg);
     source_1g_.fill(0.0);
     state_.reset();
     return;
