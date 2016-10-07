@@ -121,12 +121,13 @@ public:
      * \brief Project a multi-group pin mesh-homogenized flux to the fine
      * mesh. Return the residual.
      */
-    real_t set_pin_flux(const ArrayB2 &pin_flux)
+    real_t set_pin_flux(const ArrayB2 &pin_flux,
+                        MeshTreatment treatment = MeshTreatment::PIN)
     {
         real_t e = 0.0;
         for (int ig = 0; ig < (int)n_group_; ig++) {
             ArrayB1 flux_1g = pin_flux(blitz::Range::all(), ig);
-            real_t e_g      = this->set_pin_flux_1g(ig, flux_1g);
+            real_t e_g      = this->set_pin_flux_1g(ig, flux_1g, treatment);
             e += e_g * e_g;
         }
         return std::sqrt(e);
