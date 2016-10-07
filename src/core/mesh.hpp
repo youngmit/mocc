@@ -888,6 +888,11 @@ public:
         return macroplane_index_[iz];
     }
 
+    int n_macroplanes() const
+    {
+        return macroplane_index_.back() + 1;
+    }
+
 protected:
     /**
      * This method pre-computes the surface indices for each coarse cell.
