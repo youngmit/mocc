@@ -227,15 +227,13 @@ void PlaneSweeper_2D3D::initialize()
 void PlaneSweeper_2D3D::get_pin_flux_1g(int ig, ArrayB1 &flux,
                                         MeshTreatment treatment) const
 {
-    // for now, only support PIN. We should only be calling this from places
-    // above the sweeper itself, such as Eigen solver or in CMFD, so shouldnt
-    // need the others.
-    assert(treatment == MeshTreatment::PIN);
+    assert((treatment == MeshTreatment::PIN) ||
+           (treatment == MeshTreatment::PIN_PLANE));
 
     if (expose_sn_) {
-        sn_sweeper_->get_pin_flux_1g(ig, flux, MeshTreatment::PIN);
+        sn_sweeper_->get_pin_flux_1g(ig, flux, treatment);
     } else {
-        moc_sweeper_.get_pin_flux_1g(ig, flux, MeshTreatment::PIN);
+        moc_sweeper_.get_pin_flux_1g(ig, flux, treatment);
     }
 }
 

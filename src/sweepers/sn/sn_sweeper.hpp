@@ -63,13 +63,13 @@ public:
                 mplane_stp = mplane_stt + n_per_plane;
                 for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
                     real_t hz = mesh_.dz(iz);
-                    flux(blitz::Range(mplane_stt, mplane_stp-1)) +=
+                    flux(blitz::Range(mplane_stt, mplane_stp - 1)) +=
                         flux_(blitz::Range(mesh_.plane_cell_begin(iz),
-                                           mesh_.plane_cell_end(iz)),
+                                           mesh_.plane_cell_end(iz) - 1),
                               group) *
                         hz;
                 }
-                flux(blitz::Range(mplane_stt, mplane_stp-1)) /= mplane.height;
+                flux(blitz::Range(mplane_stt, mplane_stp - 1)) /= mplane.height;
 
                 mplane_stt = mplane_stp;
                 imp++;
@@ -102,16 +102,50 @@ public:
                     MeshTreatment treatment = MeshTreatment::PIN) override final
     {
         assert((int)pin_flux.size() == mesh_.n_reg(treatment));
-        assert(treatment == MeshTreatment::PIN);
+        assert((treatment == MeshTreatment::PIN) ||
+               (treatment == MeshTreatment::PIN_PLANE));
 
         real_t resid = 0.0;
-        size_t i     = 0;
-        for (auto &v : pin_flux) {
-            real_t e = flux_(1, group) - v;
-            resid += e * e;
-            flux_((int)i, (int)group) = v;
-            i++;
+        switch (treatment) {
+        case MeshTreatment::PIN: {
+            int i = 0;
+            for (auto &v : pin_flux) {
+                real_t e = flux_(1, group) - v;
+                resid += e * e;
+                flux_((int)i, (int)group) = v;
+                i++;
+            }
+        } break;
+        case MeshTreatment::PIN_PLANE: {
+            // use our own ge_pin_flux on the PIN_PLANE basis to get a
+            // projection ratio, then use that.
+            ArrayB1 plane_pin_flux(mesh_.n_reg(MeshTreatment::PIN_PLANE));
+            this->get_pin_flux_1g(group, plane_pin_flux,
+                                  MeshTreatment::PIN_PLANE);
+            plane_pin_flux /= pin_flux;
+
+            int n_per_plane = mesh_.nx() * mesh_.ny();
+            int mplane_stt  = 0;
+            int mplane_stp  = 0;
+            for (const auto &mplane : mesh_.macroplanes()) {
+                mplane_stp = mplane_stt + n_per_plane;
+
+                for (int iz = mplane.iz_min; iz <= mplane.iz_max; iz++) {
+                    flux_(blitz::Range(mesh_.plane_cell_begin(iz),
+                                       mesh_.plane_cell_end(iz) - 1),
+                          group) /=
+                        plane_pin_flux(
+                            blitz::Range(mplane_stt, mplane_stp - 1));
+                }
+
+                mplane_stt = mplane_stp;
+            }
+        } break;
+
+        default:
+            throw EXCEPT("Unsupported mesh treatement type.");
         }
+
         return std::sqrt(resid);
     }
 
