@@ -74,11 +74,13 @@ public:
     set_pin_flux_1g(int group, const ArrayB1 &pin_flux,
                     MeshTreatment treatment = MeshTreatment::PIN) override final
     {
-        assert(treatment == MeshTreatment::PIN);
-        sn_sweeper_->set_pin_flux_1g(group, pin_flux, MeshTreatment::PIN);
+        assert((treatment == MeshTreatment::PIN) ||
+               (treatment == MeshTreatment::PIN_PLANE));
+        sn_sweeper_->set_pin_flux_1g(group, pin_flux, treatment);
 
         real_t diff = 0.0;
         if (discrepant_flux_update_) {
+            assert(false);
             ArrayB1 moc_pin_flux(pin_flux.size());
             for (int i = 0; i < (int)moc_pin_flux.size(); i++) {
                 moc_pin_flux(i) =
@@ -86,7 +88,7 @@ public:
             }
         } else {
             diff = moc_sweeper_.set_pin_flux_1g(group, pin_flux,
-                                                MeshTreatment::PIN);
+                                                treatment);
         }
 
         return diff;

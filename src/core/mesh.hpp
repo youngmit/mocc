@@ -92,8 +92,13 @@ public:
      */
     virtual size_t n_reg(MeshTreatment treatment) const
     {
-        assert(treatment == MeshTreatment::PIN);
-        return nx_ * ny_ * nz_;
+        assert((treatment == MeshTreatment::PIN) ||
+               (treatment == MeshTreatment::PIN_PLANE));
+        if (treatment == MeshTreatment::PIN) {
+            return nx_ * ny_ * nz_;
+        } else {
+            return nx_ * ny_ * (macroplane_index_.back() + 1);
+        }
     }
 
     /**
