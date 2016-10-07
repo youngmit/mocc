@@ -42,7 +42,7 @@ enum class MeshTreatment : unsigned char {
     /// Pins are not homogenized. Planes are homogenized as desired
     PLANE,
     /// Pin- and macroplane-homogenized mesh. Good for getting coarse results
-    ///from and MoC sweeper
+    /// from and MoC sweeper
     PIN_PLANE
 };
 
@@ -84,8 +84,8 @@ public:
      * \param bc an array containing the boundary conditions to be imposed on
      * each surface of the global domain
      */
-    Mesh(size_t n_reg, size_t n_xsreg, VecF &hx, VecF &hy, VecF &hz,
-         std::array<Boundary, 6> bc);
+    Mesh(size_t n_reg, size_t n_xsreg, const VecF &hx, const VecF &hy,
+         const VecF &hz, std::array<Boundary, 6> bc);
 
     /**
      * \brief Return the total number of regions in the computational mesh.
