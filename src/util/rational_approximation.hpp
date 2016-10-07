@@ -46,6 +46,14 @@ std::pair<int, int> rational_approximation(real_t target, real_t tolerance,
     int b = 1;
     int c = 1;
     int d = 1;
+    
+    // We need to rule out that the end points aren't good approximations
+    if(std::abs(real_t(a)/real_t(b) - target) < tolerance) {
+        return std::pair<int, int>(a, b);
+    }
+    if(std::abs(real_t(c)/real_t(d) - target) < tolerance) {
+        return std::pair<int, int>(c, d);
+    }
 
     while ((b <= max_d) && (d <= max_d)) {
         real_t mediant = real_t(a + c) / real_t(b + d);
