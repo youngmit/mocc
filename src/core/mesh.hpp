@@ -65,11 +65,6 @@ public:
     Mesh(){};
 
     /**
-     * Disable the copy constructor
-     */
-    Mesh(const Mesh &other) = delete;
-
-    /**
      * \brief Construct a \ref Mesh using cell boundaries specified
      * externally.
      *
