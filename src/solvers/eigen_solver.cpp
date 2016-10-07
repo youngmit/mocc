@@ -21,6 +21,7 @@
 #include "util/error.hpp"
 #include "util/files.hpp"
 #include "util/string_utils.hpp"
+#include "util/utils.hpp"
 #include "util/validate_input.hpp"
 #include "core/globals.hpp"
 
@@ -134,8 +135,8 @@ void EigenSolver::solve()
                  "\t Eigenvalue: "
               << tolerance_k_ << "\n"
               << "\t Fission Source (L-2 norm): " << tolerance_psi_ << "\n"
-              << "\t Min/Max Iterations: " << min_iterations_
-              << " / " << max_iterations_ << "\n\n";
+              << "\t Min/Max Iterations: " << min_iterations_ << " / "
+              << max_iterations_ << "\n\n";
 
     keff_      = 1.0;
     keff_prev_ = 1.0;
@@ -169,13 +170,15 @@ void EigenSolver::solve()
         // Check for convergence
         error_k_ = fabs(keff_ - keff_prev_);
 
-        // use the old fission source to store the difference between new
-        // and old, since we will be filling it with new in the next
-        // iteration anyways.
         const auto &vol = fss_.sweeper()->volumes();
-        real_t efis     = 0.0;
+        NormalizeScaled(fission_source_.begin(),
+                        fission_source_.end(), vol.begin());
+        NormalizeScaled(fission_source_prev_.begin(),
+                        fission_source_prev_.end(), vol.begin());
+
+        real_t efis = 0.0;
         for (int i = 0; i < (int)fss_.sweeper()->n_reg(); i++) {
-            real_t e = (fission_source_(i) - fission_source_prev_(i)) * vol[i];
+            real_t e = (fission_source_(i) - fission_source_prev_(i));
             efis += e * e;
         }
         error_psi_ = std::sqrt(efis / n_fissile_regions_);
@@ -200,7 +203,7 @@ void EigenSolver::solve()
         }
 
         // Check for NaN
-        if(keff_ != keff_) {
+        if (keff_ != keff_) {
             throw EXCEPT("Eigenvalue is not a number. Giving up.");
         }
 
@@ -227,8 +230,11 @@ void EigenSolver::step()
     }
 
     // Perform a group sweep with the FSS
+    // We are recalculating the fission source perhaps more than necessary.
+    // Make if we want to remove redundant calculations, make sure that it will
+    // jive with the normalization that is being done for the convergence
+    // criterion.
     fss_.sweeper()->calc_fission_source(keff_, fission_source_);
-    // Store the old fission source
     fission_source_prev_ = fission_source_;
     fss_.step();
 
