@@ -41,7 +41,6 @@ auto Normalize(const InputIterator first, const InputIterator last)
         sum += *it;
     }
 
-std::cout << n << " " << sum << "\n";
     T f = (T)n / sum;
 
     for (auto it = first; it != last; ++it) {
