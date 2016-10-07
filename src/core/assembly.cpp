@@ -39,27 +39,37 @@ Assembly::Assembly(const pugi::xml_node &input,
     // Parse number of planes
     nz_ = input.attribute("np").as_int(0);
     if (nz_ == 0) {
-        throw EXCEPT("Invalid number of planes (nz) when parsing "
-                     "assembly.");
+        throw EXCEPT(
+            "Invalid number of planes (nz) when parsing "
+            "assembly.");
     }
 
     // Parse plane heights (scalar form)
-    bool scalar_hz = false;
-    real_t hz      = input.attribute("hz").as_double(0.0f);
-    if (hz > 0.0f) {
-        scalar_hz = true;
+    if (!(input.attribute("hz").empty() ^ input.child("hz").empty())) {
+        std::stringstream msg;
+        msg << "Plane heights improperly specified for assembly " << id_
+            << ".\n"
+            << "Should only be specified by the scalar hz attribute or as a "
+               "list in <hz>...</hz>, but not both.";
+        throw EXCEPT(msg.str());
+    }
+    real_t hz = input.attribute("hz").as_double(0.0);
+    if (hz > 0.0) {
         // Fill the hz vector with all entries the same.
         dz_ = VecF(nz_, hz);
     }
 
     // Parse plane heights (array form)
     if (auto hz_in = input.child("hz")) {
-        if (scalar_hz) {
-            // hz is over-defined
-            throw EXCEPT("Plane heights are over-specified for assembly.");
-        }
         string hzs = hz_in.child_value();
         dz_        = explode_string<real_t>(hzs);
+
+        if (dz_.size() != nz_) {
+            std::stringstream msg;
+            msg << "Wrong number of plane heights provided for assembly "
+                << id_ << ".";
+            throw EXCEPT(msg.str());
+        }
 
         // Lattice dimensions are read as top-to-bottom, but stored as
         // bottom-to-top.
@@ -93,8 +103,9 @@ Assembly::Assembly(const pugi::xml_node &input,
             }
         }
         if (lattices_.size() != nz_) {
-            throw EXCEPT("Incorrect number of lattices specified for "
-                         "assembly.");
+            throw EXCEPT(
+                "Incorrect number of lattices specified for "
+                "assembly.");
         }
     }
 
@@ -116,6 +127,7 @@ Assembly::Assembly(const pugi::xml_node &input,
         n_reg_ += l->n_reg();
         n_xsreg_ += l->n_xsreg();
     }
+    assert(lattices_.size() == dz_.size());
 
     return;
 }
