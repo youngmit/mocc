@@ -417,23 +417,18 @@ void PlaneSweeper_2D3D::parse_options(const pugi::xml_node &input)
         }
     }
 
+    // Make sure that sn project is on if we are exposing sn
+    if (expose_sn_ && !do_snproject_) {
+        Warn(
+            "Exposing Sn as global solver and not projecting to MoC. This will "
+            "cause weirdness in the fission source normalization.");
+    }
+
     // Throw a warning if TL is disabled
     if (!do_tl_) {
         Warn(
             "Transverse leakage is disabled. Are you sure that's what you "
             "want?");
-    }
-
-    // Make sure that if we are doing expose_sn, we arent also trying to do
-    // MoC. Doesnt work right now.
-    if (expose_sn_) {
-        // Cheat and peek into the MoC tag
-        int n_inner = input.child("moc_sweeper").attribute("n_inner").as_int(0);
-        if (n_inner > 0) {
-            Warn(
-                "Probably shouldn't expose the Sn sweeper while "
-                "doing MoC sweeps");
-        }
     }
 
     LogFile << "2D3D Sweeper options:"
