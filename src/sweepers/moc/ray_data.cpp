@@ -220,8 +220,8 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
             int Ny = Ny_[iang];
             std::array<int, 2> bc;
             real_t space   = spacing_[iang];
-            real_t space_x = std::abs(space / sin(ang->alpha));
-            real_t space_y = std::abs(space / cos(ang->alpha));
+            real_t space_x = std::abs(space / std::sin(ang->alpha));
+            real_t space_y = std::abs(space / std::cos(ang->alpha));
 
             LogFile << "Spacing: " << ang->alpha << " " << space << " "
                     << space_x << " " << space_y << std::endl;
@@ -269,6 +269,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
                 assert(bc[0] < Nx + Ny);
                 assert(bc[1] < Nx + Ny);
                 rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
+
                 max_seg_ = std::max(rays.back().nseg(), max_seg_);
             }
 
@@ -322,7 +323,7 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
 
             // Sort the rays by length. This might improve threading
             // performance
-            //std::sort(rays.begin(), rays.end());
+            // std::sort(rays.begin(), rays.end());
             // std::reverse(rays.begin(), rays.end());
             // Move the stack of rays into the vector of angular ray sets.
             angle_rays.push_back(std::move(rays));
@@ -364,9 +365,9 @@ void RayData::correct_volume(const CoreMesh &mesh)
                  ++ang) {
                 VecF fsr_vol(mesh.unique_plane(iplane).n_reg(), 0.0);
                 VecF flat_cf(mesh.unique_plane(iplane).n_reg(), 0.0);
-                std::vector<Ray> &rays = rays_[iplane][iang];
-                real_t space           = spacing_[iang];
-                for (auto &ray : rays) {
+                auto &rays = rays_[iplane][iang];
+                real_t space     = spacing_[iang];
+                for (const auto &ray : rays) {
                     for (int iseg = 0; iseg < ray.nseg(); iseg++) {
                         size_t ireg = ray.seg_index(iseg);
                         fsr_vol[ireg] += ray.seg_len(iseg) * space;
@@ -396,8 +397,8 @@ void RayData::correct_volume(const CoreMesh &mesh)
                 iang++;
             } // angle loop
             flat_corr_rms =
-                sqrt(flat_corr_rms / (mesh.unique_plane(iplane).n_reg() *
-                                      (ang_quad_.ndir() / 4)));
+                std::sqrt(flat_corr_rms / (mesh.unique_plane(iplane).n_reg() *
+                                           (ang_quad_.ndir() / 4)));
 
             LogFile << "For plane " << iplane
                     << ", the maximum correction occurs with "
@@ -499,9 +500,9 @@ std::pair<int, int> RayData::modularize_angle(Angle ang, real_t hx, real_t hy,
         real_t m = (ang.alpha < PI / 4.0) ? std::tan(ang.alpha)
                                           : std::tan(PI / 2.0 - ang.alpha);
         // Determine the best rational approximation of the slope.
-        auto Nxy = rational_approximation(m, 0.002, 0);
-        Nx       = Nxy.first;
-        Ny       = Nxy.second;
+        auto Nxy     = rational_approximation(m, 0.002, 0);
+        Nx           = Nxy.first;
+        Ny           = Nxy.second;
         real_t alpha = std::atan((Nx * hy) / (Ny * hx));
         int scale =
             std::ceil((hx / Nx * std::abs(std::sin(alpha))) / nominal_spacing);
