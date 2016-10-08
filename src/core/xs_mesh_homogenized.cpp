@@ -137,14 +137,31 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
 } // HDF5 constructor
 
 XSMeshHomogenized::XSMeshHomogenized(XSMeshHomogenized &other,
-                                     const std::vector<int> &regions):
-    XSMeshHomogenized(other)
+                                     const std::vector<int> &regions)
+    : XSMeshHomogenized(other)
 {
     assert(regions.size() == 0);
+
     int ixsreg = 0;
-    for(auto &xsr: regions_) {
+    int iz     = 0;
+    for (const auto &mplane : mesh_.macroplanes()) {
+        VecI ireg;
+        ireg.reserve(mplane.iz_max - mplane.iz_min + 1);
+        for (unsigned ipin = 0; ipin < mplane.size(); ++ipin) {
+            Position pos = mesh_.pin_position(ipin);
+            pos.z        = iz;
+
+            regions_[ixsreg].reg_.resize(1);
+            regions_[ixsreg].reg_.front() = mesh_.coarse_cell(pos);
+            ixsreg++;
+        }
+        iz++;
+    }
+
+    for (auto &xsr : regions_) {
+        int new_reg = xsr.reg_.front();
         xsr.reg_.resize(1);
-        xsr.reg_[0] = ixsreg;
+        xsr.reg_[0] = new_reg;
         ++ixsreg;
     }
 
