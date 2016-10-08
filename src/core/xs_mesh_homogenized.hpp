@@ -53,6 +53,17 @@ public:
     XSMeshHomogenized(const CoreMesh &mesh, const pugi::xml_node &input);
 
     /**
+     * \breif Construct a homogenized \ref XSMesh as a map into another
+     * homogenized \ref XSMesh
+     *
+     * This allows two consumers of homogenized cross sections to use them on
+     * different meshes. The new XSMesh will refer to the xs data of the
+     * original XSMesh, but its XSMeshRetgions may have different metadata.
+     */
+    XSMeshHomogenized(XSMeshHomogenized &other,
+                      const std::vector<int> &regions);
+
+    /**
      * \brief \copybrief XSMesh::update()
      *
      * Update homogenized cross sections using the internally-stored
@@ -94,7 +105,8 @@ private:
     *
     * \param i the index of the \ref XSMeshRegion in this \ref XSMeshHomogenized
     * \param pin the \ref Pin to use for the homogenization
-    * \param xsr a reference to the \ref XSMeshRegion in which to store the resulting
+    * \param xsr a reference to the \ref XSMeshRegion in which to store the
+    * resulting
     * homogenized cross sections
     */
     void homogenize_region(int i, const Pin &pin, XSMeshRegion &xsr) const;
