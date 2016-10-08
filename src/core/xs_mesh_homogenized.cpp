@@ -136,6 +136,23 @@ XSMeshHomogenized::XSMeshHomogenized(const CoreMesh &mesh,
     return;
 } // HDF5 constructor
 
+XSMeshHomogenized::XSMeshHomogenized(XSMeshHomogenized &other,
+                                     const std::vector<int> &regions):
+    XSMeshHomogenized(other)
+{
+    assert(regions.size() == 0);
+    int ixsreg = 0;
+    for(auto &xsr: regions_) {
+        xsr.reg_.resize(1);
+        xsr.reg_[0] = ixsreg;
+        ++ixsreg;
+    }
+
+    n_reg_expanded_ = regions_.size();
+
+    return;
+}
+
 /**
  * Update the XS mesh, incorporating a new estimate of the scalar flux.
  */
