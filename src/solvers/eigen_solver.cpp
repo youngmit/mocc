@@ -113,7 +113,7 @@ EigenSolver::EigenSolver(const pugi::xml_node &input, const CoreMesh &mesh)
     if (do_cmfd) {
         // construct the CMFD solver using the mesh from the transport
         // sweeper
-        cmfd_.reset(new CMFD(input.child("cmfd"), (Mesh *)&mesh,
+        cmfd_.reset(new CMFD(input.child("cmfd"), &mesh,
                              fss_.sweeper()->get_homogenized_xsmesh()));
         // Associate the sweeper with the coarse data from the CMFD solver
         CoarseData *const cd = cmfd_->get_data();
@@ -171,10 +171,10 @@ void EigenSolver::solve()
         error_k_ = fabs(keff_ - keff_prev_);
 
         const auto &vol = fss_.sweeper()->volumes();
-        NormalizeScaled(fission_source_.begin(),
-                        fission_source_.end(), vol.begin());
-        NormalizeScaled(fission_source_prev_.begin(),
-                        fission_source_prev_.end(), vol.begin());
+        //assert(vol.size() == fission_source_.size());
+        Normalize(fission_source_.begin(), fission_source_.end());
+        Normalize(fission_source_prev_.begin(),
+                        fission_source_prev_.end());
 
         real_t efis = 0.0;
         for (int i = 0; i < (int)fss_.sweeper()->n_reg(); i++) {
@@ -266,7 +266,8 @@ void EigenSolver::do_cmfd()
     assert(cmfd_->is_enabled());
     // push homogenized flux onto the coarse mesh, solve, and pull it
     // back.
-    cmfd_->coarse_data().flux = fss_.sweeper()->get_pin_flux();
+    cmfd_->coarse_data().flux =
+        fss_.sweeper()->get_pin_flux(MeshTreatment::PIN_PLANE);
 
     // Set the convergence criteria for this solve, there are a few ways we
     // can do this. This needs some work. Should probably be converging the
@@ -284,8 +285,8 @@ void EigenSolver::do_cmfd()
         break;
     }
     cmfd_->solve(keff_);
-    fss_.sweeper()->set_pin_flux(cmfd_->flux());
-    fss_.sweeper()->update_incoming_flux();
+    fss_.sweeper()->set_pin_flux(cmfd_->flux(), MeshTreatment::PIN_PLANE);
+    //fss_.sweeper()->update_incoming_flux();
     return;
 }
 
