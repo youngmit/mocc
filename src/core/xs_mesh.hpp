@@ -232,7 +232,7 @@ public:
 
     /**
      * \brief Assignment will share reference to the underlying data
-     * 
+     *
      * Blitz reference counting should make this all work out quite well.
      */
     ExpandedXS &operator=(const ExpandedXS &other)
@@ -302,11 +302,13 @@ public:
         return xstr_;
     }
 
-    auto begin() const {
+    auto begin() const
+    {
         return xstr_.begin();
     }
 
-    auto end() const {
+    auto end() const
+    {
         return xstr_.end();
     }
 
