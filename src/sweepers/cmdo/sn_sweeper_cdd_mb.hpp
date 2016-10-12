@@ -41,7 +41,9 @@ public:
     real_t evaluate(real_t &flux_x, real_t &flux_y, real_t &flux_z, real_t q,
                     real_t xstr, int i, const ThreadState &t_state) const
     {
-        int ix = i % mesh_.nx();
+        int ix    = i % mesh_.nx();
+        int iz    = i % mesh_.nx() * mesh_.ny();
+        real_t dz = mesh_.dz(iz);
         int ia = t_state.macroplane * this->plane_size_ + i % this->plane_size_;
         real_t tx = t_state.ox / mesh_.dx(ix);
 
@@ -51,14 +53,14 @@ public:
             corrections_->alpha(ia, t_state.iang_2d, group_, Normal::Y_NORM);
         real_t b = corrections_->beta(ia, t_state.iang_2d, group_);
 
-        real_t gx = ax * b;
-        real_t gy = ay * b;
+        real_t gx = 0.5;//ax * b;
+        real_t gy = 0.5;//ay * b;
 
-        real_t psi = q - (q / (2 + (xstr / t_state.tz))) +
+        real_t psi = q - (dz * t_state.oz * q) / (2.0 * t_state.tz + xstr) +
                      2.0 * (tx * flux_x + t_state.ty * flux_y) +
                      t_state.tz * flux_z;
-        psi /=
-            tx / gx + t_state.ty / gy + t_state.tz / (1.0 + xstr * 0.5) + xstr;
+        psi /= tx / gx + t_state.ty / gy +
+               (t_state.oz * t_state.oz) / (t_state.tz + 0.5 * xstr) + xstr;
 
         flux_x = psi / gx - flux_x;
         flux_y = psi / gy - flux_y;

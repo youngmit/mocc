@@ -67,18 +67,18 @@ void generate_output()
 
     if (Warnings.size() > 0) {
         if (Warnings.size() == 1) {
-            std::cout << "There was ";
+            LogScreen << "There was ";
         } else {
-            std::cout << "There were ";
+            LogScreen << "There were ";
         }
         std::cout << Warnings.size();
         if (Warnings.size() == 1) {
-            std::cout << " warning:" << std::endl;
+            LogScreen << " warning:" << std::endl;
         } else {
-            std::cout << " warnings:" << std::endl;
+            LogScreen << " warnings:" << std::endl;
         }
         for (const auto &warning : Warnings) {
-            std::cout << "\t" << warning.second << std::endl;
+            LogScreen << "\t" << warning.second << std::endl;
         }
     }
 
