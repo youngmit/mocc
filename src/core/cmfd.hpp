@@ -201,6 +201,8 @@ norm = std::sqrt(norm)/(n_cell_*n_group_);
     int n_surf_;
     int n_group_;
     CoarseData coarse_data_;
+    // Scratch space for manipulating currents on the CMFD mesh
+    ArrayB1 current_1g_;
     bool is_enabled_;
 
     // Single-group fission source

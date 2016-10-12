@@ -72,6 +72,7 @@ CMFD::CMFD(const pugi::xml_node &input, const CoreMesh *mesh,
       n_surf_(mesh_.n_surf()),
       n_group_(xsmesh_.n_group()),
       coarse_data_(*mesh, xsmesh_.n_group()),
+      current_1g_(n_surf_),
       is_enabled_(true),
       fs_(n_cell_),
       fs_old_(n_cell_),
@@ -336,8 +337,6 @@ void CMFD::setup_solve()
     const Mesh::BCArray_t bc = mesh_.boundary_array();
     // Construct the system matrix
 
-    ArrayB1 currents(n_surf_);
-
     int nz        = fine_mesh_->nz();
     int n_mplanes = fine_mesh_->n_macroplanes();
     int group     = 0;
@@ -366,36 +365,27 @@ void CMFD::setup_solve()
 
         // Homogenize the currents to a coarser axial mesh
         if (fine_mesh_->n_macroplanes() != nz) {
-            currents           = 0.0;
+            current_1g_        = 0.0;
             int current_mplane = 0;
-            real_t mplane_hz   = 0.0;
             for (int iz = 0; iz < nz; iz++) {
-                int mplane = fine_mesh_->macroplane_index(iz);
-                // if we hit a new macroplane, normalize the currents and reset
-                // mplane_hz
-                if (current_mplane != mplane) {
-                    current_mplane = mplane;
-                    int stt        = mesh_.plane_surf_xy_begin(mplane);
-                    int stp        = mesh_.plane_surf_end(mplane) - 1;
-                    mplane_hz      = 1.0 / mplane_hz;
-                    // currents(blitz::Range(stt, stp)) *= mplane_hz;
-                    mplane_hz = 0.0;
-                }
+                int mplane     = fine_mesh_->macroplane_index(iz);
                 real_t dz      = fine_mesh_->dz(iz);
                 int stt_fine   = fine_mesh_->plane_surf_xy_begin(iz);
                 int stp_fine   = fine_mesh_->plane_surf_end(iz) - 1;
                 int stt_coarse = mesh_.plane_surf_xy_begin(mplane);
                 int stp_coarse = mesh_.plane_surf_end(mplane) - 1;
-                currents(blitz::Range(stt_coarse, stp_coarse)) +=
+                current_1g_(blitz::Range(stt_coarse, stp_coarse)) +=
                     dz *
                     coarse_data_.current(blitz::Range(stt_fine, stp_fine),
                                          group);
             }
             // Normalize the radial currents
-            for (int iz = 0; iz < mesh_.nz(); iz++) {
+            for (int iz = 0; iz < (int)mesh_.nz(); iz++) {
                 int stt = mesh_.plane_surf_xy_begin(iz);
                 int stp = mesh_.plane_surf_end(iz) - 1;
-                currents(blitz::Range(stt, stp)) /= mesh_.dz(iz);
+                // since we are using the separate CMFD mesh, the dz here is the
+                // macroplane height, which we want
+                current_1g_(blitz::Range(stt, stp)) /= mesh_.dz(iz);
             }
 
             // Now apply the z-normal currents
@@ -407,7 +397,7 @@ void CMFD::setup_solve()
                     int stp_fine   = fine_mesh_->plane_surf_xy_begin(iz) - 1;
                     int stt_coarse = mesh_.plane_surf_begin(mplane);
                     int stp_coarse = mesh_.plane_surf_xy_begin(mplane) - 1;
-                    currents(blitz::Range(stt_coarse, stp_coarse)) =
+                    current_1g_(blitz::Range(stt_coarse, stp_coarse)) =
                         coarse_data_.current(blitz::Range(stt_fine, stp_fine),
                                              group);
                     current_mplane = mplane;
@@ -418,10 +408,10 @@ void CMFD::setup_solve()
             int stp_fine   = fine_mesh_->plane_surf_xy_begin(nz) - 1;
             int stt_coarse = mesh_.plane_surf_begin(n_mplanes);
             int stp_coarse = mesh_.plane_surf_xy_begin(n_mplanes) - 1;
-            currents(blitz::Range(stt_coarse, stp_coarse)) =
+            current_1g_(blitz::Range(stt_coarse, stp_coarse)) =
                 coarse_data_.current(blitz::Range(stt_fine, stp_fine), group);
         } else {
-            currents = coarse_data_.current(blitz::Range::all(), group);
+            current_1g_ = coarse_data_.current(blitz::Range::all(), group);
         }
 
         // Loop over the surfaces in the mesh, and calculate the inter-cell
@@ -485,7 +475,7 @@ void CMFD::setup_solve()
                                  ? coarse_data_.has_axial_data()
                                  : coarse_data_.has_radial_data();
             if (have_data) {
-                real_t j        = currents(is);
+                real_t j        = current_1g_(is);
                 real_t sfc_flux = coarse_data_.surface_flux(is, group);
                 real_t flux_l   = cells.first >= 0
                                     ? coarse_data_.flux(cells.first, group)
@@ -493,7 +483,7 @@ void CMFD::setup_solve()
                 real_t flux_r = cells.second >= 0
                                     ? coarse_data_.flux(cells.second, group)
                                     : 0.0;
-                d_hat(is) = 
+                d_hat(is) =
                     (j + d_tilde(is) * (flux_r - flux_l)) / (flux_l + flux_r);
                 if (!std::isfinite(d_hat(is))) {
                     d_hat(is) = 0.0;
@@ -568,14 +558,19 @@ void CMFD::store_currents()
     int n_group           = xsmesh_.n_group();
     for (int ig = 0; ig < n_group; ig++) {
         auto all             = blitz::Range::all();
-        auto current_1g      = coarse_data_.current(blitz::Range::all(), ig);
         auto surface_flux_1g = coarse_data_.surface_flux(all, ig);
         auto partial_1g      = coarse_data_.partial_current(all, ig);
         auto partial_old_1g  = coarse_data_.partial_current_old(all, ig);
 
         partial_old_1g = partial_1g;
         coarse_data_.set_has_old_partial(n_solve_ > 0);
-
+        /**
+         * \todo Putting a hack in here to only touch the axial currents. A
+         * proper
+         * projection onto the potentially finer axial mesh radial fluxes is
+         * necessary
+         * as well to do boundary flux updates and the like.
+         */
         for (int is = 0; is < n_surf_; is++) {
             auto cells = mesh_.coarse_neigh_cells(is);
             real_t flux_r =
@@ -588,7 +583,7 @@ void CMFD::store_currents()
             real_t current =
                 -d_tilde * (flux_r - flux_l) + d_hat * (flux_r + flux_l);
 
-            current_1g(is) = current;
+            current_1g_(is) = current;
 
             real_t s_hat   = s_hat_(is, ig);
             real_t s_tilde = s_tilde_(is, ig);
@@ -603,7 +598,42 @@ void CMFD::store_currents()
             partial_1g(is) = {{0.25 * surface_flux + 0.5 * current,
                                0.25 * surface_flux - 0.5 * current}};
         } // surfaces
-    }     // groups
+
+        // apply the CMFD mesh currents to the CoarseData object
+        // Start by zeroing out the destination currents, so its easier to
+        // detect if we are attempting to use currents that are not being set
+        // from CMFD. This applies to the z-normal currents in the middle of the
+        // CMFD planes.
+        int nz = fine_mesh_->nz();
+        coarse_data_.current(blitz::Range::all(), ig) = 0.0;
+        if (fine_mesh_->n_macroplanes() != nz) {
+            for (int iz = 0; iz < nz; iz++) {
+                int mplane     = fine_mesh_->macroplane_index(iz);
+                int stt_fine   = fine_mesh_->plane_surf_xy_begin(iz);
+                int stp_fine   = fine_mesh_->plane_surf_end(iz) - 1;
+                int stt_coarse = mesh_.plane_surf_xy_begin(mplane);
+                int stp_coarse = mesh_.plane_surf_end(mplane) - 1;
+                coarse_data_.current(blitz::Range(stt_fine, stp_fine), ig) =
+                    current_1g_(blitz::Range(stt_coarse, stp_coarse));
+            }
+            int current_mplane = -1;
+            for (int iz = 0; iz < nz; iz++) {
+                int mplane = fine_mesh_->macroplane_index(iz);
+                if (current_mplane != mplane) {
+                    int stt_fine   = fine_mesh_->plane_surf_begin(iz);
+                    int stp_fine   = fine_mesh_->plane_surf_xy_begin(iz) - 1;
+                    int stt_coarse = mesh_.plane_surf_begin(mplane);
+                    int stp_coarse = mesh_.plane_surf_xy_begin(mplane) - 1;
+                    coarse_data_.current(blitz::Range(stt_fine, stp_fine), ig) =
+                        current_1g_(blitz::Range(stt_coarse, stp_coarse));
+                }
+            }
+
+        } else {
+            coarse_data_.current(blitz::Range::all(), ig) = current_1g_;
+        }
+
+    } // groups
     return;
 }
 
