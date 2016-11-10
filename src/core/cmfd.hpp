@@ -31,7 +31,7 @@
 namespace mocc {
 class CMFD : public HasOutput {
 public:
-    CMFD(const pugi::xml_node &input, const Mesh *mesh,
+    CMFD(const pugi::xml_node &input, const CoreMesh *mesh,
          SP_XSMeshHomogenized_t xsmesh);
 
     /**
@@ -194,11 +194,15 @@ norm = std::sqrt(norm)/(n_cell_*n_group_);
     Timer &timer_setup_;
     Timer &timer_solve_;
 
-    const Mesh *mesh_;
-    SP_XSMeshHomogenized_t xsmesh_;
+    Mesh mesh_;
+    const Mesh *fine_mesh_;
+    XSMeshHomogenized xsmesh_;
     int n_cell_;
+    int n_surf_;
     int n_group_;
     CoarseData coarse_data_;
+    // Scratch space for manipulating currents on the CMFD mesh
+    ArrayB1 current_1g_;
     bool is_enabled_;
 
     // Single-group fission source

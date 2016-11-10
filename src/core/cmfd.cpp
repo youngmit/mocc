@@ -30,34 +30,60 @@ typedef Eigen::Triplet<mocc::real_t> T;
 typedef Eigen::SparseMatrix<mocc::real_t> M;
 
 namespace {
+using namespace mocc;
 const std::vector<std::string> recognized_attributes = {
-    "enabled",  "k_tol",           "psi_tol",     "residual_reduction",
+    "enabled",  "k_tol",          "psi_tol",     "residual_reduction",
     "max_iter", "negative_fixup", "dump_current"};
+
+/**
+ * \brief Helper function for making the CMFD mesh
+ *
+ * This does all of the leg work to make an appropriate CMFD mesh derived from
+ * the main CoreMesh.
+ */
+Mesh make_cmfd_mesh(const CoreMesh *mesh)
+{
+    size_t n_reg = mesh->n_reg(MeshTreatment::PIN_PLANE);
+    VecF mplane_z;
+    mplane_z.reserve(mesh->n_macroplanes() + 1);
+    real_t hz = 0.0;
+    mplane_z.push_back(hz);
+    for (const auto &mplane : mesh->macroplanes()) {
+        hz += mplane.height;
+        mplane_z.push_back(hz);
+    }
+
+    return Mesh(n_reg, n_reg, mesh->x_divisions(), mesh->y_divisions(),
+                mplane_z, mesh->boundary());
+}
 }
 
 namespace mocc {
-CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
+CMFD::CMFD(const pugi::xml_node &input, const CoreMesh *mesh,
            SP_XSMeshHomogenized_t xsmesh)
     : timer_(RootTimer.new_timer("CMFD", true)),
       timer_init_(timer_.new_timer("Initialization", true)),
       timer_setup_(timer_.new_timer("Setup Linear System")),
       timer_solve_(timer_.new_timer("Solve")),
-      mesh_(mesh),
-      xsmesh_(xsmesh),
-      n_cell_(mesh->n_pin()),
-      n_group_(xsmesh->n_group()),
-      coarse_data_(*mesh, xsmesh->n_group()),
+      mesh_(make_cmfd_mesh(mesh)),
+      fine_mesh_(mesh),
+      xsmesh_(*xsmesh, std::vector<int>()),
+      n_cell_(mesh->n_reg(MeshTreatment::PIN_PLANE)),
+      n_surf_(mesh_.n_surf()),
+      n_group_(xsmesh_.n_group()),
+      coarse_data_(*mesh, xsmesh_.n_group()),
+      current_1g_(n_surf_),
       is_enabled_(true),
       fs_(n_cell_),
       fs_old_(n_cell_),
       x_(n_cell_),
-      source_(n_cell_, xsmesh_.get(), coarse_data_.flux),
+      source_(n_cell_, &xsmesh_, coarse_data_.flux),
       m_(n_group_, Eigen::SparseMatrix<real_t>(n_cell_, n_cell_)),
       solvers_(n_group_),
-      d_hat_(mesh_->n_surf(), n_group_),
-      d_tilde_(mesh_->n_surf(), n_group_),
-      s_hat_(mesh_->n_surf(), n_group_),
-      s_tilde_(mesh_->n_surf(), n_group_),
+      d_hat_(n_surf_, n_group_),
+      d_tilde_(n_surf_, n_group_),
+      s_hat_(n_surf_, n_group_),
+      s_tilde_(n_surf_, n_group_),
       n_solve_(0),
       k_tol_(1.0e-6),
       psi_tol_(1.0e-5),
@@ -74,7 +100,7 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
     for (int i = 0; i < n_cell_; i++) {
         structure.push_back(T(i, i, 1.0));
         for (auto d : AllSurfaces) {
-            int n = mesh_->coarse_neighbor(i, d);
+            int n = mesh_.coarse_neighbor(i, d);
             if (n >= 0) {
                 // Defining both, though i could do this a little more
                 // efficiently.
@@ -144,10 +170,6 @@ CMFD::CMFD(const pugi::xml_node &input, const Mesh *mesh,
 
 void CMFD::solve(real_t &k)
 {
-    // Make sure we have the requisite data
-    if (!xsmesh_) {
-        throw EXCEPT("No XS Mesh data! Need!");
-    }
     timer_.tic();
 
     // Make sure no negative flux
@@ -162,7 +184,7 @@ void CMFD::solve(real_t &k)
     }
 
     // Update homogenized cross sections
-    xsmesh_->update();
+    xsmesh_.update();
 
     // Set up the linear systems
     this->setup_solve();
@@ -202,7 +224,7 @@ void CMFD::solve(real_t &k)
             source_.initialize_group(group);
             source_.fission(fs_, group);
             source_.in_scatter(group);
-            source_.scale(mesh_->coarse_volume());
+            source_.scale(mesh_.coarse_volume());
 
             ri += this->solve_1g(group);
         }
@@ -279,7 +301,7 @@ real_t CMFD::solve_1g(int group)
 void CMFD::fission_source(real_t k)
 {
     fs_ = 0.0;
-    for (const auto &xsr : *xsmesh_) {
+    for (const auto &xsr : xsmesh_) {
         for (const int i : xsr.reg()) {
             for (int ig = 0; ig < n_group_; ig++) {
                 fs_(i) += xsr.xsmacnf(ig) * coarse_data_.flux(i, ig);
@@ -297,7 +319,7 @@ void CMFD::fission_source(real_t k)
 real_t CMFD::total_fission()
 {
     real_t f = 0.0;
-    for (const auto &xsr : *xsmesh_) {
+    for (const auto &xsr : xsmesh_) {
         for (const int i : xsr.reg()) {
             for (int ig = 0; ig < n_group_; ig++) {
                 f += xsr.xsmacnf(ig) * coarse_data_.flux(i, ig);
@@ -312,15 +334,17 @@ void CMFD::setup_solve()
 {
     timer_setup_.tic();
 
-    const Mesh::BCArray_t bc = mesh_->boundary_array();
+    const Mesh::BCArray_t bc = mesh_.boundary_array();
     // Construct the system matrix
-    size_t n_surf = mesh_->n_surf();
+
+    int nz        = fine_mesh_->nz();
+    int n_mplanes = fine_mesh_->n_macroplanes();
     int group     = 0;
     for (auto &m : m_) {
         // Diffusion coefficients
         VecF d_coeff(n_cell_);
         VecF xsrm(n_cell_);
-        for (const auto &xsr : *xsmesh_) {
+        for (const auto &xsr : xsmesh_) {
             real_t d  = 1.0 / (3.0 * xsr.xsmactr(group));
             real_t rm = xsr.xsmacrm(group);
             for (const int i : xsr.reg()) {
@@ -339,17 +363,68 @@ void CMFD::setup_solve()
         ArrayB1 s_tilde = s_tilde_(blitz::Range::all(), group);
         ArrayB1 s_hat   = s_hat_(blitz::Range::all(), group);
 
+        // Homogenize the currents to a coarser axial mesh
+        if (fine_mesh_->n_macroplanes() != nz) {
+            current_1g_        = 0.0;
+            int current_mplane = 0;
+            for (int iz = 0; iz < nz; iz++) {
+                int mplane     = fine_mesh_->macroplane_index(iz);
+                real_t dz      = fine_mesh_->dz(iz);
+                int stt_fine   = fine_mesh_->plane_surf_xy_begin(iz);
+                int stp_fine   = fine_mesh_->plane_surf_end(iz) - 1;
+                int stt_coarse = mesh_.plane_surf_xy_begin(mplane);
+                int stp_coarse = mesh_.plane_surf_end(mplane) - 1;
+                current_1g_(blitz::Range(stt_coarse, stp_coarse)) +=
+                    dz *
+                    coarse_data_.current(blitz::Range(stt_fine, stp_fine),
+                                         group);
+            }
+            // Normalize the radial currents
+            for (int iz = 0; iz < (int)mesh_.nz(); iz++) {
+                int stt = mesh_.plane_surf_xy_begin(iz);
+                int stp = mesh_.plane_surf_end(iz) - 1;
+                // since we are using the separate CMFD mesh, the dz here is the
+                // macroplane height, which we want
+                current_1g_(blitz::Range(stt, stp)) /= mesh_.dz(iz);
+            }
+
+            // Now apply the z-normal currents
+            current_mplane = -1;
+            for (int iz = 0; iz < nz; iz++) {
+                int mplane = fine_mesh_->macroplane_index(iz);
+                if (current_mplane != mplane) {
+                    int stt_fine   = fine_mesh_->plane_surf_begin(iz);
+                    int stp_fine   = fine_mesh_->plane_surf_xy_begin(iz) - 1;
+                    int stt_coarse = mesh_.plane_surf_begin(mplane);
+                    int stp_coarse = mesh_.plane_surf_xy_begin(mplane) - 1;
+                    current_1g_(blitz::Range(stt_coarse, stp_coarse)) =
+                        coarse_data_.current(blitz::Range(stt_fine, stp_fine),
+                                             group);
+                    current_mplane = mplane;
+                }
+            }
+            // Lastly, grab the top surface currents
+            int stt_fine   = fine_mesh_->plane_surf_begin(nz);
+            int stp_fine   = fine_mesh_->plane_surf_xy_begin(nz) - 1;
+            int stt_coarse = mesh_.plane_surf_begin(n_mplanes);
+            int stp_coarse = mesh_.plane_surf_xy_begin(n_mplanes) - 1;
+            current_1g_(blitz::Range(stt_coarse, stp_coarse)) =
+                coarse_data_.current(blitz::Range(stt_fine, stp_fine), group);
+        } else {
+            current_1g_ = coarse_data_.current(blitz::Range::all(), group);
+        }
+
         // Loop over the surfaces in the mesh, and calculate the inter-cell
         // coupling coefficients
-        for (int is = 0; is < (int)n_surf; is++) {
-            auto cells  = mesh_->coarse_neigh_cells(is);
-            Normal norm = mesh_->surface_normal(is);
+        for (int is = 0; is < n_surf_; is++) {
+            auto cells  = mesh_.coarse_neigh_cells(is);
+            Normal norm = mesh_.surface_normal(is);
 
             real_t diffusivity_1 = 0.0;
             real_t diffusivity_2 = 0.0;
             if (cells.first > -1) {
                 diffusivity_1 = d_coeff[cells.first] /
-                                mesh_->cell_thickness(cells.first, norm);
+                                mesh_.cell_thickness(cells.first, norm);
             } else {
                 switch (bc[(int)(norm)][0]) {
                 case Boundary::REFLECT:
@@ -365,7 +440,7 @@ void CMFD::setup_solve()
 
             if (cells.second > -1) {
                 diffusivity_2 = d_coeff[cells.second] /
-                                mesh_->cell_thickness(cells.second, norm);
+                                mesh_.cell_thickness(cells.second, norm);
             } else {
                 switch (bc[(int)(norm)][1]) {
                 case Boundary::REFLECT:
@@ -400,7 +475,7 @@ void CMFD::setup_solve()
                                  ? coarse_data_.has_axial_data()
                                  : coarse_data_.has_radial_data();
             if (have_data) {
-                real_t j        = coarse_data_.current(is, group);
+                real_t j        = current_1g_(is);
                 real_t sfc_flux = coarse_data_.surface_flux(is, group);
                 real_t flux_l   = cells.first >= 0
                                     ? coarse_data_.flux(cells.first, group)
@@ -434,10 +509,10 @@ void CMFD::setup_solve()
                 auto j = it.col();
                 if (i == j) {
                     // Diagonal element
-                    real_t v = mesh_->coarse_volume(i) * xsrm[i];
+                    real_t v = mesh_.coarse_volume(i) * xsrm[i];
                     for (auto is : AllSurfaces) {
-                        size_t surf = mesh_->coarse_surf(i, is);
-                        real_t a    = mesh_->coarse_area(i, is);
+                        int surf = mesh_.coarse_surf(i, is);
+                        real_t a = mesh_.coarse_area(i, is);
 
                         // Switch sign of D-hat if necessary
                         real_t d_hat_ij = d_hat(surf);
@@ -451,9 +526,9 @@ void CMFD::setup_solve()
                     it.valueRef() = v;
                 } else {
                     // off-diagonal element
-                    auto pair       = mesh_->coarse_interface(i, j);
-                    real_t a        = mesh_->coarse_area(i, pair.second);
-                    size_t surf     = pair.first;
+                    auto pair       = mesh_.coarse_interface(i, j);
+                    real_t a        = mesh_.coarse_area(i, pair.second);
+                    int surf        = pair.first;
                     real_t d_hat_ij = d_hat(surf);
                     // Switch sign of D-hat if necessary
                     if ((pair.second == Surface::WEST) ||
@@ -480,20 +555,24 @@ void CMFD::setup_solve()
 void CMFD::store_currents()
 {
     coarse_data_.source() = "CMFD";
-    int n_group           = xsmesh_->n_group();
-    int n_surf            = mesh_->n_surf();
+    int n_group           = xsmesh_.n_group();
     for (int ig = 0; ig < n_group; ig++) {
         auto all             = blitz::Range::all();
-        auto current_1g      = coarse_data_.current(blitz::Range::all(), ig);
         auto surface_flux_1g = coarse_data_.surface_flux(all, ig);
         auto partial_1g      = coarse_data_.partial_current(all, ig);
         auto partial_old_1g  = coarse_data_.partial_current_old(all, ig);
 
         partial_old_1g = partial_1g;
         coarse_data_.set_has_old_partial(n_solve_ > 0);
-
-        for (int is = 0; is < n_surf; is++) {
-            auto cells = mesh_->coarse_neigh_cells(is);
+        /**
+         * \todo Putting a hack in here to only touch the axial currents. A
+         * proper
+         * projection onto the potentially finer axial mesh radial fluxes is
+         * necessary
+         * as well to do boundary flux updates and the like.
+         */
+        for (int is = 0; is < n_surf_; is++) {
+            auto cells = mesh_.coarse_neigh_cells(is);
             real_t flux_r =
                 cells.second >= 0 ? coarse_data_.flux(cells.second, ig) : 0.0;
             real_t flux_l =
@@ -504,7 +583,7 @@ void CMFD::store_currents()
             real_t current =
                 -d_tilde * (flux_r - flux_l) + d_hat * (flux_r + flux_l);
 
-            current_1g(is) = current;
+            current_1g_(is) = current;
 
             real_t s_hat   = s_hat_(is, ig);
             real_t s_tilde = s_tilde_(is, ig);
@@ -519,7 +598,42 @@ void CMFD::store_currents()
             partial_1g(is) = {{0.25 * surface_flux + 0.5 * current,
                                0.25 * surface_flux - 0.5 * current}};
         } // surfaces
-    }     // groups
+
+        // apply the CMFD mesh currents to the CoarseData object
+        // Start by zeroing out the destination currents, so its easier to
+        // detect if we are attempting to use currents that are not being set
+        // from CMFD. This applies to the z-normal currents in the middle of the
+        // CMFD planes.
+        int nz = fine_mesh_->nz();
+        coarse_data_.current(blitz::Range::all(), ig) = 0.0;
+        if (fine_mesh_->n_macroplanes() != nz) {
+            for (int iz = 0; iz < nz; iz++) {
+                int mplane     = fine_mesh_->macroplane_index(iz);
+                int stt_fine   = fine_mesh_->plane_surf_xy_begin(iz);
+                int stp_fine   = fine_mesh_->plane_surf_end(iz) - 1;
+                int stt_coarse = mesh_.plane_surf_xy_begin(mplane);
+                int stp_coarse = mesh_.plane_surf_end(mplane) - 1;
+                coarse_data_.current(blitz::Range(stt_fine, stp_fine), ig) =
+                    current_1g_(blitz::Range(stt_coarse, stp_coarse));
+            }
+            int current_mplane = -1;
+            for (int iz = 0; iz < nz; iz++) {
+                int mplane = fine_mesh_->macroplane_index(iz);
+                if (current_mplane != mplane) {
+                    int stt_fine   = fine_mesh_->plane_surf_begin(iz);
+                    int stp_fine   = fine_mesh_->plane_surf_xy_begin(iz) - 1;
+                    int stt_coarse = mesh_.plane_surf_begin(mplane);
+                    int stp_coarse = mesh_.plane_surf_xy_begin(mplane) - 1;
+                    coarse_data_.current(blitz::Range(stt_fine, stp_fine), ig) =
+                        current_1g_(blitz::Range(stt_coarse, stp_coarse));
+                }
+            }
+
+        } else {
+            coarse_data_.current(blitz::Range::all(), ig) = current_1g_;
+        }
+
+    } // groups
     return;
 }
 
@@ -532,7 +646,7 @@ real_t CMFD::residual()
         source_.initialize_group(group);
         source_.fission(fs_, group);
         source_.in_scatter(group);
-        source_.scale(mesh_->coarse_volume());
+        source_.scale(mesh_.coarse_volume());
 
         for (int icell = 0; icell < n_cell_; ++icell) {
             x_[icell] = flux_1g(icell);
@@ -557,10 +671,10 @@ void CMFD::output(H5Node &node) const
         return;
     }
 
-    auto dims = mesh_->dimensions();
+    auto dims = mesh_.dimensions();
     std::reverse(dims.begin(), dims.end());
 
-    ArrayB1 surf_current(mesh_->n_pin());
+    ArrayB1 surf_current(mesh_.n_pin());
 
     auto current_g = node.create_group("current");
     current_g.write("source", coarse_data_.source());
@@ -572,9 +686,9 @@ void CMFD::output(H5Node &node) const
             std::stringstream s_str;
             s_str << surf;
 
-            for (int i = 0; i < mesh_->n_pin(); ++i) {
+            for (int i = 0; i < mesh_.n_pin(); ++i) {
                 surf_current(i) =
-                    coarse_data_.current(mesh_->coarse_surf(i, surf), ig);
+                    coarse_data_.current(mesh_.coarse_surf(i, surf), ig);
             }
             group_g.write(s_str.str(), surf_current, dims);
         }
