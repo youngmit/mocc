@@ -68,6 +68,8 @@ public:
         if (!input.attribute("dump_corrections").empty()) {
             dump_corrections_ =
                 input.attribute("dump_corrections").as_bool(false);
+            std::cout << "Sn CDD sweeper dumping corrections: "
+                      << dump_corrections_ << "\n";
         }
         return;
     }
