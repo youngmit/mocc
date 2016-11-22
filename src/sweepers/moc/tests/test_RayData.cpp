@@ -73,6 +73,27 @@ TEST(raydata)
     }
 }
 
+TEST(raydata_performance) {
+    pugi::xml_document geom_xml;
+    pugi::xml_parse_result result = geom_xml.load_file("c5g7_2d.xml");
+
+    CoreMesh mesh(geom_xml);
+    std::cout << "mesh" << std::endl;
+
+    pugi::xml_document angquad_xml;
+    result = angquad_xml.load_string("<ang_quad type=\"cg\" n_azimuthal=\"2\" "
+            "n_polar=\"1\" />");
+
+    CHECK(result);
+
+    AngularQuadrature ang_quad(angquad_xml.child("ang_quad"));
+
+    pugi::xml_document ray_xml;
+    ray_xml.load_string("<rays spacing=\"0.05\" />");
+
+    moc::RayData ray_data(ray_xml.child("rays"), ang_quad, mesh);
+}
+
 int main()
 {
     return UnitTest::RunAllTests();

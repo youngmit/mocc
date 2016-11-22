@@ -50,8 +50,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
     if (${PROFILE})
         MESSAGE(STATUS "Release flags were: ${CMAKE_CXX_FLAGS_RELEASE}")
-        SET(CMAKE_CXX_FLAGS_RELEASE " -O1 -DNDEBUG")
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+        SET(CMAKE_CXX_FLAGS_RELEASE " -O2 -DNDEBUG")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -fPIC")
         SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
         SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
     endif()
@@ -76,6 +76,7 @@ message("Flags: ${warnings} ${options}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings} ${options}" )
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings} ${options}")
+message("CXX Flags: ${CMAKE_CXX_FLAGS}")
 
 # What a shame...
 if(WIN32)
