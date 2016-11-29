@@ -29,6 +29,7 @@
 #include "core/angular_quadrature.hpp"
 #include "core/globals.hpp"
 #include "core/material_lib.hpp"
+#include "core/parallel_environment.hpp"
 #include "core/pin_mesh.hpp"
 #include "auxiliary/geometry_output.hpp"
 
@@ -184,21 +185,7 @@ void InputProcessor::process()
     // live with it. If MPI becomes a thing, it would be better to have a
     // standalone parallel environment class to take care of all of this.
     if (!doc_.child("parallel").empty()) {
-        int n_thread =
-            doc_.child("parallel").attribute("num_threads").as_int(0);
-
-        if (n_thread < 1) {
-            throw EXCEPT("Less than one thread specified in <parallel> "
-                         "tag");
-        }
-
-        if (n_thread > omp_get_num_procs()) {
-            Warn("More threads specified than physical "
-                 "threads on this machine in <parallel> tag");
-        }
-
-        // Okay. Looking good. Tell OpenMP whats up
-        omp_set_num_threads(n_thread);
+        ParEnv = ParallelEnvironment(doc_.child("parallel"));
     }
 
     // Generate the core mesh
@@ -234,21 +221,21 @@ void apply_amendment(pugi::xml_node &node, std::string path,
     std::cout << "amendment " << path << "\n";
     // Break the path into components
     std::vector<std::string> path_vec;
-    for(;;) {
+    for (;;) {
         size_t pos = path.find("/");
 
         path_vec.push_back(path.substr(0, pos));
-        path = path.substr(pos+1, std::string::npos);
+        path = path.substr(pos + 1, std::string::npos);
 
-        if(pos == std::string::npos) {
+        if (pos == std::string::npos) {
             break;
         }
     }
 
     pugi::xml_node node_p = node;
-    for(auto s=path_vec.cbegin(); s != path_vec.cend(); ++s) {
-        if(s < path_vec.cend()-1){
-            if(node_p.child(s->c_str()).empty()) {
+    for (auto s = path_vec.cbegin(); s != path_vec.cend(); ++s) {
+        if (s < path_vec.cend() - 1) {
+            if (node_p.child(s->c_str()).empty()) {
                 throw EXCEPT("Failed to apply command-line amendment");
             }
 
@@ -260,27 +247,27 @@ void apply_amendment(pugi::xml_node &node, std::string path,
             if (!(has_attribute ^ has_child)) {
                 std::cout << path << std::endl;
                 std::cout << has_attribute << " " << has_child << std::endl;
-                throw EXCEPT("Could not find the requested attribute or child to "
-                             "modify, or could not disambiguate.")
+                throw EXCEPT(
+                    "Could not find the requested attribute or child to "
+                    "modify, or could not disambiguate.")
             }
 
-            if(has_attribute) {
+            if (has_attribute) {
                 if (!node_p.attribute(s->c_str()).set_value(value.c_str())) {
                     throw EXCEPT("Failed to modify the requested attribute.");
                 }
             }
 
-            if(has_child) {
+            if (has_child) {
                 pugi::xml_text text = node_p.child(s->c_str()).text();
-                if(!text) {
+                if (!text) {
                     throw EXCEPT("No text data found at requested location.");
                 }
                 text = value.c_str();
             }
-            
         }
     }
-    
+
     return;
 }
 }
