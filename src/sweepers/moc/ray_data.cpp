@@ -215,133 +215,121 @@ RayData::RayData(const pugi::xml_node &input, const AngularQuadrature &ang_quad,
         std::vector<std::vector<Ray>> angle_rays;
         int nreg_plane = mesh.unique_plane(iplane).n_reg();
         VecI nrayfsr(nreg_plane, 0);
-#pragma omp parallel default(shared)
-        {
-            for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
-                 ++ang) {
-#pragma omp single
-                {
-                    nrayfsr = 0;
+        for (auto ang = ang_quad_.octant(1); ang != ang_quad_.octant(3);
+             ++ang) {
+            int Nx  = Nx_[iang];
+            int Ny  = Ny_[iang];
+            std::array<int, 2> bc;
+            real_t space   = spacing_[iang];
+            real_t space_x = std::abs(space / std::sin(ang->alpha));
+            real_t space_y = std::abs(space / std::cos(ang->alpha));
+
+            LogFile << "Spacing: " << ang->alpha << " " << space << " "
+                    << space_x << " " << space_y << std::endl;
+
+            std::vector<Ray> rays;
+            // Handle rays entering on the x-normal faces ( along the
+            // y-axis)
+            for (int iray = 0; iray < Ny; iray++) {
+                Point2 p1;
+                bc[0] = iray;
+                if (ang->ox > 0.0) {
+                    // We are in octant 1, enter from the left/west
+                    p1.x = 0.0;
+                } else {
+                    // We are in octant 2, enter from the right/east
+                    p1.x = hx;
                 }
-                int Nx = Nx_[iang];
-                int Ny = Ny_[iang];
-                std::array<int, 2> bc;
-                real_t space   = spacing_[iang];
-                real_t space_x = std::abs(space / std::sin(ang->alpha));
-                real_t space_y = std::abs(space / std::cos(ang->alpha));
-
-                LogFile << "Spacing: " << ang->alpha << " " << space << " "
-                        << space_x << " " << space_y << std::endl;
-
-                std::vector<Ray> rays;
-                // Handle rays entering on the x-normal faces ( along the
-                // y-axis)
-#pragma omp for
-                for (int iray = 0; iray < Ny; iray++) {
-                    Point2 p1;
-                    bc[0] = iray;
-                    if (ang->ox > 0.0) {
-                        // We are in octant 1, enter from the left/west
-                        p1.x = 0.0;
-                    } else {
-                        // We are in octant 2, enter from the right/east
-                        p1.x = hx;
-                    }
-                    p1.y      = (0.5 + iray) * space_y;
-                    Point2 p2 = core_box.intersect(p1, *ang);
-                    // The below indexing based on point position / spacing is
-                    // safer than it might appear at first. Since the rays are
-                    // laid out starting a half-spacing into the domain, the
-                    // i-th ray points lie between multiples of the ray spacing,
-                    // and are therefore sufficiently far away from multiples
-                    // of the spacing to permit a reliable division and cast to
-                    // int. Ray i will start (i+0.5)*spacing into the domain, so
-                    // dividing the ray position by the spacing and casting to
-                    // an int gives i.
-                    if (fp_equiv(p2.x, hx)) {
-                        // BC is on the right/east boundary of the domain
-                        bc[1] = p2.y / space_y;
-                    } else if (fp_equiv(p2.y, hy)) {
-                        // BC is on the top/north boundary of the domain
-                        bc[1] = p2.x / space_x + Ny;
-                    } else if (fp_equiv(p2.x, 0.0)) {
-                        // BC is on the left/west boundary of the domain
-                        bc[1] = p2.y / space_y;
-                    } else {
-                        throw EXCEPT(
-                            "Something has gone horribly wrong in the "
-                            "ray trace.");
-                    }
-                    assert(bc[0] >= 0);
-                    assert(bc[1] >= 0);
-                    assert(bc[0] < Nx + Ny);
-                    assert(bc[1] < Nx + Ny);
-                    rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
-
-                    max_seg_ = std::max(rays.back().nseg(), max_seg_);
+                p1.y      = (0.5 + iray) * space_y;
+                Point2 p2 = core_box.intersect(p1, *ang);
+                // The below indexing based on point position / spacing is
+                // safer than it might appear at first. Since the rays are
+                // laid out starting a half-spacing into the domain, the
+                // i-th ray points lie between multiples of the ray spacing,
+                // and are therefore sufficiently far away from multiples
+                // of the spacing to permit a reliable division and cast to
+                // int. Ray i will start (i+0.5)*spacing into the domain, so
+                // dividing the ray position by the spacing and casting to
+                // an int gives i.
+                if (fp_equiv(p2.x, hx)) {
+                    // BC is on the right/east boundary of the domain
+                    bc[1] = p2.y / space_y;
+                } else if (fp_equiv(p2.y, hy)) {
+                    // BC is on the top/north boundary of the domain
+                    bc[1] = p2.x / space_x + Ny;
+                } else if (fp_equiv(p2.x, 0.0)) {
+                    // BC is on the left/west boundary of the domain
+                    bc[1] = p2.y / space_y;
+                } else {
+                    throw EXCEPT(
+                        "Something has gone horribly wrong in the "
+                        "ray trace.");
                 }
+                assert(bc[0] >= 0);
+                assert(bc[1] >= 0);
+                assert(bc[0] < Nx + Ny);
+                assert(bc[1] < Nx + Ny);
+                rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
 
-                // Handle rays entering on the y-normal face
-                for (int iray = 0; iray < Nx; iray++) {
-                    Point2 p1;
-                    p1.x      = (0.5 + iray) * space_x;
-                    p1.y      = 0.0;
-                    Point2 p2 = core_box.intersect(p1, *ang);
-                    bc[0]     = iray + Ny;
-                    if (fp_equiv(p2.x, hx)) {
-                        // BC is on the right/east boundary of the core
-                        bc[1] = p2.y / space_y;
-                    } else if (fp_equiv(p2.y, hy)) {
-                        // BC is on the top/north boundary of the core
-                        bc[1] = p2.x / space_x + Ny;
-                    } else if (fp_equiv(p2.x, 0.0)) {
-                        // BC is on the left/west boundary of the core
-                        bc[1] = p2.y / space_y;
-                    } else {
-                        throw EXCEPT(
-                            "Something has gone horribly wrong in the "
-                            "ray trace.");
-                    }
-                    assert(bc[0] >= 0);
-                    assert(bc[1] >= 0);
-                    assert(bc[0] < Nx + Ny);
-                    assert(bc[1] < Nx + Ny);
-                    rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
-                    max_seg_ = std::max(rays.back().nseg(), max_seg_);
-                }
+                max_seg_ = std::max(rays.back().nseg(), max_seg_);
+            }
 
-                // Count number of ray crossings in each FSR
-                for (auto &r : rays) {
-                    for (auto &i : r.seg_index()) {
-                        nrayfsr[i]++;
-                    }
+            // Handle rays entering on the y-normal face
+            for (int iray = 0; iray < Nx; iray++) {
+                Point2 p1;
+                p1.x      = (0.5 + iray) * space_x;
+                p1.y      = 0.0;
+                Point2 p2 = core_box.intersect(p1, *ang);
+                bc[0]     = iray + Ny;
+                if (fp_equiv(p2.x, hx)) {
+                    // BC is on the right/east boundary of the core
+                    bc[1] = p2.y / space_y;
+                } else if (fp_equiv(p2.y, hy)) {
+                    // BC is on the top/north boundary of the core
+                    bc[1] = p2.x / space_x + Ny;
+                } else if (fp_equiv(p2.x, 0.0)) {
+                    // BC is on the left/west boundary of the core
+                    bc[1] = p2.y / space_y;
+                } else {
+                    throw EXCEPT(
+                        "Something has gone horribly wrong in the "
+                        "ray trace.");
                 }
+                assert(bc[0] >= 0);
+                assert(bc[1] >= 0);
+                assert(bc[0] < Nx + Ny);
+                assert(bc[1] < Nx + Ny);
+                rays.emplace_back(Ray(p1, p2, bc, iplane, mesh));
+                max_seg_ = std::max(rays.back().nseg(), max_seg_);
+            }
 
-                // Make sure that there is at least one ray in every FSR. Give a
-                // warning if not.
-                if (std::any_of(nrayfsr.begin(), nrayfsr.end(),
-                                [](int i) { return i == 0; })) {
-                    Warn(
-                        "No rays passed through at least one FSR. Try finer "
-                        "ray spacing or larger regions.");
-                    for (size_t ifsr = 0; ifsr < nrayfsr.size(); ifsr++) {
-                        std::cout << ifsr << " " << nrayfsr[ifsr] << std::endl;
-                    }
+            // Count number of ray crossings in each FSR
+            for (auto &r : rays) {
+                for (auto &i : r.seg_index()) {
+                    nrayfsr[i]++;
                 }
+            }
 
-                // Sort the rays by length. This might improve threading
-                // performance
-                // std::sort(rays.begin(), rays.end());
-                // std::reverse(rays.begin(), rays.end());
-                // Move the stack of rays into the vector of angular ray sets.
-#pragma omp critical
-                {
-                    angle_rays.insert()
+            // Make sure that there is at least one ray in every FSR. Give a
+            // warning if not.
+            if (std::any_of(nrayfsr.begin(), nrayfsr.end(),
+                            [](int i) { return i == 0; })) {
+                Warn(
+                    "No rays passed through at least one FSR. Try finer "
+                    "ray spacing or larger regions.");
+                for (size_t ifsr = 0; ifsr < nrayfsr.size(); ifsr++) {
+                    std::cout << ifsr << " " << nrayfsr[ifsr] << std::endl;
                 }
-                angle_rays.push_back(std::move(rays));
-                ++iang;
-            } // Angle loop
-        }
+            }
+
+            // Sort the rays by length. This might improve threading
+            // performance
+            // std::sort(rays.begin(), rays.end());
+            // std::reverse(rays.begin(), rays.end());
+            // Move the stack of rays into the vector of angular ray sets.
+            angle_rays.push_back(std::move(rays));
+            ++iang;
+        } // Angle loop
         // Move the angular ray set to the vector of planar ray sets.
         rays_.push_back(std::move(angle_rays));
     } // Plane loop
