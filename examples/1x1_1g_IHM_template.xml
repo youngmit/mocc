@@ -1,0 +1,50 @@
+<!--
+    This input file describes a 1x1 array of pin cells using 1G 
+    cross sections, surrounded by a reflector. The system boundaries are
+    vacuum.
+
+    The pin material is homogeneous.
+-->
+
+<solver type="fixed_source" flux_tol="1.e-10" max_iter="100" cmfd="f">
+    <source scattering="P0" />
+    <sweeper type="moc" n_inner="5">
+    <ang_quad type="chebyshev-gauss" n_azimuthal="1" n_polar="1" />
+        <rays spacing="0.01" />
+    </sweeper>
+</solver>
+
+<material_lib path="1g.xsl">
+    <material id="6" name="homogeneous" />
+</material_lib>
+
+<!-- Rectangular mesh for the pin -->
+<mesh id="2" type="rect" pitch="10">
+    <sub_x>##1##</sub_x>
+    <sub_y>##1##</sub_y>
+</mesh>
+
+<pin id="3" mesh="2">
+    ##2##
+</pin>
+
+<lattice id="1" nx="1" ny="1">
+    3
+</lattice>
+
+<assembly id="1" np="1" hz="1.0">
+    <lattices>
+        1
+    </lattices>
+</assembly>
+
+<core nx="1" ny="1"
+    north  = "reflect" 
+    south  = "reflect" 
+    east   = "reflect"
+    west   = "reflect"
+    top    = "reflect"
+    bottom = "reflect" >
+    1
+</core>
+
