@@ -77,6 +77,7 @@ function [phi0_MMS_i_j,psi_b1_m,psi_b2_m,Q_MMS_i_j_m,error_ang_i_j]=...
   %% Manufactured Solutions
   switch(assumedSoln)
     case('IHM')
+      psi_MMS= @(x,y,eta,xi) (1.0+0.0*eta).*(1.0+0.0*xi).*(1.0+0.0*x).*(1.0+0.0*y);
       phi0_MMS= @(x,y) 2*pi*(1.0+0.0*x).*(1.0+0.0*y);
       Sig_t=Sig_t_i_j(1,1); %1.0
       Sig_s=Sig_ss_i_j(1,1); %0.5
