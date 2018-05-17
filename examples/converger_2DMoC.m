@@ -1,6 +1,10 @@
 %% converger_2DMoC
 function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGrids,refinementRatio,M,angErrorRemoval)
   % Case configure options
+  if ~exist('step','var')
+    display('step 1 is assumed')
+    step=1
+  end
   if ~exist('assumedSoln','var')
     assumedSoln='IHM';
 %   assumedSoln='IHM-expEtaEta';
@@ -92,6 +96,7 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
       order_phi_nMinus1=0;
     end
     display('Step 1 done');
+    display('All input files are prepared');
   end
 	%% Run the code
 	% Run the following function after all the cases are run.
