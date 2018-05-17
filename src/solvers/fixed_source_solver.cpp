@@ -80,8 +80,8 @@ void FixedSourceSolver::solve()
 {
     this->initialize();
     real_t resid = 0.0;
-    // iouter was initialized outside the loop so I can use it to test whether 
-    // the maximum iteration was hit. 
+    // iouter was initialized outside the loop so I can use it to test whether
+    // the maximum iteration was hit.
     //for (size_t iouter = 0; iouter < max_iter_; iouter++) {
     size_t iouter = 0;
     for (; iouter < max_iter_; iouter++) {
@@ -94,7 +94,7 @@ void FixedSourceSolver::solve()
             break;
         }
     }
-    LogScreen << "Number of iterations: " << iouter 
+    LogScreen << "Number of iterations: " << iouter
     << " before convergence." << std::endl;
     if (resid >= flux_tol_ ) {
         LogScreen << "Maximum number (" << max_iter_ << ") of iterations "
@@ -129,8 +129,8 @@ void FixedSourceSolver::output(H5Node &node) const
     VecI dims(2,(int)sqrt((double)(sweeper_->n_reg())));
     node.write("ng", (int)sweeper_->n_group());
     node.write("eubounds", sweeper_->xs_mesh().eubounds(), VecI(1, ng_));
-    
-    sweeper_->output(node);                  
+
+    sweeper_->output(node);
     // jwg: output flux_
    int nX=(int)sqrt((double)(sweeper_->n_reg()));
    int nY=nX;
