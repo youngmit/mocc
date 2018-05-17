@@ -135,7 +135,12 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                     for (int iseg = 0; iseg < ray.nseg(); iseg++) {
                         int ireg = ray.seg_index(iseg) + first_reg;
                         real_t psi_diff =
+                        #ifndef MMS
                             (psi1[iseg] - qbar[ireg]) * e_tau(iseg);
+                        #else
+                            (psi1[iseg] - (qbar[ireg]+q_ireg_m(ireg,iang1)/
+                                xstr_[ireg])) * e_tau(iseg);
+                        #endif
                         psi1[iseg + 1] = psi1[iseg] - psi_diff;
                         t_flux(ireg) += psi_diff * wt_v_st;
                     }
@@ -150,7 +155,12 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                     for (int iseg = ray.nseg() - 1; iseg >= 0; iseg--) {
                         int ireg = ray.seg_index(iseg) + first_reg;
                         real_t psi_diff =
+                        #ifndef MMS
                             (psi2[iseg + 1] - qbar[ireg]) * e_tau(iseg);
+                        #else
+                            (psi2[iseg + 1] - (qbar[ireg]+q_ireg_m(ireg,iang2)/
+                                xstr_[ireg])) * e_tau(iseg);
+                        #endif
                         psi2[iseg] = psi2[iseg + 1] - psi_diff;
                         t_flux(ireg) += psi_diff * wt_v_st;
                     }
@@ -193,11 +203,25 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
 // Scale the scalar flux by the volume and add back the source
 #pragma omp single
         {
+            #ifdef MMS
+                ArrayB1 anisoSrc(n_reg_);
+                for (int ireg=0; ireg<n_reg_; ireg++) {
+                    double summation=0.0;
+                    for (int m=0; m<M; m++) {
+                        summation += q_ireg_m(ireg,m)*ang_quad_[m].weight*PI*0.5;
+                    }
+                    anisoSrc(ireg)=summation;
+                }
+            #endif        
             // \todo this is not correct for angle-dependent sources!
             auto &qbar = source_->get_transport(0);
             for (int i = 0; i < (int)n_reg_; i++) {
                 flux_1g_(i) =
+                #ifndef MMS
                     flux_1g_(i) / (xstr_[i] * vol_[i]) + qbar[i] * FPI;
+                #else
+                    flux_1g_(i) / (xstr_[i] * vol_[i]) + qbar[i] * FPI + anisoSrc(i);
+                #endif
             }
         } // OMP single
 
