@@ -80,7 +80,11 @@ void FixedSourceSolver::solve()
 {
     this->initialize();
     real_t resid = 0.0;
-    for (size_t iouter = 0; iouter < max_iter_; iouter++) {
+    // iouter was initialized outside the loop so I can use it to test whether 
+    // the maximum iteration was hit. 
+    //for (size_t iouter = 0; iouter < max_iter_; iouter++) {
+    size_t iouter = 0;
+    for (; iouter < max_iter_; iouter++) {
         this->step();
 
         resid = sweeper_->flux_residual();
@@ -90,7 +94,8 @@ void FixedSourceSolver::solve()
             break;
         }
     }
-    
+    LogScreen << "Number of iterations: " << iouter 
+    << " before convergence." << std::endl;
     if (resid >= flux_tol_ ) {
         LogScreen << "Maximum number (" << max_iter_ << ") of iterations "
             "performed before convergence!" << std::endl;
@@ -121,10 +126,23 @@ void FixedSourceSolver::output(H5Node &node) const
     // Provide energy group upper bounds
     // We do this here, to prevent collisions between possibly-multiple
     // sweepers colliding.
+    VecI dims(2,(int)sqrt((double)(sweeper_->n_reg())));
     node.write("ng", (int)sweeper_->n_group());
     node.write("eubounds", sweeper_->xs_mesh().eubounds(), VecI(1, ng_));
     
     sweeper_->output(node);                  
-    return;
+    // jwg: output flux_
+   int nX=(int)sqrt((double)(sweeper_->n_reg()));
+   int nY=nX;
+   ArrayB2 flux_map(nX,nX);
+   int ireg=0;
+   for(int i=0;i<nX;i++){
+     for(int j=0;j<nY;j++){
+       flux_map(i,j)=sweeper_->flux(0,ireg);
+       ireg++;
+     }
+   }
+   node.write("flux_map", flux_map);
+   return;
 }
 }
