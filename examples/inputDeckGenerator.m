@@ -1,6 +1,6 @@
 % This funciton is to create a series of inputs
-% Pass in template name and number of grid points. 
-% The routine will create an input file with the pin mesh. 
+% Pass in template name and number of grid points.
+% The routine will create an input file with the pin mesh.
 function [inputFileName]=inputDeckGenerator(J,template)
   if ~exist('J','var')
     J=5*2;
@@ -11,16 +11,16 @@ function [inputFileName]=inputDeckGenerator(J,template)
 %     template='1x1_1g_pseudo2D_template.xml';
     disp(['Default template ' template ' is used.']);
   end
-  
+
   % Extract case name
   caseName = erase(template,'template.xml');
   caseNameWithGrid=[caseName num2str(J)];
   inputFileName=[caseNameWithGrid '.xml'];
-  if (exist(inputFileName,'file')) 
+  if (exist(inputFileName,'file'))
     delete(inputFileName);
     disp(['Exisitng file ' inputFileName ' was deleted.']);
   end
-  
+
   fidi=fopen(template,'r');
   fido=fopen(inputFileName,'w');
   while ~feof(fidi)

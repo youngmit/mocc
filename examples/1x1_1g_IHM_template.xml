@@ -1,5 +1,5 @@
 <!--
-    This input file describes a 1x1 array of pin cells using 1G 
+    This input file describes a 1x1 array of pin cells using 1G
     cross sections, surrounded by a reflector. The system boundaries are
     vacuum.
 
@@ -39,8 +39,8 @@
 </assembly>
 
 <core nx="1" ny="1"
-    north  = "reflect" 
-    south  = "reflect" 
+    north  = "reflect"
+    south  = "reflect"
     east   = "reflect"
     west   = "reflect"
     top    = "reflect"
