@@ -244,6 +244,12 @@ public:
         return flux_(ireg, ig);
     }
 
+    void set_mg_flux(ArrayB2 flux_after_AER)
+    {
+        flux_=flux_after_AER;
+        return;
+    }
+
     /**
      * \brief Assign a CoarseData object to the sweeper, allowing it to
      * store currents and such.
