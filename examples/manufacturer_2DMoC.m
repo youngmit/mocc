@@ -128,7 +128,8 @@ function [phi0_MMS_i_j,psi_b1_m,psi_b2_m,Q_MMS_i_j_m,error_ang_i_j]=...
         Q_MMS_i_j_m(i,j,m)= ...
           rh*rh*integral2(@(x,y) Q_MMS(x,y,eta_m(m),xi_m(m)),x_L,x_R,y_B,y_T);
         spatialAvg=rh*rh*integral2(@(x,y) psi_MMS(x,y,eta_m(m),xi_m(m)),x_L,x_R,y_B,y_T);
-        numSum=numSum+weight_m(m)*spatialAvg;
+        numSum=numSum+weight_m(m)*spatialAvg*0.5; 
+        % factor 0.5 to convert psi(eta, xi) to psi(mu, eta, xi);
       end % n
       error_ang_i_j(i,j)=numSum-phi0_MMS_i_j(i,j);
     end % i
