@@ -17,6 +17,7 @@
 #include "fixed_source_solver.hpp"
 
 #include <iostream>
+#include "math.h"
 #include "pugixml.hpp"
 #include "util/error.hpp"
 #include "util/files.hpp"
