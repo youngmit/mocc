@@ -15,6 +15,8 @@
 */
 
 #pragma once
+#include "util/h5file.hpp"
+#include "util/blitz_typedefs.hpp"
 
 /**
  * \file
@@ -108,7 +110,7 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                 real_t rstheta = ang.rsintheta;
                 real_t wt_v_st = ang.weight * rays_.spacing(iang) *
                                  mesh_.macroplanes()[iplane].height * stheta *
-                                 PI;
+                                 PI*0.5;
 
 #pragma omp for schedule(static, 1)
                 for (int iray = 0; iray < (int)ang_rays.size(); iray++) {
