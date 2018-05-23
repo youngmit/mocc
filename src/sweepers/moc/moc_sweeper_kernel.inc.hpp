@@ -40,6 +40,8 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
     flux_1g_ = 0.0;
 
     cw.set_group(group);
+    
+    #define MMS 1 
     #ifdef MMS
         // jwg: read in the anisotropic MMS source
         H5Node MMSh5("discreteSrcMMS_5.h5", H5Access::READ);
