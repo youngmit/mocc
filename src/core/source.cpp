@@ -128,7 +128,7 @@ void Source::add_external(const pugi::xml_node &input)
         return;
     }
 
-    std::string srcfname = input.attribute("MMSSource").value();
+    std::string srcfname = input.attribute("external_source").value();
     H5Node srcfile(srcfname, H5Access::READ);
     srcfile.read("/source", external_source_);
 
