@@ -151,6 +151,8 @@ void Source::add_MMS(const pugi::xml_node &input)
         return;
     }
 
+    has_MMS_ = true;
+
     std::string srcfname = input.attribute("MMSFile").value();
     
     H5Node MMSh5(srcfname, H5Access::READ);
@@ -160,7 +162,6 @@ void Source::add_MMS(const pugi::xml_node &input)
     MMSh5.read("q_MMS_i_j_m", q_m_j_i);
     
     auto shape = q_m_j_i.shape();
-    auto size  = q_m_j_i.size();
     
     int M=shape(0);
     int J=shape(1);
@@ -180,8 +181,32 @@ void Source::add_MMS(const pugi::xml_node &input)
     }
     MMS_source_.resize(q_ireg_m.shape());
     MMS_source_=q_ireg_m;
-    has_MMS_ = true;
+    
+    // Read in angular error
+    ArrayB2 error_ang_j_i;
+    MMSh5.read("error_ang_i_j", error_ang_j_i);
+    
+    auto error_ang_shape = error_ang_j_i.shape();
+    auto error_ang_size  = error_ang_j_i.size();
+    
+    // get the dimensions
+    J=error_ang_shape(0);
+    I=error_ang_shape(1);
+    
+    error_ang_ireg_.resize(error_ang_size,1); // (ireg,ig)
+    ireg=0;
+    for (int j=0; j<J; j++){
+        for (int i=0; i<I; i++){
+            error_ang_ireg_(ireg,1)=error_ang_j_i(j,i);
+            ireg++;
+        }
+    }
+    // jwg: I left this here because it is strange that the 
+    // first element assignment generates the following:
+    // 2.31779e-310 = 8.88178e-16
 
+    // std::cout << error_ang_j_i(0,0) << std::endl;
+    // std::cout << error_ang_ireg_(0,0) << std::endl;
     return;
 }
 }
