@@ -28,6 +28,7 @@ Source::Source(int nreg, const XSMesh *xs_mesh, const ArrayB2 &flux)
       n_group_(xs_mesh->n_group()),
       n_reg_(flux.size() / n_group_),
       has_external_(false),
+      has_MMS_(false),
       source_1g_(nreg),
       flux_(flux)
 {
@@ -127,7 +128,7 @@ void Source::add_external(const pugi::xml_node &input)
         return;
     }
 
-    std::string srcfname = input.attribute("file").value();
+    std::string srcfname = input.attribute("MMSSource").value();
     H5Node srcfile(srcfname, H5Access::READ);
     srcfile.read("/source", external_source_);
 
@@ -141,5 +142,46 @@ void Source::add_external(const pugi::xml_node &input)
     }
 
     has_external_ = true;
+}
+
+void Source::add_MMS(const pugi::xml_node &input)
+{
+    if (input.attribute("MMSFile").empty()) {
+        // Nothing to do here
+        return;
+    }
+
+    std::string srcfname = input.attribute("MMSFile").value();
+    
+    H5Node MMSh5(srcfname, H5Access::READ);
+    // jwg: read in the anisotropic MMS source
+
+    ArrayB3 q_m_j_i;
+    MMSh5.read("q_MMS_i_j_m", q_m_j_i);
+    
+    auto shape = q_m_j_i.shape();
+    auto size  = q_m_j_i.size();
+    
+    int M=shape(0);
+    int J=shape(1);
+    int I=shape(2);
+
+    ArrayB2 q_ireg_m(I*J,M);
+
+    int ireg=0;
+    for (int m=0; m<M; m++){
+        ireg=0;
+        for (int j=0; j<J; j++){
+            for (int i=0; i<I; i++){
+                q_ireg_m(ireg,m)=q_m_j_i(m,j,i);
+                ireg++;
+            }
+        }
+    }
+    MMS_source_.resize(q_ireg_m.shape());
+    MMS_source_=q_ireg_m;
+    has_MMS_ = true;
+
+    return;
 }
 }
