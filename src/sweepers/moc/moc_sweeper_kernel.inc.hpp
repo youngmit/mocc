@@ -41,36 +41,7 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
 
     cw.set_group(group);
     
-    #define MMS 1 
-    #ifdef MMS
-        // jwg: read in the anisotropic MMS source
-        H5Node MMSh5("discreteSrcMMS_5.h5", H5Access::READ);
-        // H5Node MMSh5("discreteSrcMMS_10.h5", H5Access::READ);
-        // H5Node MMSh5("discreteSrcMMS_20.h5", H5Access::READ);
-        // H5Node MMSh5("discreteSrcMMS_40.h5", H5Access::READ);
-        ArrayB3 q_m_j_i;
-        MMSh5.read("q_MMS_i_j_m", q_m_j_i);
-        
-        auto shape = q_m_j_i.shape();
-        auto size  = q_m_j_i.size();
-        
-        int M=shape(0);
-        int J=shape(1);
-        int I=shape(2);
-
-        ArrayB2 q_ireg_m(I*J,M);
-
-        int ireg=0;
-        for (int m=0; m<M; m++){
-            ireg=0;
-            for (int j=0; j<J; j++){
-                for (int i=0; i<I; i++){
-                    q_ireg_m(ireg,m)=q_m_j_i(m,j,i);
-                    ireg++;
-                }
-            }
-        }
-    #endif
+#define MMS 1 
 
 #pragma omp parallel default(shared)
     {
@@ -79,6 +50,12 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
         typename CurrentWorker::FluxStore psi2(rays_.max_segments() + 1);
         ArrayB1 t_flux(n_reg_);
         t_flux = 0.0;
+
+        auto &q_ireg_m = source_->get_MMS();
+        auto shape = q_ireg_m.shape();
+
+        int nReg = shape(0);
+        int M = shape(1);
 
         int iplane = 0;
         for (const auto plane_ray_id : macroplane_unique_ids_) {
