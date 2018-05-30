@@ -110,6 +110,11 @@ public:
     void add_external(const pugi::xml_node &input);
 
     /**
+     * \brief Add an MMS source from an XML node.
+     */
+    void add_MMS(const pugi::xml_node &input);
+
+    /**
      * \brief Scale the source by some weighting values.
      *
      * Use this if the client code desires a total source [n] for each
@@ -161,6 +166,11 @@ public:
      */
     virtual const VectorX &get_transport(int iang) const = 0;
 
+    const ArrayB2 &get_MMS()
+    {
+        return MMS_source_;
+    }
+
     friend std::ostream &operator<<(std::ostream &os, const Source &src);
 
 protected:
@@ -194,8 +204,16 @@ protected:
     // initialized false.
     bool has_external_;
 
+    // This is true if MMS source has been specified. For now it's
+    // initialized false.
+    bool has_MMS_;
+
+
     // The external source, if set
     ArrayB2 external_source_;
+
+    // Right now, MMS_source_ is 1 group, of dimension (nReg,mAngle)
+    ArrayB2 MMS_source_;
 
     // Single-group source. We use the Eigen storage class so that it can be
     // used directly as a source vector in a linear system.
