@@ -64,6 +64,7 @@ UP_Source_t SourceFactory(const pugi::xml_node &input, int n_reg,
 
     // Apply an external source if its specified
     source->add_external(input);
+    source->add_MMS(input);
 
     return source;
 }
