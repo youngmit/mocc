@@ -171,6 +171,11 @@ public:
         return MMS_source_;
     }
 
+    bool get_has_MMS_()
+    {
+        return has_MMS_;
+    }
+
     friend std::ostream &operator<<(std::ostream &os, const Source &src);
 
 protected:
