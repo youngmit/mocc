@@ -171,6 +171,11 @@ public:
         return MMS_source_;
     }
 
+    const ArrayB2 &get_ang_error()
+    {
+        return error_ang_ireg_;
+    }
+
     bool get_has_MMS_()
     {
         return has_MMS_;
@@ -209,16 +214,18 @@ protected:
     // initialized false.
     bool has_external_;
 
+    // The external source, if set
+    ArrayB2 external_source_;
+
     // This is true if MMS source has been specified. For now it's
     // initialized false.
     bool has_MMS_;
 
-
-    // The external source, if set
-    ArrayB2 external_source_;
-
     // Right now, MMS_source_ is 1 group, of dimension (nReg,mAngle)
     ArrayB2 MMS_source_;
+
+    // Define error_ang_ireg to store angular error
+    ArrayB2 error_ang_ireg_; // of shape (I*J,1), 1 for energy group
 
     // Single-group source. We use the Eigen storage class so that it can be
     // used directly as a source vector in a linear system.
