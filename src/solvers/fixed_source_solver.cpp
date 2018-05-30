@@ -104,12 +104,6 @@ void FixedSourceSolver::solve()
             flux_after_AER(ireg,ig)=sweeper_->flux(0,ireg)-error_ang_ireg(ireg,0);
         }
 
-        std::cout << flux_after_AER(0,0) << std::endl;
-        std::cout << flux_after_AER(1,0) << std::endl;
-        std::cout << flux_after_AER(2,0) << std::endl;
-        std::cout << flux_after_AER(3,0) << std::endl;
-
-
         // Reset the mg scalar flux with flux_after_AER
         sweeper_->set_mg_flux(flux_after_AER);
 
