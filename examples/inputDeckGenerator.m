@@ -27,6 +27,11 @@ function [inputFileName]=inputDeckGenerator(J,template)
     l=fgetl(fidi);   % read line
     if strfind(l,'##')
       % In case of parameter ##1##
+      if strfind(l,'##0##')
+        lnew = strrep(l,'##0##',num2str(J));
+        fprintf(fido,'%s\n',lnew);
+        continue
+      end
       if strfind(l,'##1##')
         lnew = strrep(l,'##1##',num2str(J));
         fprintf(fido,'%s\n',lnew);
