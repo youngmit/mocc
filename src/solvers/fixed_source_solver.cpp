@@ -85,19 +85,14 @@ void FixedSourceSolver::solve()
     // the maximum iteration was hit.
     //for (size_t iouter = 0; iouter < max_iter_; iouter++) {
     size_t iouter = 0;
+    
+    auto &error_ang_ireg = source_->get_ang_error();
+    auto nReg = error_ang_ireg.size();
+    ArrayB2 flux_after_AER(nReg,1);
+    int ig = 0;
+
     for (; iouter < max_iter_; iouter++) {
         this->step();
-
-        auto &error_ang_ireg = source_->get_ang_error();
-
-        int ig = 0;
-        //angular error removal
-        // auto shape = error_ang_ireg.shape();
-        auto nReg = error_ang_ireg.size();
-        // int J = shape(0);
-        // int I = shape(1);
-        ArrayB2 flux_after_AER(nReg,1);
-
 
         for (int ireg=0;ireg<nReg;ireg++)
         {
