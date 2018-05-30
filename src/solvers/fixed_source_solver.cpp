@@ -88,6 +88,31 @@ void FixedSourceSolver::solve()
     for (; iouter < max_iter_; iouter++) {
         this->step();
 
+        auto &error_ang_ireg = source_->get_ang_error();
+
+        int ig = 0;
+        //angular error removal
+        // auto shape = error_ang_ireg.shape();
+        auto nReg = error_ang_ireg.size();
+        // int J = shape(0);
+        // int I = shape(1);
+        ArrayB2 flux_after_AER(nReg,1);
+
+
+        for (int ireg=0;ireg<nReg;ireg++)
+        {
+            flux_after_AER(ireg,ig)=sweeper_->flux(0,ireg)-error_ang_ireg(ireg,0);
+        }
+
+        std::cout << flux_after_AER(0,0) << std::endl;
+        std::cout << flux_after_AER(1,0) << std::endl;
+        std::cout << flux_after_AER(2,0) << std::endl;
+        std::cout << flux_after_AER(3,0) << std::endl;
+
+
+        // Reset the mg scalar flux with flux_after_AER
+        sweeper_->set_mg_flux(flux_after_AER);
+
         resid = sweeper_->flux_residual();
         LogScreen << iouter << " " << std::setprecision(15) << resid << std::endl;
 
@@ -137,8 +162,8 @@ void FixedSourceSolver::output(H5Node &node) const
    int nY=nX;
    ArrayB2 flux_map(nX,nX);
    int ireg=0;
-   for(int i=0;i<nX;i++){
-     for(int j=0;j<nY;j++){
+   for (int i=0;i<nX;i++){
+     for (int j=0;j<nY;j++){
        flux_map(i,j)=sweeper_->flux(0,ireg);
        ireg++;
      }
