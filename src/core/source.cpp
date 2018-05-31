@@ -197,7 +197,7 @@ void Source::add_MMS(const pugi::xml_node &input)
     ireg=0;
     for (int j=0; j<J; j++){
         for (int i=0; i<I; i++){
-            error_ang_ireg_(ireg,1)=error_ang_j_i(j,i);
+            error_ang_ireg_(ireg,0)=error_ang_j_i(j,i);
             ireg++;
         }
     }
