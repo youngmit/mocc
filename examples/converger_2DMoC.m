@@ -54,8 +54,8 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
 
       % Material
       field1='Sig_t_i_j';          value1=ones(J,J);
-      field2='Sig_ss_i_j';         value2=ones(J,J)*0.5;%0;%5;
-      field3='Sig_gamma_i_j';      value3=ones(J,J)*0.4;%9;%4;
+      field2='Sig_ss_i_j';         value2=ones(J,J)*0.0;%5;%0;%5;
+      field3='Sig_gamma_i_j';      value3=ones(J,J)*0.9;%4;%9;%4;
       field4='Sig_f_i_j';          value4=ones(J,J)*0.1;
       field5='nuSig_f_i_j';        value5=ones(J,J)*0.2;
       field6='thermal_cond_k_i_j'; value6=ones(J,J);
