@@ -14,6 +14,8 @@ function [inputFileName]=inputDeckGenerator(J,template)
 
   % Extract case name
   caseName = erase(template,'template.xml');
+  caseSpeficier = erase(caseName,'1x1_1g_');
+  caseSpeficier = erase(caseSpeficier,'_');
   caseNameWithGrid=[caseName num2str(J)];
   inputFileName=[caseNameWithGrid '.xml'];
   if (exist(inputFileName,'file'))
@@ -28,7 +30,7 @@ function [inputFileName]=inputDeckGenerator(J,template)
     if strfind(l,'##')
       % In case of parameter ##1##
       if strfind(l,'##0##')
-        lnew = strrep(l,'##0##',num2str(J));
+        lnew = strrep(l,'##0##',[caseSpeficier '_' num2str(J)]);
         fprintf(fido,'%s\n',lnew);
         continue
       end
