@@ -6,8 +6,8 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
     step=1
   end
   if ~exist('assumedSoln','var')
-    assumedSoln='IHM';
-%   assumedSoln='IHM-expEtaEta';
+%     assumedSoln='IHM';
+  assumedSoln='IHM-expEtaEta';
 %   assumedSoln='sine-constant';
 %   assumedSoln='sine-sine';
   end
@@ -34,16 +34,7 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
   error_phi0_n=zeros(nGrids,1);
   gridMeshSize_n=zeros(nGrids,1);
 
-  switch assumedSoln
-    case 'IHM'
-      template='1x1_1g_IHM_template.xml';
-    case 'IHM-expEtaEta'
-      template='1x1_1g_IHM_expEtaEta_template.xml';
-    case 'sine-constant'
-      template='1x1_1g_pseudo2D_template.xml';
-    case 'sine-sine'
-      template='1x1_1g_template.xml';
-  end
+  template=['1x1_1g_' assumedSoln '_template.xml'];
 
   % Calculate the order of accuracy
   order_phi_nMinus1=ones(nGrids-1,1);
@@ -77,19 +68,26 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
       [phi0_MMS_i_j,psi_b1_m,psi_b2_m,Q_MMS_i_j_m,error_ang_i_j]=...
         manufacturer_2DMoC(J,M,X,Y,mat,assumedSoln);
       % store discrete MMS source in h5 file
-      h5filename=['discreteSrcMMS_' num2str(J) '.h5'];
+      h5filename=['MMS_file_' assumedSoln '_' num2str(J) '.h5'];
+      temp_name='temp_file_name.h5'; % Variable name is not supported. 
       if (exist(h5filename,'file'))
         delete(h5filename);
         disp(['Exisitng file ' h5filename ' was deleted.']);
       end
-      h5create(h5filename,'/q_MMS_i_j_m', [I J M]);
+      if (exist(temp_name,'file'))
+        delete(temp_name);
+        disp(['Exisitng file ' temp_name ' was deleted.']);
+      end
+      h5create(temp_name,'/q_MMS_i_j_m', [I J M]);
       % The reason we needed 0.5 there is convert 2D angle to 3D angle
       % To compensate for positive mu and negative mu
-      h5write(h5filename,'/q_MMS_i_j_m',Q_MMS_i_j_m*0.5);
-      h5create(h5filename,'/phi0_MMS_i_j', [I J]);
-      h5write(h5filename,'/phi0_MMS_i_j',phi0_MMS_i_j);
-      h5create(h5filename,'/error_ang_i_j', [I J]);
-      h5write(h5filename,'/error_ang_i_j',error_ang_i_j);
+      h5write(temp_name,'/q_MMS_i_j_m',Q_MMS_i_j_m*0.5);
+      h5create(temp_name,'/phi0_MMS_i_j', [I J]);
+      h5write(temp_name,'/phi0_MMS_i_j',phi0_MMS_i_j);
+      h5create(temp_name,'/error_ang_i_j', [I J]);
+      h5write(temp_name,'/error_ang_i_j',error_ang_i_j);
+      
+      movefile([temp_name],[h5filename])
 
       % Create input file based on given template
       inputFileName=inputDeckGenerator(J,template);
@@ -118,7 +116,7 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
   if step==2
     for iGrid=1:nGrids
       J=5*refinementRatio^(iGrid-1);
-      h5filename=['discreteSrcMMS_' num2str(J) '.h5'];
+      h5filename=['MMS_file_' assumedSoln '_' num2str(J) '.h5'];
       phi0_MMS_i_j=h5read(h5filename,'/phi0_MMS_i_j');
 
       caseName = erase(template,'template.xml');
