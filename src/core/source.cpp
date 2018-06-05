@@ -180,7 +180,7 @@ void Source::add_MMS(const pugi::xml_node &input)
         }
     }
     MMS_source_.resize(q_ireg_m.shape());
-    MMS_source_=q_ireg_m;
+    MMS_source_=q_ireg_m;                
     
     // Read in angular error
     ArrayB2 error_ang_j_i;
