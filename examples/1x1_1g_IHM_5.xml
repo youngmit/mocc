@@ -7,7 +7,7 @@
 -->
 
 <solver type="fixed_source" flux_tol="1.e-10" max_iter="100" cmfd="f">
-    <source scattering="P0" MMSFile="discreteSrcMMS_5.h5"/>
+    <source scattering="P0" MMSFile="MMS_file_IHM_5.h5"/>
     <sweeper type="moc" n_inner="5">
     <ang_quad type="chebyshev-gauss" n_azimuthal="1" n_polar="1" />
         <rays spacing="0.01" />
