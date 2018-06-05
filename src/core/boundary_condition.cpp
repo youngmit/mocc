@@ -172,7 +172,8 @@ void BoundaryCondition::update(int group, int angle,
 
         switch (bc_[(int)(angle_in.upwind_surface(n))]) {
         case Boundary::VACUUM:
-            data_(blitz::Range(offset_in, offset_in + size - 1)) = 0.0;
+            data_(blitz::Range(offset_in, offset_in + size - 1)) = 0.69780621255; //1.3956124251;
+            //0.69780621255; //0.0;
             break;
 
         case Boundary::REFLECT:
