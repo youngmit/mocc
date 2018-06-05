@@ -43,10 +43,10 @@
 </assembly>
 
 <core nx="1" ny="1"
-    north  = "vacuum"
-    south  = "vacuum"
-    east   = "vacuum"
-    west   = "vacuum"
+    north  = "reflect"
+    south  = "reflect"
+    east   = "reflect"
+    west   = "reflect"
     top    = "reflect"
     bottom = "reflect" >
     1
