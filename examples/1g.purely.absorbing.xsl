@@ -19,5 +19,5 @@ C5G7 macroscopic cross section data
 ! scat mat
 !homogeneous pin
 XSMACRO homogeneous 0
-  0E-01 2.E-01 1E-01 1E-00
+  10E-01 2.E-01 1E-01 1E-00
   0E-01
