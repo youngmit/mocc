@@ -10,11 +10,11 @@
     <source scattering="P0" MMSFile="MMS_file_##0##.h5"/>
     <sweeper type="moc" n_inner="5">
     <ang_quad type="chebyshev-gauss" n_azimuthal="1" n_polar="1" />
-        <rays spacing="0.01" />
+        <rays spacing="0.001" />
     </sweeper>
 </solver>
 
-<material_lib path="1g.xsl">
+<material_lib path="1g.purely.absorbing.xsl">
     <material id="6" name="homogeneous" />
 </material_lib>
 
