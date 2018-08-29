@@ -34,8 +34,6 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
   error_phi0_n=zeros(nGrids,1);
   gridMeshSize_n=zeros(nGrids,1);
 
-  template=['1x1_1g_' assumedSoln '_template.xml'];
-
   % Calculate the order of accuracy
   order_phi_nMinus1=ones(nGrids-1,1);
 
@@ -49,13 +47,13 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
       I=J;
       iGrid
 
-      caseName = erase(template,'template.xml');
-      caseNameWithGrid=[caseName num2str(J)];
-
       % Material
       field1='Sig_t_i_j';          value1=ones(J,J);
-      field2='Sig_ss_i_j';         value2=ones(J,J)*0.0;%5;%0;%5;
-      field3='Sig_gamma_i_j';      value3=ones(J,J)*0.9;%4;%9;%4;
+%       field2='Sig_ss_i_j';         value2=ones(J,J)*0.0;%5;%0;%5;
+%       field3='Sig_gamma_i_j';      value3=ones(J,J)*0.9;%4;%9;%4;
+      field2='Sig_ss_i_j';         value2=ones(J,J)*0.5;
+      field3='Sig_gamma_i_j';      value3=ones(J,J)*0.4;
+      
       field4='Sig_f_i_j';          value4=ones(J,J)*0.1;
       field5='nuSig_f_i_j';        value5=ones(J,J)*0.2;
       field6='thermal_cond_k_i_j'; value6=ones(J,J);
@@ -63,12 +61,24 @@ function [error_phi0_n, order_phi_nMinus1]=converger_2DMoC(step,assumedSoln,nGri
       mat = struct(field1,value1,field2,value2,field3,value3,...
         field4,value4,field5,value5,field6,value6,field7,value7);
 
+      if value2(1,1)==0.0
+        template=['1x1_1g_' assumedSoln '_purely_absorbing_template.xml'];
+      else
+        template=['1x1_1g_' assumedSoln '_template.xml'];
+      end
+      caseName = erase(template,'template.xml');
+      caseNameWithGrid=[caseName num2str(J)];
+
       % call manufacturer
       % The boundary condition is not useful for 'reflec' and 'vacuum' B.C.
       [phi0_MMS_i_j,psi_b1_m,psi_b2_m,Q_MMS_i_j_m,error_ang_i_j]=...
         manufacturer_2DMoC(J,M,X,Y,mat,assumedSoln);
       % store discrete MMS source in h5 file
-      h5filename=['MMS_file_' assumedSoln '_' num2str(J) '.h5'];
+      if value2(1,1)==0.0
+        h5filename=['MMS_file_' assumedSoln '_purely_absorbing_' num2str(J) '.h5'];
+      else
+        h5filename=['MMS_file_' assumedSoln '_' num2str(J) '.h5'];
+      end
       temp_name='temp_file_name.h5'; % Variable name is not supported. 
       if (exist(h5filename,'file'))
         delete(h5filename);
