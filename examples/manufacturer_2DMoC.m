@@ -92,20 +92,21 @@ function [phi0_MMS_i_j,psi_b1_m,psi_b2_m,Q_MMS_i_j_m,error_ang_i_j]=...
       Sig_s=Sig_ss_i_j(1,1); %0.5
       Q_MMS= @(x,y,eta,xi) (Sig_t*exp(eta.*eta)-Sig_s*0.5/pi*9.190111959404573)...
       .*(1.0+0.0*x).*(1.0+0.0*y).*(1.0+0.0*xi);
-    case('sine-constant')
+    case('sine-constant-constant-constant')
+      psi_MMS= @(x,y,eta,xi) (1.0+0.0*eta).*(1.0+0.0*xi).*sin(pi/X*x).*(1.0+0.0*y);
       phi0_MMS= @(x,y) 2*pi*sin(pi/X*x);
       Sig_t=Sig_t_i_j(1,1); %1.0
       Sig_s=Sig_ss_i_j(1,1); %0.5
       Q_MMS= @(x,y,eta,xi) (pi/X*eta+Sig_t-Sig_s).*sin(pi/X*x)...
         .*(1.0+0.0*y).*(1.0+0.0*eta).*(1.0+0.0*xi);
-    case('sine-sine')
-      %% Manufactured scalar flux and source
+    case('sine-sine-constant-constant')
+      psi_MMS= @(x,y,eta,xi) (1.0+0.0*eta).*(1.0+0.0*xi).*sin(pi/X*x).*sin(pi/Y*y);
       phi0_MMS= @(x,y) 2*pi*sin(pi/X*x).*sin(pi/Y*y);
       % MMS source
       Sig_t=Sig_t_i_j(1,1); %1.0
       Sig_s=Sig_ss_i_j(1,1); %0.5
       Q_MMS= @(x,y,eta,xi) (pi/X*eta+pi/Y*xi+Sig_t-Sig_s).*sin(pi/X*x)...
-        .*sin(pi/Y*y).*(1.0+0.0*eta).*(1.0+0.0*xi);
+        .*sin(pi/Y*y);
     otherwise
       error('Un-defined cases!');
   end
