@@ -14,7 +14,7 @@
     </sweeper>
 </solver>
 
-<material_lib path="1g.purely.absorbing.xsl">
+<material_lib path="1g.xsl">
     <material id="6" name="homogeneous" />
 </material_lib>
 
