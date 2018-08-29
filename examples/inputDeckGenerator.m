@@ -15,7 +15,7 @@ function [inputFileName]=inputDeckGenerator(J,template)
   % Extract case name
   caseName = erase(template,'template.xml');
   caseSpeficier = erase(caseName,'1x1_1g_');
-  caseSpeficier = erase(caseSpeficier,'_');
+  caseSpeficier = caseSpeficier(1:end-1);
   caseNameWithGrid=[caseName num2str(J)];
   inputFileName=[caseNameWithGrid '.xml'];
   if (exist(inputFileName,'file'))
