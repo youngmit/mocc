@@ -11,3 +11,5 @@ bin/*
 mocc.sublime-workspace
 *.mine
 *.log
+*IHM*
+*sine-sine-constant-constant*
