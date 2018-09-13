@@ -26,17 +26,25 @@ namespace mocc {
 class SourceIsotropic : public Source {
 public:
     SourceIsotropic(int nreg, const XSMesh *xs_mesh, const ArrayB2 &flux)
-        : Source(nreg, xs_mesh, flux), q_(nreg)
+        : Source(nreg, xs_mesh, flux), q_(nreg), q_1g_(nreg)
     {
         q_.fill(0.0);
+        q_1g_.fill(0.0);
         return;
     }
 
     virtual void self_scatter(size_t ig, const ArrayB1 &xstr = ArrayB1(0));
 
+    virtual void self_scatter_for_MMS(size_t ig, const ArrayB1 &xstr = ArrayB1(0));
+
     const VectorX &get_transport(int iang) const
     {
         return q_;
+    }
+
+    const VectorX &get_q_1g(int iang) const
+    {
+        return q_1g_;
     }
 
 protected:
@@ -45,5 +53,6 @@ protected:
     // times without having to completely reconstruct the source. All calls
     // to get_transport() will return a reference to this vector.
     VectorX q_;
+    VectorX q_1g_; // This quantity does not have the r_fpi_tr factor and is easier.
 };
 }

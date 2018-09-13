@@ -30,11 +30,13 @@ Source::Source(int nreg, const XSMesh *xs_mesh, const ArrayB2 &flux)
       has_external_(false),
       has_MMS_(false),
       source_1g_(nreg),
+      source_1g_with_self_scat_(nreg),
       flux_(flux)
 {
     assert(nreg * n_group_ == (int)flux_.size());
     assert(xs_mesh_->n_reg_expanded() == nreg);
     source_1g_.fill(0.0);
+    source_1g_with_self_scat_.fill(0.0);
     state_.reset();
     return;
 }
@@ -154,15 +156,15 @@ void Source::add_MMS(const pugi::xml_node &input)
     has_MMS_ = true;
 
     std::string srcfname = input.attribute("MMSFile").value();
-    
+
     H5Node MMSh5(srcfname, H5Access::READ);
     // jwg: read in the anisotropic MMS source
 
     ArrayB3 q_m_j_i;
     MMSh5.read("q_MMS_i_j_m", q_m_j_i);
-    
+
     auto shape = q_m_j_i.shape();
-    
+
     int M=shape(0);
     int J=shape(1);
     int I=shape(2);
@@ -180,19 +182,19 @@ void Source::add_MMS(const pugi::xml_node &input)
         }
     }
     MMS_source_.resize(q_ireg_m.shape());
-    MMS_source_=q_ireg_m;                
-    
+    MMS_source_=q_ireg_m;
+
     // Read in angular error
     ArrayB2 error_ang_j_i;
     MMSh5.read("error_ang_i_j", error_ang_j_i);
-    
+
     auto error_ang_shape = error_ang_j_i.shape();
     auto error_ang_size  = error_ang_j_i.size();
-    
+
     // get the dimensions
     J=error_ang_shape(0);
     I=error_ang_shape(1);
-    
+
     error_ang_ireg_.resize(error_ang_size,1); // (ireg,ig)
     ireg=0;
     for (int j=0; j<J; j++){
@@ -201,7 +203,7 @@ void Source::add_MMS(const pugi::xml_node &input)
             ireg++;
         }
     }
-    // jwg: I left this here because it is strange that the 
+    // jwg: I left this here because it is strange that the
     // first element assignment generates the following:
     // 2.31779e-310 = 8.88178e-16
 
