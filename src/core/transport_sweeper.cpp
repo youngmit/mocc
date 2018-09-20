@@ -105,6 +105,8 @@ real_t TransportSweeper::total_fission(bool old) const
 {
     real_t tfis      = 0.0;
     const auto &flux = old ? flux_old_ : flux_;
+    std::cout << flux_ << std::endl;
+    // exit(11);
     for (auto &xsr : *xs_mesh_) {
         for (int ig = 0; ig < n_group_; ig++) {
             real_t xsnf = xsr.xsmacnf(ig);
@@ -139,7 +141,7 @@ void TransportSweeper::calc_fission_source(real_t k,
  */
 ArrayB3 TransportSweeper::pin_powers() const
 {
-    
+
     assert(n_reg_ == (int)core_mesh_->n_reg(MeshTreatment::PLANE));
     ArrayB3 powers(core_mesh_->subplane().size(), core_mesh_->ny(),
                    core_mesh_->nx());
