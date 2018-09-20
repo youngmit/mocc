@@ -40,8 +40,9 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
     flux_1g_ = 0.0;
 
     cw.set_group(group);
-    
-#define MMS 1 
+
+// #define MMS 1
+// #define MMS 0
 
 #pragma omp parallel default(shared)
     {
@@ -193,7 +194,7 @@ template <typename CurrentWorker> void sweep1g(int group, CurrentWorker &cw)
                     }
                     anisoSrc(ireg)=summation;
                 }
-            #endif        
+            #endif
             // \todo this is not correct for angle-dependent sources!
             auto &qbar = source_->get_transport(0);
             for (int i = 0; i < (int)n_reg_; i++) {
