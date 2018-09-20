@@ -45,7 +45,7 @@ void Source::initialize_group(int ig)
 {
     if (has_external_) {
         for (int ireg = 0; ireg < (int)n_reg_; ireg++) {
-            source_1g_[ireg] = external_source_(ireg, ig);
+            source_1g_[ireg] = external_source_(ig, ireg);
         }
     }
     else {
@@ -130,9 +130,9 @@ void Source::add_external(const pugi::xml_node &input)
         return;
     }
 
-    std::string srcfname = input.attribute("external_source").value();
+    std::string srcfname = input.attribute("file").value();
     H5Node srcfile(srcfname, H5Access::READ);
-    srcfile.read("/source", external_source_);
+    srcfile.read("/external_source", external_source_);
 
     // I converted this from the old HDF5 routines, and the order of these
     // could be wrong. make sure to test or change as necessary
