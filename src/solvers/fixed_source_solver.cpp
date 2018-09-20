@@ -163,6 +163,8 @@ void FixedSourceSolver::output(H5Node &node) const
      }
    }
    node.write("flux_map", flux_map);
+
+   node.write("flux_map_mg",sweeper_->flux());
    return;
 }
 }
