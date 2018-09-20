@@ -85,7 +85,7 @@ void FixedSourceSolver::solve()
     // the maximum iteration was hit.
     //for (size_t iouter = 0; iouter < max_iter_; iouter++) {
     size_t iouter = 0;
-    
+
     auto &error_ang_ireg = source_->get_ang_error();
     auto nReg = error_ang_ireg.size();
     ArrayB2 flux_after_AER(nReg,1);
@@ -133,6 +133,11 @@ void FixedSourceSolver::step()
         source_->in_scatter(ig);
 
         sweeper_->sweep(ig);
+    }
+    if (!(source_->get_has_external()))
+    {
+      std::cout << "Did you forget external MMS source?" << std::endl;
+      exit(11);
     }
 }
 
