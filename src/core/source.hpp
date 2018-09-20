@@ -177,7 +177,7 @@ public:
         return error_ang_ireg_;
     }
 
-    bool get_has_MMS_()
+    bool get_has_MMS()
     {
         return has_MMS_;
     }
@@ -190,6 +190,11 @@ public:
     }
 
     virtual void self_scatter_for_MMS(size_t ig, const ArrayB1 &xstr)=0;
+
+    bool get_has_external()
+    {
+        return has_external_;
+    }
 
 protected:
     /**
