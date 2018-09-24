@@ -136,7 +136,7 @@ void FixedSourceSolver::step()
     }
     if (!(source_->get_has_external()))
     {
-      std::cout << "Did you forget external MMS source?" << std::endl;
+      // std::cout << "Did you forget external MMS source?" << std::endl;
       exit(11);
     }
 }
