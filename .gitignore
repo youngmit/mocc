@@ -13,3 +13,12 @@ mocc.sublime-workspace
 *.log
 *IHM*
 *sine-sine-constant-constant*
+*.txt
+~*
+run
+source_b
+singleThreadMmsCompileScript
+mmsRun
+mmsCompileScript
+compileScript
+
