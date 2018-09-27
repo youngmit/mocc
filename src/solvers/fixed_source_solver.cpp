@@ -134,9 +134,10 @@ void FixedSourceSolver::step()
 
         sweeper_->sweep(ig);
     }
-    if (!(source_->get_has_external()))
+    if (sweeper_->get_calculation_mode()==3)
     {
-      // std::cout << "Did you forget external MMS source?" << std::endl;
+      std::cout << "Fission source and scattering source output to files!"
+      << std::endl;
       exit(11);
     }
 }
