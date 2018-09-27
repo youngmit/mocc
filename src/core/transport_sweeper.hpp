@@ -319,6 +319,15 @@ public:
         return vol_;
     }
 
+    /**
+     * \brief Return the calculation mode
+     */
+    int get_calculation_mode() const
+    {
+        return calculation_mode_;
+    }
+
+
 protected:
     const CoreMesh *core_mesh_;
 
@@ -354,6 +363,8 @@ protected:
 
     // Do incoming flux updates?
     bool do_incoming_update_;
+
+    int calculation_mode_=1;
 };
 
 typedef std::unique_ptr<TransportSweeper> UP_Sweeper_t;
