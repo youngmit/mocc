@@ -182,6 +182,13 @@ MoCSweeper::MoCSweeper(const pugi::xml_node &input, const CoreMesh &mesh)
     // Replace the angular quadrature with the modularized version
     ang_quad_ = rays_.ang_quad();
 
+    // Parse the calculation mode
+    int calculation_mode = input.attribute("calculation_mode").as_int(-1);
+    if (calculation_mode < 0) {
+        throw EXCEPT("Invalid calculation mode");
+    }
+    calculation_mode_ = calculation_mode;
+
     timer_init_.toc();
     timer_.toc();
 
@@ -203,7 +210,7 @@ void MoCSweeper::sweep(int group)
     // Perform inner iterations
     for (unsigned int inner = 0; inner < n_inner_; inner++) {
         // update the self-scattering source
-        if (inner ==0 && !(source_->get_has_external())) {
+        if (inner ==0 && (this->get_calculation_mode()==3)) {
             source_->self_scatter_for_MMS(group, xstr_.xs());
 
             //print out the source and take a look at the result.
