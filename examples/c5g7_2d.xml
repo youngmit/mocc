@@ -13,9 +13,9 @@
 <solver type="eigenvalue" k_tol="1.e-8" psi_tol="1.e-8" max_iter="100" cmfd="t">
     <cmfd enabled="t" />
     <source scattering="P0" />
-    <ang_quad type="chebyshev-gauss" n_azimuthal="8" n_polar="2" />
+    <ang_quad type="chebyshev-gauss" n_azimuthal="8" n_polar="3" />
 
-    <sweeper type="moc" n_inner="10">
+    <sweeper type="moc" n_inner="10" calculation_mode="53">
             <rays spacing="0.05" modularity="core" />
     </sweeper>
 </solver>
