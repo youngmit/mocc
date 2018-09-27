@@ -105,7 +105,7 @@ real_t TransportSweeper::total_fission(bool old) const
 {
     real_t tfis      = 0.0;
     const auto &flux = old ? flux_old_ : flux_;
-    std::cout << flux_ << std::endl;
+    // std::cout << flux_ << std::endl;
     // exit(11);
     for (auto &xsr : *xs_mesh_) {
         for (int ig = 0; ig < n_group_; ig++) {
