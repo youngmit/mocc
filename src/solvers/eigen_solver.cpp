@@ -314,6 +314,9 @@ void EigenSolver::output(H5Node &file) const
         g.write("abscissae", iteration_times_);
     }
 
+    file.write("fission_source",
+        fss_.sweeper()->get_source()->get_mg_fission_source(fission_source_));
+
     fss_.output(file);
     if (cmfd_) {
         cmfd_->output(file);
