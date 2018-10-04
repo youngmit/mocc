@@ -2,6 +2,9 @@
 	"folders":
 	[
 		{
+			"path": "examples"
+		},
+		{
 			"path": "src"
 		}
 	]
