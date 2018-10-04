@@ -313,6 +313,11 @@ public:
         return vol_;
     }
 
+    Source *get_source() const
+    {
+        return source_;
+    }
+
 protected:
     const CoreMesh *core_mesh_;
 
