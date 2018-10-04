@@ -78,6 +78,30 @@ void Source::fission(const ArrayB1 &fs, int ig)
     return;
 }
 
+// Get group wise fission source, the purpose for now is for output the
+// Multigroup fission source
+const ArrayB2 Source::get_mg_fission_source(const ArrayB1 &fs)
+{
+    assert((int)fs.size() == n_reg_);
+    // assert(!state_.has_fission);
+    // has_fission is not necessary since we're not contructing source
+    // and use the has_fission to mark fission src has been included.
+    assert(!state_.is_scaled);
+
+    ArrayB2 fs_mg(n_reg_,n_group_);
+
+    for (int ig = 0; ig < n_group_; ig++) {
+        for (auto &xsr : *xs_mesh_) {
+            real_t xsch = xsr.xsmacch(ig);
+            for (const int &ireg : xsr.reg()) {
+                fs_mg(ireg,ig) = xsch * fs(ireg);
+            }
+        }
+    }
+    return fs_mg;
+}
+
+
 /**
  * \brief Compute the contribution to the source from inscattering from
  * other groups.
