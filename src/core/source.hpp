@@ -161,6 +161,10 @@ public:
      */
     virtual const VectorX &get_transport(int iang) const = 0;
 
+    // Get group wise fission source, the purpose for now is for output the
+    // Multigroup fission source
+    const ArrayB2 get_mg_fission_source(const ArrayB1 &fs);
+
     friend std::ostream &operator<<(std::ostream &os, const Source &src);
 
 protected:
