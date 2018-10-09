@@ -139,7 +139,7 @@ void TransportSweeper::calc_fission_source(real_t k,
  */
 ArrayB3 TransportSweeper::pin_powers() const
 {
-    
+
     assert(n_reg_ == (int)core_mesh_->n_reg(MeshTreatment::PLANE));
     ArrayB3 powers(core_mesh_->subplane().size(), core_mesh_->ny(),
                    core_mesh_->nx());
