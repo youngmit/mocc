@@ -219,6 +219,7 @@ real_t TransportSweeper::flux_residual() const
         ++it;
         ++it_old;
     }
-    return std::sqrt(r);
+    int d=flux_.extent(0)*flux_.extent(1);
+    return std::sqrt(r/d);
 }
 }
