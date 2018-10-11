@@ -190,6 +190,11 @@ void EigenSolver::solve()
 
         this->print(n_iterations + 1, convergence_.back());
 
+        real_t resid=0.0;
+        resid = fss_.sweeper()->flux_residual();
+
+        std::cout << "MG scalar flux RMS error: " << resid << std::endl;
+
         if (n_iterations + 1 == next_dump) {
             std::stringstream fname;
             fname << global::case_name << "_iter_" << n_iterations + 1 << ".h5";
