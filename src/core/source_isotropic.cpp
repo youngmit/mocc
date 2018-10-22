@@ -55,4 +55,47 @@ void SourceIsotropic::self_scatter(size_t ig, const ArrayB1 &xstr)
 
     return;
 }
+
+void SourceIsotropic::self_scatter_for_MMS(size_t ig, const ArrayB1 &xstr)
+{
+    // Take a slice reference for this group's flux
+    const ArrayB1 flux_1g = flux_(blitz::Range::all(), ig);
+    if (xstr.size() > 0) {
+        for (auto &xsr : *xs_mesh_) {
+            const ScatteringRow &scat_row = xsr.xsmacsc().to(ig);
+            real_t xssc                   = scat_row[ig];
+            real_t r_fpi_tr               = 1.0 / (xsr.xsmactr(ig) * FPI);
+            for (const int ireg : xsr.reg()) {
+                source_1g_with_self_scat_[ireg]=source_1g_[ireg] + flux_1g(ireg) * xssc;
+                // q_1g_[ireg] = source_1g_with_self_scat_[ireg];
+                // q_[ireg] = q_1g_[ireg] * r_fpi_tr;
+            }
+        }
+    } else {
+        real_t r_fpi = 1.0 / (FPI);
+        for (auto &xsr : *xs_mesh_) {
+            const ScatteringRow &scat_row = xsr.xsmacsc().to(ig);
+            real_t xssc                   = scat_row[ig];
+            for (const int ireg : xsr.reg()) {
+                source_1g_with_self_scat_[ireg] = source_1g_[ireg] + flux_1g(ireg) * xssc;
+                // q_1g_[ireg] = source_1g_with_self_scat_[ireg];
+                // q_[ireg] = q_1g_[ireg] * r_fpi;
+
+            }
+        }
+    }
+
+    // Check to make sure that the source is positive
+    bool any = false;
+    for (int i = 0; i < q_.size(); i++) {
+        if (q_[i] < 0.0) {
+            any = true;
+        }
+    }
+    if (any) {
+        //  throw EXCEPT("Negative source!");
+    }
+
+    return;
 }
+} // end of namespace mocc

@@ -97,6 +97,17 @@ public:
     virtual void self_scatter(size_t ig, const ArrayB1 &xstr = ArrayB1(0)) = 0;
 
     /**
+     * \brief Add self-scatter source
+     *
+     * This is different from the above self-scatter function in that we only
+     * want to output the 1g source with the self-scattering source for use in
+     * MMS.
+     */
+
+    virtual void self_scatter_for_MMS(size_t ig, const ArrayB1 &xstr = ArrayB1(0)) = 0;
+
+
+    /**
      * \brief Return the number of regions for which the Source is defined.
      */
     int n_reg() const

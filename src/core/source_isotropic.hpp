@@ -34,6 +34,8 @@ public:
 
     virtual void self_scatter(size_t ig, const ArrayB1 &xstr = ArrayB1(0));
 
+    virtual void self_scatter_for_MMS(size_t ig, const ArrayB1 &xstr = ArrayB1(0));
+
     const VectorX &get_transport(int iang) const
     {
         return q_;
