@@ -90,7 +90,7 @@ void FixedSourceSolver::solve()
             break;
         }
     }
-    
+
     if (resid >= flux_tol_ ) {
         LogScreen << "Maximum number (" << max_iter_ << ") of iterations "
             "performed before convergence!" << std::endl;
@@ -123,8 +123,8 @@ void FixedSourceSolver::output(H5Node &node) const
     // sweepers colliding.
     node.write("ng", (int)sweeper_->n_group());
     node.write("eubounds", sweeper_->xs_mesh().eubounds(), VecI(1, ng_));
-    
-    sweeper_->output(node);                  
+
+    sweeper_->output(node);
     return;
 }
 }
