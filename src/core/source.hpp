@@ -153,6 +153,15 @@ public:
     }
 
     /**
+     * \brief Return a const reference to the 1G source with self-scattering source.
+     */
+
+    const VectorX &get_source_1g_with_self_scat(int iang) const
+    {
+        return source_1g_with_self_scat_;
+    }
+
+    /**
      * \brief Return a const reference to the source, as it should be used
      * in a transport sweeper.
      *
@@ -204,6 +213,10 @@ protected:
     // Single-group source. We use the Eigen storage class so that it can be
     // used directly as a source vector in a linear system.
     VectorX source_1g_;
+
+    // The above source_1g_ does not include self-scattering source.
+    // The following one does, mainly for use of MMS
+    VectorX source_1g_with_self_scat_;
 
     // Reference to the MG flux variable. Need this to do scattering
     // contributions, etc.

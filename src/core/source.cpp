@@ -29,11 +29,13 @@ Source::Source(int nreg, const XSMesh *xs_mesh, const ArrayB2 &flux)
       n_reg_(flux.size() / n_group_),
       has_external_(false),
       source_1g_(nreg),
+      source_1g_with_self_scat_(nreg),
       flux_(flux)
 {
     assert(nreg * n_group_ == (int)flux_.size());
     assert(xs_mesh_->n_reg_expanded() == nreg);
     source_1g_.fill(0.0);
+    source_1g_with_self_scat_.fill(0.0);
     state_.reset();
     return;
 }
