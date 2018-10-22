@@ -200,6 +200,32 @@ void MoCSweeper::sweep(int group)
 
     // Perform inner iterations
     for (unsigned int inner = 0; inner < n_inner_; inner++) {
+
+        // if we want to output the scattering source
+        // possibly the fission source too depending in case of eigenvalue problem
+
+        // if ((this->get_calculation_mode()==3) && inner ==0) {
+        if (inner ==0) {
+            source_->self_scatter_for_MMS(group, xstr_.xs());
+
+            //print out the source and take a look at the result.
+            std::cout << source_->n_reg() << std::endl;
+            // std::cout << source_->get_source_1g_with_self_scat(0) << std::endl;
+
+            std::string filename = "group_" + std::to_string(group+1) + "_source.txt";
+            std::ofstream myfile;
+            myfile.open (filename);
+            myfile << source_->get_source_1g_with_self_scat(0);
+            myfile.close();
+
+            filename = "group_" + std::to_string(group+1) + "_xstr.txt";
+            // std::ofstream myfile;
+            myfile.open (filename);
+            myfile << xstr_.xs();
+            myfile.close();
+            continue;
+        }
+
         // update the self-scattering source
         source_->self_scatter(group, xstr_.xs());
 
