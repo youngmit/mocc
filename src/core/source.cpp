@@ -160,10 +160,10 @@ void Source::add_external(const pugi::xml_node &input)
     // I converted this from the old HDF5 routines, and the order of these
     // could be wrong. make sure to test or change as necessary
     if (external_source_.extent(0) != (int)n_reg_) {
-        throw EXCEPT("Wrong group dimensions for source");
+        throw EXCEPT("Wrong regions dimensions for source");
     }
     if (external_source_.extent(1) != (int)n_group_) {
-        throw EXCEPT("Wrong regions dimensions for source");
+        throw EXCEPT("Wrong group dimensions for source");
     }
 
     has_external_ = true;
