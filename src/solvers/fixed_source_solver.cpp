@@ -114,6 +114,16 @@ void FixedSourceSolver::step()
 
         sweeper_->sweep(ig);
     }
+
+    // if ((this->get_calculation_mode()==3) && inner ==0) {
+
+
+      // std::cout << "Fission source and scattering source output to files!"
+      // << std::endl;
+      // exit(11);
+
+
+    // }
 }
 
 void FixedSourceSolver::output(H5Node &node) const
