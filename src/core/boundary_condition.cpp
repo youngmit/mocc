@@ -181,6 +181,7 @@ void BoundaryCondition::update(int group, int angle,
             break;
 
         case Boundary::PRESCRIBED:
+            data_(blitz::Range(offset_in, offset_in + size - 1)) = RFPI;
             break;
 
         default:
