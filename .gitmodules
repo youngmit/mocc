@@ -6,4 +6,4 @@
 	url = https://github.com/unittest-cpp/unittest-cpp.git
 [submodule "lib/eigen"]
 	path = lib/eigen
-	url = https://github.com/RLovelett/eigen
+	url = https://github.com/eigenteam/eigen-git-mirror.git
