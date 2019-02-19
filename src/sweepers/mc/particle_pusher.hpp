@@ -190,7 +190,7 @@ public:
     /**
      * \brief Assign a new seed to the RNG
      */
-    void set_seed(unsigned long seed)
+    void set_seed(uint64_t seed)
     {
         seed_ = seed;
     }
@@ -230,7 +230,7 @@ private:
     // Do implicit capture?
     bool do_implicit_capture_;
 
-    unsigned long seed_;
+    uint64_t seed_;
 
     // Eigenvalue tally
     TallyScalar k_tally_tl_;

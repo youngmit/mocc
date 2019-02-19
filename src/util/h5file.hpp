@@ -214,9 +214,9 @@ public:
     }
 
     /**
-     * \brief Write a scalar unsigned long integer.
+     * \brief Write a scalar uint64_t integer.
      */
-    void write(std::string path, unsigned long data)
+    void write(std::string path, uint64_t data)
     {
         hsize_t dims_a[1];
 

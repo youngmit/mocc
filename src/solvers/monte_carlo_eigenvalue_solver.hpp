@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <utility>
 #include "util/pugifwd.hpp"
 #include "core/core_mesh.hpp"
@@ -62,7 +63,7 @@ private:
     int n_inactive_cycles_;
     int particles_per_cycle_;
 
-    unsigned long seed_;
+    uint64_t seed_;
 
     RNG_LCG rng_;
 

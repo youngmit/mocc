@@ -121,7 +121,7 @@ inline bool fp_equiv_saferel(real_t v1, real_t v2)
  * primary utility of such a function is for use with the \c
  * std::lower_bound() and \c std::upper_bound() algorithms.
  */
-auto fuzzy_lt = [](real_t l, real_t r) {
+inline auto fuzzy_lt(real_t l, real_t r) {
     return (l - r) / std::abs(r) < -REAL_FUZZ;
 };
 }

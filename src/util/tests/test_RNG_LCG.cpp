@@ -110,15 +110,15 @@ TEST(random_bitstream)
     // zero, which will result in poor results from some tests
     mocc::RNG_LCG rng;
     std::ofstream fout("random.binary", std::ios::binary | std::ios::out);
-    std::vector<unsigned long> stream;
-    int N = (1 << 20) / sizeof(unsigned long);
+    std::vector<uint64_t> stream;
+    int N = (1 << 20) / sizeof(uint64_t);
     stream.reserve(N);
     for (int i = 0; i < N; i++) {
         stream.push_back(rng());
     }
 
     fout.write((char *)stream.data(),
-               (std::streamsize)N * sizeof(unsigned long));
+               (std::streamsize)N * sizeof(uint64_t));
 }
 
 TEST(sample_cdf)

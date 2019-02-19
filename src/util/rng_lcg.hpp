@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include <random>
 
@@ -32,7 +33,7 @@ namespace mocc {
  */
 class RNG_LCG {
 public:
-    RNG_LCG(unsigned long seed = 1ul) : current_seed_(seed)
+    RNG_LCG(uint64_t seed = UINT64_C(1)) : current_seed_(seed)
     {
         return;
     }
@@ -44,12 +45,12 @@ public:
         return *this;
     }
 
-    void set_seed(unsigned long seed)
+    void set_seed(uint64_t seed)
     {
         current_seed_ = seed;
     }
 
-    unsigned long operator()()
+    uint64_t operator()()
     {
         current_seed_ = (current_seed_ * m_ + b_) & mask_;
         return current_seed_;
@@ -124,20 +125,20 @@ public:
      * \param n the number of elements in the sequence to jump ahead by
      *
      */
-    void jump_ahead(int n)
+    void jump_ahead(uint64_t n)
     {
-        long int nskip = n;
+        uint64_t nskip = n;
 
         while (nskip < 0l) {
             nskip += mod_;
         }
 
-        unsigned long g     = m_;
-        unsigned long b     = b_;
-        unsigned long g_new = 1;
-        unsigned long b_new = 0;
-        while (nskip > 0l) {
-            if (nskip & 1ul) {
+        uint64_t g     = m_;
+        uint64_t b     = b_;
+        uint64_t g_new = 1;
+        uint64_t b_new = 0;
+        while (nskip > UINT64_C(0)) {
+            if (nskip & UINT64_C(1)) {
                 g_new = g_new * g & mask_;
                 b_new = (b_new * g + b) & mask_;
             }
@@ -154,14 +155,14 @@ public:
     }
 
 private:
-    unsigned long current_seed_;
-    static const unsigned long m_ = 2806196910506780709ul;
-    static const unsigned long b_ = 1ul;
+    uint64_t current_seed_;
+    static const uint64_t m_ = UINT64_C(2806196910506780709);
+    static const uint64_t b_ = 1;
     // The mask performs the equivalent of a modulo (%) when ANDed with
     // left-hand operand.
-    static const unsigned long mask_     = ~(1ul << 63);
-    static const unsigned long mod_      = 1ul << 63;
-    static constexpr real_t float_scale_ = 1.0 / (1ul << 63);
+    static const uint64_t mask_     = ~(UINT64_C(1) << 63);
+    static const uint64_t mod_      = UINT64_C(1) << 63;
+    static constexpr real_t float_scale_ = 1.0 / (UINT64_C(1) << 63);
 };
 
 } // namespace mocc
