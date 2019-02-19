@@ -8,7 +8,7 @@ add_subdirectory(sweepers)
 add_subdirectory(solvers)
 add_subdirectory(auxiliary)
 add_subdirectory(util)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/git_SHA1.cpp.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/git_SHA1.cpp" @ONLY)
@@ -19,3 +19,4 @@ add_library(driver "driver.cpp" "git_SHA1.cpp" "input_proc.cpp")
 
 add_executable(mocc "mocc.cpp")
 target_link_libraries(mocc driver auxiliary core sweepers solvers ${HDF5_LIBRARIES} ${Blitz_LIBRARY})
+install(TARGETS mocc DESTINATION bin)
