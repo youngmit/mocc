@@ -48,15 +48,15 @@ C/C++ (especially C) do not provide a formal, language-level concept of
 memory ownership; its kind of the Wild West when it comes to who should
 destroy and deallocate what.
 
-The concept of "ownership" is simple in concept, but potentially a horrendous
+The concept of "ownership" is simple in principle, but potentially a horrendous
 mess if not approached with discipline. Ownership essentially means the scope
 or program unit that is responsible for the appropriate maintenance of a
-chunk of memory. For a scope or object to "own" a piece of memory means that
-that scope is responsible for the proper destruction of that memory. If
-everything is done properly, one should never encounter memory leaks or
-double frees or the like. In practice, this is usually easier said than done,
-as it is often not readily clear who the owner of an object (or rather a
-reference to an object) is.
+resource (in most cases a chunk of memory). For a scope or object to "own" an
+object means that that scope is responsible for the proper destruction of that
+object and its associated resources. If everything is done properly, one should
+never encounter memory leaks or double frees or the like. In practice, this
+is easier said than done, as it is often not readily clear who the owner of an
+object (or rather a reference to an object) is.
 
 To keep things reasonable, we will make heavy and deliberate use of the newer
 memory management features of the C++ standard library in the \c memory
@@ -74,16 +74,16 @@ a new shared pointer is associated with the location, the count is
 incremented. The last shared pointer to an object is responsible for
 destroying/deallocating it.
 
-This approach, while very flexible, is the least expressive in terms of what
+While very flexible, this approach is the least expressive in terms of what
 it tells the developer about the ownership of the object being pointed to.
-Indeed, it practically tells the developer nothing at all; potentially any
+It practically tells the developer nothing at all; potentially any
 location that maintains an instance of the shared pointer could be the
 ultimate custodian of the memory being pointed to, making guarantees about
 object lifetime hard to determine.
 
 Due to the ambiguity inherent to \c shared_pointer<T>, it should only be used
 in situations where the lifetime of the object is truly ambiguous and
-difficult to determine at compile time. 
+difficult or impossible to determine at compile time. 
 
 For instance, a shared pointer is used as the return type of the \ref
 mocc::TransportSweeper::get_homogenized_xsmesh() interface. This is because
@@ -121,7 +121,7 @@ So the unique pointer provides a couple of things:
 Raw pointers are used to provide a reference to an object or data in which no
 ownership is held by the pointer itself. Raw pointers are used in places
 where a reference to an object is needed temporarily, and it is assumed that
-ownership lies elsewhere. 
+ownership lies elsewhere.
 
 \c new and \c delete should almost never be called on a raw pointer.
 
@@ -131,18 +131,18 @@ sometimes as data members of classes, instances of which are known not to
 out-live the shared or unique pointer with which the raw pointer is
 associated.
 
-An example of this are in the Pin types, which contain raw pointers to their
-associated \ref mocc::PinMesh. Since the \ref mocc::Pin and \ref
+Examples of this can be found in the Pin types, which contain raw pointers
+to their associated \ref mocc::PinMesh. Since the \ref mocc::Pin and \ref
 mocc::PinMesh objects are stored in collections on the mocc::CoreMesh, we
 pretty much know that they have the same lifetime, so using a raw pointer in
-the Pin class makes it clear that the Pin does not own, and is not
-responsible for destroying the \ref mocc::PinMesh associated with it. \ref
-mocc::CoreMesh contains a collection of unique pointers to \ref mocc::PinMesh
-objects, and is therefore the proper owner of them. The only potentially
-scary thing here is that we need to know at the Pin level that our lifetime
-will not extend past that of the \ref mocc::PinMesh we are pointing to, which
-is easy to enforce. Were the object lifetimes not so straightforward, it might
-make more sense to use shared pointers in this case.
+the Pin class makes it clear that the Pin does not own, and is not responsible
+for destroying the \ref mocc::PinMesh associated with it. \ref mocc::CoreMesh
+contains a collection of unique pointers to \ref mocc::PinMesh objects, and is
+therefore the proper owner of them. The only potentially scary thing here is
+that we need to know at the Pin level that our lifetime will not extend past
+that of the \ref mocc::PinMesh we are pointing to, which is easy to enforce.
+Were the object lifetimes less straightforward, it might make more sense to
+use shared pointers in this case.
 
 Arrays
 ------
